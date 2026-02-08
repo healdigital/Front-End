@@ -1,5 +1,21 @@
 # ISR + Build Status Tracker (Updated: 2026-02-07)
 
+## Next Tasks (Table)
+
+| Status | Area | Task | Notes |
+| --- | --- | --- | --- |
+| Pending | Frontend | Create static pages: MY BOOKS, SAVORY (DIRTY), SUGAR, THE WORKSHOPS, VIDEOS, TRAVEL, NEWS REPORTS, SELECTIONS | Pages to be added on frontend |
+| Pending | Frontend | Footer pages: Contact, Partnership, Legal Notices, GDPR | Static pages |
+| Pending | Frontend | My Account link → `https://atelier-lacuisinedebernard.com/mon-compte/` | Update footer link |
+| Pending | Frontend | Confirm form provider + integrate | Typeform or open‑source |
+| Pending | Frontend | Algolia search integration | Replace current search |
+| Optional | Ads/Analytics | Mediavine integration (global async script in layout) | Client requirement, optional for now |
+| Optional | Ads/Analytics | Staging validation (ads load, no console errors) | After Mediavine |
+| Optional | Ads/Analytics | ads.txt / privacy / GDPR checks | Staging checks |
+| Long‑term | ContentV2 | Build legacy migration tool | Dry‑run + batch + rollback logs |
+| Long‑term | ContentV2 | Add migration safety fields | `migrationStatus`, `migrationNotes`, `legacySnapshot` |
+| Long‑term | ContentV2 | Migration QA workflow | Legacy vs V2 + JSON‑LD parity |
+
 ## Completed ✅
 
 - [x] Pure SSG Astro build (`output: 'static'`).
