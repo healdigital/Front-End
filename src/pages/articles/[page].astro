@@ -123,7 +123,7 @@ const formatDate = (dateStr: string) => {
                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{getExcerpt(article)}</p>
                 <div class="flex items-center justify-between text-xs text-gray-500">
                   <span>{formatDate(article.date)}</span>
-                  {article.author && <span>{article.author.name}</span>}
+                  {article.author && <span class="author-meta">{article.author.name}</span>}
                 </div>
               </div>
             </article>

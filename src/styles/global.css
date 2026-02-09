@@ -11,3 +11,21 @@
 :root {
   color-scheme: dark;
 }
+
+/* Hide author names globally (temporary) */
+.author-meta,
+.article-author {
+  display: none !important;
+}
+
+/* Hide WP meta blocks */
+.penci-hide-tagupdated,
+.grid-post-box-meta,
+.mag-meta {
+  display: none !important;
+}
+
+/* Hide Penci homepage title blocks */
+.penci-border-arrow.penci-homepage-title.penci-magazine-title.style-1.pcalign-left.pciconp-right.pcicon-right {
+  display: none !important;
+}

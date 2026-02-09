@@ -4,8 +4,6 @@ import RecipeIngredients from "../components/RecipeIngredients.astro";
 import RecipeInstructions from "../components/RecipeInstructions.astro";
 import RecipeNutrition from "../components/RecipeNutrition.astro";
 import GlobalSidebar from "../components/GlobalSidebar.astro";
-import GlobalAbout from "../components/GlobalAbout.astro";
-import GlobalFooter from "../components/GlobalFooter.astro";
 import DisqusComments from "../components/DisqusComments.astro";
 import MediavineSlot from "../components/MediavineSlot.astro";
 
@@ -334,7 +332,7 @@ const articleUrl = `https://lacuisinedebernard.com/${slug}`;
                 </span>
               )
             }
-            <span class="text-gray-700">
+            <span class="text-gray-700 author-meta">
               <i class="fas fa-user mr-2 text-orange-600"></i>{author}
             </span>
             {
@@ -495,10 +493,6 @@ const articleUrl = `https://lacuisinedebernard.com/${slug}`;
   </div>
 
   <!-- Global About Section -->
-  <GlobalAbout />
-
-  <!-- Global Footer -->
-  <GlobalFooter />
 </BaseLayout>
 
 <script>
