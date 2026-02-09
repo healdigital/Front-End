@@ -1,5 +1,6 @@
 ---
 import fs from "node:fs";
+import path from "node:path";
 
 interface Props {
   slug: string;
@@ -7,7 +8,13 @@ interface Props {
 }
 
 const { slug, sourceUrl } = Astro.props;
-const filePath = new URL(`../content/static-pages/${slug}.html`, import.meta.url);
+const filePath = path.resolve(
+  process.cwd(),
+  "src",
+  "content",
+  "static-pages",
+  `${slug}.html`,
+);
 let html = "";
 
 if (fs.existsSync(filePath)) {
