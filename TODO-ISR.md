@@ -1,4 +1,4 @@
-# ISR + Build Status Tracker (Updated: 2026-02-07)
+# ISR + Build Status Tracker (Updated: 2026-02-09)
 
 ## Next Tasks (Table)
 
@@ -9,6 +9,8 @@
 | Pending | Frontend | My Account link → `https://atelier-lacuisinedebernard.com/mon-compte/` | Update footer link |
 | Pending | Frontend | Confirm form provider + integrate | Typeform or open‑source |
 | Pending | Frontend | Algolia search integration | Replace current search |
+| Pending | Content | Export category pages (sale, sucre, voyage) | Import JSON and map links to local slugs |
+| Pending | Content | Export author pages | Confirm author list + import |
 | Optional | Ads/Analytics | Mediavine integration (global async script in layout) | Client requirement, optional for now |
 | Optional | Ads/Analytics | Staging validation (ads load, no console errors) | After Mediavine |
 | Optional | Ads/Analytics | ads.txt / privacy / GDPR checks | Staging checks |
@@ -27,6 +29,7 @@
 - [x] Snapshot update uses ID/slug/title matching; snapshot now includes `id` + `_id`.
 - [x] Disqus comments integrated (replaced Giscus).
 - [x] DeepL translation API working via Astro `/api/translate`.
+- [x] Author/meta display hidden via CSS (temporary).
 
 ## Pending / Next (Frontend)
 
@@ -35,6 +38,8 @@
 - [ ] My Account link → `https://atelier-lacuisinedebernard.com/mon-compte/`.
 - [ ] Confirm form provider (Typeform or open-source) and integrate.
 - [ ] Algolia search integration (replace current search) — planned for Monday.
+- [ ] Export category pages (sale, sucre, voyage) — JSON import + local links.
+- [ ] Export author pages — confirm list + import.
 
 ## Pending / Next (Ads + Analytics)
 

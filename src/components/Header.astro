@@ -65,16 +65,66 @@
 <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Navigation Menu Bar -->
-    <nav id="nav-menu" class="flex items-center justify-between py-4 overflow-x-auto">
-      <div class="flex items-center justify-center flex-1 gap-6 sm:gap-8 flex-nowrap">
-        <a href="/books" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">MY BOOKS</a>
-        <a href="/dirty" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">DIRTY</a>
-        <a href="/sugar" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SUGAR</a>
-        <a href="/workshops" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">THE WORKSHOPS</a>
+    <nav id="nav-menu" class="flex items-center justify-between py-4  overflow-y-visible">
+            <div class="flex items-center justify-center flex-1 gap-6 sm:gap-8 flex-nowrap">
+        <div class="relative group">
+          <a href="/books" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">MY BOOKS</a>
+          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[220px] z-50">
+            <a href="/chocolat-maison" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Homemade Chocolate
+            </a>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <a href="/recettes-salees" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SAVORY</a>
+          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[260px] z-50">
+            <a href="/recettes-salees" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Index of savory recipes (with photos)
+            </a>
+            <a href="/le-sale" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Index of savory recipes (without photos)
+            </a>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <a href="/recettes-sucrees" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SUGAR</a>
+          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[260px] z-50">
+            <a href="/recettes-sucrees" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Index of sweet recipes (with photos)
+            </a>
+            <a href="/le-sucre" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Index of sweet recipes (without photos)
+            </a>
+          </div>
+        </div>
+
+        <a href="https://atelier-lacuisinedebernard.com/" target="_blank" rel="noopener noreferrer" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">THE WORKSHOPS</a>
         <a href="/videos" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">VIDEOS</a>
-        <a href="/travel" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">TRAVEL</a>
-        <a href="/news" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">NEWS REPORTS</a>
-        <a href="/selections" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SELECTIONS</a>
+        <a href="/voyages-culinaires" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">TRAVEL</a>
+        <a href="/reportages" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">NEWS REPORTS</a>
+
+        <div class="relative group">
+          <a href="/selection" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SELECTIONS</a>
+          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[320px] z-50">
+            <a href="/selection/repas-de-noel-36-recettes-traditionnelles-originales" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Christmas Meal 2024: My 36 Traditional &amp; Original Recipes
+            </a>
+            <a href="/galette-des-rois-mes-recettes-traditionnelles-et-creatives" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              King Cake: My Traditional and Creative Recipes
+            </a>
+            <a href="/foie-gras-maison-conseils-et-recettes" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Homemade foie gras: tips and recipes!
+            </a>
+            <a href="/theme/noel" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Christmas Recipes
+            </a>
+            <a href="/selection/quelques-recettes-automnales" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
+              Autumn recipes
+            </a>
+          </div>
+        </div>
       </div>
 
       <!-- Right Side: Language & Search -->
@@ -82,16 +132,16 @@
         <!-- Language Selector -->
         <div class="relative">
           <button id="lang-toggle" class="flex items-center gap-1 sm:gap-2 font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm">
-            🇫🇷
+            Lang
             <i class="fas fa-chevron-down w-4 h-4"></i>
           </button>
           <!-- Language Dropdown - Fixed positioning to overflow -->
           <div id="lang-dropdown" class="hidden fixed right-20 mt-12 w-40 bg-white dark:bg-gray-800 rounded-md shadow-2xl z-50 border border-gray-200 dark:border-gray-700" data-no-translate="true">
             <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 first:rounded-t-md" data-lang="en">English</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="fr">Français</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="es">Español</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="pt-br">Português</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 last:rounded-b-md" data-lang="ar">العربية</a>
+            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="fr">Fran&ccedil;ais</a>
+            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="es">Espa&ntilde;ol</a>
+            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="pt-br">Portugu&ecirc;s</a>
+            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 last:rounded-b-md" data-lang="ar">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</a>
           </div>
         </div>
 

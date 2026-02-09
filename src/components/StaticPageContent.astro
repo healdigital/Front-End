@@ -1,0 +1,35 @@
+---
+import fs from "node:fs";
+
+interface Props {
+  slug: string;
+  sourceUrl?: string;
+}
+
+const { slug, sourceUrl } = Astro.props;
+const filePath = new URL(`../content/static-pages/${slug}.html`, import.meta.url);
+let html = "";
+
+if (fs.existsSync(filePath)) {
+  html = fs.readFileSync(filePath, "utf8").trim();
+}
+
+const hasHtml = html.length > 0;
+---
+
+{hasHtml ? (
+  <div class="wp-content" set:html={html} />
+) : (
+  <div class="space-y-4">
+    <p>Content import pending for this page.</p>
+    {sourceUrl && (
+      <p>
+        Source:
+        <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+          {sourceUrl}
+        </a>
+      </p>
+    )}
+    <slot />
+  </div>
+)}

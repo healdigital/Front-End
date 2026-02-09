@@ -1,0 +1,23 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Culinary Travels">
+  <StaticPage title="Culinary Travels" subtitle="Voyages culinaires">
+    <StaticPageContent
+      slug="voyages-culinaires"
+      sourceUrl="https://lacuisinedebernard.com/voyages-culinaires/"
+    >
+      <p>Travel stories and culinary journeys are being migrated.</p>
+      <p>
+        Check back soon, or browse the latest articles for new inspiration.
+      </p>
+      <ul>
+        <li><a href="/articles">Browse latest articles</a></li>
+        <li><a href="/search">Search the site</a></li>
+      </ul>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

@@ -1,0 +1,24 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="News Reports">
+  <StaticPage title="News Reports" subtitle="Reportages">
+    <StaticPageContent
+      slug="reportages"
+      sourceUrl="https://lacuisinedebernard.com/reportages/"
+    >
+      <p>Reportages are being migrated from the original site.</p>
+      <p>
+        In the meantime, browse the latest articles or use search to find a
+        specific story.
+      </p>
+      <ul>
+        <li><a href="/articles">Browse latest articles</a></li>
+        <li><a href="/search">Search the site</a></li>
+      </ul>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

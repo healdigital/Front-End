@@ -5,7 +5,6 @@ import MainContent from "../../components/MainContent.astro";
 import RecipesSections from "../../components/RecipesSections.astro";
 import VideoSection from "../../components/VideoSection.astro";
 import AboutSection from "../../components/AboutSection.astro";
-import Footer from "../../components/Footer.astro";
 import { payloadFetch } from "../../lib/payload.client";
 import { getAllArticlesFromMongo } from "../../lib/mongo.server";
 
@@ -71,6 +70,4 @@ const paginatedArticles = articles.slice(startIdx, endIdx);
   <!-- About Section -->
   <AboutSection />
 
-  <!-- Footer -->
-  <Footer currentLang="en" />
 </BaseLayout>

@@ -1,0 +1,16 @@
+﻿---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import StaticPage from "../../components/StaticPage.astro";
+import StaticPageContent from "../../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Autumn recipes">
+  <StaticPage title="Autumn recipes" subtitle="Selections">
+    <StaticPageContent
+      slug="selection/quelques-recettes-automnales"
+      sourceUrl="https://lacuisinedebernard.com/selection/quelques-recettes-automnales/"
+    >
+      <p>This selection will be imported from the original site.</p>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

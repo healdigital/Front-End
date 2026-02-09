@@ -1,0 +1,23 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Savory Recipes (without photos)">
+  <StaticPage title="Savory Recipes (without photos)" subtitle="Index of savory recipes">
+    <StaticPageContent
+      slug="le-sale"
+      sourceUrl="https://lacuisinedebernard.com/le-sale/"
+    >
+      <p>This text-only savory index is being rebuilt.</p>
+      <p>
+        Use the main savory index or search to find the recipes you need.
+      </p>
+      <ul>
+        <li><a href="/recettes-salees">Savory recipes with photos</a></li>
+        <li><a href="/search">Search the site</a></li>
+      </ul>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

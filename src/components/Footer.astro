@@ -6,20 +6,19 @@ interface Props {
 const { currentLang = 'en' } = Astro.props;
 
 const footerLinks = [
-  { label: 'Log out', url: '#' },
-  { label: 'My account', url: '#' },
+  { label: 'My account', url: 'https://atelier-lacuisinedebernard.com/mon-compte/' },
   { label: 'Contact', url: '/contact' },
-  { label: 'Partnership', url: '#' },
-  { label: 'Legal Notices', url: '/legal' },
-  { label: 'GDPR', url: '/gdpr' }
+  { label: 'Partnership', url: '/partenariat' },
+  { label: 'Legal Notices', url: '/mentions-legales' },
+  { label: 'GDPR', url: '/rgpd' }
 ];
 
 const languages = [
   { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Français' },
-  { code: 'es', label: 'Español' },
-  { code: 'pt-br', label: 'Português' },
-  { code: 'ar', label: 'العربية' }
+  { code: 'fr', label: 'Fran\u00e7ais' },
+  { code: 'es', label: 'Espa\u00f1ol' },
+  { code: 'pt-br', label: 'Portugu\u00eas' },
+  { code: 'ar', label: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629' }
 ];
 
 const currentYear = new Date().getFullYear();
@@ -53,7 +52,7 @@ const currentYear = new Date().getFullYear();
         No part of this site may be copied or reused without permission.
       </p>
       <p class="text-gray-500 font-bold text-lg">
-        ©{2010} - {currentYear} La Cuisine de Bernard
+        &copy;{2010} - {currentYear} La Cuisine de Bernard
       </p>
     </div>
 

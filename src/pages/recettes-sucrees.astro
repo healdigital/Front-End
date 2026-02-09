@@ -1,0 +1,23 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Sweet Recipes (with photos)">
+  <StaticPage title="Sweet Recipes (with photos)" subtitle="Index of sweet recipes">
+    <StaticPageContent
+      slug="recettes-sucrees"
+      sourceUrl="https://lacuisinedebernard.com/recettes-sucrees/"
+    >
+      <p>We are rebuilding this sweet index with the new content system.</p>
+      <p>
+        Until then, browse the latest recipes or search for a specific dessert.
+      </p>
+      <ul>
+        <li><a href="/articles">Browse latest recipes</a></li>
+        <li><a href="/search">Search the site</a></li>
+      </ul>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

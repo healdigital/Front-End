@@ -1,13 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Header from "../components/Header.astro";
 import ArticleSlider from "../components/ArticleSlider.astro";
 import MainContent from "../components/MainContent.astro";
 import RandomArticles from "../components/RandomArticles.astro";
 import RecipesSections from "../components/RecipesSections.astro";
 import VideoSection from "../components/VideoSection.astro";
-import GlobalAbout from "../components/GlobalAbout.astro";
-import GlobalFooter from "../components/GlobalFooter.astro";
 import { getArticlesPage as getArticlesPagePayload } from "../lib/payload.client";
 import { getAllArticlesFromMongo } from "../lib/mongo.server";
 // Enable SSG with ISR for homepage
@@ -109,9 +106,4 @@ const formatDate = (dateStr: string) => {
   <!-- YouTube Videos Section -->
   <VideoSection />
 
-  <!-- Global About Section -->
-  <GlobalAbout />
-
-  <!-- Global Footer -->
-  <GlobalFooter />
 </BaseLayout>
