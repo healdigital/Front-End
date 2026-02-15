@@ -1,0 +1,21 @@
+---
+/**
+ * Props for the `Logo` atom.
+ */
+interface Props {
+  /** Optional utility classes added to the anchor element. */
+  class?: string;
+  /** Visual variant: 'dark' renders white text for dark backgrounds. */
+  variant?: 'light' | 'dark';
+}
+
+const { class: className, variant = 'light' } = Astro.props;
+
+const colorClass = variant === 'dark'
+  ? 'text-primary-white hover:opacity-80'
+  : 'text-primary-black hover:opacity-80';
+---
+
+<a href="/" class:list={["font-heading font-medium text-2xl tracking-tight transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-turquoise", colorClass, className]}>
+  La Cuisine de Bernard
+</a>

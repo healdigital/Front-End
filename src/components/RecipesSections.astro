@@ -1,0 +1,145 @@
+---
+import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import { Image } from 'astro:assets';
+
+interface Props {
+  allArticles: any[];
+}
+
+const { allArticles = [] } = Astro.props;
+
+const toText = (value: any) => String(value || '').trim().toLowerCase();
+
+const articleCategories = (article: any): string[] => {
+  if (!article || !Array.isArray(article.categories)) return [];
+
+  return article.categories
+    .map((cat: any) => {
+      if (typeof cat === 'string') return toText(cat);
+      return toText(cat?.title || cat?.name || cat?.slug?.current || cat?.slug);
+    })
+    .filter(Boolean);
+};
+
+const includesAny = (values: string[], targets: string[]) =>
+  values.some((value) => targets.some((target) => value.includes(target)));
+
+const sweetKeywords = ['sweet', 'dessert', 'cake', 'cookie', 'chocolate', 'tarte', 'pastry'];
+const savoryKeywords = ['savory', 'salty', 'meat', 'fish', 'chicken', 'pasta', 'salad'];
+
+const sweetArticles = allArticles.filter((article: any) =>
+  includesAny(articleCategories(article), sweetKeywords)
+);
+const savoryArticles = allArticles.filter((article: any) =>
+  includesAny(articleCategories(article), savoryKeywords)
+);
+
+const displaySweet = sweetArticles.length > 0 ? sweetArticles.slice(0, 6) : allArticles.slice(0, 6);
+const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : allArticles.slice(6, 12);
+---
+
+<!-- Sweet Recipes Section -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-orange-200 dark:border-orange-800">
+  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
+    Sweet Recipes 🍰
+  </h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {displaySweet.map((article) => (
+      <a href={`/${article.slug?.current || article.slug || article._id}`} class="group">
+        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden">
+          <!-- Image -->
+          <div class="relative overflow-hidden h-48">
+            {processArticleImageUrl(article) ? (
+              <Image
+                src={processArticleImageUrl(article)}
+                alt={article.title}
+                width={600}
+                height={400}
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                inferSize={true}
+              />
+            ) : (
+              <div class="w-full h-full bg-gradient-to-br from-pink-200 to-orange-200 flex items-center justify-center">
+                <svg class="w-12 h-12 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                </svg>
+              </div>
+            )}
+          </div>
+
+          <!-- Content -->
+          <div class="p-4">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2 mb-2">
+              {article.title}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+              {article.excerpt?.[0]?.children?.[0]?.text || 'Delicious sweet recipe'}
+            </p>
+          </div>
+        </article>
+      </a>
+    ))}
+  </div>
+</section>
+
+<!-- Savory Recipes Section -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-green-200 dark:border-green-800">
+  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
+    Savory Recipes 🍲
+  </h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {displaySavory.map((article) => (
+      <a href={`/${article.slug?.current || article.slug || article._id}`} class="group">
+        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden">
+          <!-- Image -->
+          <div class="relative overflow-hidden h-48">
+            {processArticleImageUrl(article) ? (
+              <Image
+                src={processArticleImageUrl(article)}
+                alt={article.title}
+                width={600}
+                height={400}
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                inferSize={true}
+              />
+            ) : (
+              <div class="w-full h-full bg-gradient-to-br from-green-200 to-blue-200 flex items-center justify-center">
+                <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                </svg>
+              </div>
+            )}
+          </div>
+
+          <!-- Content -->
+          <div class="p-4">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2 mb-2">
+              {article.title}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+              {article.excerpt?.[0]?.children?.[0]?.text || 'Delicious savory recipe'}
+            </p>
+          </div>
+        </article>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  section:nth-child(1) h2 {
+    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  section:nth-child(2) h2 {
+    background: linear-gradient(135deg, #48dbfb 0%, #1dd1a1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>

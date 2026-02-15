@@ -1,0 +1,264 @@
+---
+/**
+ * RecipeInstructions Component
+ * 
+ * Displays step-by-step recipe instructions
+ * Features:
+ * - Numbered steps with visual feedback
+ * - Step grouping by category
+ * - Time estimates per step
+ * - Tip/note support for each step
+ * - Print-friendly styling
+ * 
+ * Props:
+ * - steps (RecipeStep[]): Array of instruction steps
+ * - title (string): Section title
+ */
+
+interface RecipeStep {
+  group?: string;
+  number: number;
+  instruction: string;
+  time?: number;
+  tips?: string[];
+}
+
+interface Props {
+  steps: RecipeStep[];
+  title?: string;
+}
+
+const { steps, title = "Instructions" } = Astro.props;
+
+// Group steps by category
+const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
+  const group = step.group || 'Preparation';
+  if (!acc[group]) acc[group] = [];
+  acc[group].push(step);
+  return acc;
+}, {});
+---
+
+<div class="recipe-instructions">
+  <h2 class="instructions-title">{title}</h2>
+
+  {Object.entries(groupedSteps).map(([group, groupSteps]: any) => (
+    <div class="instruction-group">
+      {group !== 'Preparation' && <h3 class="group-title">{group}</h3>}
+      
+      <ol class="steps-list">
+        {groupSteps.map((step: RecipeStep, index: number) => (
+          <li class="step-item">
+            <div class="step-header">
+              <span class="step-number">{step.number || index + 1}</span>
+              <div class="step-content">
+                <p class="step-instruction">{step.instruction}</p>
+                {step.time && (
+                  <div class="step-time">
+                    <span class="icon">⏱️</span>
+                    <span>{step.time} min</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {step.tips && step.tips.length > 0 && (
+              <div class="step-tips">
+                {step.tips.map((tip: string) => (
+                  <div class="tip">
+                    <span class="tip-icon">💡</span>
+                    <span>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  ))}
+</div>
+
+<style>
+  .recipe-instructions {
+    margin: 2.5rem 0;
+  }
+
+  .instructions-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 2rem 0;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Instruction Groups */
+  .instruction-group {
+    margin-bottom: 2rem;
+  }
+
+  .instruction-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .group-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 1.5rem 0;
+    padding: 0 0 0.75rem 0;
+    text-transform: capitalize;
+    border-bottom: 2px solid #0066cc;
+  }
+
+  /* Steps List */
+  .steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .step-item {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #0066cc;
+    transition: all 0.3s ease;
+  }
+
+  .step-item:hover {
+    background: #f0f7ff;
+    box-shadow: 0 4px 8px rgba(0, 102, 204, 0.1);
+  }
+
+  .step-item:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Step Header */
+  .step-header {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .step-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: #0066cc;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 0.2rem;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-instruction {
+    font-size: 1.05rem;
+    color: #333;
+    line-height: 1.7;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .step-time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .step-time .icon {
+    font-size: 1rem;
+  }
+
+  /* Step Tips */
+  .step-tips {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .tip {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .tip:last-child {
+    margin-bottom: 0;
+  }
+
+  .tip-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+    margin-top: 0.1rem;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .instructions-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .step-item {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .step-header {
+      gap: 1rem;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+    }
+
+    .step-instruction {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .group-title {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  /* Print Styles */
+  @media print {
+    .step-item {
+      page-break-inside: avoid;
+      border-left: 2px solid #333;
+      background: #ffffff;
+      box-shadow: none;
+    }
+
+    .step-number {
+      background: #333;
+    }
+
+    .step-item:hover {
+      background: #ffffff;
+    }
+  }
+</style>

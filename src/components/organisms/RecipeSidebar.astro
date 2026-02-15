@@ -1,0 +1,88 @@
+---
+import Icon from '../atoms/Icon.astro';
+import Button from '../atoms/Button.astro';
+---
+
+<aside class="hidden lg:flex flex-col w-[432px] flex-shrink-0">
+  <!-- Navigation Links -->
+  <div class="bg-secondary-cream rounded-lg p-8 mb-7">
+    <nav class="flex flex-col" aria-label="Navigation rapide">
+      <a href="/a-propos" class="font-body font-medium text-[18px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors py-4 border-b border-border-light">
+        Bernard Laurance
+      </a>
+      <a href="/ateliers" class="font-body font-medium text-[18px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors py-4 border-b border-border-light">
+        Apprendre en atelier
+      </a>
+      <a href="/masterclass" class="font-body font-medium text-[18px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors py-4 border-b border-border-light">
+        Masterclass vidéos
+      </a>
+      <a href="/club" class="font-body font-medium text-[18px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors py-4 border-b border-border-light">
+        Rejoignez mon club
+      </a>
+      <a href="/livres" class="font-body font-medium text-[18px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors py-4">
+        Mes livres pour approfondir
+      </a>
+    </nav>
+  </div>
+
+  <!-- Mini Atelier Card -->
+  <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 mb-7">
+    <div class="relative h-[180px]">
+      <img src="/images/workshop-macarons.jpg" alt="Prochain atelier" class="w-full h-full object-cover" />
+      <div class="absolute top-3 left-3 bg-white rounded-lg p-2 text-center min-w-[50px] shadow-sm">
+        <span class="block text-sm font-bold font-heading text-text-primary uppercase leading-none">MAR</span>
+        <span class="block text-lg font-bold text-primary-turquoise leading-none mt-0.5">15</span>
+      </div>
+    </div>
+    <div class="p-5">
+      <p class="font-mono text-[12px] uppercase tracking-wider text-text-secondary mb-1">Prochain atelier</p>
+      <h4 class="font-heading text-xl text-text-primary mb-2">Atelier Macarons</h4>
+      <div class="flex items-center gap-3 text-text-secondary text-sm mb-4">
+        <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 4h</span>
+        <span class="flex items-center gap-1"><Icon name="users" size="sm" /> 8 pers.</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="font-heading text-2xl text-text-primary">85€</span>
+        <Button href="/atelier-macarons" variant="primary" size="sm">Réserver</Button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini Masterclass Card -->
+  <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 mb-7">
+    <div class="relative h-[180px]">
+      <img src="/images/masterclass-patisserie.jpg" alt="Masterclass" class="w-full h-full object-cover" />
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="w-14 h-14 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center">
+          <Icon name="video" class="text-primary-turquoise ml-1" size="lg" />
+        </div>
+      </div>
+    </div>
+    <div class="p-5">
+      <p class="font-mono text-[12px] uppercase tracking-wider text-[#BBA86B] mb-1">Réservé Premium</p>
+      <h4 class="font-heading text-xl text-text-primary mb-2">Masterclass Pâtisserie</h4>
+      <ul class="space-y-1.5 mb-4 text-sm text-text-secondary">
+        <li class="flex items-center gap-2"><Icon name="video" size="sm" /> 50h de vidéo en 4K</li>
+        <li class="flex items-center gap-2"><Icon name="download" size="sm" /> Fiches PDF incluses</li>
+        <li class="flex items-center gap-2"><Icon name="refresh" size="sm" /> Accès illimité</li>
+      </ul>
+      <Button href="/masterclass-patisserie" class="w-full justify-center bg-[#BBA86B] hover:bg-[#A89558] !text-black border-none" size="sm">
+        Devenir Premium
+      </Button>
+    </div>
+  </div>
+
+  <!-- Mini Books Grid -->
+  <div class="bg-secondary-cream rounded-lg p-6">
+    <p class="font-mono text-[12px] uppercase tracking-wider text-text-secondary mb-4">Mes livres</p>
+    <div class="grid grid-cols-2 gap-3">
+      <img src="/images/book-1.png" alt="Livre 1" class="w-full h-[150px] object-cover rounded-md" />
+      <img src="/images/book-2.png" alt="Livre 2" class="w-full h-[150px] object-cover rounded-md" />
+      <img src="/images/book-3.png" alt="Livre 3" class="w-full h-[150px] object-cover rounded-md" />
+      <img src="/images/book-4.jpg" alt="Livre 4" class="w-full h-[150px] object-cover rounded-md" />
+    </div>
+    <a href="/livres" class="block text-center mt-4 text-primary-turquoise font-body font-medium text-sm hover:underline">
+      Voir tous les livres
+    </a>
+  </div>
+</aside>

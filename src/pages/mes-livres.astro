@@ -1,0 +1,14 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Mes Livres">
+  <StaticPage title="Mes Livres" subtitle="My Books">
+    <StaticPageContent
+      slug="mes-livres"
+      sourceUrl="https://lacuisinedebernard.com/mes-livres/"
+    />
+  </StaticPage>
+</BaseLayout>

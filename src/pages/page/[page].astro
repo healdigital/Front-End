@@ -1,0 +1,76 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleSlider from "../../components/ArticleSlider.astro";
+import MainContent from "../../components/MainContent.astro";
+import RecipesSections from "../../components/RecipesSections.astro";
+import VideoSection from "../../components/VideoSection.astro";
+import AboutSection from "../../components/AboutSection.astro";
+import { payloadFetch } from "../../lib/payload.client";
+import { getAllArticlesFromMongo } from "../../lib/mongo.server";
+
+export const prerender = true;
+const envBuildLimit = Number(process.env.MAX_SSG_ARTICLES);
+const buildLimit = Number.isFinite(envBuildLimit) && envBuildLimit > 0 ? envBuildLimit : 50;
+
+export async function getStaticPaths() {
+  const envMax = Number(process.env.MAX_SSG_ARTICLES);
+  const buildLimit = Number.isFinite(envMax) && envMax > 0 ? envMax : 50;
+
+  let allArticles = await getAllArticlesFromMongo();
+
+  if (!allArticles || allArticles.length === 0) {
+    const result: any = await payloadFetch({
+      collection: 'articles',
+      query: { depth: 1, limit: buildLimit }
+    });
+    allArticles = result?.docs || result || [];
+  }
+
+  const articlesPerPage = 10;
+  const totalPages = Math.ceil(allArticles.length / articlesPerPage);
+
+  const paths = Array.from({ length: totalPages - 1 }, (_, i) => ({
+    params: { page: String(i + 2) },
+  }));
+
+  return paths;
+}
+
+const { page } = Astro.params;
+const currentPage = parseInt(page as string);
+const articlesPerPage = 10;
+let allArticles = await getAllArticlesFromMongo();
+if (!allArticles || allArticles.length === 0) {
+  const result: any = await payloadFetch({
+    collection: 'articles',
+    query: { depth: 2, limit: buildLimit }
+  });
+  allArticles = result?.docs || result || [];
+}
+
+const articles = (Array.isArray(allArticles) ? allArticles : []).filter((a: any) => a && a.title);
+const totalPages = Math.max(1, Math.ceil(articles.length / articlesPerPage));
+const startIdx = (currentPage - 1) * articlesPerPage;
+const endIdx = startIdx + articlesPerPage;
+const paginatedArticles = articles.slice(startIdx, endIdx);
+---
+
+<BaseLayout title={`Home - Page ${currentPage}`}>
+  <h1 class="sr-only">Home - Page {currentPage}</h1>
+
+  <!-- Article Slider -->
+  <ArticleSlider articles={paginatedArticles} />
+
+  <!-- Main Content (Latest Articles + Sidebar) - Same as homepage -->
+  <MainContent latestArticles={paginatedArticles} currentLang="en" currentPage={currentPage} totalPages={totalPages} />
+
+  <!-- Sweet & Savory Recipes Sections -->
+  <RecipesSections allArticles={paginatedArticles} />
+
+  <!-- YouTube Videos Section -->
+  <VideoSection />
+
+  <!-- About Section -->
+  <AboutSection />
+
+</BaseLayout>

@@ -1,0 +1,157 @@
+---
+import Icon from '../atoms/Icon.astro';
+
+interface HeroCard {
+  title: string;
+  image: string;
+  category: string;
+  slug: string;
+}
+
+interface Props {
+  cards: HeroCard[];
+}
+
+const { cards } = Astro.props;
+---
+
+<section class="bg-[#E9E9E0] py-12 md:py-16 lg:py-20 overflow-hidden">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+
+    <!-- Section Header -->
+    <div class="mb-8 md:mb-12">
+      <h1 class="font-heading text-5xl md:text-6xl lg:text-[86px] text-primary-black leading-[0.95] mb-5">
+        À la une
+      </h1>
+      <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary">
+        Cette semaine dans la cuisine de Bernard
+      </p>
+    </div>
+
+    <!-- Carousel -->
+    <div class="relative" data-hero-carousel>
+      <!-- Cards Container -->
+      <div
+        class="flex gap-5 overflow-x-auto scroll-smooth pb-4 -mx-5 px-5 md:-mx-0 md:px-0 hero-scroll-container"
+        data-carousel-track
+      >
+        {cards.map((card) => (
+          <a
+            href={card.slug}
+            class="flex-shrink-0 w-[260px] md:w-[311px] h-[420px] md:h-[500px] rounded-lg overflow-hidden relative group block"
+          >
+            <img
+              src={card.image}
+              alt={card.title}
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="eager"
+            />
+            <!-- Gradient overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <!-- Category badge -->
+            <div class="absolute top-4 left-4">
+              <span class="inline-block rounded-full bg-white/80 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
+                {card.category}
+              </span>
+            </div>
+            <!-- Title -->
+            <div class="absolute bottom-0 left-0 right-0 p-5">
+              <h3 class="font-body text-[17px] text-white font-medium leading-snug line-clamp-3">
+                {card.title}
+              </h3>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <!-- Navigation Arrows -->
+      <div class="hidden md:flex items-center gap-3 mt-4 justify-end">
+        <button
+          class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+          aria-label="Précédent"
+          data-carousel-prev
+        >
+          <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button
+          class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+          aria-label="Suivant"
+          data-carousel-next
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Separator -->
+    <hr class="border-border-primary my-12 md:my-16" />
+
+    <!-- Profile Section -->
+    <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+      <div class="w-[100px] h-[100px] md:w-[130px] md:h-[130px] rounded-full overflow-hidden flex-shrink-0 border-4 border-white/50">
+        <img src="/images/bernard-blog.png" alt="Bernard Laurance" class="w-full h-full object-cover" />
+      </div>
+      <div class="text-center md:text-left flex-1">
+        <h2 class="font-body text-[22px] md:text-[26px] font-medium text-primary-black mb-1">Bernard Laurance</h2>
+        <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary mb-4">
+          Cuisine réelle, recettes testées depuis 2010
+        </p>
+        <p class="font-body text-[16px] text-text-secondary max-w-xl leading-relaxed">
+          Retrouvez mes recettes testées et approuvées, mes astuces de chef et mes voyages culinaires à travers le monde.
+        </p>
+        <!-- Social Stats -->
+        <div class="flex items-center justify-center md:justify-start gap-6 mt-5">
+          <div class="flex items-center gap-2 text-text-secondary">
+            <Icon name="instagram" size="sm" />
+            <span class="font-mono text-[14px]">485k</span>
+          </div>
+          <div class="flex items-center gap-2 text-text-secondary">
+            <Icon name="youtube" size="sm" />
+            <span class="font-mono text-[14px]">320k</span>
+          </div>
+          <div class="flex items-center gap-2 text-text-secondary">
+            <Icon name="facebook" size="sm" />
+            <span class="font-mono text-[14px]">210k</span>
+          </div>
+          <div class="flex items-center gap-2 text-text-secondary">
+            <Icon name="pinterest" size="sm" />
+            <span class="font-mono text-[14px]">180k</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-scroll-container {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .hero-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+  .hero-scroll-container > a {
+    scroll-snap-align: start;
+  }
+</style>
+
+<script>
+  const carousel = document.querySelector('[data-hero-carousel]');
+  if (carousel) {
+    const track = carousel.querySelector('[data-carousel-track]') as HTMLElement;
+    const prevBtn = carousel.querySelector('[data-carousel-prev]');
+    const nextBtn = carousel.querySelector('[data-carousel-next]');
+
+    const scrollAmount = 330;
+
+    prevBtn?.addEventListener('click', () => {
+      track?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    });
+
+    nextBtn?.addEventListener('click', () => {
+      track?.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    });
+  }
+</script>

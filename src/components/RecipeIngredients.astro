@@ -1,0 +1,342 @@
+---
+/**
+ * RecipeIngredients Component
+ * 
+ * Displays recipe ingredients in a formatted list with serving adjuster
+ * Features:
+ * - Clean ingredient presentation
+ * - Serving size adjuster (increases/decreases quantities)
+ * - Ingredient grouping (e.g., "For the crust", "For the filling")
+ * - Responsive design
+ * 
+ * Props:
+ * - ingredients (Ingredient[]): Array of ingredients
+ * - servings (number): Base serving size
+ * - onServingChange (function): Callback when servings change (optional)
+ */
+
+interface Ingredient {
+  group?: string;
+  amount: string;
+  unit: string;
+  name: string;
+  notes?: string;
+}
+
+interface Props {
+  ingredients: Ingredient[];
+  servings?: number;
+  title?: string;
+}
+
+const { ingredients, servings = 4, title = "Ingredients" } = Astro.props;
+
+// Group ingredients by category
+const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
+  const group = ing.group || 'Main';
+  if (!acc[group]) acc[group] = [];
+  acc[group].push(ing);
+  return acc;
+}, {});
+---
+
+<div class="recipe-ingredients">
+  <h2 class="ingredients-title">{title}</h2>
+  
+  <div class="servings-adjuster">
+    <label for="servings">Servings:</label>
+    <div class="servings-input-group">
+      <button class="servings-btn" aria-label="Decrease servings" data-action="decrease">−</button>
+      <input 
+        type="number" 
+        id="servings" 
+        name="servings" 
+        value={servings} 
+        min="1" 
+        max="20"
+        class="servings-input"
+      />
+      <button class="servings-btn" aria-label="Increase servings" data-action="increase">+</button>
+    </div>
+  </div>
+
+  {Object.entries(groupedIngredients).map(([group, items]: any) => (
+    <div class="ingredient-group">
+      {group !== 'Main' && <h3 class="group-title">{group}</h3>}
+      
+      <ul class="ingredients-list">
+        {items.map((ingredient: Ingredient) => (
+          <li class="ingredient-item">
+            <div class="ingredient-amount">
+              <span class="amount" data-amount={ingredient.amount}>
+                {ingredient.amount}
+              </span>
+              {ingredient.unit && <span class="unit">{ingredient.unit}</span>}
+            </div>
+            <div class="ingredient-details">
+              <span class="name">{ingredient.name}</span>
+              {ingredient.notes && <span class="notes">{ingredient.notes}</span>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>
+
+<style>
+  .recipe-ingredients {
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2.5rem 0;
+    border: 1px solid #e9ecef;
+  }
+
+  .ingredients-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Servings Adjuster */
+  .servings-adjuster {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .servings-adjuster label {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+  }
+
+  .servings-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid #0066cc;
+    border-radius: 6px;
+    background: #ffffff;
+  }
+
+  .servings-btn {
+    background: transparent;
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #0066cc;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .servings-btn:hover {
+    background: #f0f7ff;
+  }
+
+  .servings-btn:active {
+    background: #0066cc;
+    color: #ffffff;
+  }
+
+  .servings-input {
+    width: 50px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0066cc;
+  }
+
+  .servings-input:focus {
+    outline: none;
+  }
+
+  /* Ingredient Groups */
+  .ingredient-group {
+    margin-bottom: 2rem;
+  }
+
+  .ingredient-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .group-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 1rem 0;
+    padding: 0;
+    text-transform: capitalize;
+    border-bottom: 2px solid #0066cc;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Ingredients List */
+  .ingredients-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .ingredient-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .ingredient-item:last-child {
+    border-bottom: none;
+  }
+
+  .ingredient-amount {
+    flex-shrink: 0;
+    min-width: 70px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .ingredient-amount .amount {
+    color: #0066cc;
+    font-size: 1.1rem;
+  }
+
+  .ingredient-amount .unit {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .ingredient-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .ingredient-details .name {
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+
+  .ingredient-details .name a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+
+  .ingredient-details .name a:hover {
+    text-decoration: underline;
+  }
+
+  .ingredient-details .notes {
+    color: #999;
+    font-size: 0.9rem;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .recipe-ingredients {
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .ingredients-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .servings-adjuster {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem;
+    }
+
+    .ingredient-item {
+      font-size: 0.95rem;
+    }
+
+    .ingredient-amount {
+      min-width: 60px;
+    }
+  }
+</style>
+
+<script>
+  // Serving size adjuster functionality
+  const adjusters = document.querySelectorAll('.servings-adjuster');
+  
+  adjusters.forEach(adjuster => {
+    const input = adjuster.querySelector('.servings-input') as HTMLInputElement;
+    const decreaseBtn = adjuster.querySelector('[data-action="decrease"]');
+    const increaseBtn = adjuster.querySelector('[data-action="increase"]');
+    
+    if (!input) return;
+    
+    const baseServings = parseInt(input.value);
+    
+    const updateAmounts = (newServings: number) => {
+      const multiplier = newServings / baseServings;
+      
+      const amounts = document.querySelectorAll('.ingredient-amount .amount');
+      amounts.forEach(amount => {
+        const baseAmount = amount.getAttribute('data-amount');
+        if (baseAmount) {
+          const parsedAmount = parseFloat(baseAmount);
+          if (!isNaN(parsedAmount)) {
+            const newAmount = (parsedAmount * multiplier).toFixed(2);
+            amount.textContent = parseFloat(newAmount).toString();
+          }
+        }
+      });
+    };
+    
+    decreaseBtn?.addEventListener('click', () => {
+      const current = parseInt(input.value);
+      if (current > 1) {
+        input.value = (current - 1).toString();
+        updateAmounts(current - 1);
+      }
+    });
+    
+    increaseBtn?.addEventListener('click', () => {
+      const current = parseInt(input.value);
+      if (current < 20) {
+        input.value = (current + 1).toString();
+        updateAmounts(current + 1);
+      }
+    });
+    
+    input.addEventListener('change', () => {
+      let value = parseInt(input.value) || baseServings;
+      if (value < 1) value = 1;
+      if (value > 20) value = 20;
+      input.value = value.toString();
+      updateAmounts(value);
+    });
+  });
+</script>

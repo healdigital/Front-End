@@ -1,0 +1,36 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  author?: string;
+}
+
+const { title, description, author } = Astro.props;
+---
+
+<BaseLayout title={title}>
+  <article class="recipe">
+    <h1>{title}</h1>
+    {description && <p class="description">{description}</p>}
+    {author && <p class="author author-meta">Par {author}</p>}
+    <slot />
+  </article>
+</BaseLayout>
+
+<style>
+  .recipe {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .description {
+    font-style: italic;
+    color: #666;
+  }
+  .author {
+    font-size: 0.9rem;
+    color: #999;
+  }
+</style>

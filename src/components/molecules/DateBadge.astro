@@ -1,0 +1,21 @@
+---
+/**
+ * Props for the `DateBadge` molecule.
+ */
+interface Props {
+  /** Date used to compute day and month labels. */
+  date: Date;
+  /** Optional utility classes applied to the wrapper. */
+  class?: string;
+}
+
+const { date, class: className } = Astro.props;
+
+const month = date.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase();
+const day = date.getDate().toString().padStart(2, '0');
+---
+
+<div class:list={["flex flex-col items-center justify-center bg-primary-white rounded-lg w-[77px] h-[80px] shadow-sm", className]}>
+  <span class="text-xs font-heading font-medium text-text-secondary uppercase tracking-wider">{month}</span>
+  <span class="text-3xl font-heading font-bold text-primary-black leading-none mt-1">{day}</span>
+</div>

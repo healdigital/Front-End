@@ -1,0 +1,80 @@
+---
+// Random Articles Component - Shows random articles with image and title
+import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
+
+interface Props {
+  articles: any[];
+  limit?: number;
+}
+
+const { articles = [], limit = 3 } = Astro.props;
+
+// Function to shuffle array
+function shuffleArray(array: any[]) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Get random articles
+const randomArticles = shuffleArray(articles).slice(0, limit);
+---
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="mb-10">
+    <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Random Picks</h2>
+    <p class="text-gray-600 dark:text-gray-400">Discover some random recipes and articles</p>
+  </div>
+
+  {randomArticles && randomArticles.length > 0 ? (
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {randomArticles.map((article: any) => (
+        <a
+          href={`/${article.slug?.current}`}
+          class="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 h-80"
+        >
+          {/* Article Image */}
+          {processArticleImageUrl(article) ? (
+            <img
+              src={processArticleImageUrl(article)}
+              alt={article.title}
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          ) : (
+            <div class="w-full h-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center">
+              <i class="fas fa-image text-4xl text-white opacity-50"></i>
+            </div>
+          )}
+
+          <!-- Dark overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          <!-- Title at bottom -->
+          <div class="absolute bottom-0 left-0 right-0 p-6 transform translate-y-8 group-hover:translate-y-0 transition-transform duration-300">
+            <h3 class="text-xl font-bold text-white line-clamp-3">
+              {article.title}
+            </h3>
+            <div class="mt-3 inline-block">
+              <span class="text-orange-400 font-semibold text-sm">Read Article →</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div class="text-center py-12">
+      <p class="text-gray-500 dark:text-gray-400 text-lg">No articles available</p>
+    </div>
+  )}
+</section>
+
+<style>
+  @media (max-width: 768px) {
+    section {
+      padding: 2rem 1rem !important;
+    }
+  }
+</style>

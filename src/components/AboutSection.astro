@@ -1,0 +1,92 @@
+---
+interface Props {}
+
+const welcomeText = `A traveler and passionate about cooking, I share all my culinary secrets with you, without holding back. I try to pay homage to traditions, from the canelé of Bordeaux to the dim sum of Hong Kong. "Bernard's Recipes" includes dozens of recipes for pastries, appetizers, and various main dishes.`;
+
+const bookLinks = [
+  'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d',
+  'https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21',
+  'https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F',
+  'https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88',
+  'https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd',
+  'https://www.amazon.fr/gp/product/2080253492/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2080253492&linkCode=as2&tag=lacuisidebern-21&linkId=16638a390ee02cd4cdd339dea4ee9dfc'
+];
+---
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-purple-200 dark:border-purple-800">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Left: Welcome Image & Text -->
+    <div class="md:col-span-1">
+      <div class="text-center">
+        {/* Image placeholder - replace with actual image */}
+        <div class="mb-6 rounded-lg overflow-hidden shadow-lg bg-gradient-to-br from-orange-200 to-pink-200">
+          <img
+            src="/images/bernard-blog.png"
+            alt="Bernard Laurance"
+            class="w-full h-64 object-cover"
+          />
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Welcome
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+            {welcomeText}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle: Books Section -->
+    <div class="md:col-span-1">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Discover
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          My recipe books and culinary guides
+        </p>
+
+        <div class="space-y-3">
+          {bookLinks.map((link, index) => (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block p-4 rounded-lg bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 hover:shadow-md transition-all"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">📚</span>
+                <span class="font-semibold text-gray-900 dark:text-white">
+                  Book {index + 1}
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Click to view on Amazon
+              </p>
+            </a>
+          ))}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right: Facebook Embed -->
+    <div class="md:col-span-1">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <iframe
+          src="https://www.facebook.com/v9.0/plugins/page.php?adapt_container_width=true&app_id=&channel=https%3A%2F%2Fstaticxx.facebook.com%2Fx%2Fconnect%2Fxd_arbiter%2F%3Fversion%3D46%23cb%3Dfe77393b8306eb300%26domain%3Dlacuisinedebernard.com%26is_canvas%3Dfalse%26origin%3Dhttps%253A%252F%252Flacuisinedebernard.com%252Ff78c1a27da79a4709%26relation%3Dparent.parent&container_width=291&hide_cover=false&href=https%3A%2F%2Fwww.facebook.com%2Flacuisinedebernard%2F&locale=fr_FR&sdk=joey&show_facepile=true&show_posts=false&small_header=false"
+          width="100%"
+          height="500"
+          style="border:none;overflow:hidden"
+          scrolling="no"
+          frameborder="0"
+          allowfullscreen="true"
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "recipes": "Recettes",
+    "articles": "Articles",
+    "blog": "Blog",
+    "pages": "Pages",
+    "categories": "Catégories",
+    "cuisines": "Cuisines",
+    "search": "Rechercher"
+  },
+  "recipe": {
+    "ingredients": "Ingrédients",
+    "instructions": "Instructions",
+    "notes": "Notes et Conseils",
+    "nutrition": "Faits Nutritionnels",
+    "gallery": "Galerie",
+    "related": "Recettes Associées",
+    "video": "Vidéo",
+    "author": "Auteur",
+    "published": "Publié",
+    "cost": "Coût",
+    "equipment": "Équipement",
+    "glossary": "Termes du Glossaire",
+    "categories": "Catégories",
+    "cuisines": "Cuisines",
+    "keywords": "Mots-clés",
+    "rating": "évaluation",
+    "ratings": "évaluations",
+    "servings": "Portions",
+    "prepTime": "Temps de Préparation",
+    "cookTime": "Temps de Cuisson",
+    "totalTime": "Temps Total",
+    "calories": "Calories",
+    "noIngredients": "Aucun ingrédient disponible",
+    "noInstructions": "Aucune instruction disponible",
+    "noAuthorBio": "Auteur des recettes de notre blog culinaire."
+  },
+  "common": {
+    "search": "Rechercher",
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "back": "← Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "language": "Langue",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "notFound": "Non trouvé",
+    "author": "Auteur",
+    "published": "Publié",
+    "modified": "Dernière modification",
+    "about": "À propos",
+    "review": "Avis",
+    "categories": "Catégories",
+    "tags": "Étiquettes",
+    "relatedArticles": "Articles Connexes"
+  },
+  "breadcrumb": {
+    "home": "Accueil",
+    "recipes": "Recettes",
+    "articles": "Articles",
+    "pages": "Pages"
+  },
+  "social": {
+    "share": "Partager",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "pinterest": "Pinterest",
+    "email": "Email"
+  },
+  "footer": {
+    "copyright": "© 2026. Tous droits réservés.",
+    "about": "À Propos",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions d'Utilisation",
+    "contact": "Contact"
+  }
+}

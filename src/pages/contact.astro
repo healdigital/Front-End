@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Contact">
+  <StaticPage title="Contact" subtitle="Get in touch">
+    <StaticPageContent
+      slug="contact"
+      sourceUrl="https://lacuisinedebernard.com/contact/"
+    >
+      <p>
+        We'd love to hear from you. Use the email below for general questions,
+        recipe feedback, or collaborations.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Email:
+        <a href="mailto:contact@lacuisinedebernard.com">contact@lacuisinedebernard.com</a>
+      </p>
+
+      <h2>What to include</h2>
+      <ul>
+        <li>Your name and a short subject line</li>
+        <li>Relevant links or references</li>
+        <li>Any deadlines or key dates</li>
+      </ul>
+
+      <p>
+        A contact form will be added soon (Typeform or an open-source alternative).
+      </p>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

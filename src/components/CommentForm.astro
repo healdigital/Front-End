@@ -1,0 +1,438 @@
+---
+// CommentForm.astro - Comment submission form
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<div class="comment-section">
+  <h2>Leave a Comment & Rating</h2>
+  
+  <form id="comment-form" class="comment-form">
+    <div class="form-group">
+      <label for="author">Your Name *</label>
+      <input 
+        type="text" 
+        id="author" 
+        name="author" 
+        required 
+        minlength="2"
+        maxlength="50"
+        placeholder="Your name"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Your Email *</label>
+      <input 
+        type="email" 
+        id="email" 
+        name="email" 
+        required 
+        placeholder="your@email.com"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="rating">Rating *</label>
+      <div class="rating-input">
+        <input type="hidden" id="rating" name="rating" value="5" required />
+        <div class="stars">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              type="button"
+              class={`star star-${star}`}
+              data-rating={star}
+              title={`${star} stars`}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+        <span id="rating-text">Excellent (5/5)</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="text">Your Comment *</label>
+      <textarea 
+        id="text" 
+        name="text" 
+        required 
+        minlength="3"
+        maxlength="1000"
+        rows="5"
+        placeholder="Share your thoughts about this article..."
+      ></textarea>
+      <small id="char-count">0 / 1000 characters</small>
+    </div>
+
+    <div id="form-message" class="form-message"></div>
+
+    <button type="submit" class="submit-btn">
+      Post Comment & Rating
+    </button>
+  </form>
+</div>
+
+<style>
+  .comment-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f4f8 100%);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    margin: 2rem 0;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .comment-section h2 {
+    margin-top: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+  }
+
+  .comment-form {
+    max-width: 600px;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    color: #1f2937;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input[type="text"]:focus,
+  .form-group input[type="email"]:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background-color: #f8f9ff;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    box-sizing: border-box;
+  }
+
+  #char-count {
+    display: block;
+    margin-top: 0.5rem;
+    color: #667eea;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  /* Rating Stars */
+  .rating-input {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #fef8ff;
+    border-radius: 0.5rem;
+    border: 2px solid #f3e8ff;
+  }
+
+  .stars {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+
+  .star {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 2rem;
+    color: #d1d5db;
+    transition: all 0.2s ease;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .star:hover {
+    color: #fbbf24;
+    transform: scale(1.15);
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  }
+
+  .star.active {
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+  }
+
+  #rating-text {
+    font-weight: 700;
+    color: #764ba2;
+    min-width: 120px;
+    font-size: 0.95rem;
+  }
+
+  /* Submit Button */
+  .submit-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.95rem 2.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  }
+
+  .submit-btn:active {
+    transform: translateY(-1px);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Form Message */
+  .form-message {
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    display: none;
+    font-weight: 600;
+    border-left: 4px solid transparent;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .form-message.error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fde8e8 100%);
+    color: #991b1b;
+    border: 2px solid #fecaca;
+    border-left-color: #dc2626;
+    display: block;
+  }
+
+  .form-message.success {
+    background: linear-gradient(135deg, #f0fdf4 0%, #e8f8f0 100%);
+    color: #166534;
+    border: 2px solid #bbf7d0;
+    border-left-color: #16a34a;
+    display: block;
+  }
+</style>
+
+<script define:vars={{ slug }}>
+  const form = document.getElementById('comment-form');
+  const messageDiv = document.getElementById('form-message');
+  const ratingInput = document.getElementById('rating');
+  const ratingText = document.getElementById('rating-text');
+  const charCount = document.getElementById('char-count');
+  const textArea = document.getElementById('text');
+  const submitBtn = form.querySelector('.submit-btn');
+
+  // Add delay to ensure DOM is fully loaded
+  setTimeout(() => {
+    if (!textArea) {
+      console.error('Textarea not found!');
+      return;
+    }
+
+    const ratingLabels = {
+      1: 'Poor (1/5)',
+      2: 'Fair (2/5)',
+      3: 'Good (3/5)',
+      4: 'Very Good (4/5)',
+      5: 'Excellent (5/5)',
+    };
+
+    // Star rating handler
+    document.querySelectorAll('.star').forEach((star) => {
+      star.addEventListener('click', (e) => {
+        e.preventDefault();
+        const rating = star.dataset.rating;
+        ratingInput.value = rating;
+
+        // Update active stars
+        document.querySelectorAll('.star').forEach((s) => {
+          if (parseInt(s.dataset.rating) <= rating) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('active');
+          }
+        });
+
+        // Update text
+        ratingText.textContent = ratingLabels[rating];
+      });
+
+      star.addEventListener('mouseenter', () => {
+        const rating = star.dataset.rating;
+        document.querySelectorAll('.star').forEach((s) => {
+          if (parseInt(s.dataset.rating) <= rating) {
+            s.style.color = '#fbbf24';
+          } else {
+            s.style.color = '#d1d5db';
+          }
+        });
+      });
+    });
+
+    const starsContainer = document.querySelector('.stars');
+    if (starsContainer) {
+      starsContainer.addEventListener('mouseleave', () => {
+        const currentRating = ratingInput.value;
+        document.querySelectorAll('.star').forEach((s) => {
+          if (parseInt(s.dataset.rating) <= currentRating) {
+            s.classList.add('active');
+            s.style.color = '#fbbf24';
+          } else {
+            s.classList.remove('active');
+            s.style.color = '#d1d5db';
+          }
+        });
+      });
+    }
+
+    // Character counter
+    textArea.addEventListener('input', (e) => {
+      const count = e.target.value.length;
+      charCount.textContent = `${count} / 1000 characters`;
+    }, true);
+
+    // Set initial star rating
+    document.querySelectorAll('.star').forEach((s) => {
+      if (parseInt(s.dataset.rating) <= 5) {
+        s.classList.add('active');
+      }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const author = document.getElementById('author').value;
+      const email = document.getElementById('email').value;
+      const text = textArea.value;
+      const rating = ratingInput.value;
+
+      // Clear previous message
+      messageDiv.textContent = '';
+      messageDiv.className = 'form-message';
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Posting...';
+
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            slug,
+            author,
+            email,
+            text,
+            rating: parseInt(rating),
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          messageDiv.className = 'form-message success';
+          messageDiv.textContent =
+            '✅ Thank you! Your comment has been posted and will appear after moderation.';
+
+          // Reset form
+          form.reset();
+          ratingInput.value = '5';
+          ratingText.textContent = 'Excellent (5/5)';
+          charCount.textContent = '0 / 1000 characters';
+
+          // Reset stars
+          document.querySelectorAll('.star').forEach((s) => {
+            if (parseInt(s.dataset.rating) <= 5) {
+              s.classList.add('active');
+            }
+          });
+
+          // Reload comments after 2 seconds
+          setTimeout(() => {
+            window.location.hash = '#comments';
+            window.location.reload();
+          }, 2000);
+        } else {
+          messageDiv.className = 'form-message error';
+          messageDiv.textContent =
+            `❌ Error: ${data.error || 'Failed to post comment'}`;
+        }
+      } catch (error) {
+        console.error('Error submitting comment:', error);
+        messageDiv.className = 'form-message error';
+        messageDiv.textContent =
+          '❌ Error: Failed to submit comment. Please try again.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Post Comment & Rating';
+      }
+    });
+  }, 100);
+</script>

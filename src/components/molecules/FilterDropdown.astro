@@ -1,0 +1,189 @@
+---
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+
+/**
+ * Props for the `FilterDropdown` molecule.
+ */
+interface Props {
+  /** Trigger label shown before a value is selected. */
+  label: string;
+  /** Available options rendered in the menu. */
+  options: { label: string; value: string }[];
+  /** Optional utility classes applied to the wrapper. */
+  class?: string;
+}
+
+const { label, options, class: className } = Astro.props;
+---
+
+<div class:list={["relative inline-block text-left", className]} data-filter-dropdown>
+  <Button 
+    variant="secondary" 
+    size="sm" 
+    class="inline-flex items-center gap-2 pr-2"
+    aria-expanded="false"
+    aria-haspopup="true"
+    data-filter-trigger
+  >
+    <span data-filter-trigger-label>{label}</span>
+    <Icon name="chevron-down" size="sm" class="transition-transform duration-200" data-filter-icon />
+  </Button>
+
+  <div 
+    class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 scale-95 invisible transition-all duration-200 ease-out transform"
+    role="menu"
+    aria-orientation="vertical"
+    aria-labelledby="menu-button"
+    tabindex="-1"
+    data-filter-menu
+  >
+    <div class="py-1" role="none">
+      {options.map((option) => (
+        <a 
+          href={`?filter=${option.value}`}
+          class="text-text-primary block px-4 py-2 font-body text-md hover:bg-gray-100 hover:text-primary-turquoise transition-colors"
+          role="menuitem"
+          tabindex="-1"
+          data-filter-item
+          data-filter-value={option.value}
+        >
+            {option.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupDropdowns() {
+    const dropdowns = document.querySelectorAll<HTMLElement>('[data-filter-dropdown]');
+
+    dropdowns.forEach(dropdown => {
+      if (dropdown.dataset.dropdownReady === 'true') return;
+      dropdown.dataset.dropdownReady = 'true';
+
+      const trigger = dropdown.querySelector<HTMLElement>('[data-filter-trigger]');
+      const menu = dropdown.querySelector<HTMLElement>('[data-filter-menu]');
+      const icon = trigger?.querySelector<HTMLElement>('[data-filter-icon]');
+      const items = Array.from(dropdown.querySelectorAll<HTMLElement>('[data-filter-item]'));
+
+      if (!trigger || !menu) return;
+      if (items.length === 0) return;
+
+      let isOpen = false;
+      let focusedItemIndex = -1;
+
+      function setOpen(nextState: boolean) {
+        isOpen = nextState;
+        trigger.setAttribute('aria-expanded', isOpen.toString());
+
+        if (isOpen) {
+          menu.classList.remove('opacity-0', 'scale-95', 'invisible');
+          menu.classList.add('opacity-100', 'scale-100', 'visible');
+          icon?.classList.add('rotate-180');
+          if (focusedItemIndex < 0) focusedItemIndex = 0;
+        } else {
+          menu.classList.add('opacity-0', 'scale-95', 'invisible');
+          menu.classList.remove('opacity-100', 'scale-100', 'visible');
+          icon?.classList.remove('rotate-180');
+          focusedItemIndex = -1;
+        }
+      }
+
+      function focusItem(index: number) {
+        if (items.length === 0) return;
+        focusedItemIndex = (index + items.length) % items.length;
+        items[focusedItemIndex]?.focus();
+      }
+
+      function openMenuAndFocus(index: number) {
+        setOpen(true);
+        focusItem(index);
+      }
+
+      function closeMenuAndRestoreFocus() {
+        setOpen(false);
+        trigger.focus();
+      }
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setOpen(!isOpen);
+      });
+
+      trigger.addEventListener('keydown', (e) => {
+        const key = (e as KeyboardEvent).key;
+
+        if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
+          e.preventDefault();
+          openMenuAndFocus(0);
+        }
+
+        if (key === 'ArrowUp') {
+          e.preventDefault();
+          openMenuAndFocus(items.length - 1);
+        }
+
+        if (key === 'Escape' && isOpen) {
+          e.preventDefault();
+          closeMenuAndRestoreFocus();
+        }
+      });
+
+      menu.addEventListener('keydown', (e) => {
+        const key = (e as KeyboardEvent).key;
+
+        if (key === 'ArrowDown') {
+          e.preventDefault();
+          focusItem(focusedItemIndex + 1);
+        }
+
+        if (key === 'ArrowUp') {
+          e.preventDefault();
+          focusItem(focusedItemIndex - 1);
+        }
+
+        if (key === 'Home') {
+          e.preventDefault();
+          focusItem(0);
+        }
+
+        if (key === 'End') {
+          e.preventDefault();
+          focusItem(items.length - 1);
+        }
+
+        if (key === 'Escape') {
+          e.preventDefault();
+          closeMenuAndRestoreFocus();
+        }
+
+        if ((key === 'Enter' || key === ' ') && focusedItemIndex >= 0) {
+          e.preventDefault();
+          items[focusedItemIndex]?.click();
+        }
+      });
+
+      items.forEach((item, index) => {
+        item.addEventListener('focus', () => {
+          focusedItemIndex = index;
+        });
+
+        item.addEventListener('click', () => {
+          setOpen(false);
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target as Node)) {
+          setOpen(false);
+        }
+      });
+    });
+  }
+
+  // Run on load and on astro page swaps if using ViewTransitions
+  setupDropdowns();
+  document.addEventListener('astro:page-load', setupDropdowns);
+</script>

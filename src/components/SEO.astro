@@ -1,0 +1,102 @@
+---
+const {
+  title,
+  description,
+  canonical,
+  slug,
+  image,
+  author = 'La Cuisine De Bernard',
+  publishDate,
+  modifiedDate,
+  keywords,
+  type = 'website'
+} = Astro.props;
+
+const siteName = 'La Cuisine De Bernard';
+const defaultTitle = siteName;
+const defaultDescription =
+  'Recettes de cuisine, astuces et inspirations gourmandes par Bernard.';
+const maxDescriptionLength = 160;
+
+const cleanText = (value?: string) => (typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '');
+const truncate = (value: string, maxLength: number) =>
+  value.length > maxLength ? `${value.slice(0, maxLength - 1).trim()}...` : value;
+
+const resolvedTitle = cleanText(title) || defaultTitle;
+const resolvedDescription = truncate(
+  cleanText(description) || defaultDescription,
+  maxDescriptionLength,
+);
+
+const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL || Astro.site?.href || 'https://lacuisinedebernard.com/';
+const siteUrl = new URL(configuredSiteUrl).href;
+const fullCanonical = canonical
+  ? new URL(canonical, siteUrl).href
+  : new URL(Astro.url.pathname, siteUrl).href;
+const fullImage = image ? new URL(image, siteUrl).href : new URL('/og-image.png', siteUrl).href;
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Basic SEO Tags -->
+<title>{resolvedTitle}</title>
+<meta name="description" content={resolvedDescription} />
+{keywords && <meta name="keywords" content={keywords} />}
+<link rel="canonical" href={fullCanonical} />
+
+<!-- Author & Copyright -->
+<meta name="author" content={author} />
+<meta name="copyright" content={`© ${new Date().getFullYear()} ${author}. All rights reserved.`} />
+
+<!-- Language Alternate Links -->
+{slug && (
+  <>
+    <link rel="alternate" hreflang="fr" href={new URL(`/fr/recettes/${slug}`, siteUrl).href} />
+    <link rel="alternate" hreflang="en" href={new URL(`/en/recettes/${slug}`, siteUrl).href} />
+    <link rel="alternate" hreflang="x-default" href={new URL(`/fr/recettes/${slug}`, siteUrl).href} />
+  </>
+)}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={fullCanonical} />
+<meta property="og:title" content={resolvedTitle} />
+<meta property="og:description" content={resolvedDescription} />
+<meta property="og:image" content={fullImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content={siteName} />
+
+<!-- Twitter Card -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={fullCanonical} />
+<meta property="twitter:title" content={resolvedTitle} />
+<meta property="twitter:description" content={resolvedDescription} />
+<meta property="twitter:image" content={fullImage} />
+
+<!-- Article SEO Tags -->
+{publishDate && <meta property="article:published_time" content={publishDate} />}
+{modifiedDate && <meta property="article:modified_time" content={modifiedDate} />}
+<meta property="article:author" content={author} />
+
+<!-- Additional SEO Tags -->
+<meta name="robots" content="index, follow" />
+<meta name="googlebot" content="index, follow" />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="alternate icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<!-- DNS Prefetch & Preconnect -->
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@200..800&display=swap" rel="stylesheet" />
+
+<!-- Mobile Web App -->
+<meta name="theme-color" content="#000000" />
+<meta name="msapplication-TileColor" content="#000000" />

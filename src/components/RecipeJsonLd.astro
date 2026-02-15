@@ -1,0 +1,15 @@
+---
+import { buildRecipeJsonLd } from "../../utils/buildRecipeJsonLd";
+
+const { recipe } = Astro.props;
+const jsonLd = buildRecipeJsonLd(recipe);
+---
+
+{
+  jsonLd && (
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(jsonLd)}
+    ></script>
+  )
+}

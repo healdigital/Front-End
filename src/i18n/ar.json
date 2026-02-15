@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "الصفحة الرئيسية",
+    "recipes": "الوصفات",
+    "articles": "المقالات",
+    "blog": "المدونة",
+    "pages": "الصفحات",
+    "categories": "الفئات",
+    "cuisines": "المطابخ",
+    "search": "بحث"
+  },
+  "recipe": {
+    "ingredients": "المكونات",
+    "instructions": "التعليمات",
+    "notes": "الملاحظات والنصائح",
+    "nutrition": "المعلومات الغذائية",
+    "gallery": "المعرض",
+    "related": "الوصفات ذات الصلة",
+    "video": "فيديو",
+    "author": "المؤلف",
+    "published": "منشور",
+    "cost": "التكلفة",
+    "equipment": "المعدات",
+    "glossary": "مصطلحات المسرد",
+    "categories": "الفئات",
+    "cuisines": "المطابخ",
+    "keywords": "الكلمات الرئيسية",
+    "rating": "تقييم",
+    "ratings": "تقييمات",
+    "servings": "الحصص",
+    "prepTime": "وقت التحضير",
+    "cookTime": "وقت الطهي",
+    "totalTime": "الوقت الإجمالي",
+    "calories": "السعرات الحرارية",
+    "noIngredients": "لا توجد مكونات متاحة",
+    "noInstructions": "لا توجد تعليمات متاحة",
+    "noAuthorBio": "مؤلف الوصفات في مدونة الطبخ الخاصة بنا."
+  },
+  "common": {
+    "search": "بحث",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "back": "← العودة",
+    "next": "التالي",
+    "previous": "السابق",
+    "language": "اللغة",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "notFound": "غير موجود",
+    "author": "المؤلف",
+    "published": "منشور",
+    "modified": "آخر تعديل",
+    "about": "نبذة عن",
+    "review": "المراجعة",
+    "categories": "الفئات",
+    "tags": "الوسوم",
+    "relatedArticles": "مقالات ذات صلة"
+  },
+  "breadcrumb": {
+    "home": "الصفحة الرئيسية",
+    "recipes": "الوصفات",
+    "articles": "المقالات",
+    "pages": "الصفحات"
+  },
+  "social": {
+    "share": "شارك",
+    "facebook": "فيسبوك",
+    "twitter": "تويتر",
+    "pinterest": "بينتيريست",
+    "email": "البريد الإلكتروني"
+  },
+  "footer": {
+    "copyright": "© 2026. جميع الحقوق محفوظة.",
+    "about": "حول",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الخدمة",
+    "contact": "اتصل"
+  }
+}

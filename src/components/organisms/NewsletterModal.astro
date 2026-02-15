@@ -1,0 +1,509 @@
+---
+import { Image } from 'astro:assets';
+import Input from '../atoms/Input.astro';
+import Checkbox from '../atoms/Checkbox.astro';
+import Button from '../atoms/Button.astro';
+import Icon from '../atoms/Icon.astro';
+
+/**
+ * Props for the `NewsletterModal` organism.
+ */
+interface Props {
+  /** Id of the button that opens the modal dialog. */
+  triggerId?: string; // ID of the button that opens this modal
+  /** Unique dialog id used for ARIA attributes and script hooks. */
+  id?: string;
+}
+
+const { 
+  triggerId = 'open-newsletter-modal',
+  id = 'newsletter-modal'
+} = Astro.props;
+---
+
+<dialog 
+  id={id} 
+  data-trigger-id={triggerId}
+  data-motion="full"
+  class="group fixed inset-0 z-50 hidden items-center justify-center p-4 bg-transparent backdrop:bg-black/50 overflow-hidden" 
+  aria-modal="true"
+  aria-labelledby={`${id}-title`}
+  aria-describedby={`${id}-desc`}
+>
+  <!-- Backdrop (handled by dialog::backdrop usually, but created explicitly for animation control if needed, 
+       here we rely on dialog native behavior + some Tailwind classes on the dialog itself for positioning) -->
+  
+  <div
+    class="newsletter-modal-panel relative w-full max-w-[942px] h-auto md:h-[505px] bg-primary-cream rounded-lg shadow-xl overflow-hidden flex flex-col md:flex-row"
+    data-modal-panel
+  >
+    
+    <!-- Close Button -->
+    <button 
+      id={`${id}-close`}
+      class="newsletter-modal-close-btn absolute top-4 right-4 z-10 p-2 text-primary-black hover:text-text-secondary"
+      aria-label="Fermer la modale"
+    >
+      <Icon name="close" size="lg" />
+    </button>
+
+    <!-- Image Section -->
+    <div class="hidden md:block w-1/2 h-full bg-gray-200 relative">
+       <!-- Placeholder for image: replace with actual Image component when asset is available -->
+       <div class="absolute inset-0 flex items-center justify-center text-text-tertiary">
+         <span class="sr-only">Image de présentation</span>
+         <!-- Mockup image placeholder -->
+         <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://placehold.co/470x505/e2e8f0/475569?text=Newsletter');"></div>
+       </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+      <div class="mb-6">
+        <h2 id={`${id}-title`} class="text-5xl font-heading text-primary-black mb-4">
+          Restez inspiré
+        </h2>
+        <p id={`${id}-desc`} class="text-text-secondary font-body text-md mb-8">
+          Recevez nos meilleures recettes, astuces et actualités culinaires directement dans votre boîte mail.
+        </p>
+      </div>
+
+      <form class="space-y-4" novalidate id={`${id}-form`}>
+        <div class="space-y-4">
+          <Input 
+            type="email" 
+            placeholder="votre@email.com" 
+            label="Adresse email"
+            labelClass="!text-[#111111]"
+            labelStyle="color: #111111; font-weight: 600;"
+            class="!text-[#111111] !bg-white !placeholder:text-[#4b5563]"
+            style="color: #111111; background-color: #ffffff;"
+            required
+            id={`${id}-email`}
+            name="email"
+          />
+          
+          <div class="flex items-start">
+            <Checkbox 
+              id={`${id}-consent`} 
+              required
+              label="J'accepte de recevoir la newsletter et confirme avoir lu la politique de confidentialité."
+              name="consent"
+            />
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <Button variant="primary" type="submit" class="w-full md:w-auto !text-white" style="background-color: #54B6B1; border-color: #54B6B1; color: #ffffff;">
+            S'inscrire
+          </Button>
+        </div>
+
+        <p
+          id={`${id}-feedback`}
+          class="hidden text-sm"
+          aria-live="polite"
+        ></p>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { newsletterSchema } from '../../lib/validation/schemas';
+  import { validateForm } from '../../lib/validation/client';
+  import { isReducedMotionPreferred, subscribeToReducedMotionPreference } from '../../utils/motion';
+
+  const dialogs = document.querySelectorAll<HTMLDialogElement>('dialog[id^="newsletter-modal"]');
+
+  dialogs.forEach((dialog) => {
+    const id = dialog.id;
+    const triggerId = dialog.dataset.triggerId;
+    const trigger = triggerId ? document.getElementById(triggerId) : null;
+    const panel = dialog.querySelector<HTMLElement>('[data-modal-panel]');
+    const closeBtn = document.getElementById(`${id}-close`);
+    const form = document.getElementById(`${id}-form`) as HTMLFormElement | null;
+    const emailInput = document.getElementById(`${id}-email`) as HTMLInputElement | null;
+    const consentCheckbox = document.getElementById(`${id}-consent`) as HTMLInputElement | null;
+    const submitBtn = form?.querySelector<HTMLButtonElement>('button[type="submit"]') ?? null;
+    const feedback = document.getElementById(`${id}-feedback`) as HTMLParagraphElement | null;
+
+    if (!form || !emailInput || !consentCheckbox) return;
+
+    const defaultSubmitText = submitBtn?.innerText || "S'inscrire";
+
+    const textInputErrorClasses = ['border-status-error', 'text-status-error', 'focus:border-status-error', 'focus:ring-status-error'];
+    const textInputSuccessClasses = ['border-status-success', 'focus:border-status-success', 'focus:ring-status-success'];
+    const textInputDefaultClasses = ['border-border-primary', 'focus:border-primary-turquoise', 'focus:ring-primary-turquoise'];
+    const checkboxErrorClasses = ['border-status-error', 'peer-focus-visible:ring-status-error'];
+    const checkboxSuccessClasses = ['border-status-success', 'peer-focus-visible:ring-status-success'];
+    const checkboxDefaultClasses = ['border-primary-turquoise', 'peer-focus-visible:ring-primary-turquoise'];
+
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    let prefersReducedMotion = isReducedMotionPreferred();
+
+    const applyMotionPreference = () => {
+      dialog.dataset.motion = prefersReducedMotion ? 'reduced' : 'full';
+    };
+
+    applyMotionPreference();
+
+    const unsubscribeReducedMotion = subscribeToReducedMotionPreference((matches) => {
+      prefersReducedMotion = matches;
+      applyMotionPreference();
+    });
+
+    function setFeedback(message: string, state: 'error' | 'success' | 'neutral') {
+      if (!feedback) return;
+
+      feedback.textContent = message;
+      feedback.classList.remove('hidden', 'text-status-error', 'text-status-success', 'text-text-secondary');
+      if (!message) {
+        feedback.classList.add('hidden');
+        return;
+      }
+
+      if (state === 'error') {
+        feedback.classList.add('text-status-error');
+      } else if (state === 'success') {
+        feedback.classList.add('text-status-success');
+      } else {
+        feedback.classList.add('text-text-secondary');
+      }
+    }
+
+    function getErrorElement(input: HTMLInputElement): HTMLElement {
+      let errorElement = document.getElementById(`${input.id}-error`);
+      if (errorElement) return errorElement;
+
+      errorElement = document.createElement(input.type === 'checkbox' ? 'p' : 'span');
+      errorElement.id = `${input.id}-error`;
+      errorElement.setAttribute('role', 'alert');
+
+      if (input.type === 'checkbox') {
+        errorElement.className = 'mt-1 text-xs text-status-error animate-pulse ml-7';
+        const checkboxLabel = input.closest('label');
+        checkboxLabel?.appendChild(errorElement);
+      } else {
+        errorElement.className = 'text-xs text-status-error animate-pulse';
+        input.parentElement?.appendChild(errorElement);
+      }
+
+      return errorElement;
+    }
+
+    function setFieldState(input: HTMLInputElement, state: 'default' | 'error' | 'success') {
+      input.dataset.validationState = state;
+
+      if (input.type === 'checkbox') {
+        const visualBox = input.nextElementSibling as HTMLElement | null;
+        if (!visualBox) return;
+
+        visualBox.classList.remove(...checkboxDefaultClasses, ...checkboxErrorClasses, ...checkboxSuccessClasses);
+
+        if (state === 'error') {
+          visualBox.classList.add(...checkboxErrorClasses);
+          input.setAttribute('aria-invalid', 'true');
+        } else if (state === 'success') {
+          visualBox.classList.add(...checkboxSuccessClasses);
+          input.removeAttribute('aria-invalid');
+        } else {
+          visualBox.classList.add(...checkboxDefaultClasses);
+          input.removeAttribute('aria-invalid');
+        }
+        return;
+      }
+
+      input.classList.remove(...textInputDefaultClasses, ...textInputErrorClasses, ...textInputSuccessClasses);
+
+      if (state === 'error') {
+        input.classList.add(...textInputErrorClasses);
+        input.setAttribute('aria-invalid', 'true');
+      } else if (state === 'success') {
+        input.classList.add(...textInputSuccessClasses);
+        input.removeAttribute('aria-invalid');
+      } else {
+        input.classList.add(...textInputDefaultClasses);
+        input.removeAttribute('aria-invalid');
+      }
+    }
+
+    function showError(input: HTMLInputElement, message: string) {
+      if (!input) return;
+
+      const errorElement = getErrorElement(input);
+      errorElement.textContent = message;
+      errorElement.classList.remove('hidden');
+      input.setAttribute('aria-describedby', errorElement.id);
+      setFieldState(input, 'error');
+    }
+
+    function hideError(input: HTMLInputElement) {
+      const errorElement = document.getElementById(`${input.id}-error`);
+      if (!errorElement) return;
+      errorElement.textContent = '';
+      errorElement.classList.add('hidden');
+    }
+
+    function clearError(input: HTMLInputElement) {
+      if (!input) return;
+      hideError(input);
+      input.removeAttribute('aria-describedby');
+      setFieldState(input, 'default');
+    }
+
+    function setSuccess(input: HTMLInputElement) {
+      hideError(input);
+      input.removeAttribute('aria-describedby');
+      setFieldState(input, 'success');
+    }
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = Array.from(
+        dialog.querySelectorAll<HTMLElement>(focusableSelector)
+      ).filter((element) => !element.hasAttribute('disabled'));
+
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    function resetFormState() {
+      form.reset();
+      clearError(emailInput);
+      clearError(consentCheckbox);
+      setFeedback('', 'neutral');
+      form.removeAttribute('aria-busy');
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-disabled');
+        submitBtn.innerText = defaultSubmitText;
+        submitBtn.classList.remove('bg-status-success', 'border-status-success');
+      }
+    }
+
+    function openDialog() {
+      if (!dialog.open) dialog.showModal();
+      dialog.classList.remove('hidden');
+      dialog.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      dialog.addEventListener('keydown', trapFocus);
+
+      const firstFocusable = dialog.querySelector<HTMLElement>(focusableSelector);
+      setTimeout(() => firstFocusable?.focus(), 0);
+    }
+
+    function closeDialog({ reset = true }: { reset?: boolean } = {}) {
+      if (dialog.open) dialog.close();
+      dialog.classList.add('hidden');
+      dialog.classList.remove('flex');
+      document.body.style.overflow = '';
+      dialog.removeEventListener('keydown', trapFocus);
+      if (reset) resetFormState();
+      trigger?.focus();
+    }
+
+    if (trigger) {
+      trigger.addEventListener('click', openDialog);
+    }
+
+    closeBtn?.addEventListener('click', () => {
+      closeDialog({ reset: true });
+    });
+
+    dialog.addEventListener('click', (event) => {
+      const target = event.target as Node;
+      if (!panel || panel.contains(target)) return;
+      closeDialog({ reset: true });
+    });
+
+    dialog.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      closeDialog({ reset: true });
+    });
+
+    dialog.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      dialog.removeEventListener('keydown', trapFocus);
+      dialog.classList.add('hidden');
+      dialog.classList.remove('flex');
+    });
+
+    // Form Submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      clearError(emailInput);
+      clearError(consentCheckbox);
+      setFeedback('', 'neutral');
+
+      const formData = {
+        email: emailInput.value,
+        consent: consentCheckbox.checked ? true : undefined,
+      };
+
+      const result = validateForm(newsletterSchema, formData);
+
+      if (!result.success && result.errors) {
+        setFeedback('Veuillez corriger les champs indiqués en rouge.', 'error');
+        if (result.errors.email) {
+          showError(emailInput, result.errors.email);
+        }
+        if (result.errors.consent) {
+          showError(consentCheckbox, result.errors.consent);
+        }
+        return;
+      }
+
+      setSuccess(emailInput);
+      setSuccess(consentCheckbox);
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.setAttribute('aria-disabled', 'true');
+        submitBtn.innerText = 'Inscription...';
+        form.setAttribute('aria-busy', 'true');
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        submitBtn.innerText = 'Inscrit !';
+        submitBtn.classList.add('bg-status-success', 'border-status-success');
+        setFeedback('Inscription réussie. Merci pour votre confiance.', 'success');
+        form.removeAttribute('aria-busy');
+
+        setTimeout(() => {
+          closeDialog({ reset: true });
+        }, 1500);
+      }
+    });
+
+    emailInput.addEventListener('input', () => {
+      const emailResult = newsletterSchema.shape.email.safeParse(emailInput.value);
+      if (!emailResult.success) {
+        if (emailInput.dataset.validationState === 'error') {
+          showError(emailInput, emailResult.error.issues[0]?.message ?? 'Veuillez entrer une adresse email valide.');
+        } else {
+          setFieldState(emailInput, 'default');
+        }
+        return;
+      }
+
+      if (emailInput.value.trim().length > 0) {
+        setSuccess(emailInput);
+      } else {
+        clearError(emailInput);
+      }
+    });
+
+    consentCheckbox.addEventListener('change', () => {
+      if (consentCheckbox.checked) {
+        setSuccess(consentCheckbox);
+      } else if (consentCheckbox.dataset.validationState === 'error') {
+        showError(consentCheckbox, 'Vous devez accepter la politique de confidentialité.');
+      } else {
+        clearError(consentCheckbox);
+      }
+    });
+
+    window.addEventListener('pagehide', unsubscribeReducedMotion, { once: true });
+  });
+</script>
+
+<style is:global>
+  /* Custom backdrop styling */
+  dialog[id^="newsletter-modal"]::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  dialog[id^="newsletter-modal"][open]::backdrop {
+    opacity: 1;
+  }
+
+  dialog[id^="newsletter-modal"]:not([open]) {
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  dialog[id^="newsletter-modal"] [data-modal-panel] {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  dialog[id^="newsletter-modal"][open] [data-modal-panel] {
+    animation: newsletter-modal-fade-in 0.3s ease forwards;
+  }
+
+  .newsletter-modal-close-btn {
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+
+  .newsletter-modal-close-btn:active {
+    transform: scale(0.96);
+    transition-duration: 0.2s;
+  }
+
+  @keyframes newsletter-modal-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  dialog[id^="newsletter-modal"][data-motion='reduced']::backdrop {
+    transition-duration: 0.01ms;
+  }
+
+  dialog[id^="newsletter-modal"][data-motion='reduced'] [data-modal-panel] {
+    animation-duration: 0.01ms;
+    transform: none;
+  }
+
+  /* Ensure AA contrast inside newsletter modal regardless of utility token resolution */
+  dialog[id^="newsletter-modal"] form label {
+    color: #111111;
+  }
+
+  dialog[id^="newsletter-modal"] input[type="email"] {
+    color: #111111;
+    background-color: #ffffff;
+  }
+
+  dialog[id^="newsletter-modal"] input[type="email"]::placeholder {
+    color: #4b5563;
+    opacity: 1;
+  }
+
+  dialog[id^="newsletter-modal"] form button[type="submit"] {
+    background-color: #54B6B1;
+    border-color: #54B6B1;
+    color: #ffffff;
+  }
+
+  dialog[id^="newsletter-modal"] form button[type="submit"]:hover {
+    background-color: #449E99;
+    border-color: #449E99;
+  }
+
+</style>

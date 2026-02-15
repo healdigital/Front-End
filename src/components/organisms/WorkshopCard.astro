@@ -1,0 +1,95 @@
+---
+import Button from '../atoms/Button.astro';
+import Icon from '../atoms/Icon.astro';
+
+interface Props {
+  title: string;
+  image: string;
+  date: Date;
+  price: number;
+  duration: string;
+  maxParticipants: number;
+  currentParticipants?: number;
+  slug: string;
+}
+
+const {
+  title,
+  image,
+  date,
+  price,
+  duration,
+  maxParticipants,
+  currentParticipants = 0,
+  slug
+} = Astro.props;
+
+const isFull = currentParticipants >= maxParticipants;
+const spotsLeft = maxParticipants - currentParticipants;
+const statusColor = isFull ? 'bg-status-error text-white' : 'bg-status-success text-white';
+const statusLabel = isFull ? 'Complet' : spotsLeft <= 2 ? `${spotsLeft} place${spotsLeft > 1 ? 's' : ''} restante${spotsLeft > 1 ? 's' : ''}` : 'Places disponibles';
+
+const formatter = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'short'
+});
+const parts = formatter.formatToParts(date);
+const day = parts.find(p => p.type === 'day')?.value;
+const month = parts.find(p => p.type === 'month')?.value;
+---
+
+<article class="w-full max-w-[388px] rounded-[10px] bg-white overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100">
+
+  <!-- Image Header -->
+  <div class="relative h-[220px] w-full">
+    <img
+      src={image}
+      alt={title}
+      width="388"
+      height="220"
+      class="w-full h-full object-cover"
+      loading="lazy"
+    />
+
+    <!-- Date Badge -->
+    <div class="absolute top-4 left-4 bg-white rounded-lg p-2 text-center min-w-[60px] shadow-sm">
+      <span class="block text-sm font-bold font-mono text-text-primary uppercase leading-none">{month}</span>
+      <span class="block text-2xl font-bold font-heading text-primary-turquoise leading-none mt-1">{day}</span>
+    </div>
+
+    <!-- Status Badge -->
+    <div class={`absolute top-4 right-4 px-3 py-1 rounded-full font-mono text-xs font-bold uppercase tracking-wider ${statusColor}`}>
+      {statusLabel}
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="p-5 flex flex-col flex-grow">
+    <h3 class="text-xl font-heading text-text-primary mb-3 line-clamp-2">
+      {title}
+    </h3>
+
+    <div class="flex items-center gap-4 text-text-secondary text-sm mb-4">
+      <span class="flex items-center gap-1.5"><Icon name="clock" size="sm" /> {duration}</span>
+      <span class="flex items-center gap-1.5"><Icon name="users" size="sm" /> {maxParticipants} pers.</span>
+    </div>
+
+    <!-- Separator -->
+    <hr class="border-border-light mb-4" />
+
+    <!-- Price + CTA -->
+    <div class="flex items-center justify-between mt-auto">
+      <div>
+        <span class="text-xs text-text-secondary block">À partir de</span>
+        <span class="font-heading text-2xl text-text-primary leading-none">{price}€</span>
+      </div>
+      <Button
+        href={isFull ? undefined : slug}
+        variant={isFull ? 'disabled' : 'primary'}
+        size="sm"
+      >
+        {isFull ? 'Complet' : 'Réserver'}
+      </Button>
+    </div>
+  </div>
+</article>

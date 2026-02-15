@@ -1,0 +1,869 @@
+---
+/**
+ * GOLDEN SAMPLE RECIPE PAGE
+ * 
+ * File: src/pages/recipes/golden-sample.astro
+ * Purpose: Reference implementation of complete recipe page with all components
+ * 
+ * This file demonstrates:
+ * - Proper component integration
+ * - Responsive layout
+ * - SEO best practices
+ * - Accessibility compliance
+ * - Mobile-first design
+ * 
+ * To use as template, copy to [slug].astro and adjust data fetching
+ */
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import RecipeIngredients from '../../components/RecipeIngredients.astro';
+import RecipeInstructions from '../../components/RecipeInstructions.astro';
+import RecipeNutrition from '../../components/RecipeNutrition.astro';
+import RecipeJsonLd from '../../components/RecipeJsonLd.astro';
+
+// SAMPLE DATA - Replace with actual recipe data from database/JSON
+const recipe = {
+  id: 1,
+  slug: 'basque-cheesecake',
+  title: 'Basque Cheesecake (Burnt Cheesecake)',
+  excerpt: 'Traditional Spanish burnt cheesecake with creamy center and caramelized top. A show-stopping dessert that\'s surprisingly simple to make.',
+  featured_image_src: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1200&h=630&fit=crop',
+  date: '2024-01-15',
+  modified: '2026-01-22',
+  author_name: 'Bernard Leclerc',
+  content: `
+    <p>
+      The Basque burnt cheesecake, or "Basque Burnt Cheesecake" as it's known internationally, 
+      is a deconstructed version of the classic cheesecake that emerged from San Sebastián in 
+      Spain's Basque region. It's wonderfully rustic and incredibly forgiving—perfect for home bakers.
+    </p>
+    
+    <h2>Why This Recipe Works</h2>
+    <p>
+      The beauty of this recipe lies in its simplicity and the Maillard reaction that creates 
+      that gorgeous caramelized top. Unlike traditional cheesecake, there's no need for a 
+      water bath or careful temperature control. Just a springform pan, quality ingredients, 
+      and a hot oven.
+    </p>
+    
+    <h2>Storage & Make-Ahead</h2>
+    <p>
+      This cheesecake keeps beautifully in the refrigerator for up to 5 days. You can also 
+      freeze it for up to 2 months. Thaw in the fridge before serving for best results.
+    </p>
+  `,
+  prepTime: 15,
+  cookTime: 30,
+  restTime: 0,
+  servings: 8,
+  rating: 4.8,
+  ratingCount: 127,
+  
+  ingredients: [
+    {
+      group: 'For the Crust',
+      amount: '2',
+      unit: 'cups',
+      name: 'Digestive biscuits, crushed',
+      notes: 'finely ground'
+    },
+    {
+      group: 'For the Crust',
+      amount: '0.75',
+      unit: 'cup',
+      name: 'Unsalted butter, melted'
+    },
+    {
+      group: 'For the Crust',
+      amount: '1',
+      unit: 'pinch',
+      name: 'Sea salt'
+    },
+    {
+      group: 'For the Filling',
+      amount: '800',
+      unit: 'g',
+      name: 'Cream cheese',
+      notes: 'room temperature (32 oz)'
+    },
+    {
+      group: 'For the Filling',
+      amount: '0.75',
+      unit: 'cup',
+      name: 'Granulated sugar'
+    },
+    {
+      group: 'For the Filling',
+      amount: '0.25',
+      unit: 'cup',
+      name: 'All-purpose flour'
+    },
+    {
+      group: 'For the Filling',
+      amount: '4',
+      unit: 'large',
+      name: 'Eggs',
+      notes: 'room temperature'
+    },
+    {
+      group: 'For the Filling',
+      amount: '1',
+      unit: 'cup',
+      name: 'Heavy cream',
+      notes: 'cold'
+    },
+    {
+      group: 'For the Filling',
+      amount: '2',
+      unit: 'tsp',
+      name: 'Vanilla extract',
+      notes: 'pure vanilla'
+    },
+    {
+      group: 'For the Filling',
+      amount: '1',
+      unit: 'pinch',
+      name: 'Sea salt'
+    }
+  ],
+  
+  instructions: [
+    {
+      group: 'Preparation',
+      number: 1,
+      instruction: 'Preheat oven to 475°F (250°C). Line a 9-inch springform pan with parchment paper, extending it up the sides for easy removal.',
+      time: 5,
+      tips: [
+        'A springform pan prevents the cake from breaking when unmolding',
+        'Parchment paper makes cleanup easier'
+      ]
+    },
+    {
+      group: 'Crust',
+      number: 2,
+      instruction: 'Combine crushed digestive biscuits with melted butter and salt. Press firmly into the bottom of the prepared pan.',
+      time: 5,
+      tips: [
+        'Use a measuring cup to press the crust evenly',
+        'A thin, even crust is key for proper baking'
+      ]
+    },
+    {
+      group: 'Filling',
+      number: 3,
+      instruction: 'In a large bowl, beat softened cream cheese with an electric mixer on low speed for 1-2 minutes until smooth, scraping down sides as needed.',
+      time: 3,
+      tips: [
+        'Do not overmix—you don\'t want to incorporate too much air',
+        'Room temperature cream cheese beats more easily'
+      ]
+    },
+    {
+      group: 'Filling',
+      number: 4,
+      instruction: 'Add sugar and flour to the cream cheese. Mix on low speed until just combined. Do not overmix.',
+      time: 2,
+      tips: [
+        'The flour adds structure and prevents cracking',
+        'Stop mixing as soon as the ingredients are incorporated'
+      ]
+    },
+    {
+      group: 'Filling',
+      number: 5,
+      instruction: 'Add eggs one at a time, mixing on low speed after each addition until just combined. Add vanilla extract and salt.',
+      time: 3,
+      tips: [
+        'Add eggs slowly to prevent lumps',
+        'Room temperature eggs mix in more smoothly'
+      ]
+    },
+    {
+      group: 'Filling',
+      number: 6,
+      instruction: 'Pour cold heavy cream into the filling. Stir gently to combine until you have a thick, pourable batter.',
+      time: 1,
+      tips: [
+        'Cold cream prevents the batter from becoming too warm',
+        'The mixture should look like thick pancake batter'
+      ]
+    },
+    {
+      group: 'Baking',
+      number: 7,
+      instruction: 'Pour the filling into the prepared crust. Place the springform pan directly on the oven rack (no water bath needed).',
+      time: 0
+    },
+    {
+      group: 'Baking',
+      number: 8,
+      instruction: 'Bake for 25-30 minutes until the top is deeply caramelized and the edges are set but the center still jiggles slightly.',
+      time: 30,
+      tips: [
+        'The deep caramelization is what creates that signature burnt top',
+        'A slight jiggle in the center is perfect—it will firm up as it cools'
+      ]
+    },
+    {
+      group: 'Cooling',
+      number: 9,
+      instruction: 'Remove from oven and allow to cool completely at room temperature (about 30 minutes).',
+      time: 30
+    },
+    {
+      group: 'Cooling',
+      number: 10,
+      instruction: 'Refrigerate for at least 4 hours, preferably overnight, before unmolding and serving. The cheesecake firms up significantly when chilled.',
+      time: 0,
+      tips: [
+        'Chilling overnight gives the best results',
+        'The cake can be made 1-2 days ahead'
+      ]
+    }
+  ],
+  
+  nutrition: {
+    calories: 2400,
+    protein: 32,
+    carbs: 128,
+    fat: 156,
+    fiber: 2,
+    sugar: 98,
+    sodium: 1800,
+    cholesterol: 640,
+    calcium: 1040,
+    iron: 2.4,
+    vitamin_a: 4800,
+    vitamin_c: 24
+  },
+  
+  relatedRecipes: [
+    {
+      title: 'Classic New York Cheesecake',
+      slug: 'classic-ny-cheesecake',
+      image: 'https://images.unsplash.com/photo-1533134242443-742531266ff2?w=400&h=300&fit=crop',
+      excerpt: 'The definitive American cheesecake with a graham cracker crust and silky filling.',
+      rating: 4.7,
+      ratingCount: 89,
+      prepTime: 20,
+      cookTime: 60,
+      servings: 12
+    },
+    {
+      title: 'No-Bake Chocolate Cheesecake',
+      slug: 'no-bake-chocolate',
+      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
+      excerpt: 'Rich and decadent chocolate cheesecake without any baking required.',
+      rating: 4.9,
+      ratingCount: 156,
+      prepTime: 30,
+      cookTime: 0,
+      servings: 8
+    },
+    {
+      title: 'Lemon Cheesecake',
+      slug: 'lemon-cheesecake',
+      image: 'https://images.unsplash.com/photo-1570080322440-d14e62fe07c1?w=400&h=300&fit=crop',
+      excerpt: 'Bright and tangy lemon cheesecake with a buttery shortbread crust.',
+      rating: 4.6,
+      ratingCount: 73,
+      prepTime: 25,
+      cookTime: 45,
+      servings: 10
+    },
+    {
+      title: 'Tiramisu',
+      slug: 'tiramisu',
+      image: 'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=400&h=300&fit=crop',
+      excerpt: 'Classic Italian no-bake dessert with layers of espresso and mascarpone.',
+      rating: 4.8,
+      ratingCount: 112,
+      prepTime: 30,
+      cookTime: 0,
+      servings: 8
+    }
+  ]
+};
+
+// Format date
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+};
+
+// Calculate read time
+const calculateReadTime = (html: string) => {
+  const text = html.replace(/<[^>]*>/g, '');
+  const wordCount = text.split(/\s+/).length;
+  const readTime = Math.ceil(wordCount / 200);
+  return Math.max(readTime, 1);
+};
+
+const totalTime = recipe.prepTime + recipe.cookTime + (recipe.restTime || 0);
+---
+
+<BaseLayout 
+  title={`${recipe.title} Recipe | La Cuisine De Bernard`}
+  description={recipe.excerpt}
+  canonical={`https://lacuisinedebernard.com/${recipe.slug}`}
+  image={recipe.featured_image_src}
+  slug={recipe.slug}
+>
+  <main class="recipe-page">
+    
+    <!-- BREADCRUMB NAVIGATION -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a itemprop="item" href="/">Home</a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a itemprop="item" href="/recipes">Recipes</a>
+          <meta itemprop="position" content="2" />
+        </li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{recipe.title}</span>
+          <meta itemprop="position" content="3" />
+        </li>
+      </ol>
+    </nav>
+
+    <!-- FEATURED IMAGE -->
+    <div class="featured-image">
+      <img 
+        src={recipe.featured_image_src} 
+        alt={recipe.title}
+        width="1200"
+        height="630"
+      />
+    </div>
+
+    <!-- RECIPE HEADER -->
+    <header class="recipe-header">
+      <h1>{recipe.title}</h1>
+      
+      <div class="recipe-meta">
+        <span class="meta-item">
+          <span class="icon">📅</span>
+          {formatDate(recipe.date)}
+        </span>
+        <span class="meta-item">
+          <span class="icon">👤</span>
+          {recipe.author_name}
+        </span>
+        <span class="meta-item">
+          <span class="icon">⏱️</span>
+          {calculateReadTime(recipe.content)} min read
+        </span>
+      </div>
+
+      <!-- QUICK FACTS SIDEBAR -->
+      <div class="quick-facts">
+        <div class="quick-fact">
+          <span class="label">Prep Time</span>
+          <span class="value">{recipe.prepTime} min</span>
+        </div>
+        <div class="quick-fact">
+          <span class="label">Cook Time</span>
+          <span class="value">{recipe.cookTime} min</span>
+        </div>
+        <div class="quick-fact">
+          <span class="label">Total Time</span>
+          <span class="value">{totalTime} min</span>
+        </div>
+        <div class="quick-fact">
+          <span class="label">Servings</span>
+          <span class="value">{recipe.servings}</span>
+        </div>
+        <div class="quick-fact">
+          <span class="label">Rating</span>
+          <span class="value">
+            {'★'.repeat(Math.floor(recipe.rating))}{'☆'.repeat(5 - Math.floor(recipe.rating))}
+            <span class="count">({recipe.ratingCount})</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="recipe-actions">
+        <button class="btn btn-print" onclick="window.print()">
+          <span class="icon">🖨️</span> Print
+        </button>
+        <button class="btn btn-share" id="share-btn">
+          <span class="icon">📤</span> Share
+        </button>
+        <button class="btn btn-save" id="save-btn">
+          <span class="icon">⭐</span> Save
+        </button>
+      </div>
+    </header>
+
+    <!-- RECIPE CONTENT WRAPPER -->
+    <div class="recipe-wrapper">
+      
+      <!-- MAIN CONTENT COLUMN -->
+      <div class="recipe-main">
+        
+        <!-- INTRODUCTION -->
+        <section class="recipe-intro">
+          <p>{recipe.excerpt}</p>
+        </section>
+
+        <!-- INGREDIENTS COMPONENT -->
+        <RecipeIngredients
+          ingredients={recipe.ingredients}
+          servings={recipe.servings}
+          title="What You'll Need"
+        />
+
+        <!-- INSTRUCTIONS COMPONENT -->
+        <RecipeInstructions
+          steps={recipe.instructions}
+          title="Let's Cook"
+        />
+
+        <!-- NUTRITION COMPONENT -->
+        <RecipeNutrition
+          nutrition={recipe.nutrition}
+          servings={recipe.servings}
+          title="Nutrition Facts"
+        />
+
+        <!-- RICH CONTENT (Story, tips, etc.) -->
+        <section class="recipe-story">
+          <Fragment set:html={recipe.content} />
+        </section>
+
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="recipe-sidebar">
+        <!-- Additional sidebar content can go here -->
+        <!-- E.g., related products, ads, etc. -->
+      </aside>
+
+    </div>
+
+    <!-- RELATED RECIPES -->
+    <section class="related-recipes">
+      <h2>More Desserts You'll Love</h2>
+      <div class="recipe-grid">
+        {recipe.relatedRecipes.map(relatedRecipe => (
+          <RecipeCard {...relatedRecipe} />
+        ))}
+      </div>
+    </section>
+
+    <!-- JSON-LD RECIPE SCHEMA -->
+    <RecipeJsonLd recipe={recipe} />
+
+  </main>
+</BaseLayout>
+
+<style>
+  /* ===== LAYOUT ===== */
+  main.recipe-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* ===== BREADCRUMB ===== */
+  .breadcrumb {
+    background: #f9f9f9;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+  }
+
+  .breadcrumb ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .breadcrumb li:not(:last-child)::after {
+    content: '/';
+    margin-left: 0.5rem;
+    color: #999;
+  }
+
+  .breadcrumb a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  /* ===== FEATURED IMAGE ===== */
+  .featured-image {
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    background: #f0f0f0;
+  }
+
+  .featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ===== HEADER ===== */
+  .recipe-header {
+    padding: 3rem 2rem;
+    background: white;
+    border-bottom: 2px solid #e9ecef;
+  }
+
+  .recipe-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+  }
+
+  .recipe-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .meta-item .icon {
+    font-size: 1.2rem;
+  }
+
+  /* ===== QUICK FACTS ===== */
+  .quick-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    padding: 2rem;
+    background: #f9f9f9;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .quick-fact {
+    text-align: center;
+  }
+
+  .quick-fact .label {
+    display: block;
+    font-size: 0.85rem;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  .quick-fact .value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0066cc;
+  }
+
+  .quick-fact .count {
+    font-size: 0.85rem;
+    color: #999;
+    margin-left: 0.5rem;
+  }
+
+  /* ===== ACTION BUTTONS ===== */
+  .recipe-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #0066cc;
+    background: white;
+    color: #0066cc;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  .btn:hover {
+    background: #f0f7ff;
+  }
+
+  .btn:active {
+    background: #0066cc;
+    color: white;
+  }
+
+  .btn .icon {
+    font-size: 1.1rem;
+  }
+
+  /* ===== RECIPE WRAPPER ===== */
+  .recipe-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    padding: 3rem 2rem;
+  }
+
+  .recipe-main {
+    min-width: 0;
+  }
+
+  .recipe-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+  }
+
+  /* ===== RECIPE INTRO ===== */
+  .recipe-intro {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #0066cc;
+  }
+
+  .recipe-intro p {
+    margin: 0;
+  }
+
+  /* ===== RECIPE STORY ===== */
+  .recipe-story {
+    margin: 3rem 0;
+    line-height: 1.8;
+    color: #333;
+    font-size: 1.05rem;
+  }
+
+  .recipe-story :global(h2) {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 2rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #0066cc;
+  }
+
+  .recipe-story :global(h3) {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 1.5rem 0 0.75rem 0;
+  }
+
+  .recipe-story :global(p) {
+    margin: 1rem 0;
+  }
+
+  /* ===== RELATED RECIPES ===== */
+  .related-recipes {
+    padding: 3rem 2rem;
+    background: #f9f9f9;
+    border-top: 2px solid #e9ecef;
+  }
+
+  .related-recipes h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 2rem 0;
+  }
+
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  /* ===== MOBILE RESPONSIVE ===== */
+  @media (max-width: 1024px) {
+    .recipe-wrapper {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 2rem;
+    }
+
+    .recipe-sidebar {
+      display: none;
+    }
+
+    .featured-image {
+      height: 400px;
+    }
+
+    .recipe-header h1 {
+      font-size: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .featured-image {
+      height: 300px;
+    }
+
+    .recipe-header {
+      padding: 1.5rem;
+    }
+
+    .recipe-header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .recipe-meta {
+      gap: 1rem;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quick-facts {
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .quick-fact .value {
+      font-size: 1.2rem;
+    }
+
+    .recipe-actions {
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .recipe-wrapper {
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+
+    .recipe-intro {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+
+    .related-recipes {
+      padding: 1.5rem;
+    }
+
+    .recipe-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  /* ===== PRINT STYLES ===== */
+  @media print {
+    .breadcrumb,
+    .recipe-header,
+    .recipe-actions,
+    .recipe-sidebar,
+    .related-recipes {
+      display: none;
+    }
+
+    .recipe-wrapper {
+      display: block;
+      padding: 0;
+      gap: 0;
+    }
+
+    main.recipe-page {
+      max-width: 100%;
+    }
+
+    .recipe-main {
+      width: 100%;
+    }
+
+    .recipe-intro {
+      page-break-inside: avoid;
+    }
+  }
+</style>
+
+<script>
+  // Share functionality
+  const shareBtn = document.getElementById('share-btn');
+  if (shareBtn && navigator.share) {
+    shareBtn.addEventListener('click', async () => {
+      try {
+        await navigator.share({
+          title: document.title,
+          text: document.querySelector('main')?.textContent?.substring(0, 100),
+          url: window.location.href
+        });
+      } catch (err) {
+        console.log('Share failed or was cancelled');
+      }
+    });
+  }
+
+  // Save to bookmarks (localStorage)
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const slug = window.location.pathname.split('/')[1];
+      const saved = JSON.parse(localStorage.getItem('savedRecipes') || '{}');
+      
+      if (saved[slug]) {
+        delete saved[slug];
+        saveBtn.classList.remove('saved');
+      } else {
+        saved[slug] = {
+          title: document.querySelector('h1')?.textContent,
+          url: window.location.href,
+          timestamp: new Date().toISOString()
+        };
+        saveBtn.classList.add('saved');
+      }
+      
+      localStorage.setItem('savedRecipes', JSON.stringify(saved));
+    });
+  }
+</script>

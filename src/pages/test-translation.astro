@@ -1,0 +1,67 @@
+---
+// Test page for dynamic translation
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { t as translate } from "../i18n";
+
+const lang = 'en';
+---
+
+<BaseLayout title="Translation Test" lang={lang}>
+  <div class="container" style="padding: 3rem 1rem;">
+    <h1 data-i18n="breadcrumb.home">Home</h1>
+    <p data-i18n="nav.articles">Articles</p>
+    <p data-i18n="nav.categories">Categories</p>
+    <p data-i18n="common.tags">Tags</p>
+    
+    <h2>Language Test</h2>
+    <p>Click a language button in the header above to see the page translate instantly!</p>
+    <p>The translations should update without a page reload.</p>
+    
+    <div id="debug" style="margin-top: 2rem; padding: 1rem; background: #f0f0f0; border-radius: 4px;">
+      <h3>Debug Info</h3>
+      <p>Current Language: <strong id="current-lang">Loading...</strong></p>
+      <p>Saved Preference: <strong id="saved-pref">Loading...</strong></p>
+    </div>
+  </div>
+
+  <script>
+    // Debug script
+    window.addEventListener('page-translated', (e) => {
+      console.log('Page translated to:', e.detail.lang);
+      document.getElementById('current-lang').textContent = e.detail.lang;
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('preferred-language') || 'en';
+      document.getElementById('saved-pref').textContent = saved;
+      document.getElementById('current-lang').textContent = saved;
+    });
+  </script>
+
+  <style>
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      color: #666;
+      font-size: 1.8rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #555;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin: 0.5rem 0;
+    }
+  </style>
+</BaseLayout>

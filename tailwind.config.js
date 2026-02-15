@@ -1,0 +1,147 @@
+/** @type {import('tailwindcss').Config} */
+import tokens from '../design-system/tokens.json';
+
+export default {
+  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          white: tokens.colors.primary.white.value,
+          'black-deep': tokens.colors.primary['black-deep'].value,
+          black: tokens.colors.primary.black.value,
+          turquoise: tokens.colors.primary.turquoise.value,
+        },
+        secondary: {
+          'beige-light': tokens.colors.secondary['beige-light'].value,
+          cream: tokens.colors.secondary.cream.value,
+          'beige-warm': tokens.colors.secondary['beige-warm'].value,
+          'gray-dark': tokens.colors.secondary['gray-dark'].value,
+        },
+        status: {
+          success: tokens.colors.status.success.value,
+          error: tokens.colors.status.error.value,
+          disabled: tokens.colors.status.disabled.value,
+          premium: tokens.colors.status.premium.value,
+        },
+        text: {
+          primary: tokens.colors.text.primary.value,
+          secondary: tokens.colors.text.secondary.value,
+          tertiary: tokens.colors.text.tertiary.value,
+          'on-dark': tokens.colors.text['on-dark'].value,
+        },
+        border: {
+          primary: tokens.colors.border.primary.value,
+          light: tokens.colors.border.light.value,
+          dark: tokens.colors.border.dark.value,
+          footer: tokens.colors.border.footer.value,
+        },
+      },
+      fontFamily: {
+        heading: [tokens.typography.fontFamilies.heading.value, 'serif'],
+        body: [tokens.typography.fontFamilies.body.value, 'Inter', 'sans-serif'],
+        mono: [tokens.typography.fontFamilies.mono.value, 'monospace'],
+        button: [tokens.typography.fontFamilies.button.value, 'sans-serif'],
+        legal: [tokens.typography.fontFamilies.legal.value, 'sans-serif'],
+      },
+      fontSize: {
+        xs: tokens.typography.fontSizes.xs.value,
+        sm: tokens.typography.fontSizes.sm.value,
+        base: tokens.typography.fontSizes.base.value,
+        md: tokens.typography.fontSizes.md.value,
+        lg: tokens.typography.fontSizes.lg.value,
+        xl: tokens.typography.fontSizes.xl.value,
+        '2xl': tokens.typography.fontSizes['2xl'].value,
+        '3xl': tokens.typography.fontSizes['3xl'].value,
+        '4xl': tokens.typography.fontSizes['4xl'].value,
+        '5xl': tokens.typography.fontSizes['5xl'].value,
+        '6xl': tokens.typography.fontSizes['6xl'].value,
+        '7xl': tokens.typography.fontSizes['7xl'].value,
+      },
+      fontWeight: {
+        light: tokens.typography.fontWeights.light.value,
+        regular: tokens.typography.fontWeights.regular.value,
+        medium: tokens.typography.fontWeights.medium.value,
+      },
+      lineHeight: {
+        tight: tokens.typography.lineHeights.tight.value,
+        snug: tokens.typography.lineHeights.snug.value,
+        normal: tokens.typography.lineHeights.normal.value,
+        relaxed: tokens.typography.lineHeights.relaxed.value,
+        loose: tokens.typography.lineHeights.loose.value,
+      },
+      letterSpacing: {
+        normal: tokens.typography.letterSpacing.normal.value,
+        wide: tokens.typography.letterSpacing.wide.value,
+      },
+      spacing: {
+        xs: tokens.spacing.xs.value,
+        sm: tokens.spacing.sm.value,
+        md: tokens.spacing.md.value,
+        lg: tokens.spacing.lg.value,
+        xl: tokens.spacing.xl.value,
+        '2xl': tokens.spacing['2xl'].value,
+        '3xl': tokens.spacing['3xl'].value,
+        '4xl': tokens.spacing['4xl'].value,
+      },
+      borderRadius: {
+        sm: tokens.borderRadius.sm.value,
+        md: tokens.borderRadius.md.value,
+        lg: tokens.borderRadius.lg.value,
+        xl: tokens.borderRadius.xl.value,
+        '2xl': tokens.borderRadius['2xl'].value,
+        full: tokens.borderRadius.full.value,
+      },
+      boxShadow: {
+        light: tokens.shadows.light.value,
+        medium: tokens.shadows.medium.value,
+        heavy: tokens.shadows.heavy.value,
+      },
+      blur: {
+        light: tokens.blur.light.value,
+        medium: tokens.blur.medium.value,
+      },
+      screens: {
+        mobile: tokens.breakpoints.mobile.value,
+        tablet: tokens.breakpoints.tablet.value,
+        desktop: tokens.breakpoints.desktop.value,
+        sm: tokens.breakpoints.mobile.value,
+        md: tokens.breakpoints.tablet.value,
+        lg: '1024px',
+        xl: tokens.breakpoints.desktop.value,
+        '2xl': '1536px',
+      },
+      maxWidth: {
+        container: tokens.grid.maxWidth.value,
+      },
+      spacing: {
+        xs: tokens.spacing.xs.value,
+        sm: tokens.spacing.sm.value,
+        md: tokens.spacing.md.value,
+        lg: tokens.spacing.lg.value,
+        xl: tokens.spacing.xl.value,
+        '2xl': tokens.spacing['2xl'].value,
+        '3xl': tokens.spacing['3xl'].value,
+        '4xl': tokens.spacing['4xl'].value,
+        'gutter': tokens.grid.gutter.value,
+        'container-desktop': tokens.grid.marginDesktop.value,
+        'container-tablet': tokens.grid.marginTablet.value,
+        'container-mobile': tokens.grid.marginMobile.value,
+      },
+      width: {
+        'icon-sm': tokens.iconSizes.sm.value,
+        'icon-md': tokens.iconSizes.md.value,
+        'icon-lg': tokens.iconSizes.lg.value,
+      },
+      height: {
+        'icon-sm': tokens.iconSizes.sm.value,
+        'icon-md': tokens.iconSizes.md.value,
+        'icon-lg': tokens.iconSizes.lg.value,
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/forms'),
+  ],
+}

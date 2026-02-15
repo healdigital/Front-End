@@ -1,0 +1,73 @@
+---
+import Icon from '../atoms/Icon.astro';
+
+const books = [
+  { title: 'Mes desserts', image: '/images/book-1.png', slug: '/livres/desserts' },
+  { title: 'Chocolat', image: '/images/book-2.jpg', slug: '/livres/chocolat' },
+  { title: "Recettes d'or", image: '/images/book-3.png', slug: '/livres/recettes-or' },
+  { title: 'Végétarien', image: '/images/book-4.jpg', slug: '/livres/vegetarien' },
+];
+---
+
+<section class="py-16 md:py-24">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+    <!-- Section header -->
+    <div class="flex items-center gap-6 mb-12">
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap">Mes livres de recettes</h2>
+      <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
+    </div>
+
+    <!-- Two-panel layout -->
+    <div class="flex flex-col lg:flex-row rounded-lg overflow-hidden">
+      <!-- Left: Portrait image -->
+      <div class="w-full lg:w-[457px] h-[400px] lg:h-[652px] flex-shrink-0">
+        <img
+          src="/images/bernard-blog.png"
+          alt="Bernard Laurance"
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Right: Content panel -->
+      <div class="flex-1 bg-secondary-cream p-8 lg:p-16 flex flex-col gap-8">
+        <!-- Surtitre -->
+        <p class="font-mono text-[13px] uppercase tracking-wide text-primary-black leading-relaxed">
+          L'Humain derrière les recettes
+        </p>
+
+        <!-- Titre -->
+        <h3 class="font-heading text-4xl lg:text-6xl leading-[1.15] text-primary-black">
+          Mes livres pour approfondir
+        </h3>
+
+        <!-- Description -->
+        <p class="font-body text-md leading-relaxed text-text-secondary">
+          Bienvenue dans mon univers culinaire. Voyageur curieux, j'ai ramené de mes périples bien plus que des souvenirs : des saveurs oubliées et des tours de main ancestraux. Aujourd'hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
+        </p>
+
+        <!-- Book covers grid -->
+        <div class="grid grid-cols-2 gap-4">
+          {books.map((book) => (
+            <a href={book.slug} class="block group">
+              <img
+                src={book.image}
+                alt={book.title}
+                class="w-full h-[180px] lg:h-[236px] object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+            </a>
+          ))}
+        </div>
+
+        <!-- CTA Button -->
+        <a
+          href="/livres"
+          class="inline-flex items-center justify-center w-full px-8 py-4 bg-primary-turquoise text-primary-white font-button font-medium text-md uppercase tracking-wide rounded-sm hover:opacity-90 transition-opacity"
+        >
+          Découvrir mes livres
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

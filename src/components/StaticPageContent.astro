@@ -1,0 +1,86 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+
+interface Props {
+  slug: string;
+  sourceUrl?: string;
+}
+
+const { slug, sourceUrl } = Astro.props;
+const filePath = path.resolve(
+  process.cwd(),
+  "src",
+  "content",
+  "static-pages",
+  `${slug}.html`,
+);
+let html = "";
+
+const escapeHtmlAttribute = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+const inferAltFromSrc = (src: string) => {
+  if (!src) return "";
+
+  const cleanedSrc = src.split(/[?#]/)[0] || "";
+  const segment = cleanedSrc.split("/").pop() || "";
+  if (!segment) return "";
+
+  let decoded = segment;
+  try {
+    decoded = decodeURIComponent(segment);
+  } catch {
+    // Keep original segment if URI decoding fails.
+  }
+
+  const withoutExtension = decoded.replace(/\.[a-z0-9]{2,5}$/i, "");
+  const normalized = withoutExtension
+    .replace(/[_-]+/g, " ")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return normalized ? `Illustration: ${normalized}` : "";
+};
+
+const addMissingImageAlts = (inputHtml: string) =>
+  inputHtml.replace(/<img\b[^>]*>/gi, (imgTag) => {
+    if (/\balt\s*=/i.test(imgTag)) return imgTag;
+
+    const srcMatch = imgTag.match(/\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+    const src = srcMatch ? srcMatch[1] || srcMatch[2] || srcMatch[3] || "" : "";
+    const isDecorative = /^data:/i.test(src) || /(spacer|sprite|icon|pixel|placeholder)/i.test(src);
+    const altText = isDecorative ? "" : inferAltFromSrc(src);
+    const safeAlt = escapeHtmlAttribute(altText);
+
+    return imgTag.replace(/\s*\/?>$/, (closingToken) => ` alt="${safeAlt}"${closingToken}`);
+  });
+
+if (fs.existsSync(filePath)) {
+  html = addMissingImageAlts(fs.readFileSync(filePath, "utf8").trim());
+}
+
+const hasHtml = html.length > 0;
+---
+
+{hasHtml ? (
+  <div class="wp-content" set:html={html} />
+) : (
+  <div class="space-y-4">
+    <p>Content import pending for this page.</p>
+    {sourceUrl && (
+      <p>
+        Source:
+        <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+          {sourceUrl}
+        </a>
+      </p>
+    )}
+    <slot />
+  </div>
+)}

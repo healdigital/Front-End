@@ -1,0 +1,151 @@
+---
+interface Props {}
+import { Image } from 'astro:assets';
+
+const videos = [
+  {
+    id: 'h312pkYnCjY',
+    title: 'Pastry Master Secrets',
+    thumbnail: 'https://img.youtube.com/vi/h312pkYnCjY/maxresdefault.jpg'
+  },
+  {
+    id: 'myCN-A4IlMw',
+    title: 'Culinary Innovation',
+    thumbnail: 'https://img.youtube.com/vi/myCN-A4IlMw/maxresdefault.jpg'
+  },
+  {
+    id: 'KN61tFzvJI0',
+    title: 'French Cuisine Tips',
+    thumbnail: 'https://img.youtube.com/vi/KN61tFzvJI0/maxresdefault.jpg'
+  }
+];
+---
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-blue-200 dark:border-blue-800">
+  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
+    The Lives 🎥
+  </h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Video Player (Left) -->
+    <div class="lg:col-span-2">
+      <div class="relative pb-[56.25%] h-0 overflow-hidden rounded-lg shadow-xl">
+        <iframe
+          id="main-video"
+          class="absolute top-0 left-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${videos[0].id}?autoplay=0`}
+          title={videos[0].title}
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+      <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <!-- Share Video Icons -->
+          <div class="flex border-t border-gray-200 dark:border-gray-700">
+            <p class="video_share">Share </p>
+            <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=https://youtube.com/watch?v=${videos[0].id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:text-blue-700 transition-colors"
+                title="Share on Facebook"
+            >
+                <i class="fab fa-facebook-f w-6 h-6"></i>
+            </a>
+            <a
+                href={`https://twitter.com/intent/tweet?url=https://youtube.com/watch?v=${videos[0].id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-black hover:text-gray-700 transition-colors dark:text-white dark:hover:text-gray-300"
+                title="Share on X"
+            >
+                <i class="fab fa-x-twitter w-6 h-6"></i>
+            </a>
+            <a
+                href={`https://www.pinterest.com/pin/create/button/?url=https://youtube.com/watch?v=${videos[0].id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-red-600 hover:text-red-700 transition-colors"
+                title="Share on Pinterest"
+            >
+                <i class="fab fa-pinterest w-6 h-6"></i>
+            </a>
+            <a
+                href={`mailto:?subject=Check out this video&body=https://youtube.com/watch?v=${videos[0].id}`}
+                class="text-gray-600 hover:text-gray-700 transition-colors dark:text-gray-400 dark:hover:text-gray-300"
+                title="Share via Email"
+            >
+                <i class="fas fa-envelope w-6 h-6"></i>
+            </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Playlist (Right) -->
+    <div class="lg:col-span-1">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+       
+        <div class="space-y-2 p-4">
+          {videos.map((video, index) => (
+            <button
+              onclick={`changeVideo('${video.id}', '${video.title}')`}
+              class={`video-selector w-full text-left p-3 rounded-lg transition-all transform hover:scale-105 ${
+                index === 0
+                  ? 'bg-orange-100 dark:bg-orange-900 border-2 border-orange-500'
+                  : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              data-video-id={video.id}
+            >
+              <div class="relative pb-[56.25%] h-0 overflow-hidden rounded mb-2">
+                <Image
+                  src={video.thumbnail}
+                  alt={video.title}
+                  width={320}
+                  height={180}
+                  class="absolute top-0 left-0 w-full h-full object-cover"
+                  inferSize={true}
+                />
+                <div class="absolute inset-0 bg-black/20 flex items-center justify-center hover:bg-black/40 transition-colors">
+                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">
+                {video.title}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  function changeVideo(videoId, title) {
+    const mainVideo = document.getElementById('main-video');
+    const mainTitle = document.getElementById('main-video-title');
+    const selectors = document.querySelectorAll('.video-selector');
+
+    if (mainVideo) {
+      mainVideo.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    }
+    if (mainTitle) {
+      mainTitle.textContent = title;
+    }
+
+    // Update active button
+    selectors.forEach((btn) => {
+      if (btn.getAttribute('data-video-id') === videoId) {
+        btn.classList.add('bg-orange-100', 'dark:bg-orange-900', 'border-2', 'border-orange-500');
+        btn.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+      } else {
+        btn.classList.remove('bg-orange-100', 'dark:bg-orange-900', 'border-2', 'border-orange-500');
+        btn.classList.add('bg-gray-100', 'dark:bg-gray-700');
+      }
+    });
+  }
+</script>

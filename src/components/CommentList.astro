@@ -1,0 +1,355 @@
+---
+// CommentList.astro - Modern Comment Display
+interface Props {
+  comments?: any[];
+  slug?: string;
+}
+
+const { comments = [], slug = '' } = Astro.props;
+
+// Calculate average rating from comments
+const avgRating = comments.length > 0
+  ? comments.reduce((sum: number, c: any) => sum + (c.rating || 5), 0) / comments.length
+  : 0;
+const avgRatingDisplay = avgRating.toFixed(1);
+---
+
+<div class="comments-container">
+  <!-- Header Section -->
+  <div class="comments-header">
+    <div class="header-content">
+      <h3 class="comments-title">
+        <svg class="comment-icon" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.05 1.05 4.42L2 22l5.58-1.05C9.95 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zM13 16h-2v-2h2v2zm0-4h-2V6h2v6z"/>
+        </svg>
+        Comments ({comments.length})
+      </h3>
+      {comments.length > 0 && (
+        <div class="rating-summary">
+          <div class="rating-stars">
+            {Array.from({ length: 5 }, (_, i) => (
+              <svg
+                class={`star ${i < Math.round(Number(avgRating)) ? 'filled' : ''}`}
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            ))}
+          </div>
+          <span class="rating-score">{avgRatingDisplay}/5.0</span>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- Comments List -->
+  <div class="comments-list">
+    {comments.length > 0 ? (
+      comments.map((comment: any, index: number) => (
+        <div class="comment-card">
+          <div class="comment-avatar">
+            <div class="avatar-circle">
+              {(comment.author || 'Anonymous').charAt(0).toUpperCase()}
+            </div>
+          </div>
+
+          <div class="comment-content">
+            <div class="comment-header">
+              <div class="comment-author">
+                <span class="author-name">{comment.author || 'Anonymous'}</span>
+                {comment.rating && (
+                  <div class="comment-rating">
+                    {Array.from({ length: comment.rating }, () => (
+                      <svg class="rating-star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div class="comment-date">
+                {new Date(comment.createdAt || comment.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            </div>
+
+            <div class="comment-text" set:html={comment.text || comment.content}></div>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div class="no-comments">
+        <svg class="no-comments-icon" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.05 1.05 4.42L2 22l5.58-1.05C9.95 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zM13 16h-2v-2h2v2zm0-4h-2V6h2v6z"/>
+        </svg>
+        <h4>No comments yet</h4>
+        <p>Be the first to share your thoughts about this recipe!</p>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .comments-container {
+    margin: 3rem 0;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .comments-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 2rem;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .comments-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .comment-icon {
+    width: 24px;
+    height: 24px;
+    color: #6366f1;
+  }
+
+  .rating-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .rating-stars {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .star {
+    width: 16px;
+    height: 16px;
+    color: #e5e7eb;
+  }
+
+  .star.filled {
+    color: #fbbf24;
+  }
+
+  .rating-score {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+  }
+
+  .comments-list {
+    padding: 0;
+  }
+
+  .comment-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s ease;
+  }
+
+  .comment-card:hover {
+    background-color: #f8fafc;
+  }
+
+  .comment-card:last-child {
+    border-bottom: none;
+  }
+
+  .comment-avatar {
+    flex-shrink: 0;
+  }
+
+  .avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  }
+
+  .comment-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .comment-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .author-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1rem;
+  }
+
+  .comment-rating {
+    display: flex;
+    gap: 0.125rem;
+  }
+
+  .rating-star {
+    width: 14px;
+    height: 14px;
+    color: #fbbf24;
+  }
+
+  .comment-date {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .comment-text {
+    color: #374151;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+  }
+
+  .comment-text p {
+    margin: 0 0 1rem 0;
+  }
+
+  .comment-text p:last-child {
+    margin-bottom: 0;
+  }
+
+  .comment-text br {
+    margin-bottom: 0.5rem;
+  }
+
+  .no-comments {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #64748b;
+  }
+
+  .no-comments-icon {
+    width: 48px;
+    height: 48px;
+    color: #cbd5e1;
+    margin: 0 auto 1rem;
+  }
+
+  .no-comments h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .no-comments p {
+    font-size: 0.875rem;
+    margin: 0;
+    color: #64748b;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .comments-container {
+      margin: 2rem 0;
+      border-radius: 12px;
+    }
+
+    .comments-header {
+      padding: 1.5rem;
+    }
+
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .comments-title {
+      font-size: 1.25rem;
+    }
+
+    .rating-summary {
+      align-self: flex-end;
+    }
+
+    .comment-card {
+      padding: 1.25rem 1.5rem;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .comment-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .comment-date {
+      align-self: flex-end;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .comments-header {
+      padding: 1rem;
+    }
+
+    .comment-card {
+      padding: 1rem;
+    }
+
+    .avatar-circle {
+      width: 40px;
+      height: 40px;
+      font-size: 1rem;
+    }
+  }
+</style>
+</style>

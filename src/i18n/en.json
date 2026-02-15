@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Home",
+    "recipes": "Recipes",
+    "articles": "Articles",
+    "blog": "Blog",
+    "pages": "Pages",
+    "categories": "Categories",
+    "cuisines": "Cuisines",
+    "search": "Search"
+  },
+  "recipe": {
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "notes": "Notes & Tips",
+    "nutrition": "Nutrition Facts",
+    "gallery": "Gallery",
+    "related": "Related Recipes",
+    "video": "Video",
+    "author": "Author",
+    "published": "Published",
+    "cost": "Cost",
+    "equipment": "Equipment",
+    "glossary": "Glossary Terms",
+    "categories": "Categories",
+    "cuisines": "Cuisines",
+    "keywords": "Keywords",
+    "rating": "rating",
+    "ratings": "ratings",
+    "servings": "Servings",
+    "prepTime": "Prep Time",
+    "cookTime": "Cook Time",
+    "totalTime": "Total Time",
+    "calories": "Calories",
+    "noIngredients": "No ingredients available",
+    "noInstructions": "No instructions available",
+    "noAuthorBio": "Recipe author at our food blog."
+  },
+  "common": {
+    "search": "Search",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "back": "← Back",
+    "next": "Next",
+    "previous": "Previous",
+    "language": "Language",
+    "loading": "Loading...",
+    "error": "Error",
+    "notFound": "Not Found",
+    "author": "Author",
+    "published": "Published",
+    "modified": "Last Modified",
+    "about": "About",
+    "review": "Review",
+    "categories": "Categories",
+    "tags": "Tags",
+    "relatedArticles": "Related Articles"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "recipes": "Recipes",
+    "articles": "Articles",
+    "pages": "Pages"
+  },
+  "social": {
+    "share": "Share",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "pinterest": "Pinterest",
+    "email": "Email"
+  },
+  "footer": {
+    "copyright": "© 2026. All rights reserved.",
+    "about": "About",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact"
+  }
+}

@@ -1,0 +1,94 @@
+---
+import Icon from '../atoms/Icon.astro';
+
+const stats = [
+  { value: '1600+', label: 'Recettes publiées' },
+  { value: '15', label: "Années d'expérience" },
+  { value: '2M+', label: 'Lecteurs chaque mois' },
+];
+
+const socialLinks = [
+  { name: 'facebook' as const, url: 'https://facebook.com/lacuisinedebernard', label: 'Facebook' },
+  { name: 'pinterest' as const, url: 'https://pinterest.com/lacuisinedebernard', label: 'Pinterest' },
+  { name: 'mail' as const, url: 'mailto:contact@lacuisinedebernard.com', label: 'Email' },
+];
+---
+
+<section class="py-16 md:py-24">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+    <!-- Section header -->
+    <div class="flex items-center gap-6 mb-12">
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap">À propos</h2>
+      <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row rounded-lg">
+      <!-- Portrait image with decorative turquoise circle -->
+      <div class="w-full lg:w-[457px] h-[400px] lg:h-auto flex-shrink-0 relative">
+        <!-- Decorative turquoise circle — centered behind portrait -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-primary-turquoise/40 hidden lg:block"></div>
+        <img
+          src="/images/bernard-blog.png"
+          alt="Bernard Laurance, chef cuisinier"
+          class="w-full h-full object-cover relative z-10"
+          loading="lazy"
+        />
+        <!-- Social icons overlay -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-[9px] z-20">
+          {socialLinks.map((link) => (
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-10 h-10 rounded-full bg-secondary-beige-light flex items-center justify-center text-primary-black hover:text-primary-turquoise transition-colors"
+              aria-label={link.label}
+            >
+              <Icon name={link.name} size="md" />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Content panel -->
+      <div class="flex-1 bg-secondary-cream p-8 lg:p-16 flex flex-col gap-8 overflow-hidden rounded-r-lg">
+        <!-- Surtitre -->
+        <p class="font-mono text-[13px] uppercase tracking-wide text-primary-black leading-relaxed">
+          L'Humain derrière les recettes
+        </p>
+
+        <!-- Titre -->
+        <h3 class="font-heading text-4xl lg:text-6xl leading-[1.15] text-primary-black">
+          Bernard, Chef cuisinier depuis 2010
+        </h3>
+
+        <!-- Description -->
+        <p class="font-body text-md leading-relaxed text-text-secondary">
+          Dans un monde saturé de contenu généré automatiquement, je m'engage à vous offrir des recettes authentiques, testées dans ma cuisine et celles de mes ateliers. Chaque technique, chaque astuce, chaque photo provient d'une expérience réelle.
+        </p>
+
+        <!-- Divider -->
+        <hr class="border-border-light" />
+
+        <!-- Stats - horizontal on desktop -->
+        <div class="flex flex-col lg:flex-row gap-8 lg:gap-10">
+          {stats.map((stat) => (
+            <div class="flex items-center gap-3">
+              <span class="font-heading text-5xl text-primary-black">{stat.value}</span>
+              <span class="text-text-secondary font-body text-base">—</span>
+              <span class="text-text-secondary font-body text-base">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <!-- CTA -->
+        <a
+          href="/a-propos"
+          class="inline-flex items-center justify-center px-8 py-4 bg-primary-turquoise text-primary-white font-button font-medium text-md uppercase tracking-wide rounded-sm hover:opacity-90 transition-opacity self-start"
+        >
+          Découvrir son univers
+          <Icon name="arrow-right" size="sm" class="ml-2" />
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

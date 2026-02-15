@@ -1,0 +1,608 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Button from '../components/atoms/Button.astro';
+import Icon from '../components/atoms/Icon.astro';
+import FilterDropdown from '../components/molecules/FilterDropdown.astro';
+import NewsletterModal from '../components/organisms/NewsletterModal.astro';
+import Pagination from '../components/organisms/Pagination.astro';
+import RecipeCard from '../components/organisms/RecipeCard.astro';
+import WorkshopCard from '../components/organisms/WorkshopCard.astro';
+import HeroCarousel from '../components/organisms/HeroCarousel.astro';
+import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
+import BioSection from '../components/organisms/BioSection.astro';
+import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.astro';
+import BooksSection from '../components/organisms/BooksSection.astro';
+import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
+
+const heroCards = [
+  { title: 'Entremet praliné dubaï, chantilly et ganache lactée', image: '/images/recipe-chocolate-cake.jpg', category: 'Pâtisserie', slug: '/entremet-praline-dubai' },
+  { title: 'Ateliers cuisine février-mars 2026', image: '/images/workshop-macarons.jpg', category: 'Atelier', slug: '/ateliers' },
+  { title: 'Poulet rôti aux herbes et légumes de saison', image: '/images/recipe-roast-chicken.jpg', category: 'Salé', slug: '/poulet-roti-herbes' },
+  { title: 'Tarte au citron meringuée revisitée', image: '/images/recipe-lemon-pie.jpg', category: 'Pâtisserie', slug: '/tarte-citron-meringuee' },
+  { title: 'Saumon croustillant au four, sauce vierge', image: '/images/recipe-salmon.jpg', category: 'Poisson', slug: '/saumon-croustillant-four' },
+];
+
+const recipeFilters = [
+  { label: 'Toutes', value: 'toutes' },
+  { label: 'Sucrées', value: 'sucrees' },
+  { label: 'Salées', value: 'salees' },
+];
+
+const recipes = [
+  {
+    id: '1',
+    title: 'Gâteau au chocolat fondant',
+    description: 'Un gâteau au chocolat riche et fondant, parfait pour les amateurs de cacao. Facile à réaliser et délicieux à partager.',
+    image: '/images/recipe-chocolate-cake.jpg',
+    category: 'SUCRÉES',
+    filterKey: 'sucrees',
+    prepTime: '20 min',
+    difficulty: 'Facile',
+    slug: '/gateau-chocolat-fondant',
+  },
+  {
+    id: '2',
+    title: 'Poulet rôti aux herbes',
+    description: 'Un classique du dimanche, ce poulet rôti est assaisonné avec des herbes fraîches et cuit à la perfection pour une peau croustillante.',
+    image: '/images/recipe-roast-chicken.jpg',
+    category: 'SALÉES',
+    filterKey: 'salees',
+    prepTime: '1 h 30',
+    difficulty: 'Moyen',
+    slug: '/poulet-roti-herbes',
+  },
+  {
+    id: '3',
+    title: 'Tarte aux pommes rustique',
+    description: 'Une tarte aux pommes simple et rustique avec une pâte maison friable et des pommes caramélisées.',
+    image: '/images/recipe-apple-tart.jpg',
+    category: 'SUCRÉES',
+    filterKey: 'sucrees',
+    prepTime: '40 min',
+    difficulty: 'Moyen',
+    slug: '/tarte-pommes-rustique',
+  },
+  {
+    id: '4',
+    title: 'Lasagnes gratinées maison',
+    description: 'Des lasagnes généreuses à la sauce tomate mijotée, béchamel légère et parmesan gratiné.',
+    image: '/images/recipe-lasagnes.jpg',
+    category: 'SALÉES',
+    filterKey: 'salees',
+    prepTime: '50 min',
+    difficulty: 'Moyen',
+    slug: '/lasagnes-gratinees-maison',
+  },
+  {
+    id: '5',
+    title: 'Tarte citron meringuée',
+    description: 'Une crème citron intense, une pâte sablée croustillante et une meringue aérienne dorée.',
+    image: '/images/recipe-lemon-pie.jpg',
+    category: 'SUCRÉES',
+    filterKey: 'sucrees',
+    prepTime: '45 min',
+    difficulty: 'Difficile',
+    slug: '/tarte-citron-meringuee',
+  },
+  {
+    id: '6',
+    title: 'Saumon croustillant au four',
+    description: 'Un saumon croustillant au citron et herbes fraîches, prêt en moins de 30 minutes.',
+    image: '/images/recipe-salmon.jpg',
+    category: 'SALÉES',
+    filterKey: 'salees',
+    prepTime: '30 min',
+    difficulty: 'Facile',
+    slug: '/saumon-croustillant-four',
+  },
+  {
+    id: '7',
+    title: 'Gratin dauphinois pommes caramélisées',
+    description: 'Un gratin crémeux de pommes de terre fondantes, doré au four avec une touche de muscade.',
+    image: '/images/recipe-chocolate-cake.jpg',
+    category: 'SALÉES',
+    filterKey: 'salees',
+    prepTime: '1 h 15',
+    difficulty: 'Moyen',
+    slug: '/gratin-dauphinois',
+  },
+  {
+    id: '8',
+    title: 'Financiers décorés à la cerise, pomme de terre et ciboulette',
+    description: 'Des financiers moelleux à la noisette, décorés de cerises confites pour un goûter gourmand.',
+    image: '/images/recipe-apple-tart.jpg',
+    category: 'SUCRÉES',
+    filterKey: 'sucrees',
+    prepTime: '35 min',
+    difficulty: 'Facile',
+    slug: '/financiers-cerise',
+  },
+  {
+    id: '9',
+    title: 'Navarin d\'agneau printanier, petits pois et carottes',
+    description: 'Un ragoût tendre d\'agneau mijoté avec des légumes de saison, un grand classique de la cuisine française.',
+    image: '/images/recipe-roast-chicken.jpg',
+    category: 'SALÉES',
+    filterKey: 'salees',
+    prepTime: '2 h',
+    difficulty: 'Moyen',
+    slug: '/navarin-agneau',
+  },
+  {
+    id: '10',
+    title: 'Crème brûlée à la vanille de Tahiti',
+    description: 'La classique crème brûlée française avec une touche exotique de vanille tahitienne.',
+    image: '/images/recipe-lemon-pie.jpg',
+    category: 'SUCRÉES',
+    filterKey: 'sucrees',
+    prepTime: '25 min',
+    difficulty: 'Facile',
+    slug: '/creme-brulee-vanille',
+  },
+];
+
+const workshops = [
+  {
+    id: '1',
+    title: 'Atelier Cuisine chinoise',
+    date: new Date('2026-03-09'),
+    image: '/images/recipe-roast-chicken.jpg',
+    price: 85,
+    duration: '4 h',
+    maxParticipants: 8,
+    currentParticipants: 7,
+    slug: '/atelier-cuisine-chinoise',
+  },
+  {
+    id: '2',
+    title: 'Atelier Cuisine brésilienne',
+    date: new Date('2026-03-18'),
+    image: '/images/recipe-lasagnes.jpg',
+    price: 90,
+    duration: '6 h',
+    maxParticipants: 8,
+    currentParticipants: 4,
+    slug: '/atelier-cuisine-bresilienne',
+  },
+  {
+    id: '3',
+    title: 'Atelier Macarons',
+    date: new Date('2026-03-23'),
+    image: '/images/workshop-macarons.jpg',
+    price: 95,
+    duration: '3 h',
+    maxParticipants: 8,
+    currentParticipants: 8,
+    slug: '/atelier-macarons',
+  },
+];
+
+const suggestedRecipes = [
+  {
+    title: 'Crème brûlée salée au potimarron et chorizo',
+    description: 'Une version salée et originale de la crème brûlée, avec la douceur du potimarron et le piquant du chorizo. Un contraste surprenant qui ravira vos papilles.',
+    image: '/images/recipe-chocolate-cake.jpg',
+    category: 'SALÉES',
+    prepTime: '50 min',
+    difficulty: 'Facile',
+    slug: '/creme-brulee-potimarron-chorizo',
+  },
+  {
+    title: 'Tarte feuilletée poire et foie gras poêlé',
+    description: 'Une tarte fine et croustillante associant la douceur de la poire et la richesse du foie gras. Un classique revisité pour les grandes occasions.',
+    image: '/images/recipe-apple-tart.jpg',
+    category: 'SALÉES',
+    prepTime: '45 min',
+    difficulty: 'Moyen',
+    slug: '/tarte-poire-foie-gras',
+  },
+  {
+    title: 'Entremet praliné dubaï, chantilly et ganache lactée',
+    description: 'Un entremet raffiné aux saveurs intenses de praliné, surmonté d\'une chantilly aérienne et d\'une ganache au chocolat au lait fondante.',
+    image: '/images/recipe-lemon-pie.jpg',
+    category: 'SUCRÉES',
+    prepTime: '1 h 30',
+    difficulty: 'Difficile',
+    slug: '/entremet-praline-dubai',
+  },
+  {
+    title: 'Tarte figue séchée, orange et noix',
+    description: 'Une tarte automnale aux figues séchées confites, zestes d\'orange et noix caramélisées. Un dessert rustique et élégant à la fois.',
+    image: '/images/recipe-salmon.jpg',
+    category: 'SUCRÉES',
+    prepTime: '40 min',
+    difficulty: 'Moyen',
+    slug: '/tarte-figue-orange-noix',
+  },
+];
+---
+
+<MainLayout
+  title="La Cuisine de Bernard - Accueil"
+  description="Découvrez des recettes authentiques et savoureuses par Bernard Laurance."
+>
+  <!-- Hero Carousel -->
+  <HeroCarousel cards={heroCards} />
+
+  <!-- Recipes Section with Sidebar -->
+  <section class="py-16 md:py-24 bg-primary-white">
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+      <div class="flex flex-col lg:flex-row gap-7">
+
+        <!-- Main Column -->
+        <div class="flex-1 min-w-0">
+          <!-- Recette du moment -->
+          <div class="mb-12">
+            <div class="flex items-center gap-4 mb-8">
+              <h2 class="font-heading text-5xl text-primary-black">Recette du moment</h2>
+              <div class="flex-1 h-px bg-border-primary"></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6">
+              <div class="md:w-[432px] flex-shrink-0">
+                <RecipeCard
+                  title={recipes[0].title}
+                  description={recipes[0].description}
+                  image={recipes[0].image}
+                  category={recipes[0].category}
+                  prepTime={recipes[0].prepTime}
+                  difficulty={recipes[0].difficulty}
+                  slug={recipes[0].slug}
+                />
+              </div>
+              <div class="flex-1 flex flex-col justify-center">
+                <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary mb-3">{recipes[0].category}</p>
+                <h3 class="font-heading text-5xl text-primary-black mb-4">{recipes[0].title}</h3>
+                <p class="font-body text-[16px] text-text-secondary leading-relaxed mb-6">{recipes[0].description}</p>
+                <a href={recipes[0].slug} class="inline-flex items-center gap-2 text-primary-turquoise font-button font-medium text-[14px] uppercase tracking-wide hover:gap-3 transition-all">
+                  Lire la suite
+                  <Icon name="arrow-right" size="sm" />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Separator -->
+          <hr class="border-border-primary mb-12" />
+
+          <!-- Découvrez mes recettes -->
+          <div>
+            <div class="flex items-center gap-4 mb-8">
+              <h2 class="font-heading text-5xl text-primary-black">Découvrez mes recettes</h2>
+              <div class="flex-1 h-px bg-border-primary"></div>
+            </div>
+
+            <div
+              class="mb-8 grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-end"
+              data-homepage-filters
+            >
+              <div class="flex flex-col md:flex-row gap-3">
+                <form id="recipe-search-form" class="flex-1 flex items-center gap-2" role="search">
+                  <label for="recipe-search-input" class="sr-only">Rechercher une recette</label>
+                  <input
+                    id="recipe-search-input"
+                    type="search"
+                    name="q"
+                    placeholder="Rechercher une recette..."
+                    class="w-full rounded-full border border-border-light px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-turquoise"
+                  />
+                  <button
+                    type="submit"
+                    class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium bg-primary-turquoise text-primary-black"
+                  >
+                    Rechercher
+                  </button>
+                  <button
+                    type="button"
+                    data-clear-search
+                    class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium border border-border-light text-text-primary"
+                  >
+                    Effacer
+                  </button>
+                </form>
+                <FilterDropdown label="Filtrer les recettes" options={recipeFilters} />
+              </div>
+              <div class="text-sm text-text-secondary flex items-center gap-3">
+                <span data-recipe-results>0 recette</span>
+                <span class="hidden md:inline">|</span>
+                <span>Filtre actif: <strong data-active-filter-label>Toutes</strong></span>
+              </div>
+            </div>
+
+            <div class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10" data-recipe-grid>
+              {recipes.slice(1).map((recipe) => (
+                <div
+                  data-recipe-card
+                  data-category={recipe.filterKey}
+                  data-title={recipe.title.toLocaleLowerCase('fr')}
+                  data-description={recipe.description.toLocaleLowerCase('fr')}
+                  class="h-full"
+                >
+                  <RecipeCard
+                    title={recipe.title}
+                    description={recipe.description}
+                    image={recipe.image}
+                    category={recipe.category}
+                    prepTime={recipe.prepTime}
+                    difficulty={recipe.difficulty}
+                    slug={recipe.slug}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <p class="hidden text-center text-text-secondary py-6" data-no-recipe>
+              Aucune recette ne correspond à votre recherche.
+            </p>
+
+            <!-- Pagination removed to match Figma mockup -->
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <RecipeSidebar />
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Bio Bernard -->
+  <BioSection />
+
+  <!-- Section Produit phare Masterclass -->
+  <FeaturedMasterclass />
+
+  <!-- Section Dark: Workshops + Ateliers -->
+  <section class="relative py-16 md:py-24 bg-[#1C2639] overflow-hidden">
+    <!-- Decorative SVG -->
+    <div class="absolute inset-0 pointer-events-none opacity-20">
+      <svg class="absolute top-0 right-0 w-[600px] h-[600px] text-[#1F494C]" viewBox="0 0 600 600" fill="none">
+        <circle cx="400" cy="200" r="300" stroke="currentColor" stroke-width="1" opacity="0.3" />
+        <circle cx="350" cy="250" r="200" stroke="currentColor" stroke-width="1" opacity="0.2" />
+      </svg>
+    </div>
+
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
+      <!-- Section Header -->
+      <div class="text-center mb-12">
+        <h2 class="font-heading text-5xl text-primary-white mb-4">Passez au niveau supérieur</h2>
+        <p class="font-body text-xl text-[#B5BBBD] max-w-2xl mx-auto">
+          Rejoignez notre communauté de passionnés et développez vos compétences culinaires avec nos ateliers et masterclass.
+        </p>
+        <div class="w-24 h-px bg-[#3B4C6E] mx-auto mt-8"></div>
+      </div>
+
+      <!-- 2 Large Cards: Ateliers + Masterclass -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
+        <!-- Card Ateliers Physiques -->
+        <div class="max-w-[603px] mx-auto w-full rounded-lg bg-secondary-beige-warm overflow-hidden">
+          <div class="relative h-[350px] lg:h-[460px]">
+            <img src="/images/workshop-macarons.jpg" alt="Ateliers physiques" class="w-full h-full object-cover" />
+            <div class="absolute top-4 left-4">
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
+                <Icon name="map-pin" size="sm" /> Paris & Lyon
+              </span>
+            </div>
+          </div>
+          <div class="p-5 md:p-6">
+            <h3 class="font-heading text-[30px] text-text-primary mb-3">Ateliers Physiques</h3>
+            <p class="font-body text-text-secondary mb-6">
+              Apprenez en petit groupe dans un cadre convivial. Des ateliers de 3 à 6 heures pour tous les niveaux.
+            </p>
+            <div class="flex items-center gap-4 text-text-secondary text-sm mb-6">
+              <span class="flex items-center gap-1.5"><Icon name="users" size="sm" /> 8 pers. max</span>
+              <span class="flex items-center gap-1.5"><Icon name="clock" size="sm" /> 3-6h</span>
+              <span class="flex items-center gap-1.5"><Icon name="map-pin" size="sm" /> Paris & Lyon</span>
+            </div>
+            <div class="flex items-center justify-between pt-6 border-t border-border-light">
+              <div>
+                <span class="text-sm text-text-secondary block">À partir de</span>
+                <span class="font-heading text-[44px] text-text-primary leading-none">85€</span>
+              </div>
+              <Button href="/ateliers" variant="primary" size="lg">Réserver un atelier</Button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Masterclass Vidéo -->
+        <div class="max-w-[603px] mx-auto w-full rounded-lg bg-secondary-beige-warm overflow-hidden">
+          <div class="relative h-[350px] lg:h-[460px]">
+            <img src="/images/masterclass-patisserie.jpg" alt="Masterclass vidéo" class="w-full h-full object-cover" />
+            <div class="absolute top-4 left-4 flex flex-col gap-2">
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-[#BBA86B] px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-white">
+                <Icon name="star" size="sm" /> Réservé Premium
+              </span>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
+                Accès illimité
+              </span>
+            </div>
+          </div>
+          <div class="p-5 md:p-6">
+            <h3 class="font-heading text-[30px] text-text-primary mb-3">Masterclass Vidéo</h3>
+            <p class="font-body text-text-secondary mb-6">
+              50 heures de contenu vidéo en 4K. Fiches techniques, recettes pas à pas et conseils de chef.
+            </p>
+            <div class="flex items-center gap-4 text-text-secondary text-sm mb-6">
+              <span class="flex items-center gap-1.5"><Icon name="video" size="sm" /> 50h en 4K</span>
+              <span class="flex items-center gap-1.5"><Icon name="download" size="sm" /> Fiches PDF</span>
+              <span class="flex items-center gap-1.5"><Icon name="refresh" size="sm" /> Accès à vie</span>
+            </div>
+            <div class="flex items-center justify-between pt-6 border-t border-border-light">
+              <div>
+                <span class="text-sm text-text-secondary block">À partir de</span>
+                <span class="font-heading text-[44px] text-text-primary leading-none">145€</span>
+              </div>
+              <Button href="/masterclass" class="bg-[#BBA86B] hover:bg-[#A89558] !text-black border-none px-8" size="lg">
+                Devenir Premium
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prochains Ateliers: 3 Cards -->
+      <div class="mt-8">
+        <div class="text-center mb-10">
+          <h3 class="font-heading text-5xl text-primary-white mb-4">Prochains Ateliers</h3>
+          <p class="font-body text-xl text-[#B5BBBD]">
+            Rejoignez-moi en présentiel pour des ateliers gourmands à Paris et Lyon.
+          </p>
+          <div class="w-24 h-px bg-[#3B4C6E] mx-auto mt-8"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center">
+          {workshops.map((workshop) => (
+            <WorkshopCard
+              title={workshop.title}
+              date={workshop.date}
+              image={workshop.image}
+              price={workshop.price}
+              duration={workshop.duration}
+              maxParticipants={workshop.maxParticipants}
+              currentParticipants={workshop.currentParticipants}
+              slug={workshop.slug}
+            />
+          ))}
+        </div>
+
+        <div class="text-center mt-10">
+          <a href="/ateliers" class="inline-flex items-center gap-2 font-button font-medium text-[14px] uppercase tracking-wide text-primary-white hover:text-primary-turquoise transition-colors">
+            <Icon name="clock" size="sm" />
+            Voir le calendrier complet
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Mes livres de recettes -->
+  <BooksSection />
+
+  <!-- Section Recettes suggérées -->
+  <SuggestedRecipes recipes={suggestedRecipes} />
+
+  <NewsletterModal triggerId="open-newsletter-footer" />
+</MainLayout>
+
+<script>
+  function setupHomepageInteractions() {
+    const filterRoot = document.querySelector<HTMLElement>('[data-homepage-filters]');
+    if (!filterRoot || filterRoot.dataset.interactionsReady === 'true') return;
+    filterRoot.dataset.interactionsReady = 'true';
+
+    const filterLabels: Record<string, string> = {
+      toutes: 'Toutes',
+      sucrees: 'Sucrées',
+      salees: 'Salées',
+    };
+
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-recipe-card]'));
+    const searchInput = document.getElementById('recipe-search-input') as HTMLInputElement | null;
+    const searchForm = document.getElementById('recipe-search-form') as HTMLFormElement | null;
+    const clearSearchButton = filterRoot.querySelector<HTMLButtonElement>('[data-clear-search]');
+    const resultCounter = filterRoot.querySelector<HTMLElement>('[data-recipe-results]');
+    const noResultState = document.querySelector<HTMLElement>('[data-no-recipe]');
+    const filterItems = Array.from(filterRoot.querySelectorAll<HTMLElement>('[data-filter-item]'));
+    const activeFilterLabel = filterRoot.querySelector<HTMLElement>('[data-active-filter-label]');
+
+    const normalize = (value: string) =>
+      value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('fr')
+        .trim();
+
+    const params = new URLSearchParams(window.location.search);
+    let activeFilter = (params.get('filter') || 'toutes').toLowerCase();
+    if (!filterLabels[activeFilter]) activeFilter = 'toutes';
+    let searchTerm = (params.get('q') || '').trim();
+
+    if (searchInput) searchInput.value = searchTerm;
+
+    const updateQueryString = () => {
+      const nextParams = new URLSearchParams(window.location.search);
+
+      if (activeFilter === 'toutes') nextParams.delete('filter');
+      else nextParams.set('filter', activeFilter);
+
+      if (searchTerm.trim()) nextParams.set('q', searchTerm.trim());
+      else nextParams.delete('q');
+
+      const nextUrl = nextParams.toString()
+        ? `${window.location.pathname}?${nextParams.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, '', nextUrl);
+    };
+
+    const updateFilterUi = () => {
+      filterItems.forEach((item) => {
+        const value = (item.getAttribute('data-filter-value') || '').toLowerCase();
+        const isActive = value === activeFilter;
+        item.setAttribute('aria-current', isActive ? 'true' : 'false');
+        item.classList.toggle('font-semibold', isActive);
+      });
+
+      if (activeFilterLabel) activeFilterLabel.textContent = filterLabels[activeFilter];
+    };
+
+    const applyFilters = () => {
+      const normalizedSearch = normalize(searchTerm);
+      let visibleCards = 0;
+
+      cards.forEach((card) => {
+        const category = (card.dataset.category || 'toutes').toLowerCase();
+        const searchableContent = `${card.dataset.title || ''} ${card.dataset.description || ''}`;
+        const matchesFilter = activeFilter === 'toutes' || category === activeFilter;
+        const matchesSearch = !normalizedSearch || normalize(searchableContent).includes(normalizedSearch);
+        const shouldShow = matchesFilter && matchesSearch;
+
+        card.classList.toggle('hidden', !shouldShow);
+        card.setAttribute('aria-hidden', String(!shouldShow));
+        if (shouldShow) visibleCards += 1;
+      });
+
+      if (resultCounter) {
+        resultCounter.textContent = `${visibleCards} recette${visibleCards > 1 ? 's' : ''}`;
+      }
+
+      if (noResultState) noResultState.classList.toggle('hidden', visibleCards !== 0);
+
+      updateFilterUi();
+      updateQueryString();
+    };
+
+    filterItems.forEach((item) => {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        const nextFilter = (item.getAttribute('data-filter-value') || '').toLowerCase();
+        if (!filterLabels[nextFilter]) return;
+        activeFilter = nextFilter;
+        applyFilters();
+      });
+    });
+
+    searchInput?.addEventListener('input', () => {
+      searchTerm = searchInput.value;
+      applyFilters();
+    });
+
+    searchForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      searchTerm = searchInput?.value || '';
+      applyFilters();
+    });
+
+    clearSearchButton?.addEventListener('click', () => {
+      searchTerm = '';
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      applyFilters();
+    });
+
+    applyFilters();
+  }
+
+  setupHomepageInteractions();
+  document.addEventListener('astro:page-load', setupHomepageInteractions);
+</script>

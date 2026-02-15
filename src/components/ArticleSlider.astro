@@ -1,0 +1,118 @@
+---
+import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import { Image } from 'astro:assets';
+
+interface Props {
+  articles: any[];
+}
+
+const { articles = [] } = Astro.props;
+const sliderArticles = articles.slice(0, 12); // Show 12 articles (4 visible at a time)
+
+const getArticleSlug = (article: any) => {
+  if (!article) return '';
+  if (typeof article.slug === 'string') return article.slug;
+  if (article.slug?.current) return article.slug.current;
+  return '';
+};
+---
+
+<div class="w-full bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-gray-800 dark:to-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Slider Container - Show 4 items at a time -->
+    <div class="relative overflow-hidden">
+      <div id="article-slider" class="flex transition-transform duration-500 ease-out gap-4">
+        {sliderArticles.map((article) => {
+          const imageUrl = processArticleImageUrl(article) || 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(article.title);
+          const articleSlug = getArticleSlug(article);
+          return (
+          <div class="min-w-[calc(25%-1rem)] flex-shrink-0">
+            <a href={`/${articleSlug}`} class="block relative group h-64 rounded-lg overflow-hidden">
+              {/* Article Image */}
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={article.title}
+                  width={400}
+                  height={300}
+                  widths={[400, 800]}
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  inferSize={true}
+                />
+              ) : (
+                <div class="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                  <i class="fas fa-image w-16 h-16 text-gray-400"></i>
+                </div>
+              )}
+
+              <!-- Title Overlay at Bottom -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end">
+                <h3 class="text-white text-lg sm:text-xl font-bold p-4 group-hover:underline line-clamp-2">
+                  {article.title}
+                </h3>
+              </div>
+            </a>
+          </div>
+          );
+        })}
+      </div>
+
+      <!-- Navigation Buttons -->
+      <button
+        id="slider-prev"
+        class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full p-2 z-10 transition-all shadow-lg -translate-x-4"
+        aria-label="Previous"
+      >
+        <i class="fas fa-chevron-left w-6 h-6"></i>
+      </button>
+
+      <button
+        id="slider-next"
+        class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full p-2 z-10 transition-all shadow-lg translate-x-4"
+        aria-label="Next"
+      >
+        <i class="fas fa-chevron-right w-6 h-6"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const slider = document.getElementById('article-slider');
+  const prevBtn = document.getElementById('slider-prev');
+  const nextBtn = document.getElementById('slider-next');
+
+  let currentIndex = 0;
+  const totalItems = 12;
+  const itemsPerView = 4;
+  const maxIndex = Math.ceil(totalItems - itemsPerView);
+
+  const updateSlider = (index: number) => {
+    if (slider) {
+      const offset = index * (100 / itemsPerView);
+      slider.style.transform = `translateX(-${offset}%)`;
+    }
+  };
+
+  const nextSlide = () => {
+    currentIndex = Math.min(currentIndex + 1, maxIndex);
+    updateSlider(currentIndex);
+  };
+
+  const prevSlide = () => {
+    currentIndex = Math.max(currentIndex - 1, 0);
+    updateSlider(currentIndex);
+  };
+
+  prevBtn?.addEventListener('click', prevSlide);
+  nextBtn?.addEventListener('click', nextSlide);
+
+  updateSlider(0);
+</script>
+
+<style>
+  #article-slider {
+    will-change: transform;
+  }
+</style>

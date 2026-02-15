@@ -1,0 +1,111 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<div id="comments-list-container" class="mt-12 pt-8 border-t border-gray-700">
+  <h2 class="text-2xl font-bold text-white mb-6">💬 Comments (<span id="comment-count">0</span>)</h2>
+  <div id="comments-display" class="space-y-6">
+    <p class="text-gray-400">Loading comments...</p>
+  </div>
+</div>
+
+<script define:vars={{ slug }}>
+  console.log('%c📝 CommentsList Component Started', 'color: orange; font-size: 16px;');
+  console.log('Slug:', slug);
+  
+  async function loadComments() {
+    console.log('%c🔄 Fetching comments...', 'color: blue; font-weight: bold;');
+    try {
+      const url = `/api/comments?slug=${encodeURIComponent(slug)}`;
+      console.log('No API URL:', url);
+      
+      const response = await fetch(url);
+      console.log('Response Status:', response.status);
+      console.log('Response OK:', response.ok);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const comments = await response.json();
+      console.log('%c✅ API Response:', 'color: green; font-weight: bold;', comments);
+      console.log(`Got ${comments.length} comments`);
+      
+      const container = document.getElementById('comments-display');
+      const countEl = document.getElementById('comment-count');
+      
+      console.log('Container found:', !!container);
+      console.log('Count element found:', !!countEl);
+      
+      if (!container) {
+        console.error('❌ comments-display container not found in DOM');
+        return;
+      }
+      
+      if (!countEl) {
+        console.error('❌ comment-count element not found in DOM');
+        return;
+      }
+      
+      countEl.textContent = comments.length;
+      console.log('Updated comment count to:', comments.length);
+      
+      if (!comments || comments.length === 0) {
+        console.log('No comments, showing empty message');
+        container.innerHTML = '<p class="text-gray-400">No comments yet. Be the first!</p>';
+        return;
+      }
+      
+      console.log('Building HTML for comments...');
+      let html = '';
+      comments.forEach((comment, index) => {
+        console.log(`  Comment ${index + 1}:`, comment.author);
+        const date = new Date(comment.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+        
+        html += `
+          <div class="bg-gray-700 rounded-lg p-5 border-l-4 border-orange-400">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-bold text-white">${comment.author || 'Anonymous'}</h3>
+              <time class="text-sm text-gray-400">${date}</time>
+            </div>
+            ${comment.email ? `<p class="text-xs text-gray-500 mb-3">✉️ ${comment.email}</p>` : ''}
+            <p class="text-gray-300 leading-relaxed">${comment.content || ''}</p>
+            ${comment.approved === false ? '<p class="mt-2 text-xs text-yellow-400">⏳ Awaiting approval</p>' : ''}
+          </div>
+        `;
+      });
+      
+      console.log('Setting innerHTML...');
+      container.innerHTML = html;
+      console.log('%c✨ Rendered successfully!', 'color: green; font-size: 14px;');
+      
+    } catch (error) {
+      console.error('%c❌ CommentsList Error:', 'color: red; font-weight: bold;', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      const container = document.getElementById('comments-display');
+      if (container) {
+        container.innerHTML = `<p class="text-red-400">Error loading comments: ${error.message}</p>`;
+      }
+    }
+  }
+  
+  console.log('%c⏱️ Starting initial load...', 'color: purple;');
+  
+  // Load immediately when script runs
+  loadComments();
+  
+  // Reload every 5 seconds to show new comments
+  setInterval(() => {
+    console.log('%c🔄 Auto-refreshing comments...', 'color: blue;');
+    loadComments();
+  }, 5000);
+</script>

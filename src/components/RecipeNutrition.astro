@@ -1,0 +1,432 @@
+---
+/**
+ * RecipeNutrition Component
+ * 
+ * Displays nutritional information in a clean, easy-to-read format
+ * Features:
+ * - Macro and micronutrient display
+ * - Daily value percentage indicators
+ * - Responsive grid layout
+ * - Print-friendly styling
+ * 
+ * Props:
+ * - nutrition (NutritionInfo): Nutritional data object
+ * - servings (number): Number of servings
+ */
+
+interface NutritionInfo {
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+  cholesterol?: number;
+  vitamin_a?: number;
+  vitamin_c?: number;
+  calcium?: number;
+  iron?: number;
+}
+
+interface Props {
+  nutrition?: NutritionInfo;
+  servings?: number;
+  title?: string;
+}
+
+const { nutrition = {}, servings = 1, title = "Nutrition Facts" } = Astro.props;
+
+// Daily value reference (FDA)
+const dailyValues = {
+  calories: 2000,
+  protein: 50,
+  carbs: 300,
+  fat: 78,
+  fiber: 28,
+  sugar: 50,
+  sodium: 2300,
+  cholesterol: 300,
+  vitamin_a: 900,
+  vitamin_c: 90,
+  calcium: 1300,
+  iron: 18
+};
+
+// Calculate percentage of daily value
+const getDVPercent = (nutrient: string, value: number): number => {
+  const dv = dailyValues[nutrient as keyof typeof dailyValues];
+  if (!dv) return 0;
+  return Math.round((value / dv) * 100);
+};
+
+// Render nutrition bar
+const renderBar = (percent: number): number => {
+  return Math.min(percent, 100);
+};
+---
+
+{nutrition && Object.keys(nutrition).length > 0 ? (
+  <div class="recipe-nutrition">
+    <h2 class="nutrition-title">{title}</h2>
+    
+    <div class="nutrition-content">
+      {/* Main Macros */}
+      <div class="nutrition-section macros">
+        <h3 class="section-title">Macronutrients (per serving)</h3>
+        
+        <div class="nutrition-grid">
+          {nutrition.calories && (
+            <div class="nutrition-item">
+              <div class="nutrition-label">Calories</div>
+              <div class="nutrition-value">{Math.round(nutrition.calories / servings)}</div>
+              <div class="nutrition-unit">kcal</div>
+            </div>
+          )}
+          
+          {nutrition.protein && (
+            <div class="nutrition-item">
+              <div class="nutrition-label">Protein</div>
+              <div class="nutrition-value">{(nutrition.protein / servings).toFixed(1)}</div>
+              <div class="nutrition-unit">g</div>
+              <div class="nutrition-percent">{getDVPercent('protein', nutrition.protein / servings)}% DV</div>
+            </div>
+          )}
+          
+          {nutrition.carbs && (
+            <div class="nutrition-item">
+              <div class="nutrition-label">Carbs</div>
+              <div class="nutrition-value">{(nutrition.carbs / servings).toFixed(1)}</div>
+              <div class="nutrition-unit">g</div>
+              <div class="nutrition-percent">{getDVPercent('carbs', nutrition.carbs / servings)}% DV</div>
+            </div>
+          )}
+          
+          {nutrition.fat && (
+            <div class="nutrition-item">
+              <div class="nutrition-label">Fat</div>
+              <div class="nutrition-value">{(nutrition.fat / servings).toFixed(1)}</div>
+              <div class="nutrition-unit">g</div>
+              <div class="nutrition-percent">{getDVPercent('fat', nutrition.fat / servings)}% DV</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Other Nutrients */}
+      {(nutrition.fiber || nutrition.sugar || nutrition.sodium || nutrition.cholesterol) && (
+        <div class="nutrition-section other">
+          <h3 class="section-title">Other Nutrients</h3>
+          
+          <div class="nutrition-rows">
+            {nutrition.fiber && (
+              <div class="nutrition-row">
+                <div class="nutrition-row-label">Dietary Fiber</div>
+                <div class="nutrition-row-value">
+                  <span>{(nutrition.fiber / servings).toFixed(1)}g</span>
+                  <span class="percent">{getDVPercent('fiber', nutrition.fiber / servings)}% DV</span>
+                </div>
+              </div>
+            )}
+            
+            {nutrition.sugar && (
+              <div class="nutrition-row">
+                <div class="nutrition-row-label">Total Sugars</div>
+                <div class="nutrition-row-value">
+                  <span>{(nutrition.sugar / servings).toFixed(1)}g</span>
+                </div>
+              </div>
+            )}
+            
+            {nutrition.sodium && (
+              <div class="nutrition-row">
+                <div class="nutrition-row-label">Sodium</div>
+                <div class="nutrition-row-value">
+                  <span>{Math.round(nutrition.sodium / servings)}mg</span>
+                  <span class="percent">{getDVPercent('sodium', nutrition.sodium / servings)}% DV</span>
+                </div>
+              </div>
+            )}
+            
+            {nutrition.cholesterol && (
+              <div class="nutrition-row">
+                <div class="nutrition-row-label">Cholesterol</div>
+                <div class="nutrition-row-value">
+                  <span>{Math.round(nutrition.cholesterol / servings)}mg</span>
+                  <span class="percent">{getDVPercent('cholesterol', nutrition.cholesterol / servings)}% DV</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Vitamins & Minerals */}
+      {(nutrition.vitamin_a || nutrition.vitamin_c || nutrition.calcium || nutrition.iron) && (
+        <div class="nutrition-section vitamins">
+          <h3 class="section-title">Vitamins & Minerals</h3>
+          
+          <div class="nutrition-grid-small">
+            {nutrition.vitamin_a && (
+              <div class="vitamin-item">
+                <div class="vitamin-label">Vitamin A</div>
+                <div class="vitamin-percent">{getDVPercent('vitamin_a', nutrition.vitamin_a / servings)}%</div>
+              </div>
+            )}
+            
+            {nutrition.vitamin_c && (
+              <div class="vitamin-item">
+                <div class="vitamin-label">Vitamin C</div>
+                <div class="vitamin-percent">{getDVPercent('vitamin_c', nutrition.vitamin_c / servings)}%</div>
+              </div>
+            )}
+            
+            {nutrition.calcium && (
+              <div class="vitamin-item">
+                <div class="vitamin-label">Calcium</div>
+                <div class="vitamin-percent">{getDVPercent('calcium', nutrition.calcium / servings)}%</div>
+              </div>
+            )}
+            
+            {nutrition.iron && (
+              <div class="vitamin-item">
+                <div class="vitamin-label">Iron</div>
+                <div class="vitamin-percent">{getDVPercent('iron', nutrition.iron / servings)}%</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <div class="nutrition-disclaimer">
+      <small>* Percent Daily Values are based on a 2,000 calorie diet. Your daily values may be higher or lower depending on your calorie needs.</small>
+    </div>
+  </div>
+) : null}
+
+<style>
+  .recipe-nutrition {
+    background: linear-gradient(135deg, #f9f9f9 0%, #f0f7ff 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2.5rem 0;
+    border: 1px solid #e9ecef;
+  }
+
+  .nutrition-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .nutrition-content {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Nutrition Sections */
+  .nutrition-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #0066cc;
+  }
+
+  .nutrition-section:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 1rem 0;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Macronutrients Grid */
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+  }
+
+  .nutrition-item {
+    text-align: center;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  .nutrition-item:hover {
+    background: #f0f7ff;
+    border-color: #0066cc;
+  }
+
+  .nutrition-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.5rem;
+  }
+
+  .nutrition-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #0066cc;
+  }
+
+  .nutrition-unit {
+    font-size: 0.9rem;
+    color: #999;
+    font-weight: 500;
+  }
+
+  .nutrition-percent {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+
+  /* Other Nutrients */
+  .nutrition-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .nutrition-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .nutrition-row:last-child {
+    border-bottom: none;
+  }
+
+  .nutrition-row-label {
+    font-weight: 500;
+    color: #333;
+  }
+
+  .nutrition-row-value {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    text-align: right;
+  }
+
+  .nutrition-row-value span {
+    color: #666;
+    font-weight: 500;
+  }
+
+  .nutrition-row-value .percent {
+    font-size: 0.9rem;
+    color: #999;
+    min-width: 50px;
+  }
+
+  /* Vitamins & Minerals Grid */
+  .nutrition-grid-small {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+  }
+
+  .vitamin-item {
+    text-align: center;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .vitamin-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .vitamin-percent {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0066cc;
+  }
+
+  /* Disclaimer */
+  .nutrition-disclaimer {
+    font-size: 0.8rem;
+    color: #999;
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .recipe-nutrition {
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .nutrition-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .nutrition-section {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .nutrition-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .nutrition-item {
+      padding: 0.75rem;
+    }
+
+    .nutrition-grid-small {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+  }
+
+  /* Print Styles */
+  @media print {
+    .recipe-nutrition {
+      background: white;
+      border: 1px solid #333;
+      box-shadow: none;
+    }
+
+    .nutrition-item {
+      background: white;
+      border: 1px solid #ddd;
+    }
+
+    .nutrition-section {
+      background: white;
+    }
+  }
+</style>

@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { payloadFetch } from '../../lib/payload.client';
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from '../../lib/mongo.server';
+import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
+import { renderArticleContent } from '../../utils/renderArticleContent';
+import DisqusComments from '../../components/DisqusComments.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
+
+export const prerender = !import.meta.env.DEV;
+
+const envBuildLimit = Number(process.env.MAX_SSG_ARTICLES);
+const buildLimit = Number.isFinite(envBuildLimit) && envBuildLimit > 0 ? envBuildLimit : 50;
+
+export async function getStaticPaths() {
+  const envMax = Number(process.env.MAX_SSG_ARTICLES);
+  const buildLimit = Number.isFinite(envMax) && envMax > 0 ? envMax : 50;
+
+  if (import.meta.env.DEV) {
+    return [];
+  }
+
+  // Try to get articles from MongoDB first (with featured_img_url)
+  let articles = await getAllArticlesFromMongo();
+  
+  // Fallback to Payload if MongoDB fails
+  if (!articles || articles.length === 0) {
+    articles = await payloadFetch({
+      collection: 'articles',
+      query: { depth: 2, limit: buildLimit }
+    });
+  }
+
+  if (!articles || !Array.isArray(articles)) {
+    return [];
+  }
+
+  const decodeSafe = (value: string) => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  };
+
+  return articles
+    .filter((article: any) => article?.slug)
+    .map((article: any) => {
+      const rawSlug = typeof article.slug === 'string' ? article.slug : article.slug?.current || '';
+      const slugValue = decodeSafe(rawSlug);
+      return {
+        params: { slug: slugValue },
+        props: { article: { ...article, slug: slugValue } }
+      };
+    });
+}
+
+interface Props {
+  article: any;
+}
+
+let { article } = Astro.props;
+
+if (!article) {
+  const slugParam = Astro.params?.slug;
+  if (slugParam) {
+    article = await getArticleBySlugFromMongo(slugParam);
+    if (!article) {
+      const fallback = await payloadFetch({
+        collection: 'articles',
+        query: { slug: slugParam, depth: 2, limit: 1 },
+      });
+      article = Array.isArray(fallback) ? fallback[0] : null;
+    }
+  }
+}
+
+if (!article) {
+  return new Response('Article not found', { status: 404 });
+}
+
+const imageUrl = processArticleImageUrl(article);
+const content = renderArticleContent(article);
+
+---
+
+<BaseLayout title={article.title} description={article.excerpt}>
+  <main class="min-h-screen bg-[#fdf6e9]">
+    <div class="container mx-auto px-4 py-20">
+      <nav class="mb-8 flex items-center gap-2 text-gray-700 text-sm">
+        <a href="/">Home</a>
+        <span>/</span>
+        <span>{article.title}</span>
+      </nav>
+
+      <article class="bg-[#fffaf0] border border-[#eadfcb] rounded-lg p-8 max-w-3xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-900 mb-6">{article.title}</h1>
+
+        {imageUrl ? (
+          <div class="mb-8 overflow-hidden rounded-lg">
+            <img 
+              src={imageUrl} 
+              alt={article.title}
+              class="w-full h-auto object-cover"
+              onerror="this.style.display='none'"
+            />
+          </div>
+        ) : null}
+
+        <div class="flex gap-6 text-sm text-gray-700 mb-8 pb-8 border-b border-[#e2d6c0]">
+          {article.date && <time>📅 {new Date(article.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}</time>}
+          {article.author && <span class="author-meta">👨‍🍳 {article.author.name}</span>}
+        </div>
+
+        <div class="my-8">
+          <MediavineSlot slot="article-top" minHeight={280} />
+        </div>
+
+        {article.categories && article.categories.length > 0 && (
+          <div class="mb-6 flex gap-2 flex-wrap">
+            {article.categories.map((cat: any) => (
+              <a href={`/categories/${cat.slug}`} class="text-sm bg-[#f2e5cc] text-gray-900 px-3 py-1 rounded hover:bg-[#ead8b8]">
+                {cat.title || cat.name}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {article.tags && article.tags.length > 0 && (
+          <div class="mb-8 flex gap-2 flex-wrap">
+            {article.tags.map((tag: any) => (
+              <a href={`/tags/${tag.slug}`} class="text-xs bg-[#eee1c9] text-gray-900 px-2 py-1 rounded hover:bg-[#e5d3b2]">
+                #{tag.title || tag.name}
+              </a>
+            ))}
+          </div>
+        )}
+
+        <div class="prose max-w-none mb-8">
+          <div set:html={content} class="text-gray-800 leading-relaxed"></div>
+        </div>
+
+
+        <div class="pt-6 border-t border-[#e2d6c0]">
+          <a href="/" class="text-orange-400 hover:text-orange-300">← Back to articles</a>
+        </div>
+
+        <div class="my-8">
+          <MediavineSlot slot="article-bottom" minHeight={280} />
+        </div>
+
+        {/* Comments Section - Disqus */}
+        <div class="mt-12 bg-[#fffaf0] border border-[#eadfcb] rounded-lg shadow p-6">
+          <DisqusComments url={`https://lacuisinedebernard.com/articles/${article.slug}`} identifier={article.slug} title={article.title} />
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <style>
+    .prose :global(h2) {
+      color: #111827;
+      font-size: 1.8rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .prose :global(h3) {
+      color: #111827;
+      font-size: 1.3rem;
+      margin-top: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+    .prose :global(p) {
+      color: #1f2937;
+      margin-bottom: 1rem;
+    }
+    .prose :global(a) {
+      color: #fb923c;
+      text-decoration: underline;
+    }
+    .prose :global(a:hover) {
+      color: #fdba74;
+    }
+    .prose :global(img) {
+      border-radius: 0.5rem;
+      margin: 1.5rem 0;
+      max-width: 100%;
+    }
+
+    /* Comments styles */
+    h2 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 1.5rem;
+      margin-top: 3rem;
+    }
+  </style>
+</BaseLayout>

@@ -1,0 +1,95 @@
+name: Payload Update Snapshot + Coolify Deploy
+
+on:
+  repository_dispatch:
+    types: [ payload-update ]
+  workflow_dispatch:
+    inputs:
+      collection:
+        description: "Payload collection (articles, categories, tags, authors, media)"
+        required: false
+        default: "articles"
+      slug:
+        description: "Article slug (for single-article update)"
+        required: false
+      id:
+        description: "Article ID (optional)"
+        required: false
+
+concurrency:
+  group: payload-snapshot-update
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-snapshot:
+    runs-on: ubuntu-latest
+    env:
+      COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
+      COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+    steps:
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download latest prepared snapshot (if exists)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="prepared-snapshot"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release download "$TAG" -p prepared-articles.json -D .
+          else
+            echo "No existing snapshot release found."
+          fi
+      - name: Check snapshot file
+        id: snapshot
+        run: |
+          if [ -f prepared-articles.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update single article snapshot
+        if: ${{ (github.event.client_payload.collection || inputs.collection) == 'articles' && steps.snapshot.outputs.exists == 'true' && (github.event.client_payload.slug || inputs.slug || github.event.client_payload.id || inputs.id) }}
+        run: node scripts/update-prepared-article.mjs
+        env:
+          PAYLOAD_API_URL: ${{ secrets.PAYLOAD_API_URL }}
+          PAYLOAD_API_TOKEN: ${{ secrets.PAYLOAD_API_TOKEN }}
+          SLUG: ${{ github.event.client_payload.slug || inputs.slug }}
+          ID: ${{ github.event.client_payload.id || inputs.id }}
+
+      - name: Refresh full snapshot for taxonomy/media updates
+        if: ${{ (github.event.client_payload.collection || inputs.collection) != 'articles' || steps.snapshot.outputs.exists == 'false' || !(github.event.client_payload.slug || inputs.slug || github.event.client_payload.id || inputs.id) }}
+        run: node scripts/refresh-prepared-articles.mjs
+        env:
+          PAYLOAD_API_URL: ${{ secrets.PAYLOAD_API_URL }}
+          PAYLOAD_API_TOKEN: ${{ secrets.PAYLOAD_API_TOKEN }}
+
+      - name: Upload snapshot to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="prepared-snapshot"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "Prepared Articles Snapshot" --notes "Automated snapshot"
+          fi
+          gh release upload "$TAG" prepared-articles.json --clobber
+
+      - name: Trigger Coolify deploy (optional)
+        if: ${{ env.COOLIFY_DEPLOY_WEBHOOK != '' }}
+        run: |
+          if [ -n "$COOLIFY_API_TOKEN" ]; then
+            curl -H "Authorization: Bearer $COOLIFY_API_TOKEN" -X POST "$COOLIFY_DEPLOY_WEBHOOK"
+          else
+            curl -X POST "$COOLIFY_DEPLOY_WEBHOOK"
+          fi

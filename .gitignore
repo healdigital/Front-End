@@ -1,0 +1,70 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# PayloadCMS admin (separate repository)
+payload-admin/
+
+# Large data files (generated/test files)
+All Articles/
+ar-slugs.csv
+LCDB
+LCDB.pub
+prepared-articles.json
+prepared-articles*.json
+
+# local build caches
+.vite-cache-build/
+
+# Build and log files
+build.log
+build.txt
+build_error.txt
+build_log.txt
+build_output.txt
+dev.log
+dev_error.txt
+*.log
+
+# Import and migration files
+IMPORT_*.md
+*_IMPORT.md
+SETUP_*.md
+FIXES_*.md
+SANITY_*.md
+PAYLOAD*.md
+QUICK_*.md
+RELATIONSHIPS_*.md
+SCRIPT_*.md
+TEST_*.md
+UPDATED_*.md
+COMPLETE_*.md
+
+# Generated files
+*.output.txt
+*_output.txt
+*_run.txt
+missing_articles.txt
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+.vercel
+.env*.local

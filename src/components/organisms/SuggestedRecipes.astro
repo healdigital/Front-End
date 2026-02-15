@@ -1,0 +1,44 @@
+---
+import RecipeCard from './RecipeCard.astro';
+
+interface Recipe {
+  title: string;
+  description: string;
+  image: string;
+  category?: string;
+  prepTime: string;
+  difficulty: string;
+  slug: string;
+}
+
+interface Props {
+  recipes: Recipe[];
+}
+
+const { recipes } = Astro.props;
+---
+
+<section class="py-16 md:py-24 bg-primary-white">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+    <!-- Section header -->
+    <div class="flex items-center gap-6 mb-12">
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap">Ces recettes pourraient vous intéresser</h2>
+      <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
+    </div>
+
+    <!-- Recipe cards grid 2x2 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {recipes.map((recipe) => (
+        <RecipeCard
+          title={recipe.title}
+          description={recipe.description}
+          image={recipe.image}
+          category={recipe.category}
+          prepTime={recipe.prepTime}
+          difficulty={recipe.difficulty}
+          slug={recipe.slug}
+        />
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,11 @@
+name: Deploy Static Site (Scaleway Disabled)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  disabled:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disabled
+        run: echo "Scaleway deploy workflow disabled. Use Coolify deploy webhook instead."

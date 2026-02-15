@@ -1,0 +1,114 @@
+# La Cuisine de Bernard - Robots Exclusion File
+# Astro Static-First Migration
+# Updated: 2026-01-22
+# Domain: https://lacuisinedebernard.com
+
+# =============================================================================
+# GENERAL CRAWL RULES FOR ALL BOTS
+# =============================================================================
+
+User-agent: *
+Allow: /
+Allow: /en/
+Allow: /fr/
+Allow: /articles/
+Allow: /categories/
+Allow: /tags/
+Allow: /*.css
+Allow: /*.js
+Allow: /images/
+Allow: /_astro/
+
+# Block WordPress legacy paths (no longer applicable)
+Disallow: /wp-admin/
+Disallow: /wp-login.php
+Disallow: /wp-json/
+Disallow: /wp-content/
+Disallow: /xmlrpc.php
+
+# Block sensitive files and directories
+Disallow: /.env
+Disallow: /.env.*
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /scripts/
+Disallow: /tsconfig.json
+Disallow: /astro.config.mjs
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /yarn.lock
+
+# Block search query strings (prevent duplicate search result pages)
+Disallow: /search?*
+Disallow: /en/search?*
+Disallow: /fr/search?*
+Disallow: /*?q=*
+Disallow: /*?s=*
+Disallow: /*?page=*
+
+# =============================================================================
+# SEARCH ENGINE SPECIFIC RULES
+# =============================================================================
+
+# Google - Allow full crawl (0 delay)
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Google Images
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /_astro/
+Crawl-delay: 0
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# =============================================================================
+# BLOCK AGGRESSIVE/UNWANTED CRAWLERS
+# =============================================================================
+
+# Ahrefs Bot - Excessive crawling
+User-agent: AhrefsBot
+User-agent: AhrefsBot/6.1
+Disallow: /
+
+# Semrush Bot - Excessive crawling
+User-agent: SemrushBot
+User-agent: SemrushBot/7~bl
+Disallow: /
+
+# Majestic Bot
+User-agent: MJ12bot
+Disallow: /
+
+# Majestic 12
+User-agent: Majestic12
+Disallow: /
+
+# YandexBot (if not needed for Russian traffic)
+# User-agent: YandexBot
+# Disallow: /
+
+# =============================================================================
+# CRAWL DELAY & REQUEST RATE
+# =============================================================================
+
+# Default crawl delay: 1 second between requests
+Crawl-delay: 1
+
+# Request rate: 30 requests per 60 seconds
+Request-rate: 30/60
+
+# =============================================================================
+# SITEMAPS
+# =============================================================================
+
+# Primary sitemap with all URLs
+Sitemap: https://lacuisinedebernard.com/sitemap.xml
+
+# Optional: Add language-specific sitemaps if available
+# Sitemap: https://lacuisinedebernard.com/en-sitemap.xml
+# Sitemap: https://lacuisinedebernard.com/fr-sitemap.xml

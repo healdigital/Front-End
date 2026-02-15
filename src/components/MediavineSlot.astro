@@ -1,0 +1,18 @@
+---
+interface Props {
+  slot: string;
+  minHeight?: number;
+  className?: string;
+}
+
+const { slot, minHeight = 250, className = '' } = Astro.props;
+const style = `min-height: ${minHeight}px; width: 100%;`;
+---
+
+<div
+  class={`mv-ad-slot ${className}`}
+  data-mv-slot={slot}
+  data-no-translate="true"
+  style={style}
+  aria-hidden="true"
+></div>

@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "recipes": "Recetas",
+    "articles": "Artículos",
+    "blog": "Blog",
+    "pages": "Páginas",
+    "categories": "Categorías",
+    "cuisines": "Cocinas",
+    "search": "Buscar"
+  },
+  "recipe": {
+    "ingredients": "Ingredientes",
+    "instructions": "Instrucciones",
+    "notes": "Notas y Consejos",
+    "nutrition": "Información Nutricional",
+    "gallery": "Galería",
+    "related": "Recetas Relacionadas",
+    "video": "Vídeo",
+    "author": "Autor",
+    "published": "Publicado",
+    "cost": "Costo",
+    "equipment": "Equipamiento",
+    "glossary": "Términos del Glosario",
+    "categories": "Categorías",
+    "cuisines": "Cocinas",
+    "keywords": "Palabras Clave",
+    "rating": "valoración",
+    "ratings": "valoraciones",
+    "servings": "Porciones",
+    "prepTime": "Tiempo de Preparación",
+    "cookTime": "Tiempo de Cocción",
+    "totalTime": "Tiempo Total",
+    "calories": "Calorías",
+    "noIngredients": "Sin ingredientes disponibles",
+    "noInstructions": "Sin instrucciones disponibles",
+    "noAuthorBio": "Autor de recetas de nuestro blog de cocina."
+  },
+  "common": {
+    "search": "Buscar",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "back": "← Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "language": "Idioma",
+    "loading": "Cargando...",
+    "error": "Error",
+    "notFound": "No encontrado",
+    "author": "Autor",
+    "published": "Publicado",
+    "modified": "Última modificación",
+    "about": "Acerca de",
+    "review": "Reseña",
+    "categories": "Categorías",
+    "tags": "Etiquetas",
+    "relatedArticles": "Artículos Relacionados"
+  },
+  "breadcrumb": {
+    "home": "Inicio",
+    "recipes": "Recetas",
+    "articles": "Artículos",
+    "pages": "Páginas"
+  },
+  "social": {
+    "share": "Compartir",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "pinterest": "Pinterest",
+    "email": "Correo Electrónico"
+  },
+  "footer": {
+    "copyright": "© 2026. Todos los derechos reservados.",
+    "about": "Acerca de",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "contact": "Contacto"
+  }
+}

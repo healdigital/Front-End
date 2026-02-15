@@ -1,0 +1,223 @@
+---
+import Pagination from './Pagination.astro';
+import GlobalSidebar from './GlobalSidebar.astro';
+import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
+
+interface Props {
+  latestArticles: any[];
+  currentLang?: string;
+  currentPage?: number;
+  totalPages?: number;
+}
+
+const { latestArticles = [], currentLang = 'en', currentPage = 1, totalPages: propTotalPages } = Astro.props;
+const articlesPerPage = 10;
+const displayArticles = latestArticles;
+const totalPages = propTotalPages || Math.max(1, Math.ceil(latestArticles.length / articlesPerPage));
+
+const getArticleSlug = (article: any) => {
+  if (!article) return '';
+  if (typeof article.slug === 'string') return article.slug;
+  if (article.slug?.current) return article.slug.current;
+  return '';
+};
+
+const socialShareLinks = {
+  facebook: (url: string, title: string) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  twitter: (url: string, title: string) => `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+  pinterest: (url: string, title: string) => `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}`,
+  whatsapp: (url: string, title: string) => `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`,
+};
+
+const decodeHtmlEntities = (text: string) => {
+  const entities: { [key: string]: string } = {
+    '&nbsp;': ' ',
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&hellip;': '…',
+    '&mdash;': '—',
+    '&ndash;': '–',
+    '&lsquo;': "'",
+    '&rsquo;': "'",
+    '&ldquo;': '"',
+    '&rdquo;': '"',
+    '&bull;': '•',
+    '&deg;': '°',
+    '&frac12;': '½',
+    '&frac14;': '¼',
+    '&frac34;': '¾',
+  };
+
+  return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => {
+    return entities[entity] || entity;
+  });
+};
+
+const stripHtml = (html: string | undefined) => {
+  if (!html) return '';
+  const text = html.replace(/<[^>]*>/g, '');
+  const decodedText = decodeHtmlEntities(text);
+  return decodedText.substring(0, 150) + (decodedText.length > 150 ? '...' : '');
+};
+
+const getExcerpt = (article: any) => {
+  // If excerpt exists, use it first (can be HTML string or array)
+  if (article.excerpt) {
+    if (typeof article.excerpt === 'string') {
+      const text = article.excerpt.replace(/<[^>]*>/g, '');
+      const decodedText = decodeHtmlEntities(text);
+      return decodedText.substring(0, 200) + (decodedText.length > 200 ? '...' : '');
+    }
+    if (Array.isArray(article.excerpt)) {
+      const text = article.excerpt.map((block: any) => 
+        block.children?.map((child: any) => child.text).join(' ') || ''
+      ).join(' ');
+      const decodedText = decodeHtmlEntities(text);
+      return decodedText.substring(0, 200) + (decodedText.length > 200 ? '...' : '');
+    }
+  }
+  
+  // Otherwise use content
+  if (article.content) {
+    if (typeof article.content === 'string') {
+      const text = article.content.replace(/<[^>]*>/g, '');
+      const decodedText = decodeHtmlEntities(text);
+      return decodedText.substring(0, 200) + (decodedText.length > 200 ? '...' : '');
+    }
+    if (Array.isArray(article.content)) {
+      const lines = article.content
+        .filter((block: any) => block._type === 'block')
+        .slice(0, 3)
+        .map((block: any) => 
+          block.children?.map((child: any) => child.text).join(' ') || ''
+        )
+        .filter((text: string) => text.trim())
+        .join('\n');
+      const decodedText = decodeHtmlEntities(lines);
+      return decodedText.substring(0, 200) + (decodedText.length > 200 ? '...' : '');
+    }
+  }
+  return '';
+};
+
+const facebookLinks = [
+  'https://www.facebook.com/lacuisinedebernard/',
+  'https://www.instagram.com/lacuisinedebernard',
+  'https://www.youtube.com/c/lacuisinedebernard'
+];
+
+const bookLinks = [
+  'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d',
+  'https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21',
+  'https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F',
+  'https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88',
+  'https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd',
+  'https://www.amazon.fr/gp/product/2080253492/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2080253492&linkCode=as2&tag=lacuisidebern-21&linkId=16638a390ee02cd4cdd339dea4ee9dfc'
+];
+---
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Section: Latest Articles -->
+    <div class="lg:col-span-2">
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+          The latest recipes
+        </h2>
+
+        <div class="space-y-6">
+          {displayArticles.map((article) => (
+            <article class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
+              <div class="flex flex-col sm:flex-row gap-4 p-4">
+                <!-- Article Image -->
+              <div class="sm:w-40 sm:h-40 flex-shrink-0">
+                  {processArticleImageUrl(article) ? (
+                    <img
+                      src={processArticleImageUrl(article)}
+                      alt={article.title}
+                      class="w-full h-40 sm:h-40 object-cover rounded hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div class="w-full h-40 bg-gray-300 dark:bg-gray-700 rounded flex items-center justify-center">
+                      <i class="fas fa-image w-8 h-8 text-gray-400"></i>
+                    </div>
+                  )}
+                </div>
+
+                <!-- Article Content -->
+                <div class="flex-1">
+                  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {article.title}
+                  </h3>
+                  
+                  <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                    {getExcerpt(article)}
+                  </p>
+
+                  <!-- Read More Button -->
+                  <a
+                    href={`/${getArticleSlug(article)}`}
+                    class="inline-block text-orange-600 dark:text-orange-400 font-semibold hover:underline mb-4"
+                  >
+                    Read More →
+                  </a>
+
+                  <!-- Social Share Icons -->
+                  <div class="flex gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <a
+                      href={socialShareLinks.facebook(`https://lacuisinedebernard.com/${getArticleSlug(article)}`, article.title)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-blue-600 hover:text-blue-700 transition-colors"
+                      title="Share on Facebook"
+                    >
+                      <i class="fab fa-facebook-f w-5 h-5"></i>
+                    </a>
+                    <a
+                      href={socialShareLinks.twitter(`https://lacuisinedebernard.com/${getArticleSlug(article)}`, article.title)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-black hover:text-gray-700 transition-colors dark:text-white dark:hover:text-gray-300"
+                      title="Share on X"
+                    >
+                      <i class="fab fa-x-twitter w-5 h-5"></i>
+                    </a>
+                    <a
+                      href={socialShareLinks.pinterest(`https://lacuisinedebernard.com/${getArticleSlug(article)}`, article.title)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-red-600 hover:text-red-700 transition-colors"
+                      title="Share on Pinterest"
+                    >
+                      <i class="fab fa-pinterest w-5 h-5"></i>
+                    </a>
+                    <a
+                      href={`mailto:?subject=${encodeURIComponent(article.title)}&body=${encodeURIComponent(`Check out this recipe: ${article.title} - https://lacuisinedebernard.com/${getArticleSlug(article)}`)}`}
+                      class="text-gray-600 hover:text-gray-700 transition-colors"
+                      title="Share via Email"
+                    >
+                      <i class="fas fa-envelope w-5 h-5"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages}
+          baseUrl=""
+        />
+      </div>
+    </div>
+
+    <!-- Right Section: Global Sidebar -->
+    <GlobalSidebar />
+  </div>
+</div>
+

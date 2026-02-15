@@ -1,0 +1,78 @@
+---
+import SEO from "../components/SEO.astro";
+import Header from "../components/Header.astro";
+import GlobalAbout from "../components/GlobalAbout.astro";
+import GlobalFooter from "../components/GlobalFooter.astro";
+import '../styles/global.css';
+import '@fortawesome/fontawesome-free/css/all.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  slug?: string;
+  lang?: string;
+  image?: string;
+  jsonLd?: any[];
+}
+
+const { title, description, canonical, slug, lang = 'en', image, jsonLd = [] } = Astro.props;
+const mediavineScriptSrc = import.meta.env.PUBLIC_MEDIAVINE_SCRIPT_SRC;
+const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+---
+
+<!doctype html>
+<html lang={lang} data-lang={lang}>
+  <head>
+    <SEO
+      title={title}
+      description={description}
+      canonical={canonical}
+      slug={slug}
+      image={image}
+    />
+    
+    {jsonLd && jsonLd.length > 0 && jsonLd.map(schema => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+    {mediavineScriptSrc && (
+      <script async src={mediavineScriptSrc}></script>
+    )}
+    {gaMeasurementId && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
+        <script is:inline define:vars={{ gaMeasurementId }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { dataLayer.push(arguments); }
+          gtag('js', new Date());
+          gtag('config', gaMeasurementId);
+        </script>
+      </>
+    )}
+  </head>
+  <body>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-[60] focus:p-4 focus:bg-primary-white focus:text-primary-black">
+      Aller au contenu principal
+    </a>
+    <Header lang={lang} />
+    <main id="main-content">
+      <slot />
+    </main>
+    <GlobalAbout />
+    <GlobalFooter currentLang={lang} />
+  </body>
+</html>
+
+<script>
+  import { initializeTranslations, setupLanguageSwitcher, watchLanguageChanges, changeLanguage, getCurrentLanguage } from '../utils/dynamicTranslate';
+
+  // Initialize translations on page load
+  async function init() {
+    await initializeTranslations();
+    setupLanguageSwitcher();
+    watchLanguageChanges();
+    await changeLanguage(getCurrentLanguage());
+  }
+
+  init().catch(error => console.error('Failed to initialize translations:', error));
+</script>

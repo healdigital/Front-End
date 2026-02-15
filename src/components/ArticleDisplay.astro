@@ -1,0 +1,853 @@
+---
+import { t as translate } from '../i18n';
+
+interface Props {
+  article: {
+    id: string;
+    title: string;
+    slug: string;
+    content: string;
+    excerpt: string;
+    date: string;
+    modifiedDate: string;
+    language: string;
+    
+    author: {
+      id: string;
+      username: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+    };
+
+    image: {
+      url: string;
+      filename: string;
+      path: string;
+      id: string;
+      title: string;
+      caption: string;
+      description: string;
+      altText: string;
+      featured: boolean;
+    };
+
+    attachment: {
+      url: string;
+      filename: string;
+      path: string;
+      id: string;
+      title: string;
+      caption: string;
+      description: string;
+      altText: string;
+    };
+
+    taxonomy: {
+      categories: string[];
+      tags: string[];
+      costs: string[];
+      difficulties: string[];
+      diets: string[];
+      seasons: string[];
+      themes: string[];
+    };
+
+    recipe: {
+      title: string;
+      servings: string;
+      prepTime: string;
+      prepTimeFormat: string;
+      cookTime: string;
+      cookTimeFormat: string;
+      totalTimeFormat: string;
+      instructions: string;
+      ingredients: string;
+      note: string;
+      calories: string;
+      fat: string;
+      keywords: string;
+      cuisine: string;
+      video: {
+        id: string;
+        title: string;
+        duration: string;
+        date: string;
+        description: string;
+      };
+    };
+
+    review: {
+      title: string;
+      description: string;
+      items: Array<{ title: string; score: string }>;
+      good: string;
+      bad: string;
+      meta: string;
+      rating: string;
+      ratingAverage: string;
+      ratingCount: string;
+    };
+  };
+}
+
+const { article } = Astro.props;
+const lang = article.language || 'en';
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toLocaleDateString(lang === 'ar' ? 'ar-SA' : lang === 'pt-br' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US');
+  } catch {
+    return dateStr;
+  }
+};
+
+const getAuthorName = () => {
+  if (article.author.firstName || article.author.lastName) {
+    return `${article.author.firstName} ${article.author.lastName}`.trim();
+  }
+  return article.author.username || 'Unknown Author';
+};
+---
+
+<article class="article-container">
+  <!-- Header Section -->
+  <header class="article-header">
+    <h1 class="article-title">{article.title}</h1>
+    
+    <!-- Meta Information -->
+    <div class="article-meta">
+      <span class="meta-item author-meta">
+        <span class="meta-label">{translate('common.author', lang)}:</span>
+        <span class="meta-value">{getAuthorName()}</span>
+      </span>
+      
+      <span class="meta-item">
+        <span class="meta-label">{translate('common.published', lang)}:</span>
+        <span class="meta-value">{formatDate(article.date)}</span>
+      </span>
+
+      {article.modifiedDate && (
+        <span class="meta-item">
+          <span class="meta-label">{translate('common.modified', lang)}:</span>
+          <span class="meta-value">{formatDate(article.modifiedDate)}</span>
+        </span>
+      )}
+    </div>
+  </header>
+
+  <!-- Featured Image -->
+  {article.image?.url && (
+    <section class="article-featured-image">
+      <figure>
+        <img 
+          src={article.image.url} 
+          alt={article.image.altText || article.image.title || article.title}
+          title={article.image.title}
+          loading="lazy"
+        />
+        {article.image.caption && (
+          <figcaption class="image-caption">{article.image.caption}</figcaption>
+        )}
+        {article.image.description && (
+          <div class="image-description">{article.image.description}</div>
+        )}
+      </figure>
+    </section>
+  )}
+
+  <!-- Article Content -->
+  <section class="article-content">
+    {article.excerpt && (
+      <div class="article-excerpt">
+        <p>{article.excerpt}</p>
+      </div>
+    )}
+    
+    <div class="article-body" set:html={article.content} />
+  </section>
+
+  <!-- Taxonomy/Tags Section -->
+  {(article.taxonomy.categories?.length > 0 || 
+    article.taxonomy.tags?.length > 0 || 
+    article.taxonomy.costs?.length > 0 || 
+    article.taxonomy.difficulties?.length > 0 || 
+    article.taxonomy.diets?.length > 0 || 
+    article.taxonomy.seasons?.length > 0 || 
+    article.taxonomy.themes?.length > 0) && (
+    <section class="article-taxonomy">
+      <h2>{translate('common.categories', lang)}</h2>
+      
+      {article.taxonomy.categories?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>{translate('common.categories', lang)}</h3>
+          <ul class="tags-list">
+            {article.taxonomy.categories.map(cat => (
+              <li><a href={`/categories/${cat.toLowerCase().replace(/\s+/g, '-')}`} class="tag">{cat}</a></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {article.taxonomy.tags?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>{translate('common.tags', lang)}</h3>
+          <ul class="tags-list">
+            {article.taxonomy.tags.map(tag => (
+              <li><a href={`/tags/${tag.toLowerCase().replace(/\s+/g, '-')}`} class="tag">{tag}</a></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {article.taxonomy.costs?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>{translate('recipe.cost', lang)}</h3>
+          <ul class="tags-list">
+            {article.taxonomy.costs.map(cost => (
+              <li><span class="badge cost">{cost}</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {article.taxonomy.difficulties?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>Difficulties</h3>
+          <ul class="tags-list">
+            {article.taxonomy.difficulties.map(diff => (
+              <li><span class="badge difficulty">{diff}</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {article.taxonomy.diets?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>Diets</h3>
+          <ul class="tags-list">
+            {article.taxonomy.diets.map(diet => (
+              <li><span class="badge diet">{diet}</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {article.taxonomy.seasons?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>{translate('recipe.season', lang)}</h3>
+          <ul class="tags-list">
+            {article.taxonomy.seasons.map(season => (
+              <li><span class="badge season">{season}</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {article.taxonomy.themes?.length > 0 && (
+        <div class="taxonomy-group">
+          <h3>Themes</h3>
+          <ul class="tags-list">
+            {article.taxonomy.themes.map(theme => (
+              <li><span class="badge theme">{theme}</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  )}
+
+  <!-- Recipe Section (if recipe exists) -->
+  {article.recipe && (
+    <section class="article-recipe">
+      <h2>{translate('recipe.recipe', lang)}</h2>
+
+      {article.recipe.title && (
+        <h3>{article.recipe.title}</h3>
+      )}
+
+      <div class="recipe-meta">
+        {article.recipe.servings && (
+          <div class="recipe-meta-item">
+            <span class="label">Servings:</span>
+            <span class="value">{article.recipe.servings}</span>
+          </div>
+        )}
+
+        {article.recipe.prepTime && (
+          <div class="recipe-meta-item">
+            <span class="label">Prep Time:</span>
+            <span class="value">{article.recipe.prepTime} {article.recipe.prepTimeFormat}</span>
+          </div>
+        )}
+
+        {article.recipe.cookTime && (
+          <div class="recipe-meta-item">
+            <span class="label">Cook Time:</span>
+            <span class="value">{article.recipe.cookTime} {article.recipe.cookTimeFormat}</span>
+          </div>
+        )}
+
+        {article.recipe.totalTimeFormat && (
+          <div class="recipe-meta-item">
+            <span class="label">Total Time:</span>
+            <span class="value">{article.recipe.totalTimeFormat}</span>
+          </div>
+        )}
+
+        {article.recipe.cuisine && (
+          <div class="recipe-meta-item">
+            <span class="label">Cuisine:</span>
+            <span class="value">{article.recipe.cuisine}</span>
+          </div>
+        )}
+
+        {article.recipe.calories && (
+          <div class="recipe-meta-item">
+            <span class="label">Calories:</span>
+            <span class="value">{article.recipe.calories}</span>
+          </div>
+        )}
+
+        {article.recipe.fat && (
+          <div class="recipe-meta-item">
+            <span class="label">Fat:</span>
+            <span class="value">{article.recipe.fat}</span>
+          </div>
+        )}
+
+        {article.recipe.keywords && (
+          <div class="recipe-meta-item">
+            <span class="label">Keywords:</span>
+            <span class="value">{article.recipe.keywords}</span>
+          </div>
+        )}
+      </div>
+
+      {article.recipe.ingredients && (
+        <div class="recipe-section">
+          <h4>{translate('recipe.ingredients', lang)}</h4>
+          <div set:html={article.recipe.ingredients} />
+        </div>
+      )}
+
+      {article.recipe.instructions && (
+        <div class="recipe-section">
+          <h4>{translate('recipe.instructions', lang)}</h4>
+          <div set:html={article.recipe.instructions} />
+        </div>
+      )}
+
+      {article.recipe.note && (
+        <div class="recipe-section">
+          <h4>Notes</h4>
+          <div set:html={article.recipe.note} />
+        </div>
+      )}
+
+      {article.recipe.video?.id && (
+        <div class="recipe-section">
+          <h4>{translate('recipe.video', lang)}</h4>
+          <div class="video-container">
+            <iframe
+              width="100%"
+              height="480"
+              src={`https://www.youtube.com/embed/${article.recipe.video.id}`}
+              title={article.recipe.video.title}
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          {article.recipe.video.title && (
+            <p class="video-title">{article.recipe.video.title}</p>
+          )}
+          {article.recipe.video.description && (
+            <p class="video-description">{article.recipe.video.description}</p>
+          )}
+        </div>
+      )}
+    </section>
+  )}
+
+  <!-- Review/Rating Section (if review exists) -->
+  {article.review && (
+    <section class="article-review">
+      <h2>{translate('common.review', lang)}</h2>
+
+      {article.review.title && (
+        <h3>{article.review.title}</h3>
+      )}
+
+      {article.review.description && (
+        <div class="review-description" set:html={article.review.description} />
+      )}
+
+      {article.review.items?.length > 0 && (
+        <div class="review-items">
+          <h4>Ratings</h4>
+          <ul class="review-list">
+            {article.review.items.map(item => (
+              <li class="review-item">
+                <span class="review-label">{item.title}</span>
+                <span class="review-score">{item.score}/10</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div class="review-summary">
+        {article.review.rating && (
+          <div class="summary-item">
+            <span class="label">Overall Rating:</span>
+            <span class="value">{article.review.rating}</span>
+          </div>
+        )}
+
+        {article.review.ratingAverage && (
+          <div class="summary-item">
+            <span class="label">Average Rating:</span>
+            <span class="value">{article.review.ratingAverage}</span>
+          </div>
+        )}
+
+        {article.review.ratingCount && (
+          <div class="summary-item">
+            <span class="label">Number of Ratings:</span>
+            <span class="value">{article.review.ratingCount}</span>
+          </div>
+        )}
+
+        {article.review.good && (
+          <div class="summary-item">
+            <span class="label">Pros:</span>
+            <span class="value">{article.review.good}</span>
+          </div>
+        )}
+
+        {article.review.bad && (
+          <div class="summary-item">
+            <span class="label">Cons:</span>
+            <span class="value">{article.review.bad}</span>
+          </div>
+        )}
+
+        {article.review.meta && (
+          <div class="summary-item">
+            <span class="label">Details:</span>
+            <span class="value">{article.review.meta}</span>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Attachment Section -->
+  {article.attachment?.url && (
+    <section class="article-attachment">
+      <h2>Attachment</h2>
+      <div class="attachment-container">
+        <a href={article.attachment.url} class="attachment-link" download>
+          <span class="attachment-icon">📎</span>
+          <span class="attachment-name">{article.attachment.title || article.attachment.filename}</span>
+        </a>
+        {article.attachment.description && (
+          <p class="attachment-description">{article.attachment.description}</p>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Author Bio Section -->
+  <section class="article-author author-meta">
+    <h2>{translate('common.about', lang)} {getAuthorName()}</h2>
+    <div class="author-card">
+      <div class="author-info">
+        <h3>{getAuthorName()}</h3>
+        {article.author.email && (
+          <p class="author-email">
+            <a href={`mailto:${article.author.email}`}>{article.author.email}</a>
+          </p>
+        )}
+        {article.author.username && (
+          <p class="author-username">@{article.author.username}</p>
+        )}
+      </div>
+    </div>
+  </section>
+</article>
+
+<style>
+  .article-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .article-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 1.5rem;
+  }
+
+  .article-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #1a1a1a;
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .meta-label {
+    font-weight: 600;
+  }
+
+  .article-featured-image {
+    margin-bottom: 2rem;
+  }
+
+  .article-featured-image figure {
+    margin: 0;
+    text-align: center;
+  }
+
+  .article-featured-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .image-caption,
+  .image-description {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .article-content {
+    margin-bottom: 2rem;
+    line-height: 1.8;
+  }
+
+  .article-excerpt {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-left: 4px solid #ff6b6b;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+  }
+
+  .article-body {
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  .article-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 4px;
+  }
+
+  .article-taxonomy {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .article-taxonomy h2 {
+    margin-top: 0;
+  }
+
+  .taxonomy-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .taxonomy-group h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .tags-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tags-list li {
+    display: inline-block;
+  }
+
+  .tag {
+    display: inline-block;
+    background: #e8e8e8;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+  }
+
+  .tag:hover {
+    background: #ddd;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .badge.cost {
+    background: #ff6b6b;
+  }
+
+  .badge.difficulty {
+    background: #ff922b;
+  }
+
+  .badge.diet {
+    background: #51cf66;
+  }
+
+  .badge.season {
+    background: #339af0;
+  }
+
+  .badge.theme {
+    background: #9775fa;
+  }
+
+  .article-recipe,
+  .article-review {
+    background: #f0f7ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #ff6b6b;
+  }
+
+  .article-review {
+    border-left-color: #4ecdc4;
+    background: #f0fff7;
+  }
+
+  .recipe-meta,
+  .review-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .recipe-meta-item,
+  .summary-item {
+    padding: 0.5rem;
+  }
+
+  .recipe-meta-item .label,
+  .summary-item .label {
+    font-weight: 600;
+    display: block;
+    font-size: 0.9rem;
+    color: #333;
+  }
+
+  .recipe-meta-item .value,
+  .summary-item .value {
+    display: block;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  .recipe-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+  }
+
+  .recipe-section h4 {
+    margin-top: 0;
+    color: #333;
+  }
+
+  .video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    margin: 1rem 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-title {
+    font-weight: 600;
+    margin: 0.5rem 0;
+  }
+
+  .video-description {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .review-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .review-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .review-item:last-child {
+    border-bottom: none;
+  }
+
+  .review-label {
+    font-weight: 600;
+  }
+
+  .review-score {
+    background: #ffd700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .article-attachment {
+    background: #fff3cd;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #ffc107;
+  }
+
+  .attachment-container {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+  }
+
+  .attachment-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #004085;
+    font-weight: 600;
+    padding: 0.5rem;
+    transition: color 0.3s;
+  }
+
+  .attachment-link:hover {
+    color: #0a3162;
+    text-decoration: underline;
+  }
+
+  .attachment-icon {
+    font-size: 1.5rem;
+  }
+
+  .attachment-description {
+    margin-top: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .article-author {
+    background: #f0f0f0;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+  }
+
+  .author-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .author-info h3 {
+    margin-top: 0;
+  }
+
+  .author-email,
+  .author-username {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .author-email a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+
+  .author-email a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .article-container {
+      padding: 1rem;
+    }
+
+    .article-title {
+      font-size: 1.8rem;
+    }
+
+    .article-meta {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .recipe-meta,
+    .review-summary {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

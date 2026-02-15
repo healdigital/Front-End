@@ -1,0 +1,96 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * Props for the `Checkbox` atom.
+ */
+interface Props extends HTMLAttributes<'input'> {
+  /** Optional label displayed next to the checkbox control. */
+  label?: string;
+  /** Controlled checked state. */
+  checked?: boolean;
+  /** Optional inline validation message. */
+  error?: string;
+}
+
+const { 
+  label, 
+  checked = false, 
+  error,
+  disabled, 
+  id = `checkbox-${Math.random().toString(36).substr(2, 9)}`,
+  class: className,
+  ...rest 
+} = Astro.props;
+
+const wrapperClasses = "inline-flex items-center gap-2 relative group";
+const inputClasses = "peer sr-only"; // Screen reader only input
+
+// Custom checkbox visual
+const visualClasses = [
+    "w-5 h-5 border-2 rounded transition-colors duration-200 flex items-center justify-center",
+    "border-primary-turquoise", // Base border color
+    "peer-checked:bg-primary-turquoise peer-checked:text-primary-white", // Checked state
+    "peer-disabled:opacity-50 peer-disabled:cursor-not-allowed", // Disabled opacity on wrapper usually, but here on visual
+    "peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-primary-turquoise" // Focus ring
+].join(" ");
+
+const labelClasses = "text-sm text-text-primary select-none peer-disabled:opacity-50 peer-disabled:cursor-not-allowed";
+---
+
+<label class={wrapperClasses}>
+  <div class="relative flex items-start gap-2">
+    <div class="flex items-center h-5">
+      <input
+        id={id}
+        type="checkbox"
+        class={inputClasses}
+        checked={checked}
+        disabled={disabled}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
+        {...rest}
+      />
+      
+      <div class:list={[
+        "w-5 h-5 border-2 rounded transition-colors duration-200 flex items-center justify-center",
+        error ? "border-status-error" : "border-primary-turquoise",
+        "peer-checked:bg-primary-turquoise peer-checked:text-primary-white",
+        "peer-disabled:opacity-50 peer-disabled:cursor-not-allowed",
+        "peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-primary-turquoise",
+        error ? "peer-focus-visible:ring-status-error" : "peer-focus-visible:ring-primary-turquoise"
+      ]}>
+        <svg 
+          class="w-3.5 h-3.5 opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
+          viewBox="0 0 14 10" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            d="M1 5L4.5 8.5L13 1" 
+            stroke="currentColor" 
+            stroke-width="2" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+
+    {label && <span class={labelClasses}>{label}</span>}
+  </div>
+  
+  {error && (
+    <p id={`${id}-error`} class="mt-1 text-xs text-status-error animate-pulse ml-7">
+      {error}
+    </p>
+  )}
+</label>
+
+<style>
+/* CSS to handle the SVG visibility based on sibling checked state if peer selector fails or for complex logic */
+/* But peer-checked should work fine with Tailwind */
+input:checked + div svg {
+    opacity: 1;
+}
+</style>

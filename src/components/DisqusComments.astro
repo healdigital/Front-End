@@ -1,0 +1,48 @@
+---
+interface Props {
+  identifier: string;
+  url: string;
+  title?: string;
+}
+
+const { identifier, url, title } = Astro.props;
+const shortname = import.meta.env.PUBLIC_DISQUS_SHORTNAME || '';
+const isConfigured = Boolean(shortname && identifier && url);
+---
+
+<div id="comments-section" class="mt-8" data-no-translate="true">
+  <h3 class="text-2xl font-bold mb-4">Comments</h3>
+
+  {isConfigured ? (
+    <>
+      <div id="disqus_thread"></div>
+      <script
+        is:inline
+        define:vars={{ disqusUrl: url, disqusIdentifier: identifier, disqusTitle: title ?? identifier, disqusShortname: shortname }}
+      >
+        var disqus_config = function () {
+          this.page.url = disqusUrl;
+          this.page.identifier = disqusIdentifier;
+          this.page.title = disqusTitle;
+        };
+        (function () {
+          var d = document, s = d.createElement('script');
+          s.src = 'https://' + disqusShortname + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', Date.now().toString());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+      <noscript>
+        Please enable JavaScript to view the comments powered by Disqus.
+      </noscript>
+    </>
+  ) : (
+    <p class="text-gray-500 italic">Disqus is not configured.</p>
+  )}
+</div>
+
+<style>
+  #disqus_thread {
+    margin-top: 1rem;
+  }
+</style>

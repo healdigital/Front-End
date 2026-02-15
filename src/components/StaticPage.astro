@@ -1,0 +1,134 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+}
+
+const { title, subtitle } = Astro.props;
+---
+
+<section class="static-page min-h-[60vh] bg-gray-50 dark:bg-gray-900">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <header class="mb-8">
+      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
+        {title}
+      </h1>
+      {subtitle && (
+        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+          {subtitle}
+        </p>
+      )}
+    </header>
+
+    <div class="prose max-w-none dark:prose-invert">
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .static-page .wp-content,
+  .static-page .prose {
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .static-page .wp-content h2,
+  .static-page .wp-content h3,
+  .static-page .wp-content h4 {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .static-page .wp-content p {
+    margin: 1.25rem 0;
+  }
+
+  .static-page .wp-content .wpb-content-wrapper {
+    max-width: 100%;
+  }
+
+  .static-page .wp-content .penci-grid {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .static-page .wp-content .penci-grid .grid-style,
+  .static-page .wp-content .mag-post-box {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    padding: 1rem;
+  }
+
+  .static-page .wp-content .mag-post-box {
+    margin-bottom: 1.25rem;
+  }
+
+  .static-page .wp-content .penci-image-holder {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-size: cover;
+    background-position: center;
+    border-radius: 14px;
+    margin-bottom: 0.85rem;
+  }
+
+  .static-page .wp-content .grid-title,
+  .static-page .wp-content .magcat-title-small,
+  .static-page .wp-content .magcat-titlte {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .static-page .wp-content .grid-header-box,
+  .static-page .wp-content .magcat-detail {
+    margin-top: 0.5rem;
+  }
+
+  .static-page .wp-content img,
+  .static-page .wp-content iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    margin: 1.5rem auto;
+  }
+
+  .static-page .wp-content iframe {
+    width: 100%;
+    min-height: 360px;
+  }
+
+  .static-page .wp-content figure,
+  .static-page .wp-content .separator {
+    margin: 1.75rem 0;
+  }
+
+  .static-page .wp-content a {
+    color: #0f766e;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .static-page .wp-content ul,
+  .static-page .wp-content ol {
+    margin: 1.5rem 0 1.5rem 1.5rem;
+  }
+
+  .static-page .wp-content blockquote {
+    border-left: 4px solid #14b8a6;
+    padding-left: 1rem;
+    color: #475569;
+    margin: 1.5rem 0;
+    font-style: italic;
+  }
+</style>

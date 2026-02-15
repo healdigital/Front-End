@@ -1,0 +1,340 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { t as translate } from "../i18n";
+import { processArticleImageUrl } from "../utils/cdnUrlReplacer";
+
+export const prerender = true;
+
+// Default language
+const lang = 'en';
+const title = translate('nav.search', lang);
+const noResults = translate('common.notFound', lang);
+---
+<style is:global>
+  * {
+    box-sizing: border-box;
+  }
+
+  .search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 3.2rem;
+    color: #1a1a1a;
+    margin: 0 0 15px 0;
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1.1;
+  }
+
+  .search-subtitle {
+    color: #666;
+    font-size: 1.15rem;
+    margin-bottom: 50px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 50px;
+  }
+
+  .result-card {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .result-card:hover {
+    transform: translateY(-4px);
+    border-color: #8b6914;
+    box-shadow: 0 8px 16px rgba(139, 105, 20, 0.12);
+  }
+
+  .result-image {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .result-card:hover .result-image {
+    transform: scale(1.05);
+  }
+
+  .result-content {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .result-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .result-category {
+    background-color: #f0e6d2;
+    color: #8b6914;
+  }
+
+  .result-keyword {
+    background-color: #d4e6f1;
+    color: #0066cc;
+  }
+
+  .result-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    transition: color 0.2s;
+    line-height: 1.2;
+  }
+
+  .result-card:hover .result-title {
+    color: #8b6914;
+  }
+
+  .result-description {
+    color: #555;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    display: none;
+    flex: 1;
+  }
+
+  #no-results {
+    display: none;
+    text-align: center;
+    padding: 100px 20px;
+    color: #999;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  #no-results:not([style*="display: none"]) {
+    display: block;
+  }
+
+  @media (max-width: 768px) {
+    .results-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 35px;
+    }
+
+    .result-image {
+      height: 70px;
+    }
+
+    .result-content {
+      padding: 8px;
+    }
+
+    .result-title {
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .search-container {
+      padding: 30px 12px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .search-subtitle {
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+    }
+
+    .results-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .result-image {
+      height: 80px;
+    }
+
+    .result-content {
+      padding: 8px;
+    }
+
+    .result-title {
+      font-size: 0.85rem;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    h1 {
+      color: #1a1a1a;
+    }
+
+    .search-subtitle {
+      color: #555;
+    }
+
+    .result-card {
+      background: white;
+      border-color: #ddd;
+    }
+
+    .result-card:hover {
+      border-color: #8b6914;
+      box-shadow: 0 12px 28px rgba(139, 105, 20, 0.15);
+    }
+
+    .result-title {
+      color: #1a1a1a;
+    }
+
+    .result-description {
+      color: #555;
+    }
+
+    #no-results {
+      color: #999;
+    }
+  }
+</style>
+
+<BaseLayout title={title} lang={lang}>
+  <div class="search-container">
+    <h1 id="search-title">Search Articles</h1>
+    <p class="search-subtitle" id="search-subtitle">
+      Use the search bar in the header to find articles
+    </p>
+
+    <div id="no-results" class="no-results" style="display: none;">
+      <p>Try a different search term</p>
+    </div>
+
+    <div class="results-grid" id="results-grid">
+      <!-- Results will be populated by JavaScript -->
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Get search query from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get('q') || '';
+
+  let searchIndex = [];
+
+  // Load search index
+  async function loadSearchIndex() {
+    try {
+      const response = await fetch('/search-index.json');
+      searchIndex = await response.json();
+
+      // Perform search if query exists
+      if (searchQuery.trim()) {
+        performSearch(searchQuery.trim());
+      }
+    } catch (error) {
+      console.error('Error loading search index:', error);
+      const subtitleEl = document.getElementById('search-subtitle');
+      if (subtitleEl) {
+        subtitleEl.textContent = 'Search index unavailable. Please try again later.';
+      }
+    }
+  }
+
+  function performSearch(query) {
+    if (!searchIndex.length) {
+      updateUI(query, []);
+      return;
+    }
+
+    const normalizedQuery = query.toLowerCase();
+    const results = searchIndex
+      .filter((article) => {
+        const haystack = (article.searchableText
+          || `${article.title || ''} ${article.excerpt || ''} ${article.content || ''} ${article.category || ''} ${article.tags || ''}`
+        ).toLowerCase();
+        return haystack.includes(normalizedQuery);
+      })
+      .slice(0, 50);
+
+    updateUI(query, results);
+  }
+
+  function updateUI(query, results) {
+    const titleEl = document.getElementById('search-title');
+    const subtitleEl = document.getElementById('search-subtitle');
+    const noResultsEl = document.getElementById('no-results');
+    const resultsGrid = document.getElementById('results-grid');
+
+    if (query) {
+      titleEl.textContent = 'Search Results';
+      subtitleEl.innerHTML = results.length > 0
+        ? `Found <strong>${results.length}</strong> article${results.length !== 1 ? 's' : ''} for "<strong>${query}</strong>"`
+        : `No results found for "<strong>${query}</strong>"`;
+    } else {
+      titleEl.textContent = 'Search Articles';
+      subtitleEl.textContent = 'Use the search bar in the header to find articles';
+    }
+
+    if (results.length === 0 && query) {
+      noResultsEl.style.display = 'block';
+      resultsGrid.innerHTML = '';
+    } else {
+      noResultsEl.style.display = 'none';
+      resultsGrid.innerHTML = results.map(article => {
+        const imageUrl = article.featured_image?.url;
+        const imageAlt = article.featured_image?.alt || article.title;
+
+        return `
+          <a href="/${article.slug}" class="result-card">
+            ${imageUrl ? `<img src="${imageUrl}" alt="${imageAlt}" class="result-image" loading="lazy" />` : '<div class="result-image" style="background: #f0f0f0;"></div>'}
+            <div class="result-content">
+              <span class="result-title">${article.title}</span>
+              ${article.category ? `<div class="result-tags"><span class="result-tag result-category">${article.category}</span></div>` : ''}
+              <p class="result-description">${article.excerpt || ''}</p>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+  }
+
+  // Load index on page load
+  loadSearchIndex();
+</script>

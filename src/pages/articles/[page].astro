@@ -1,0 +1,170 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { payloadFetch } from '../../lib/payload.client';
+import { getAllArticlesFromMongo } from '../../lib/mongo.server';
+
+export const prerender = true;
+const envBuildLimit = Number(process.env.MAX_SSG_ARTICLES);
+const buildLimit = Number.isFinite(envBuildLimit) && envBuildLimit > 0 ? envBuildLimit : 50;
+
+const articleSlug = (article: any) => {
+  if (!article) return '';
+  if (typeof article.slug === 'string') return article.slug;
+  if (article.slug?.current) return article.slug.current;
+  return '';
+};
+
+export async function getStaticPaths() {
+  const envMax = Number(process.env.MAX_SSG_ARTICLES);
+  const buildLimit = Number.isFinite(envMax) && envMax > 0 ? envMax : 50;
+
+  // Use MongoDB as primary data source during build time
+  let allArticles = await getAllArticlesFromMongo();
+  
+  // Fallback to Payload if MongoDB fails
+  if (!allArticles || allArticles.length === 0) {
+    const result: any = await payloadFetch({
+      collection: 'articles',
+      query: { depth: 1, limit: buildLimit }
+    });
+    allArticles = result?.docs || result || [];
+  }
+  
+  const articlesPerPage = 12;
+  const totalPages = Math.ceil(allArticles.length / articlesPerPage);
+
+  const paths = Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
+    params: { page: String(i + 2) },
+  }));
+
+  return paths;
+}
+
+const { page } = Astro.params;
+const currentPage = parseInt(page as string);
+const articlesPerPage = 12;
+
+let allArticles = await getAllArticlesFromMongo();
+if (!allArticles || allArticles.length === 0) {
+  const result: any = await payloadFetch({
+    collection: 'articles',
+    query: { depth: 2, limit: buildLimit }
+  });
+  allArticles = result?.docs || result || [];
+}
+const articles = (Array.isArray(allArticles) ? allArticles : []).filter((a: any) => a && a.title);
+const totalPages = Math.ceil(articles.length / articlesPerPage);
+const startIdx = (currentPage - 1) * articlesPerPage;
+const endIdx = startIdx + articlesPerPage;
+const paginatedArticles = articles.slice(startIdx, endIdx);
+
+const stripHtml = (html: string) => {
+  if (!html) return '';
+  const text = html.replace(/<[^>]*>/g, '');
+  return text.substring(0, 150) + (text.length > 150 ? '...' : '');
+};
+
+const getExcerpt = (article: any) => {
+  if (article.excerpt && Array.isArray(article.excerpt)) {
+    const text = article.excerpt.map((block: any) => 
+      block.children?.map((child: any) => child.text).join(' ') || ''
+    ).join(' ');
+    return stripHtml(text);
+  }
+  if (article.content && Array.isArray(article.content)) {
+    const text = article.content.map((block: any) => 
+      block.children?.map((child: any) => child.text).join(' ') || ''
+    ).join(' ');
+    return stripHtml(text);
+  }
+  return '';
+};
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+---
+
+<BaseLayout title={`Articles - Page ${currentPage}`}>
+  <main class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Articles</h1>
+        <p class="text-xl text-gray-600 dark:text-gray-400">Page {currentPage} of {totalPages}</p>
+      </div>
+
+      {paginatedArticles.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {paginatedArticles.map((article: any) => (
+            <article class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
+              {article.featuredImageUrl && (
+                <div class="aspect-video overflow-hidden bg-gray-200">
+                  <img src={article.featuredImageUrl} alt={article.title} class="w-full h-full object-cover" />
+                </div>
+              )}
+              <div class="p-6">
+                {article.categories?.length > 0 && (
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    {article.categories.map((cat: any) => (
+                      <a href={`/categories/${cat.slug?.current}`} class="inline-block px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded">
+                        {cat.title}
+                      </a>
+                    ))}
+                  </div>
+                )}
+                <h2 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                  <a href={`/articles/${articleSlug(article)}`} class="hover:text-blue-600">
+                    {article.title}
+                  </a>
+                </h2>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">{getExcerpt(article)}</p>
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                  <span>{formatDate(article.date)}</span>
+                  {article.author && <span class="author-meta">{article.author.name}</span>}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12">
+          <p class="text-gray-600 text-lg">No articles found</p>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div class="flex justify-center items-center gap-2 mt-12">
+          {currentPage > 1 && (
+            <a href={currentPage === 2 ? '/articles' : `/articles/page/${currentPage - 1}`} class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+              ← Previous
+            </a>
+          )}
+          
+          <div class="flex gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <a 
+                  href={pageNum === 1 ? '/articles' : `/articles/page/${pageNum}`}
+                  class={`px-3 py-2 rounded ${pageNum === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900 hover:bg-gray-300'}`}
+                >
+                  {pageNum}
+                </a>
+              );
+            })}
+          </div>
+
+          {currentPage < totalPages && (
+            <a href={`/articles/page/${currentPage + 1}`} class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+              Next →
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>

@@ -1,0 +1,129 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as BadgeStories from '../components/atoms/Badge.stories';
+import * as ButtonStories from '../components/atoms/Button.stories';
+import * as CheckboxStories from '../components/atoms/Checkbox.stories';
+import * as IconStories from '../components/atoms/Icon.stories';
+import * as InputStories from '../components/atoms/Input.stories';
+import * as LogoStories from '../components/atoms/Logo.stories';
+import * as DateBadgeStories from '../components/molecules/DateBadge.stories';
+import * as FilterDropdownStories from '../components/molecules/FilterDropdown.stories';
+import * as NavigationStories from '../components/molecules/Navigation.stories';
+import * as SearchFieldStories from '../components/molecules/SearchField.stories';
+import * as SocialShareStories from '../components/molecules/SocialShare.stories';
+import * as FooterStories from '../components/organisms/Footer.stories';
+import * as HeaderStories from '../components/organisms/Header.stories';
+import * as MasterclassCardStories from '../components/organisms/MasterclassCard.stories';
+import * as NewsletterModalStories from '../components/organisms/NewsletterModal.stories';
+import * as PaginationStories from '../components/organisms/Pagination.stories';
+import * as RecipeCardStories from '../components/organisms/RecipeCard.stories';
+import * as WorkshopCardStories from '../components/organisms/WorkshopCard.stories';
+
+<Meta title="Documentation/Component Library" />
+
+# Component Library
+
+This page centralizes usage patterns and design notes for all `atoms`, `molecules`, and `organisms`.
+
+## Atoms
+
+### Badge
+Usage pattern: highlight taxonomy, state, or premium context near content labels.
+Design notes: keep text concise and use `premium` only for high-value actions or gated content.
+<Canvas of={BadgeStories.Category} />
+
+### Button
+Usage pattern: primary for the main call to action, secondary for supporting actions.
+Design notes: keep one primary action per section and reserve disabled state for blocked flows.
+<Canvas of={ButtonStories.Primary} />
+<Canvas of={ButtonStories.Disabled} />
+
+### Checkbox
+Usage pattern: collect explicit consent and optional preferences in forms.
+Design notes: always pair with a label and display `error` when submission is blocked.
+<Canvas of={CheckboxStories.Default} />
+<Canvas of={CheckboxStories.WithError} />
+
+### Icon
+Usage pattern: reinforce labels in actions, status chips, and social links.
+Design notes: avoid icon-only controls without `aria-label`.
+<Canvas of={IconStories.Default} />
+
+### Input
+Usage pattern: use for user data entry with inline feedback.
+Design notes: pair with visible labels and expose validation through `error`.
+<Canvas of={InputStories.Default} />
+<Canvas of={InputStories.WithError} />
+
+### Logo
+Usage pattern: home link in global navigation and mobile drawers.
+Design notes: keep it stable in size and spacing across breakpoints.
+<Canvas of={LogoStories.Default} />
+
+## Molecules
+
+### DateBadge
+Usage pattern: short event/date marker for cards and listings.
+Design notes: keep card dimensions fixed to avoid layout shifts.
+<Canvas of={DateBadgeStories.Default} />
+
+### FilterDropdown
+Usage pattern: small collection filters on archive and listing pages.
+Design notes: limit options per dropdown and keep labels action-oriented.
+<Canvas of={FilterDropdownStories.Default} />
+
+### Navigation
+Usage pattern: primary navigation in header desktop and mobile drawer.
+Design notes: pass `activePath` when route context is known server-side.
+<Canvas of={NavigationStories.Default} />
+<Canvas of={NavigationStories.VerticalMenu} />
+
+### SearchField
+Usage pattern: quick-access query input in header contexts.
+Design notes: keep placeholder explicit and preserve error feedback on invalid query.
+<Canvas of={SearchFieldStories.Default} />
+
+### SocialShare
+Usage pattern: secondary action group for article/recipe distribution.
+Design notes: keep share links visually lightweight so they do not compete with CTA buttons.
+<Canvas of={SocialShareStories.Default} />
+
+## Organisms
+
+### Header
+Usage pattern: sticky top navigation shell with search and utility actions.
+Design notes: pass `activePath` to synchronize highlighted links with current route.
+<Canvas of={HeaderStories.Default} />
+
+### Footer
+Usage pattern: global site closing section with navigation and social links.
+Design notes: keep secondary links grouped and avoid overcrowding the legal area.
+<Canvas of={FooterStories.Default} />
+
+### MasterclassCard
+Usage pattern: premium offer card with benefits and pricing emphasis.
+Design notes: keep feature bullets short and use one dominant CTA.
+<Canvas of={MasterclassCardStories.Default} />
+
+### NewsletterModal
+Usage pattern: conversion-focused subscription flow triggered from content surfaces.
+Design notes: keep form minimal and validate email/consent inline.
+<Canvas of={NewsletterModalStories.Default} />
+
+### Pagination
+Usage pattern: page-level navigation for long result sets.
+Design notes: always display current page and ensure arrows stay keyboard accessible.
+<Canvas of={PaginationStories.Default} />
+<Canvas of={PaginationStories.ManyPages} />
+
+### RecipeCard
+Usage pattern: grid/list card for recipe discovery pages.
+Design notes: keep titles to two lines and preserve visual rhythm across cards.
+<Canvas of={RecipeCardStories.Default} />
+<Canvas of={RecipeCardStories.Favorite} />
+
+### WorkshopCard
+Usage pattern: event card that combines date, capacity, and booking state.
+Design notes: use status contrast strongly to differentiate available vs full sessions.
+<Canvas of={WorkshopCardStories.Available} />
+<Canvas of={WorkshopCardStories.Full} />
+

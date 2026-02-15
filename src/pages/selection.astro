@@ -1,0 +1,23 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import StaticPageContent from "../components/StaticPageContent.astro";
+---
+
+<BaseLayout title="Selections">
+  <StaticPage title="Selections" subtitle="Curated collections">
+    <StaticPageContent
+      slug="selection"
+      sourceUrl="https://lacuisinedebernard.com/selection/"
+    >
+      <p>Selection content will be imported from the original site.</p>
+      <ul>
+        <li><a href="/selection/repas-de-noel-36-recettes-traditionnelles-originales">Christmas Meal 2024: My 36 Traditional &amp; Original Recipes</a></li>
+        <li><a href="/galette-des-rois-mes-recettes-traditionnelles-et-creatives">King Cake: My Traditional and Creative Recipes</a></li>
+        <li><a href="/foie-gras-maison-conseils-et-recettes">Homemade foie gras: tips and recipes!</a></li>
+        <li><a href="/theme/noel">Christmas Recipes</a></li>
+        <li><a href="/selection/quelques-recettes-automnales">Autumn recipes</a></li>
+      </ul>
+    </StaticPageContent>
+  </StaticPage>
+</BaseLayout>

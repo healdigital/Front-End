@@ -1,0 +1,106 @@
+---
+import Badge from '../atoms/Badge.astro';
+import SocialShare from '../molecules/SocialShare.astro';
+import Icon from '../atoms/Icon.astro';
+
+/**
+ * Props for the `RecipeCard` organism.
+ */
+interface Props {
+  /** Recipe title displayed in the card header. */
+  title: string;
+  /** Destination URL for the recipe details page. */
+  slug: string;
+  /** Hero image URL or asset reference. */
+  image: string;
+  /** Short summary rendered in the description area. */
+  description: string;
+  /** Preparation time label (for example, `25 min`). */
+  prepTime: string;
+  /** Difficulty label shown as a status badge. */
+  difficulty: string;
+  /** Category badge label. */
+  category?: string;
+  /** Controls the visual state of the favorite icon. */
+  isFavorite?: boolean;
+}
+
+const {
+  title,
+  slug,
+  image,
+  description,
+  prepTime,
+  difficulty,
+  category = "RECETTE",
+  isFavorite = false
+} = Astro.props;
+
+const MAX_LENGTH = 120;
+const truncatedDescription = description.length > MAX_LENGTH
+  ? description.slice(0, MAX_LENGTH).trim() + '...'
+  : description;
+---
+
+<article class="group w-full rounded-[10px] bg-white overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl border border-gray-100 flex flex-col h-full">
+  <!-- Image Container -->
+  <div class="relative h-[220px] w-full overflow-hidden">
+    <img
+      src={image}
+      alt={title}
+      width="432"
+      height="220"
+      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      loading="lazy"
+    />
+
+    <!-- Category Badge -->
+    <div class="absolute top-3 left-3">
+      <Badge variant="category" icon="utensils">{category}</Badge>
+    </div>
+
+    <!-- Favorite Button -->
+    <button
+      class="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm text-text-primary hover:text-red-500 transition-colors"
+      aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+    >
+      <Icon name="heart" class={isFavorite ? "text-red-500 fill-current" : ""} />
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="p-4 md:p-5 flex flex-col gap-3 flex-1">
+    <!-- Meta -->
+    <div class="flex items-center gap-3">
+      <Badge variant="status" class="uppercase font-mono">{difficulty}</Badge>
+      <div class="flex items-center gap-1 font-mono text-sm text-text-secondary">
+        <Icon name="clock" size="sm" />
+        <span>{prepTime}</span>
+      </div>
+    </div>
+
+    <!-- Title & Description -->
+    <div class="flex-1">
+      <h3 class="text-xl font-heading text-text-primary mb-1.5 line-clamp-2">
+        <a href={slug} class="hover:text-primary-turquoise transition-colors">
+          {title}
+        </a>
+      </h3>
+      <p class="text-text-secondary font-body text-base leading-relaxed line-clamp-3">
+        {truncatedDescription}
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between pt-3 border-t border-border-light mt-auto">
+      <a
+        href={slug}
+        class="text-primary-turquoise font-button font-medium text-sm hover:underline uppercase tracking-wide inline-flex items-center gap-1"
+      >
+        Lire la suite
+        <Icon name="arrow-right" size="sm" />
+      </a>
+      <SocialShare url={`${Astro.url.origin}${slug}`} title={title} />
+    </div>
+  </div>
+</article>

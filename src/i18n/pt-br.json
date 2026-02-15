@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Início",
+    "recipes": "Receitas",
+    "articles": "Artigos",
+    "blog": "Blog",
+    "pages": "Páginas",
+    "categories": "Categorias",
+    "cuisines": "Cozinhas",
+    "search": "Pesquisar"
+  },
+  "recipe": {
+    "ingredients": "Ingredientes",
+    "instructions": "Instruções",
+    "notes": "Notas e Dicas",
+    "nutrition": "Informação Nutricional",
+    "gallery": "Galeria",
+    "related": "Receitas Relacionadas",
+    "video": "Vídeo",
+    "author": "Autor",
+    "published": "Publicado",
+    "cost": "Custo",
+    "equipment": "Equipamento",
+    "glossary": "Termos do Glossário",
+    "categories": "Categorias",
+    "cuisines": "Cozinhas",
+    "keywords": "Palavras-chave",
+    "rating": "classificação",
+    "ratings": "classificações",
+    "servings": "Porções",
+    "prepTime": "Tempo de Preparação",
+    "cookTime": "Tempo de Cozimento",
+    "totalTime": "Tempo Total",
+    "calories": "Calorias",
+    "noIngredients": "Nenhum ingrediente disponível",
+    "noInstructions": "Nenhuma instrução disponível",
+    "noAuthorBio": "Autor de receitas do nosso blog de culinária."
+  },
+  "common": {
+    "search": "Pesquisar",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "back": "← Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "language": "Idioma",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "notFound": "Não encontrado",
+    "author": "Autor",
+    "published": "Publicado",
+    "modified": "Última modificação",
+    "about": "Sobre",
+    "review": "Rese nha",
+    "categories": "Categorias",
+    "tags": "Etiquetas",
+    "relatedArticles": "Artigos Relacionados"
+  },
+  "breadcrumb": {
+    "home": "Início",
+    "recipes": "Receitas",
+    "articles": "Artigos",
+    "pages": "Páginas"
+  },
+  "social": {
+    "share": "Compartilhar",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "pinterest": "Pinterest",
+    "email": "Email"
+  },
+  "footer": {
+    "copyright": "© 2026. Todos os direitos reservados.",
+    "about": "Sobre",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Serviço",
+    "contact": "Contato"
+  }
+}
