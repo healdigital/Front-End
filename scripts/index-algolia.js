@@ -1,4 +1,4 @@
-import * as algoliasearchPkg from 'algoliasearch';
+import algoliasearch from 'algoliasearch';
 let algoliasearch = algoliasearchPkg.default || algoliasearchPkg;
 if (typeof algoliasearch !== 'function' && typeof algoliasearch.algoliasearch === 'function') {
   algoliasearch = algoliasearch.algoliasearch;
@@ -105,17 +105,9 @@ const processArticleImageUrl = (article) => {
 };
 
 async function fetchArticles() {
-  // Try to load Mongo helper (works when running via ts-node/tsx); otherwise fallback.
-  let articles = [];
-  try {
-    const mod = await import('../src/lib/mongo.server.ts');
-    const getArticles = mod.getAllArticlesFromMongo || mod.getAllArticlesFromMongo?.default || mod.default?.getAllArticlesFromMongo;
-    if (typeof getArticles === 'function') {
-      articles = await getArticles();
-    }
-  } catch (err) {
-    console.warn('[ALGOLIA] Could not import Mongo helper, falling back to Payload API. Error:', err && err.message ? err.message : err);
-  }
+  // Dynamic import keeps this script compatible with tsx in CJS/ESM contexts.
+  const { getAllArticlesFromMongo: getArticles } = await import('../src/lib/mongo.server.ts');
+  let articles = await getArticles();
 
   if (!Array.isArray(articles) || articles.length === 0) {
     const payloadApiUrl = process.env.PUBLIC_PAYLOAD_API_URL || process.env.PAYLOAD_API_URL;
@@ -218,15 +210,7 @@ async function indexAlgolia() {
 
   for (const [langKey, records] of recordsByLang.entries()) {
     const indexName = buildIndexName(langKey);
-    let index;
-    if (typeof client.initIndex === 'function') {
-      index = client.initIndex(indexName);
-    } else if (typeof client.index === 'function') {
-      index = client.index(indexName);
-    } else {
-      console.warn('[ALGOLIA] Unexpected Algolia client shape; using client directly as index.');
-      index = client;
-    }
+    const index = client.initIndex(indexName);
 
     console.log(`[ALGOLIA] Indexing ${records.length} records -> ${indexName}`);
 
