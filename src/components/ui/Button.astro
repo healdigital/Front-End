@@ -1,0 +1,61 @@
+---
+const { 
+  variant = "primary", 
+  size = "md", 
+  type = "button", 
+  href, 
+  class: className, 
+  ...rest 
+} = Astro.props;
+
+const baseStyles = "inline-flex items-center justify-center font-button rounded-xl btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+
+const variants = {
+  primary: "bg-primary-turquoise text-primary-black hover:bg-opacity-90 active:scale-95",
+  secondary: "bg-primary-white text-text-primary border border-border-light hover:bg-secondary-beige-light active:scale-95",
+  ghost: "bg-transparent text-text-primary hover:bg-gray-100 dark:hover:bg-gray-800",
+  outline: "bg-transparent border border-primary-turquoise text-primary-turquoise hover:bg-primary-turquoise/10"
+};
+
+const sizes = {
+  sm: "px-3 py-1.5 text-sm",
+  md: "px-6 py-3 text-base",
+  lg: "px-8 py-4 text-lg"
+};
+
+// Compute classes
+// Make sure to handle cases where variant or size might be invalid gracefully if needed, 
+// primarily mostly reliant on TS/props for validity.
+const computedClasses = [
+    baseStyles,
+    variants[variant] || variants.primary,
+    sizes[size] || sizes.md,
+    className
+].join(" ");
+
+const Tag = href ? "a" : "button";
+---
+
+<Tag 
+    type={!href ? type : undefined} 
+    href={href} 
+    class={computedClasses} 
+    {...rest}
+>
+    <slot />
+</Tag>
+
+<style>
+  .btn-hover-transition {
+    transition-property: transform, background-color, color, border-color, box-shadow, opacity;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+  }
+
+  .btn-state-transition:active,
+  .btn-state-transition:focus-visible,
+  .btn-state-transition[aria-disabled='true'] {
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+  }
+</style>

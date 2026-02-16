@@ -1,79 +1,78 @@
 ---
-interface Props {
-  currentLang?: string;
-}
-
-const { currentLang = 'en' } = Astro.props;
-
-const footerLinks = [
-  { label: 'My account', url: 'https://atelier-lacuisinedebernard.com/mon-compte/' },
-  { label: 'Contact', url: '/contact' },
-  { label: 'Partnership', url: '/partenariat' },
-  { label: 'Legal Notices', url: '/mentions-legales' },
-  { label: 'GDPR', url: '/rgpd' }
+const navigationLinks = [
+  { label: 'Toutes les recettes', url: '/recettes' },
+  { label: 'Techniques', url: '/techniques' },
+  { label: 'Ateliers', url: '/ateliers' },
 ];
 
-const languages = [
-  { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Fran\u00e7ais' },
-  { code: 'es', label: 'Espa\u00f1ol' },
-  { code: 'pt-br', label: 'Portugu\u00eas' },
-  { code: 'ar', label: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629' }
+const legalLinks = [
+  { label: 'Mentions l&eacute;gales', url: '/mentions-legales' },
+  { label: 'Politique de confidentialit&eacute;', url: '/rgpd' },
+  { label: 'CGV', url: '/cgv' },
 ];
 
-const currentYear = new Date().getFullYear();
+const socialLinks = [
+  { icon: 'fab fa-facebook-f', label: 'Facebook', url: 'https://www.facebook.com/lacuisinedebernard' },
+  { icon: 'fab fa-youtube', label: 'YouTube', url: 'https://www.youtube.com/@lacuisinedebernard' },
+  { icon: 'fab fa-pinterest', label: 'Pinterest', url: 'https://www.pinterest.com/lacuisinedebernard' },
+  { icon: 'far fa-envelope', label: 'Email', url: 'mailto:contact@lacuisinedebernard.com' },
+];
 ---
 
-<footer class="bg-gray-900 dark:bg-black text-white mt-16">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <!-- Links Section -->
-    <div class="flex flex-wrap justify-center gap-6 mb-8 pb-8 border-b border-gray-700">
-      {footerLinks.map((link, index) => (
-        <>
-          <a
-            href={link.url}
-            class="text-gray-400 hover:text-orange-500 transition-colors font-medium"
-          >
-            {link.label}
-          </a>
-          {index < footerLinks.length - 1 && (
-            <span class="text-gray-600">|</span>
-          )}
-        </>
-      ))}
-    </div>
-
-    <!-- Copyright Text -->
-    <div class="text-center mb-8">
-      <p class="text-gray-400 text-sm mb-4">
-        The texts, recipes, and photos are the property of Bernard Laurance and the website 'La Cuisine de Bernard'.
-      </p>
-      <p class="text-gray-400 text-sm mb-6">
-        No part of this site may be copied or reused without permission.
-      </p>
-      <p class="text-gray-500 font-bold text-lg">
-        &copy;{2010} - {currentYear} La Cuisine de Bernard
-      </p>
-    </div>
-
-    <!-- Language Section -->
-    <div class="border-t border-gray-700 pt-8">
-      <div class="flex flex-wrap justify-center gap-4 mb-8" data-no-translate="true">
-        {languages.map((lang) => (
-          <a
-            href="#"
-            class={`lang-btn px-3 py-1 rounded-full transition-all ${
-              currentLang === lang.code
-                ? 'bg-orange-500 text-white font-bold'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
-            data-lang={lang.code}
-          >
-            {lang.label}
-          </a>
-        ))}
+<footer class="bg-[#1A2335] text-white border-t border-white/10" role="contentinfo">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] pt-14 pb-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <h3 class="font-heading text-[22px] typ-card-title">La Cuisine de Bernard</h3>
+        <p class="text-white/70 text-[14px] leading-relaxed mt-4 typ-body">
+          Des recettes authentiques et des techniques professionnelles pour tous les passionn&eacute;s de p&acirc;tisserie depuis 2010.
+        </p>
       </div>
 
+      <div>
+        <h4 class="font-heading text-[18px] typ-card-title">Navigation</h4>
+        <ul class="mt-4 space-y-3 text-[14px] text-white/70">
+          {navigationLinks.map((link) => (
+            <li>
+              <a href={link.url} class="hover:text-primary-turquoise transition-colors" set:html={link.label}></a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-heading text-[18px] typ-card-title">L&eacute;gal</h4>
+        <ul class="mt-4 space-y-3 text-[14px] text-white/70">
+          {legalLinks.map((link) => (
+            <li>
+              <a href={link.url} class="hover:text-primary-turquoise transition-colors" set:html={link.label}></a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-heading text-[18px] typ-card-title">Suivez-moi</h4>
+        <div class="flex items-center gap-4 mt-4 text-white/80">
+          {socialLinks.map((link) => (
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={link.label}
+              class="hover:text-primary-turquoise transition-colors"
+            >
+              <i class={link.icon}></i>
+            </a>
+          ))}
+        </div>
+        <a
+          href="/contact"
+          class="inline-flex items-center justify-center mt-6 px-6 py-3 bg-primary-turquoise text-primary-black font-button font-medium text-[12px] uppercase tracking-wider rounded-sm typ-button"
+        >
+          Contactez-moi
+        </a>
+      </div>
     </div>
   </div>
 </footer>

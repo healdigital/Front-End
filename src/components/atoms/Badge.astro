@@ -1,0 +1,43 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * Props for the `Badge` atom.
+ */
+interface Props extends HTMLAttributes<'span'> {
+  /** Visual variant used for contextual styling. */
+  variant?: 'category' | 'status' | 'premium';
+  /** Optional icon token rendered before the label. */
+  icon?: string;
+}
+
+const { 
+  variant = 'category', 
+  icon,
+  class: className, 
+  ...rest 
+} = Astro.props;
+
+const baseStyles = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-xs font-medium uppercase tracking-wide backdrop-blur-md border";
+
+const variants = {
+  category: "bg-primary-white/10 border-white/20 text-text-primary",
+  status: "bg-status-success/10 border-status-success/20 text-status-success", // Default status style, could be dynamic
+  premium: "bg-status-premium/10 border-status-premium/20 text-status-premium shadow-sm"
+};
+
+// Adjust status based on specific needs if passed, but for now simple variant map
+// If status needs sub-variants (success, error), we might need another prop.
+// Requirement 3.4 just says "variants category, status, premium".
+
+const classes = [
+  baseStyles,
+  variants[variant],
+  className
+].join(" ");
+---
+
+<span class={classes} {...rest}>
+  {icon && <span class={`icon-${icon}`} aria-hidden="true"></span>}
+  <slot />
+</span>

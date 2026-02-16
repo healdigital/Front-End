@@ -11,6 +11,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+logs.ini
 
 # environment variables
 .env
@@ -26,9 +27,12 @@ LCDB
 LCDB.pub
 prepared-articles.json
 prepared-articles*.json
+Front
+Front.pub
 
 # local build caches
 .vite-cache-build/
+.vite-cache/
 
 # Build and log files
 build.log
@@ -53,12 +57,21 @@ SCRIPT_*.md
 TEST_*.md
 UPDATED_*.md
 COMPLETE_*.md
+wp_pages/
 
 # Generated files
 *.output.txt
 *_output.txt
 *_run.txt
 missing_articles.txt
+test-output.html
+
+# Reports / coverage
+coverage/
+storybook-static/
+.lighthouseci/
+playwright-report/
+test-results/
 
 # macOS-specific files
 .DS_Store

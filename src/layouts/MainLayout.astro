@@ -1,0 +1,49 @@
+---
+import SEO from '../components/SEO.astro';
+import Header from '../components/Header.astro';
+import GlobalFooter from '../components/GlobalFooter.astro';
+import '../styles/global.css';
+import '@fortawesome/fontawesome-free/css/all.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  lang?: string;
+}
+
+const { title, description, image, lang = 'en' } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang} data-lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <SEO title={title} description={description} image={image} />
+  </head>
+  <body class="bg-primary-white text-text-primary antialiased min-h-screen flex flex-col">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-primary-white text-primary-black border border-primary-black rounded-md shadow-lg">
+      Skip to main content
+    </a>
+    <Header lang={lang} />
+    <main id="main-content" class="flex-1">
+      <slot />
+    </main>
+    <GlobalFooter currentLang={lang} />
+  </body>
+</html>
+
+<script>
+  import { initializeTranslations, setupLanguageSwitcher, watchLanguageChanges, changeLanguage, getCurrentLanguage } from '../utils/dynamicTranslate';
+
+  async function init() {
+    await initializeTranslations();
+    setupLanguageSwitcher();
+    watchLanguageChanges();
+    await changeLanguage(getCurrentLanguage());
+  }
+
+  init().catch(error => console.error('Failed to initialize translations:', error));
+</script>

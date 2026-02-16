@@ -1,0 +1,169 @@
+---
+import Button from '../atoms/Button.astro';
+import Icon from '../atoms/Icon.astro';
+// import { getPageNumbers } from '../../utils/pagination';
+
+function getPageNumbers(current: number, total: number): (number | string)[] {
+    if (total <= 7) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const items: (number | string)[] = [1];
+    let rangeStart = Math.max(2, current - 1);
+    let rangeEnd = Math.min(total - 1, current + 1);
+
+    if (current <= 3) {
+        rangeEnd = Math.max(rangeEnd, 4);
+        rangeStart = 2;
+    }
+    if (current >= total - 2) {
+        rangeStart = Math.min(rangeStart, total - 3);
+        rangeEnd = total - 1;
+    }
+
+    if (rangeStart > 2) {
+        items.push('...');
+    }
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        items.push(i);
+    }
+    if (rangeEnd < total - 1) {
+        items.push('...');
+    }
+    if (total > 1) {
+        items.push(total);
+    }
+    return items;
+}
+
+/**
+ * Props for the `Pagination` organism.
+ */
+interface Props {
+  /** Current active page (1-indexed). */
+  currentPage: number;
+  /** Total number of available pages. */
+  totalPages: number;
+  /** Base URL prefix used to build page links. */
+  baseUrl: string;
+}
+
+const { 
+  currentPage, 
+  totalPages, 
+  baseUrl 
+} = Astro.props;
+
+const prevUrl = currentPage > 1 ? `${baseUrl}/${currentPage - 1}` : null;
+const nextUrl = currentPage < totalPages ? `${baseUrl}/${currentPage + 1}` : null;
+
+const pages = getPageNumbers(currentPage, totalPages);
+---
+
+<nav aria-label="Pagination" class="flex justify-center items-center gap-2" id="pagination-nav">
+  <!-- Previous Button -->
+  {prevUrl ? (
+    <a
+      href={prevUrl}
+      aria-label="Page précédente"
+      class="
+        inline-flex items-center justify-center w-10 h-10 rounded-full border border-transparent
+        transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise
+        text-primary-black hover:bg-gray-100 active:bg-gray-200
+      "
+    >
+      <span class="sr-only">Précédent</span>
+      <Icon name="arrow-right" size="md" class="transform rotate-180" />
+    </a>
+  ) : (
+    <span
+      aria-hidden="true"
+      class="
+        inline-flex items-center justify-center w-10 h-10 rounded-full border border-transparent
+        text-text-tertiary cursor-not-allowed opacity-50
+      "
+    >
+      <Icon name="arrow-right" size="md" class="transform rotate-180" />
+    </span>
+  )}
+
+  <!-- Page Numbers -->
+  <ul class="flex items-center gap-1">
+    {pages.map((page, index) => (
+      <li>
+        {page === '...' ? (
+          <span class="px-2 text-text-tertiary select-none">...</span>
+        ) : (
+          <a 
+            href={`${baseUrl}/${page}`}
+            class={`
+              inline-flex items-center justify-center w-10 h-10 rounded-full font-mono text-base font-medium transition-colors duration-200
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise
+              ${currentPage === page 
+                ? 'bg-primary-black text-primary-white' 
+                : 'text-text-primary hover:bg-gray-100'}
+            `}
+            aria-current={currentPage === page ? 'page' : undefined}
+            aria-label={`Page ${page}`}
+          >
+            {page}
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+
+  <!-- Next Button -->
+  {nextUrl ? (
+    <a
+      href={nextUrl}
+      aria-label="Page suivante"
+      class="
+        inline-flex items-center justify-center w-10 h-10 rounded-full border border-transparent
+        transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise
+        text-primary-black hover:bg-gray-100 active:bg-gray-200
+      "
+    >
+      <span class="sr-only">Suivant</span>
+      <Icon name="arrow-right" size="md" />
+    </a>
+  ) : (
+    <span
+      aria-hidden="true"
+      class="
+        inline-flex items-center justify-center w-10 h-10 rounded-full border border-transparent
+        text-text-tertiary cursor-not-allowed opacity-50
+      "
+    >
+      <Icon name="arrow-right" size="md" />
+    </span>
+  )}
+</nav>
+
+<script>
+  // Keyboard navigation logic
+  const nav = document.getElementById('pagination-nav');
+  if (nav) {
+    const links = nav.querySelectorAll('a:not([aria-disabled="true"])');
+    
+    nav.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const activeElement = document.activeElement as HTMLAnchorElement;
+        const linksArray = Array.from(links) as HTMLAnchorElement[];
+        const currentIndex = linksArray.indexOf(activeElement);
+        
+        if (currentIndex !== -1) {
+          e.preventDefault();
+          let nextIndex = currentIndex;
+          
+          if (e.key === 'ArrowLeft') {
+            nextIndex = Math.max(0, currentIndex - 1);
+          } else if (e.key === 'ArrowRight') {
+            nextIndex = Math.min(linksArray.length - 1, currentIndex + 1);
+          }
+          
+          linksArray[nextIndex].focus();
+        }
+      }
+    });
+  }
+</script>
