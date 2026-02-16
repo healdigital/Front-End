@@ -1,0 +1,92 @@
+---
+import SocialShare from '../molecules/SocialShare.astro';
+
+/**
+ * Props for the `RecipeCard` organism.
+ */
+interface Props {
+  /** Recipe title displayed in the card header. */
+  title: string;
+  /** Destination URL for the recipe details page. */
+  slug: string;
+  /** Hero image URL or asset reference. */
+  image: string;
+  /** Short summary rendered in the description area. */
+  description: string;
+  /** Preparation time label (for example, `25 min`). */
+  prepTime: string;
+  /** Difficulty label shown as a status badge. */
+  difficulty: string;
+  /** Category badge label. */
+  category?: string;
+  /** Controls the visual state of the favorite icon. */
+  isFavorite?: boolean;
+}
+
+const {
+  title,
+  slug,
+  image,
+  description,
+  prepTime,
+  difficulty,
+  category = 'RECETTE',
+  isFavorite = false,
+} = Astro.props;
+
+const MAX_LENGTH = 200;
+const truncatedDescription = description.length > MAX_LENGTH
+  ? description.slice(0, MAX_LENGTH).trim() + '...'
+  : description;
+---
+
+<article class="group w-full rounded-[12px] bg-white overflow-hidden shadow-sm border border-[#E6E2D8] transition-all duration-300 hover:shadow-lg">
+  <!-- Image Container -->
+  <div class="relative w-full overflow-hidden">
+    <img
+      src={image}
+      alt={title}
+      class="w-full h-[250px] md:h-[280px] object-cover transition-transform duration-500 group-hover:scale-105"
+      loading="lazy"
+    />
+
+    <!-- Bookmark Button -->
+    <button
+      class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-text-primary hover:text-primary-turquoise transition-colors"
+      aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="px-5 pb-6 pt-4 flex flex-col gap-3">
+    <h3 class="font-heading text-[26px] leading-[1.1] text-text-primary typ-card-title">
+      <a href={slug} class="hover:text-primary-turquoise transition-colors">
+        {title}
+      </a>
+    </h3>
+
+    <div class="flex items-center justify-between text-[12px] text-text-secondary uppercase tracking-wide typ-meta">
+      <div class="flex items-center gap-2">
+        <span>{difficulty}</span>
+        <span aria-hidden="true">&bull;</span>
+        <span>{prepTime}</span>
+      </div>
+      <SocialShare url={`${Astro.url.origin}${slug}`} title={title} class="gap-2 text-[12px]" />
+    </div>
+
+    <p class="text-text-secondary font-body text-[14px] leading-relaxed typ-body">
+      {truncatedDescription}
+    </p>
+
+    <a
+      href={slug}
+      class="inline-flex items-center gap-2 text-primary-turquoise font-body text-[12px] uppercase tracking-wider hover:underline typ-button"
+    >
+      Lire la suite
+    </a>
+  </div>
+</article>

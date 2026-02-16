@@ -1,0 +1,64 @@
+---
+import Icon from '../atoms/Icon.astro';
+
+const features = [
+  { icon: 'video' as const, label: '12 modules vid&eacute;o' },
+  { icon: 'download' as const, label: 'Fiches t&eacute;l&eacute;chargeables' },
+  { icon: 'refresh' as const, label: 'Acc&egrave;s &agrave; vie + mises &agrave; jour gratuites' },
+];
+---
+
+<section class="py-16 md:py-24 bg-primary-white">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+    <div class="flex items-center gap-6 mb-12">
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section">Produit phare Masterclass</h2>
+      <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row rounded-lg overflow-hidden shadow-light border border-border-light">
+      <div class="relative w-full lg:w-[520px] h-[320px] lg:h-[520px] flex-shrink-0">
+        <img
+          src="/images/masterclass-patisserie.jpg"
+          alt="Masterclass p&acirc;tisserie"
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
+        <div class="absolute top-4 left-4 bg-white/90 rounded-full px-4 py-2 flex items-center gap-2">
+          <Icon name="star" size="sm" class="text-text-primary" />
+          <span class="font-mono text-[11px] uppercase tracking-wider text-text-primary">Produit phare</span>
+        </div>
+      </div>
+
+      <div class="flex-1 bg-secondary-cream p-8 lg:p-12 flex flex-col justify-between">
+        <div>
+          <p class="font-mono text-[12px] uppercase tracking-widest text-text-secondary typ-meta">Vid&eacute;o Masterclass</p>
+          <h3 class="font-heading text-4xl lg:text-5xl text-text-primary mt-4 typ-feature-title">Les Bases de la P&acirc;tisserie</h3>
+          <p class="text-[15px] text-text-secondary leading-relaxed mt-4 typ-body">
+            Ma&icirc;trisez les fondamentaux : p&acirc;te feuillet&eacute;e, p&acirc;te &agrave; choux, cr&egrave;me p&acirc;tissi&egrave;re, meringues... Tout ce dont vous avez besoin pour r&eacute;ussir 90% des recettes classiques.
+          </p>
+          <div class="mt-6 border-t border-border-light pt-6 space-y-4">
+            {features.map((feature) => (
+              <div class="flex items-center gap-3 text-text-secondary text-[13px] typ-body">
+                <Icon name={feature.icon} size="sm" />
+                <span set:html={feature.label}></span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="mt-8 flex items-end justify-between">
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
+            <div class="font-heading text-[36px] text-text-primary typ-price">145&euro;</div>
+          </div>
+          <a
+            href="/masterclass"
+            class="inline-flex items-center justify-center px-8 py-4 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90 typ-button"
+          >
+            R&eacute;server
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

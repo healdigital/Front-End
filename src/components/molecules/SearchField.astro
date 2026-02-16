@@ -1,0 +1,122 @@
+---
+import Icon from '../atoms/Icon.astro';
+import Input from '../atoms/Input.astro';
+
+/**
+ * Props for the `SearchField` molecule.
+ */
+interface Props {
+  /** Input id used for accessibility and validation feedback. */
+  id?: string;
+  /** Optional utility classes applied to the wrapper. */
+  class?: string;
+  /** Placeholder text displayed when the field is empty. */
+  placeholder?: string;
+}
+
+const { 
+  id = 'site-search', 
+  class: className,
+  placeholder = 'Rechercher...'
+} = Astro.props;
+---
+
+<div class={`relative w-full max-w-xs group ${className || ''}`}>
+
+  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+    <Icon name="search" class="text-text-secondary group-focus-within:text-primary-turquoise transition-colors" />
+  </div>
+  <Input 
+    type="search" 
+    class="pl-10 pr-4 py-2 w-full bg-white/18 border-none rounded-full text-sm focus:ring-2 focus:ring-primary-turquoise placeholder:text-text-secondary/70 transition-all font-body"
+    placeholder={placeholder}
+    data-search-input
+    id={id}
+    name="q"
+  />
+</div>
+
+<script>
+  import { searchSchema } from '../../lib/validation/schemas';
+  import { validateForm } from '../../lib/validation/client';
+
+  const searchInputs = document.querySelectorAll<HTMLInputElement>('[data-search-input]');
+
+  searchInputs.forEach((input) => {
+    const errorClasses = ['ring-status-error', 'focus:ring-status-error', 'border', 'border-status-error'];
+    const successClasses = ['ring-status-success', 'focus:ring-status-success', 'border', 'border-status-success'];
+
+    const clearVisualState = () => {
+      input.classList.remove(...errorClasses, ...successClasses);
+      input.removeAttribute('aria-invalid');
+      input.removeAttribute('aria-describedby');
+    };
+
+    const showError = (message: string) => {
+      let errorSpan = document.getElementById(`${input.id}-error`);
+      if (!errorSpan) {
+        errorSpan = document.createElement('span');
+        errorSpan.id = `${input.id}-error`;
+        errorSpan.className = 'text-xs text-status-error animate-pulse px-4 mt-1 block';
+        errorSpan.setAttribute('role', 'alert');
+        input.parentElement?.appendChild(errorSpan);
+      }
+      errorSpan.textContent = message;
+      errorSpan.classList.remove('hidden');
+
+      clearVisualState();
+      input.setAttribute('aria-invalid', 'true');
+      input.setAttribute('aria-describedby', errorSpan.id);
+      input.classList.add(...errorClasses);
+    };
+
+    const clearError = () => {
+      const errorSpan = document.getElementById(`${input.id}-error`);
+      if (errorSpan) {
+        errorSpan.classList.add('hidden');
+      }
+      clearVisualState();
+    };
+
+    const setSuccess = () => {
+      clearError();
+      input.classList.add(...successClasses);
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key === 'Enter') {
+        const query = (e.target as HTMLInputElement).value;
+        const result = validateForm(searchSchema, { query });
+
+        if (!result.success && result.errors?.query) {
+          showError(result.errors.query);
+          e.preventDefault();
+          return;
+        }
+
+        if (result.success && result.data.query) {
+          setSuccess();
+          window.location.href = `/search?q=${encodeURIComponent(result.data.query)}`;
+        }
+      }
+    });
+
+    input.addEventListener('input', () => {
+      const result = validateForm(searchSchema, { query: input.value });
+      if (!result.success) {
+        if (input.getAttribute('aria-invalid') === 'true') {
+          showError(result.errors?.query ?? 'Veuillez entrer une recherche valide.');
+        } else {
+          clearVisualState();
+        }
+        return;
+      }
+
+      if (result.data.query.length > 0) {
+        setSuccess();
+      } else {
+        clearError();
+      }
+    });
+  });
+</script>

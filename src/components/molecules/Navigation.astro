@@ -1,0 +1,45 @@
+---
+/**
+ * Props for the `Navigation` molecule.
+ */
+interface Props {
+  /** Optional utility classes applied to the nav container. */
+  class?: string;
+  /**
+   * The current active path.
+   * Useful for forcing an active state in stories or tests.
+   * Defaults to Astro.url.pathname.
+   */
+  currentPath?: string;
+}
+
+const { class: className, currentPath = Astro.url.pathname } = Astro.props;
+
+const links = [
+  { label: "Recettes", href: "/recettes" },
+  { label: "Ateliers", href: "/ateliers" },
+  { label: "Masterclass", href: "/masterclass" },
+  { label: "Livres", href: "/livres" },
+  { label: "Voyages", href: "/voyages" },
+  { label: "Vidéos", href: "/videos" },
+  { label: "À propos", href: "/a-propos" },
+  { label: "Partenaires", href: "/partenaires" },
+];
+
+---
+
+<nav class:list={["flex items-center gap-8", className]} aria-label="Navigation principale">
+  {links.map((link) => (
+    <a 
+      href={link.href}
+      class:list={[
+        "font-body font-medium text-[15px] uppercase tracking-wide transition-colors duration-200 rounded-lg px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-turquoise",
+        currentPath === link.href 
+          ? "text-primary-turquoise" 
+          : "text-text-primary hover:text-primary-turquoise"
+      ]}
+    >
+      {link.label}
+    </a>
+  ))}
+</nav>

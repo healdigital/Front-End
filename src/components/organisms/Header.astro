@@ -1,0 +1,241 @@
+---
+import Logo from '../atoms/Logo.astro';
+import Navigation from '../molecules/Navigation.astro';
+import Icon from '../atoms/Icon.astro';
+
+interface Props {
+  activePath?: string;
+}
+
+const { activePath } = Astro.props;
+---
+
+<header data-header>
+  <!-- Promo Bar (45px) — scrolls away naturally -->
+  <div class="bg-[#F8F8F8] h-[45px] hidden lg:flex items-center justify-center relative" data-promo-bar>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full flex items-center justify-center">
+      <p class="font-mono text-[14px] tracking-wide text-text-primary flex items-center gap-2">
+        <svg class="w-4 h-4 text-[#BBA86B]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+        </svg>
+        Accédez en illimité à toutes les recettes et masterclass — <strong>9,99€/mois</strong>
+      </p>
+      <button
+        class="absolute right-4 w-[34px] h-[34px] flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors rounded-full hover:bg-black/5"
+        aria-label="Fermer la barre promotionnelle"
+        data-promo-close
+      >
+        <Icon name="close" size="sm" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Sticky wrapper: nav dark + secondary nav -->
+  <div class="sticky top-0 z-50" data-sticky-nav>
+  <!-- Main Header (76px) - Dark -->
+  <div class="bg-[#1A2335] h-[76px] flex items-center">
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full flex items-center justify-between gap-6">
+
+      <!-- Mobile Hamburger -->
+      <button
+        class="lg:hidden p-2 -ml-2 text-primary-white hover:text-primary-turquoise transition-colors"
+        aria-label="Ouvrir le menu"
+        data-menu-trigger
+      >
+        <Icon name="menu" size="lg" />
+      </button>
+
+      <!-- Logo -->
+      <div class="flex-shrink-0">
+        <Logo variant="dark" />
+      </div>
+
+      <!-- Search Bar (desktop) -->
+      <div class="hidden lg:flex flex-1 max-w-[664px] mx-8">
+        <div class="relative w-full">
+          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Icon name="search" class="text-white/50" size="sm" />
+          </div>
+          <input
+            type="search"
+            placeholder="Rechercher une recette, un atelier..."
+            class="w-full h-[46px] pl-11 pr-4 rounded-full bg-white/[0.18] border-none text-[15px] text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/50 font-body transition-all"
+          />
+        </div>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-4">
+        <a href="/contact" class="hidden lg:flex items-center gap-1.5 text-white/80 hover:text-white text-[14px] font-body transition-colors">
+          <Icon name="mail" size="sm" />
+          <span>Contact</span>
+        </a>
+
+        <button class="hidden lg:flex items-center text-white/80 hover:text-white text-[14px] font-body font-medium transition-colors">
+          FR
+        </button>
+
+        <a href="/compte" class="w-[35px] h-[35px] rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors" aria-label="Mon compte">
+          <Icon name="user" size="sm" />
+        </a>
+
+        <a href="/favoris" class="relative text-white/80 hover:text-white transition-colors" aria-label="Favoris">
+          <Icon name="heart" size="md" />
+          <span class="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">3</span>
+        </a>
+
+        <a href="/panier" class="relative text-white/80 hover:text-white transition-colors" aria-label="Panier">
+          <Icon name="shopping-bag" size="md" />
+          <span class="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Nav (85px) -->
+  <div class="hidden lg:flex bg-secondary-cream/95 backdrop-blur-sm h-[85px] items-center border-b border-[#D0D0C5]" data-secondary-nav>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full">
+      <Navigation class="justify-center !gap-[38px]" currentPath={activePath} />
+    </div>
+  </div>
+  </div><!-- /sticky wrapper -->
+
+  <!-- Mobile Menu Overlay -->
+  <div
+    class="fixed inset-0 bg-primary-black/50 z-40 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300"
+    data-menu-overlay
+    aria-hidden="true"
+  ></div>
+
+  <!-- Mobile Menu Drawer -->
+  <div
+    class="fixed inset-y-0 left-0 w-80 bg-[#1A2335] z-50 transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-xl flex flex-col"
+    data-menu-drawer
+    aria-hidden="true"
+    inert
+  >
+    <div class="p-6 border-b border-white/10 flex items-center justify-between">
+      <Logo variant="dark" />
+      <button
+        class="p-2 -mr-2 text-white/80 hover:text-white transition-colors"
+        aria-label="Fermer le menu"
+        data-menu-close
+      >
+        <Icon name="close" size="lg" />
+      </button>
+    </div>
+
+    <div class="p-6 flex-1 overflow-y-auto">
+      <div class="mb-6 relative">
+        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+          <Icon name="search" class="text-white/50" size="sm" />
+        </div>
+        <input
+          type="search"
+          placeholder="Rechercher..."
+          class="w-full h-[42px] pl-10 pr-4 rounded-full bg-white/[0.12] border-none text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/50 font-body"
+        />
+      </div>
+      <Navigation class="flex-col !items-start !gap-4 [&_a]:text-white/80 [&_a:hover]:text-white [&_a]:text-base" currentPath={activePath} />
+    </div>
+  </div>
+</header>
+
+<script>
+  // Promo Bar Logic
+  const promoBar = document.querySelector('[data-promo-bar]');
+  const promoClose = document.querySelector('[data-promo-close]');
+
+  if (promoBar && promoClose) {
+    // Check localStorage
+    if (localStorage.getItem('promo-bar-hidden') === 'true') {
+      promoBar.classList.add('hidden');
+      promoBar.classList.remove('lg:flex');
+    }
+
+    promoClose.addEventListener('click', () => {
+      promoBar.classList.add('hidden');
+      promoBar.classList.remove('lg:flex');
+      localStorage.setItem('promo-bar-hidden', 'true');
+    });
+  }
+
+  // Sticky Nav Shadow
+  const stickyNav = document.querySelector('[data-sticky-nav]');
+  if (stickyNav) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        stickyNav.classList.add('shadow-lg');
+      } else {
+        stickyNav.classList.remove('shadow-lg');
+      }
+    }, { passive: true });
+  }
+
+  // Mobile Menu Logic
+  const menuTrigger = document.querySelector('[data-menu-trigger]');
+  const menuClose = document.querySelector('[data-menu-close]');
+  const menuOverlay = document.querySelector('[data-menu-overlay]');
+  const menuDrawer = document.querySelector('[data-menu-drawer]');
+  const body = document.body;
+
+  function toggleMenu(show: boolean) {
+    if (!menuDrawer || !menuOverlay) return;
+
+    menuTrigger?.setAttribute('aria-expanded', String(show));
+    menuDrawer.setAttribute('aria-hidden', String(!show));
+    menuOverlay.setAttribute('aria-hidden', String(!show));
+
+    if (show) {
+      menuDrawer.removeAttribute('inert');
+    } else {
+      menuDrawer.setAttribute('inert', '');
+    }
+
+    const focusableElements = menuDrawer.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusableElement = focusableElements[0] as HTMLElement;
+    const lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusableElement) {
+            e.preventDefault();
+            lastFocusableElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastFocusableElement) {
+            e.preventDefault();
+            firstFocusableElement.focus();
+          }
+        }
+      }
+    };
+
+    if (show) {
+      menuDrawer.classList.remove('-translate-x-full');
+      menuOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      body.classList.add('overflow-hidden');
+      menuDrawer.addEventListener('keydown', trapFocus);
+      setTimeout(() => firstFocusableElement?.focus(), 50);
+    } else {
+      menuDrawer.classList.add('-translate-x-full');
+      menuOverlay.classList.add('opacity-0', 'pointer-events-none');
+      body.classList.remove('overflow-hidden');
+      menuDrawer.removeEventListener('keydown', trapFocus);
+      (menuTrigger as HTMLElement)?.focus();
+    }
+  }
+
+  menuTrigger?.addEventListener('click', () => toggleMenu(true));
+  menuClose?.addEventListener('click', () => toggleMenu(false));
+  menuOverlay?.addEventListener('click', () => toggleMenu(false));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      toggleMenu(false);
+    }
+  });
+</script>

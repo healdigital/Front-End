@@ -1,0 +1,177 @@
+---
+import Icon from '../atoms/Icon.astro';
+import Button from '../atoms/Button.astro';
+
+const popularArticles = [
+  {
+    title: 'Salade de nouilles de tofu aux 5 parfums, l&eacute;gumes frais et sauce...',
+    date: 'R&eacute;dig&eacute; le 3 janv 2026',
+    image: '/images/recipe-lasagnes.jpg',
+    slug: '/salade-nouilles-tofu',
+  },
+  {
+    title: 'Concombres marin&eacute;s',
+    date: 'R&eacute;dig&eacute; le 8 janv 2026',
+    image: '/images/recipe-roast-chicken.jpg',
+    slug: '/concombres-marines',
+  },
+  {
+    title: 'Caldo de feijao (soupe br&eacute;silienne de haricots)',
+    date: 'R&eacute;dig&eacute; le 12 janv 2026',
+    image: '/images/recipe-lemon-pie.jpg',
+    slug: '/caldo-feijao',
+  },
+  {
+    title: 'Les indispensables de ma cuisine professionnelle',
+    date: 'R&eacute;dig&eacute; le 14 f&eacute;v 2026',
+    image: '/images/recipe-apple-tart.jpg',
+    slug: '/indispensables-cuisine-pro',
+  },
+  {
+    title: 'Lohikeitto (soupe de saumon finlandaise)',
+    date: 'R&eacute;dig&eacute; le 23 f&eacute;v 2026',
+    image: '/images/recipe-salmon.jpg',
+    slug: '/lohikeitto',
+  },
+];
+---
+
+<aside class="hidden lg:flex flex-col w-[432px] flex-shrink-0 gap-6">
+  <!-- Author Card -->
+  <div class="bg-white rounded-lg border border-border-light p-6 text-center">
+    <img
+      src="/images/bernard-blog.png"
+      alt="Bernard Laurance"
+      class="w-24 h-24 rounded-full object-cover mx-auto"
+    />
+    <h3 class="font-heading text-[22px] text-text-primary mt-4 typ-card-title">Bernard Laurance</h3>
+    <p class="font-mono text-[12px] uppercase tracking-widest text-text-secondary mt-1 typ-meta">
+      Cuisine r&eacute;elle, recettes test&eacute;es depuis 2010
+    </p>
+    <p class="text-[14px] text-text-secondary leading-relaxed mt-4 typ-body">
+      Voyageur et passionn&eacute; de cuisine, je vous livre tous mes secrets de cuisine, sans d&eacute;tour. J&apos;essaie de rendre hommage aux traditions, du canel&eacute; de Bordeaux aux dim-sums de Hong Kong.
+    </p>
+    <div class="flex items-center justify-center gap-5 mt-5 text-text-secondary text-sm">
+      <span class="flex items-center gap-2"><i class="fab fa-facebook-f"></i> 145.7k</span>
+      <span class="flex items-center gap-2"><i class="fab fa-instagram"></i> 62k</span>
+      <span class="flex items-center gap-2"><i class="fab fa-youtube"></i> 1k</span>
+      <span class="flex items-center gap-2"><i class="fab fa-pinterest"></i> 0.5k</span>
+    </div>
+    <a href="/a-propos" class="inline-block mt-5 text-primary-turquoise font-body text-[12px] uppercase tracking-wider typ-button">
+      D&eacute;couvrir son univers
+    </a>
+  </div>
+
+  <!-- Workshop Card -->
+  <div class="bg-white rounded-lg border border-border-light p-6">
+    <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Apprendre en atelier</h4>
+    <div class="bg-secondary-cream rounded-lg p-5 border border-border-light">
+      <p class="text-[11px] uppercase tracking-widest text-status-error font-mono mb-2 typ-meta">Derni&egrave;res places</p>
+      <div class="flex items-start justify-between">
+        <h5 class="font-heading text-[22px] leading-[1.1] text-text-primary typ-feature-title">Atelier cuisine chinoise</h5>
+        <div class="bg-white rounded-md p-2 text-center min-w-[48px] border border-border-light">
+          <span class="block text-[10px] uppercase text-text-secondary">Mar</span>
+          <span class="block text-[18px] text-text-primary font-heading">9</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-text-secondary text-[12px] mt-3">
+        <span class="flex items-center gap-1"><Icon name="users" size="sm" /> 8 personnes max</span>
+        <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 4 heures</span>
+      </div>
+      <p class="text-[13px] text-text-secondary mt-4 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+      <div class="flex items-center justify-between mt-5">
+        <div>
+          <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
+          <div class="font-heading text-[28px] text-text-primary typ-price">85&euro;</div>
+        </div>
+        <Button href="/atelier-cuisine-chinoise" variant="primary" size="sm">R&eacute;server</Button>
+      </div>
+    </div>
+    <a href="/ateliers" class="inline-flex items-center gap-2 text-primary-turquoise text-[12px] uppercase tracking-wider mt-4 typ-button">
+      Voir le calendrier complet
+    </a>
+  </div>
+
+  <!-- Masterclass Videos -->
+  <div class="bg-white rounded-lg border border-border-light p-6">
+    <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Masterclass vid&eacute;os</h4>
+    <div class="bg-secondary-cream rounded-lg overflow-hidden border border-border-light">
+      <div class="relative">
+        <img src="/images/masterclass-patisserie.jpg" alt="Masterclass" class="w-full h-[160px] object-cover" />
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+            <Icon name="video" size="sm" class="text-primary-turquoise" />
+          </div>
+        </div>
+      </div>
+      <div class="p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] uppercase tracking-wider text-text-primary">
+            <Icon name="lock" size="sm" /> Acc&egrave;s illimit&eacute;
+          </span>
+          <span class="inline-flex items-center gap-2 rounded-full bg-[#BBA86B] px-3 py-1 text-[11px] uppercase tracking-wider text-white">
+            R&eacute;serv&eacute; Premium
+          </span>
+        </div>
+        <h5 class="font-heading text-[22px] leading-[1.1] text-text-primary typ-feature-title">G&acirc;teau indien aux carottes !</h5>
+        <div class="flex items-center gap-4 text-text-secondary text-[12px] mt-3">
+          <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 2h</span>
+          <span class="flex items-center gap-1"><Icon name="video" size="sm" /> Vid&eacute;o 4K</span>
+        </div>
+        <p class="text-[13px] text-text-secondary mt-3 typ-body">Technique professionnelle pas &agrave; pas.</p>
+        <Button href="/masterclass" variant="primary" size="sm" class="w-full mt-4">Voir la vid&eacute;o</Button>
+      </div>
+    </div>
+    <a href="/masterclass" class="inline-flex items-center gap-2 text-primary-turquoise text-[12px] uppercase tracking-wider mt-4 typ-button">
+      Voir toutes les vid&eacute;os masterclass
+    </a>
+  </div>
+
+  <!-- Join Club -->
+  <div class="bg-white rounded-lg border border-border-light p-6">
+    <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Rejoignez mon club</h4>
+    <ul class="space-y-3 text-[13px] text-text-secondary">
+      <li class="flex items-center gap-2"><Icon name="book" size="sm" /> &Eacute;changes passionn&eacute;s</li>
+      <li class="flex items-center gap-2"><Icon name="star" size="sm" /> Recettes avanc&eacute;es</li>
+      <li class="flex items-center gap-2"><Icon name="check" size="sm" /> Conseils exclusifs</li>
+    </ul>
+    <a href="/club" class="inline-flex items-center gap-2 text-primary-turquoise text-[12px] uppercase tracking-wider mt-4 typ-button">
+      Rejoindre le club
+    </a>
+  </div>
+
+  <!-- Books mini grid -->
+  <div class="bg-white rounded-lg border border-border-light p-6">
+    <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Mes livres pour approfondir</h4>
+    <div class="grid grid-cols-2 gap-3">
+      <img src="/images/book-1.png" alt="Livre 1" class="w-full h-[120px] object-cover rounded-md" />
+      <img src="/images/book-2.jpg" alt="Livre 2" class="w-full h-[120px] object-cover rounded-md" />
+      <img src="/images/book-3.png" alt="Livre 3" class="w-full h-[120px] object-cover rounded-md" />
+      <img src="/images/book-4.jpg" alt="Livre 4" class="w-full h-[120px] object-cover rounded-md" />
+    </div>
+    <a href="/livres" class="inline-flex items-center gap-2 text-primary-turquoise text-[12px] uppercase tracking-wider mt-4 typ-button">
+      Voir tous les livres
+    </a>
+  </div>
+
+  <!-- Ad placeholder -->
+  <div class="bg-secondary-cream rounded-lg border border-border-light h-[160px] flex items-center justify-center text-text-secondary text-[12px] uppercase tracking-wider typ-meta">
+    Espace publicit&eacute;
+  </div>
+
+  <!-- Popular articles -->
+  <div class="bg-white rounded-lg border border-border-light p-6">
+    <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Articles populaires</h4>
+    <div class="space-y-4">
+      {popularArticles.map((article) => (
+        <a href={article.slug} class="flex gap-3 items-start">
+          <img src={article.image} alt="" class="w-[72px] h-[54px] object-cover rounded-md" />
+          <div>
+            <p class="text-[11px] uppercase tracking-wider text-text-secondary" set:html={article.date}></p>
+            <p class="text-[13px] text-text-primary leading-snug" set:html={article.title}></p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</aside>

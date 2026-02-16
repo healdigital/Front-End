@@ -1,238 +1,268 @@
 ---
-// Header Component - Clean navigation matching reference design
+import Icon from './atoms/Icon.astro';
+
+interface Props {
+  lang?: string;
+}
+
+const { lang = 'fr' } = Astro.props;
+
+const languageLabels: Record<string, string> = {
+  fr: 'Fran&ccedil;ais',
+  en: 'English',
+  es: 'Espa&ntilde;ol',
+  'pt-br': 'Portugu&ecirc;s',
+  ar: '&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;',
+};
+
+const languageLabel = languageLabels[lang] || languageLabels.fr;
+
+const navItems = [
+  { label: 'MES LIVRES', href: '/books', icon: 'book' },
+  { label: 'SAL&Eacute;', href: '/recettes-salees', icon: 'utensils' },
+  { label: 'SUCR&Eacute;', href: '/recettes-sucrees', icon: 'heart' },
+  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', icon: 'star', external: true },
+  { label: 'VID&Eacute;OS', href: '/videos', icon: 'video' },
+  { label: 'VOYAGES', href: '/voyages-culinaires', icon: 'map-pin' },
+  { label: 'REPORTAGES', href: '/reportages', icon: 'book' },
+  { label: 'S&Eacute;LECTIONS', href: '/selection', icon: 'star' },
+];
+
+const accountItems = [
+  { label: 'VOTRE PANIER', href: '/panier', icon: 'shopping-bag' },
+  { label: 'VOTRE COMPTE', href: '/compte', icon: 'user' },
+  { label: 'LANGUES', href: '#langues', icon: 'globe' },
+];
+
 ---
 
-<!-- Logo Section - Scrolls away on scroll -->
-<div id="logo-section" class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Logo and Social Icons Section -->
-    <div class="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-800">
+<header class="relative z-50" data-header>
+  <!-- Promo bar -->
+  <div class="bg-[#F8F8F8] h-[36px] lg:h-[40px] hidden lg:flex items-center justify-center relative" data-promo-bar>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full flex items-center justify-center">
+      <p class="font-mono text-[12px] lg:text-[13px] tracking-wide text-text-primary flex items-center gap-2">
+        <span aria-hidden="true">&#10024;</span>
+        Acc&eacute;dez en illimit&eacute; au meilleur pour seulement 9,99 &euro; / mois.
+        <a href="/devenir-membre" class="underline underline-offset-4 font-medium">Devenir membre</a>
+      </p>
+      <button
+        class="absolute right-4 w-7 h-7 flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+        aria-label="Fermer la barre promotionnelle"
+        data-promo-close
+      >
+        <Icon name="close" size="sm" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Main header -->
+  <div class="bg-[#1A2335]">
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] h-[64px] lg:h-[72px] flex items-center gap-5">
+      <!-- Mobile menu trigger -->
+      <button
+        class="lg:hidden text-white/80 hover:text-white transition-colors"
+        aria-label="Ouvrir le menu"
+        data-menu-trigger
+      >
+        <Icon name="menu" size="lg" />
+      </button>
+
       <!-- Logo -->
-      <div class="mb-4">
-        <a href="/" class="inline-block">
-          <img
-            src="/images/logo2018.webp"
-            alt="La Cuisine de Bernard"
-            class="h-24 w-auto object-contain"
-            loading="eager"
-            decoding="async"
+      <a href="/" class="flex-shrink-0" aria-label="La Cuisine de Bernard">
+        <img
+          src="/images/logo-v3.png"
+          alt="La Cuisine de Bernard"
+          class="h-8 lg:h-9 w-auto"
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+
+      <!-- Search (desktop) -->
+      <div class="hidden lg:flex flex-1 max-w-[640px]">
+        <div class="relative w-full">
+          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/50">
+            <Icon name="search" size="sm" />
+          </div>
+          <input
+            type="search"
+            placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
+            class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/50 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-body text-[14px]"
           />
+        </div>
+      </div>
+
+      <!-- Desktop actions -->
+      <div class="hidden lg:flex items-center gap-6 ml-auto">
+        <a href="/contact" class="flex items-center gap-2 text-white/80 hover:text-white text-[14px] typ-nav">
+          <Icon name="mail" size="sm" />
+          <span>Contact</span>
+        </a>
+        <button class="lang-btn flex items-center gap-2 text-white/80 hover:text-white text-[14px] typ-nav" data-lang={lang}>
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/40">
+            <Icon name="globe" size="sm" />
+          </span>
+          <span set:html={languageLabel} />
+        </button>
+        <a href="/compte" class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25" aria-label="Mon compte">
+          <Icon name="user" size="sm" />
+        </a>
+        <a href="/favoris" class="relative text-white/80 hover:text-white" aria-label="Favoris">
+          <Icon name="heart" size="md" />
+          <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">3</span>
+        </a>
+        <a href="/panier" class="relative text-white/80 hover:text-white" aria-label="Panier">
+          <Icon name="shopping-bag" size="md" />
+          <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
         </a>
       </div>
 
-      <!-- Social Icons Row -->
-      <div class="flex gap-5 items-center justify-center flex-wrap">
-        <!-- Facebook -->
-        <a href="https://www.facebook.com/lacuisinedebernard" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors">
-          <i class="fab fa-facebook-f w-6 h-6 flex items-center justify-center"></i>
+      <!-- Mobile actions -->
+      <div class="flex lg:hidden items-center gap-4 ml-auto text-white/80">
+        <a href="/panier" class="relative" aria-label="Panier">
+          <Icon name="shopping-bag" size="md" />
+          <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
         </a>
-        
-        <!-- Instagram -->
-        <a href="https://www.instagram.com/lacuisinedebernard" target="_blank" rel="noopener noreferrer" class="text-pink-600 hover:text-pink-800 transition-colors">
-          <i class="fab fa-instagram w-6 h-6 flex items-center justify-center"></i>
-        </a>
-        
-        <!-- Pinterest -->
-        <a href="https://www.pinterest.com/lacuisinedebernard" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">
-          <i class="fab fa-pinterest w-6 h-6 flex items-center justify-center"></i>
-        </a>
-        
-        <!-- LinkedIn -->
-        <a href="https://www.linkedin.com/in/lacuisinedebernard" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-900 transition-colors">
-          <i class="fab fa-linkedin-in w-6 h-6 flex items-center justify-center"></i>
-        </a>
-        
-        <!-- YouTube -->
-        <a href="https://www.youtube.com/@lacuisinedebernard" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">
-          <i class="fab fa-youtube w-6 h-6 flex items-center justify-center"></i>
-        </a>
-        
-        <!-- Email -->
-        <a href="mailto:contact@lacuisinedebernard.com" class="text-gray-600 hover:text-gray-900 transition-colors">
-          <i class="fas fa-envelope w-6 h-6 flex items-center justify-center"></i>
-        </a>
-        
-        <!-- Twitch -->
-        <a href="https://twitch.tv/lacuisinedebernard" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors">
-          <i class="fab fa-twitch w-6 h-6 flex items-center justify-center"></i>
-        </a>
+        <button class="text-white/80" aria-label="Rechercher">
+          <Icon name="search" size="md" />
+        </button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Sticky Navigation Menu Bar -->
-<header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Navigation Menu Bar -->
-    <nav id="nav-menu" class="flex items-center justify-between py-4  overflow-y-visible">
-            <div class="flex items-center justify-center flex-1 gap-6 sm:gap-8 flex-nowrap">
-        <div class="relative group">
-          <a href="/books" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">MY BOOKS</a>
-          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[220px] z-50">
-            <a href="/chocolat-maison" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Homemade Chocolate
-            </a>
-          </div>
-        </div>
+  <!-- Secondary navigation -->
+  <div class="hidden lg:flex bg-secondary-cream/95 border-b border-[#D0D0C5]">
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full h-[70px] flex items-center">
+      <nav class="flex items-center gap-8" aria-label="Navigation principale">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            class="flex items-center gap-2 text-[13px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+            target={item.external ? '_blank' : undefined}
+            rel={item.external ? 'noopener noreferrer' : undefined}
+          >
+            <span class="text-primary-turquoise">
+              <Icon name={item.icon as any} size="sm" />
+            </span>
+            <span set:html={item.label} />
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
 
-        <div class="relative group">
-          <a href="/recettes-salees" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SAVORY</a>
-          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[260px] z-50">
-            <a href="/recettes-salees" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Index of savory recipes (with photos)
-            </a>
-            <a href="/le-sale" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Index of savory recipes (without photos)
-            </a>
-          </div>
-        </div>
+  <!-- Mobile menu overlay -->
+  <div
+    class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"
+    data-menu-overlay
+    aria-hidden="true"
+  ></div>
 
-        <div class="relative group">
-          <a href="/recettes-sucrees" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SUGAR</a>
-          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[260px] z-50">
-            <a href="/recettes-sucrees" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Index of sweet recipes (with photos)
-            </a>
-            <a href="/le-sucre" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Index of sweet recipes (without photos)
-            </a>
-          </div>
-        </div>
+  <!-- Mobile menu drawer -->
+  <aside
+    class="fixed inset-y-0 left-0 w-[320px] bg-[#1A2335] text-white transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden z-50"
+    data-menu-drawer
+    aria-hidden="true"
+    inert
+  >
+    <div class="p-6 flex items-center justify-between border-b border-white/10">
+      <h2 class="font-heading text-[20px]">Navigation</h2>
+      <button class="text-white/70 hover:text-white" aria-label="Fermer le menu" data-menu-close>
+        <Icon name="close" size="md" />
+      </button>
+    </div>
 
-        <a href="https://atelier-lacuisinedebernard.com/" target="_blank" rel="noopener noreferrer" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">THE WORKSHOPS</a>
-        <a href="/videos" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">VIDEOS</a>
-        <a href="/voyages-culinaires" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">TRAVEL</a>
-        <a href="/reportages" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">NEWS REPORTS</a>
-
-        <div class="relative group">
-          <a href="/selection" class="font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm whitespace-nowrap">SELECTIONS</a>
-          <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[320px] z-50">
-            <a href="/selection/repas-de-noel-36-recettes-traditionnelles-originales" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Christmas Meal 2024: My 36 Traditional &amp; Original Recipes
+    <nav class="px-6 py-4">
+      <ul class="space-y-3">
+        {navItems.map((item) => (
+          <li class="border-b border-white/10 last:border-b-0">
+            <a
+              href={item.href}
+              class="flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener noreferrer' : undefined}
+            >
+              <span class="flex items-center gap-3">
+                <span class="text-primary-turquoise">
+                  <Icon name={item.icon as any} size="sm" />
+                </span>
+                <span set:html={item.label} />
+              </span>
+              <span aria-hidden="true">&#8250;</span>
             </a>
-            <a href="/galette-des-rois-mes-recettes-traditionnelles-et-creatives" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              King Cake: My Traditional and Creative Recipes
-            </a>
-            <a href="/foie-gras-maison-conseils-et-recettes" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Homemade foie gras: tips and recipes!
-            </a>
-            <a href="/theme/noel" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Christmas Recipes
-            </a>
-            <a href="/selection/quelques-recettes-automnales" class="block px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600">
-              Autumn recipes
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Side: Language & Search -->
-      <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0 ml-4">
-        <!-- Language Selector -->
-        <div class="relative">
-          <button id="lang-toggle" class="flex items-center gap-1 sm:gap-2 font-semibold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors text-xs sm:text-sm">
-            Lang
-            <i class="fas fa-chevron-down w-4 h-4"></i>
-          </button>
-          <!-- Language Dropdown - Fixed positioning to overflow -->
-          <div id="lang-dropdown" class="hidden fixed right-20 mt-12 w-40 bg-white dark:bg-gray-800 rounded-md shadow-2xl z-50 border border-gray-200 dark:border-gray-700" data-no-translate="true">
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 first:rounded-t-md" data-lang="en">English</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="fr">Fran&ccedil;ais</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="es">Espa&ntilde;ol</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600" data-lang="pt-br">Portugu&ecirc;s</a>
-            <a href="#" class="lang-btn block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 last:rounded-b-md" data-lang="ar">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</a>
-          </div>
-        </div>
-
-        <!-- Search Button -->
-        <button id="search-toggle" class="p-2 text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors rounded-lg hover:bg-teal-50 dark:hover:bg-gray-800">
-          <i class="fas fa-search w-5 h-5 sm:w-6 sm:h-6"></i>
-        </button>
-      </div>
+          </li>
+        ))}
+      </ul>
     </nav>
 
-    <!-- Full Width Search Bar - Initially Hidden -->
-    <div id="search-bar" class="hidden border-t border-gray-200 dark:border-gray-700 pb-4 pt-4">
-      <div class="flex gap-4">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Search recipes..."
-          class="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-          autofocus
-        />
-        <button id="search-close" class="p-2 text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors rounded-lg hover:bg-teal-50 dark:hover:bg-gray-800">
-          <i class="fas fa-times w-6 h-6"></i>
-        </button>
-      </div>
+    <div class="px-6 pb-6">
+      <h3 class="font-heading text-[18px] mt-6 mb-3">Votre espace</h3>
+      <ul class="space-y-3">
+        {accountItems.map((item) => (
+          <li class="border-b border-white/10 last:border-b-0">
+            <a href={item.href} class="flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white">
+              <span class="flex items-center gap-3">
+                <span class="text-primary-turquoise">
+                  <Icon name={item.icon as any} size="sm" />
+                </span>
+                {item.label}
+              </span>
+              <span aria-hidden="true">&#8250;</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
-  </div>
+  </aside>
 </header>
 
 <script>
-  // Language dropdown toggle
-  const langToggle = document.getElementById('lang-toggle');
-  const langDropdown = document.getElementById('lang-dropdown');
-  
-  langToggle?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    langDropdown?.classList.toggle('hidden');
-  });
+  const promoBar = document.querySelector('[data-promo-bar]');
+  const promoClose = document.querySelector('[data-promo-close]');
 
-  // Close language dropdown when clicking outside
-  document.addEventListener('click', () => {
-    langDropdown?.classList.add('hidden');
-  });
-
-  // Search toggle functionality
-  const searchToggle = document.getElementById('search-toggle');
-  const searchBar = document.getElementById('search-bar');
-  const navMenu = document.getElementById('nav-menu');
-  const searchClose = document.getElementById('search-close');
-
-  searchToggle?.addEventListener('click', () => {
-    // Toggle search bar
-    searchBar?.classList.toggle('hidden');
-    navMenu?.classList.toggle('hidden');
-    
-    // Focus input when opening
-    if (!searchBar?.classList.contains('hidden')) {
-      document.getElementById('search-input')?.focus();
+  if (promoBar && promoClose) {
+    if (localStorage.getItem('promo-bar-hidden') === 'true') {
+      promoBar.classList.add('hidden');
+      promoBar.classList.remove('lg:flex');
     }
-  });
 
-  // Close search bar
-  searchClose?.addEventListener('click', () => {
-    searchBar?.classList.add('hidden');
-    navMenu?.classList.remove('hidden');
-  });
+    promoClose.addEventListener('click', () => {
+      promoBar.classList.add('hidden');
+      promoBar.classList.remove('lg:flex');
+      localStorage.setItem('promo-bar-hidden', 'true');
+    });
+  }
 
-  // Close search bar on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !searchBar?.classList.contains('hidden')) {
-      searchBar?.classList.add('hidden');
-      navMenu?.classList.remove('hidden');
+  const menuTrigger = document.querySelector('[data-menu-trigger]');
+  const menuClose = document.querySelector('[data-menu-close]');
+  const menuOverlay = document.querySelector('[data-menu-overlay]');
+  const menuDrawer = document.querySelector('[data-menu-drawer]');
+  const body = document.body;
+
+  function toggleMenu(show) {
+    if (!menuDrawer || !menuOverlay) return;
+
+    menuDrawer.setAttribute('aria-hidden', String(!show));
+    menuOverlay.setAttribute('aria-hidden', String(!show));
+
+    if (show) {
+      menuDrawer.removeAttribute('inert');
+      menuDrawer.classList.remove('-translate-x-full');
+      menuOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      body.classList.add('overflow-hidden');
+    } else {
+      menuDrawer.setAttribute('inert', '');
+      menuDrawer.classList.add('-translate-x-full');
+      menuOverlay.classList.add('opacity-0', 'pointer-events-none');
+      body.classList.remove('overflow-hidden');
     }
-  });
+  }
 
-  // Search input - Handle Enter key
-  const searchInput = document.getElementById('search-input');
-  searchInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const searchQuery = searchInput.value.trim();
-      if (searchQuery) {
-        // Navigate to search page with query
-        window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
-      }
-    }
+  menuTrigger?.addEventListener('click', () => toggleMenu(true));
+  menuClose?.addEventListener('click', () => toggleMenu(false));
+  menuOverlay?.addEventListener('click', () => toggleMenu(false));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') toggleMenu(false);
   });
 </script>
-
-<style>
-  /* Smooth hover effects */
-  a {
-    @apply transition-colors duration-200;
-  }
-</style>
