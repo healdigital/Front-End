@@ -1,4 +1,8 @@
-import algoliasearch from 'algoliasearch';
+import * as algoliasearchPkg from 'algoliasearch';
+let algoliasearch = algoliasearchPkg.default || algoliasearchPkg;
+if (typeof algoliasearch !== 'function' && typeof algoliasearch.algoliasearch === 'function') {
+  algoliasearch = algoliasearch.algoliasearch;
+}
 
 const appId = process.env.ALGOLIA_APP_ID || process.env.PUBLIC_ALGOLIA_APP_ID;
 const adminKey = process.env.ALGOLIA_ADMIN_KEY || process.env.ALGOLIA_WRITE_KEY;
@@ -101,9 +105,17 @@ const processArticleImageUrl = (article) => {
 };
 
 async function fetchArticles() {
-  // Dynamic import keeps this script compatible with tsx in CJS/ESM contexts.
-  const { getAllArticlesFromMongo: getArticles } = await import('../src/lib/mongo.server.ts');
-  let articles = await getArticles();
+  // Try to load Mongo helper (works when running via ts-node/tsx); otherwise fallback.
+  let articles = [];
+  try {
+    const mod = await import('../src/lib/mongo.server.ts');
+    const getArticles = mod.getAllArticlesFromMongo || mod.getAllArticlesFromMongo?.default || mod.default?.getAllArticlesFromMongo;
+    if (typeof getArticles === 'function') {
+      articles = await getArticles();
+    }
+  } catch (err) {
+    console.warn('[ALGOLIA] Could not import Mongo helper, falling back to Payload API. Error:', err && err.message ? err.message : err);
+  }
 
   if (!Array.isArray(articles) || articles.length === 0) {
     const payloadApiUrl = process.env.PUBLIC_PAYLOAD_API_URL || process.env.PAYLOAD_API_URL;

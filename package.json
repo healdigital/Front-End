@@ -12,7 +12,7 @@
     "update:prepared": "node scripts/update-prepared-article.mjs",
     "refresh:prepared": "node scripts/refresh-prepared-articles.mjs",
     "generate-search-index": "tsx scripts/generate-search-index.mjs",
-    "index:algolia": "node scripts/index-algolia.js",
+    "index:algolia": "node -r dotenv/config scripts/index-algolia.js",
     "reindex:articles": "node scripts/reindex-articles.mjs",
     "parse:articles": "node scripts/parse-articles-csv.mjs",
     "import:sanity": "node scripts/import-to-sanity.js",
@@ -35,7 +35,8 @@
     "import:articles": "node scripts/import-articles-with-refs.mjs",
     "prepare:articles": "node scripts/import-articles-to-payload.mjs",
     "import:articles-payload": "node scripts/import-payload-api.mjs",
-    "import:with-relationships": "node scripts/import-with-relationships.mjs"
+    "import:with-relationships": "node scripts/import-with-relationships.mjs",
+    "postbuild": "npm run index:algolia"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
