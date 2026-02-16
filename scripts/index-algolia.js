@@ -1,8 +1,4 @@
 import algoliasearch from 'algoliasearch';
-let algoliasearch = algoliasearchPkg.default || algoliasearchPkg;
-if (typeof algoliasearch !== 'function' && typeof algoliasearch.algoliasearch === 'function') {
-  algoliasearch = algoliasearch.algoliasearch;
-}
 
 const appId = process.env.ALGOLIA_APP_ID || process.env.PUBLIC_ALGOLIA_APP_ID;
 const adminKey = process.env.ALGOLIA_ADMIN_KEY || process.env.ALGOLIA_WRITE_KEY;
