@@ -218,7 +218,15 @@ async function indexAlgolia() {
 
   for (const [langKey, records] of recordsByLang.entries()) {
     const indexName = buildIndexName(langKey);
-    const index = client.initIndex(indexName);
+    let index;
+    if (typeof client.initIndex === 'function') {
+      index = client.initIndex(indexName);
+    } else if (typeof client.index === 'function') {
+      index = client.index(indexName);
+    } else {
+      console.warn('[ALGOLIA] Unexpected Algolia client shape; using client directly as index.');
+      index = client;
+    }
 
     console.log(`[ALGOLIA] Indexing ${records.length} records -> ${indexName}`);
 
