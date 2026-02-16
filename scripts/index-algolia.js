@@ -1,5 +1,17 @@
-import * as algoliasearchLib from 'algoliasearch';
-const algoliasearch = algoliasearchLib.algoliasearch || algoliasearchLib.default || algoliasearchLib;
+import * as algoliasearchModule from 'algoliasearch';
+
+// Handle different Algolia package export shapes
+let algoliasearch;
+if (typeof algoliasearchModule.algoliasearch === 'function') {
+  algoliasearch = algoliasearchModule.algoliasearch;
+} else if (typeof algoliasearchModule.default === 'function') {
+  algoliasearch = algoliasearchModule.default;
+} else if (typeof algoliasearchModule === 'function') {
+  algoliasearch = algoliasearchModule;
+} else {
+  console.error('[ALGOLIA] Could not resolve algoliasearch function from package.');
+  process.exit(1);
+}
 
 const appId = process.env.ALGOLIA_APP_ID || process.env.PUBLIC_ALGOLIA_APP_ID;
 const adminKey = process.env.ALGOLIA_ADMIN_KEY || process.env.ALGOLIA_WRITE_KEY;
@@ -212,7 +224,17 @@ async function indexAlgolia() {
 
   for (const [langKey, records] of recordsByLang.entries()) {
     const indexName = buildIndexName(langKey);
-    const index = client.initIndex(indexName);
+    
+    // Handle both v4 (initIndex) and v5 (index) API
+    let index;
+    if (typeof client.initIndex === 'function') {
+      index = client.initIndex(indexName);
+    } else if (typeof client.index === 'function') {
+      index = client.index(indexName);
+    } else {
+      console.warn(`[ALGOLIA] Client does not support initIndex or index methods. Skipping index: ${indexName}`);
+      continue;
+    }
 
     console.log(`[ALGOLIA] Indexing ${records.length} records -> ${indexName}`);
 
