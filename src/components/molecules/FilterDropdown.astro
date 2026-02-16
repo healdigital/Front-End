@@ -1,0 +1,131 @@
+---
+/**
+ * Props for the `FilterDropdown` molecule.
+ */
+interface Props {
+  /** Trigger label shown before a value is selected. */
+  label: string;
+  /** Available options rendered in the menu. */
+  options: { label: string; value: string }[];
+  /** Optional utility classes applied to the wrapper. */
+  class?: string;
+}
+
+const { label, options, class: className } = Astro.props;
+---
+
+<div class:list={['relative inline-block text-left', className]} data-filter-dropdown>
+  <button
+    type="button"
+    class="inline-flex items-center gap-3 h-[40px] px-4 bg-white border border-border-light rounded-lg shadow-sm text-[14px] font-body text-text-primary"
+    aria-expanded="false"
+    aria-haspopup="true"
+    data-filter-trigger
+  >
+    <span data-filter-trigger-label set:html={label} />
+    <svg class="w-4 h-4 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-filter-icon>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  </button>
+
+  <div
+    class="absolute left-0 z-10 mt-3 w-[280px] origin-top-left rounded-lg bg-white shadow-lg ring-1 ring-black/5 opacity-0 scale-95 invisible transition-all duration-200 ease-out"
+    role="menu"
+    aria-orientation="vertical"
+    tabindex="-1"
+    data-filter-menu
+  >
+    <div class="p-5" role="none">
+      <div class="space-y-4" role="none">
+        {options.map((option) => (
+          <button
+            type="button"
+            class="w-full flex items-center gap-4 text-left text-[16px] text-text-primary"
+            role="menuitem"
+            data-filter-item
+            data-filter-value={option.value}
+            aria-current="false"
+          >
+            <span class="w-6 h-6 rounded border-2 border-text-primary flex items-center justify-center transition-colors" data-filter-checkbox>
+              <svg class="w-4 h-4 text-primary-turquoise opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-filter-check>
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </span>
+            <span set:html={option.label} />
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupDropdowns() {
+    const dropdowns = document.querySelectorAll('[data-filter-dropdown]');
+
+    dropdowns.forEach((dropdown) => {
+      if (dropdown.dataset.dropdownReady === 'true') return;
+      dropdown.dataset.dropdownReady = 'true';
+
+      const trigger = dropdown.querySelector('[data-filter-trigger]');
+      const menu = dropdown.querySelector('[data-filter-menu]');
+      const icon = dropdown.querySelector('[data-filter-icon]');
+      const items = Array.from(dropdown.querySelectorAll('[data-filter-item]'));
+
+      if (!trigger || !menu || items.length === 0) return;
+
+      let isOpen = false;
+
+      function setOpen(nextState) {
+        isOpen = nextState;
+        trigger.setAttribute('aria-expanded', String(isOpen));
+
+        if (isOpen) {
+          menu.classList.remove('opacity-0', 'scale-95', 'invisible');
+          menu.classList.add('opacity-100', 'scale-100', 'visible');
+          icon?.classList.add('rotate-180');
+        } else {
+          menu.classList.add('opacity-0', 'scale-95', 'invisible');
+          menu.classList.remove('opacity-100', 'scale-100', 'visible');
+          icon?.classList.remove('rotate-180');
+        }
+      }
+
+      trigger.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setOpen(!isOpen);
+      });
+
+      items.forEach((item) => {
+        item.addEventListener('click', () => {
+          items.forEach((btn) => {
+            btn.setAttribute('aria-current', 'false');
+            const check = btn.querySelector('[data-filter-check]');
+            const box = btn.querySelector('[data-filter-checkbox]');
+            check?.classList.add('opacity-0');
+            box?.classList.remove('border-primary-turquoise');
+          });
+
+          item.setAttribute('aria-current', 'true');
+          const check = item.querySelector('[data-filter-check]');
+          const box = item.querySelector('[data-filter-checkbox]');
+          check?.classList.remove('opacity-0');
+          box?.classList.add('border-primary-turquoise');
+
+          const label = item.querySelector('span:last-child')?.innerHTML;
+          const labelTarget = trigger.querySelector('[data-filter-trigger-label]');
+          if (label && labelTarget) labelTarget.innerHTML = label;
+
+          setOpen(false);
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!dropdown.contains(event.target)) setOpen(false);
+      });
+    });
+  }
+
+  setupDropdowns();
+  document.addEventListener('astro:page-load', setupDropdowns);
+</script>

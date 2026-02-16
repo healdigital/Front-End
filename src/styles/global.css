@@ -7,9 +7,144 @@
   }
 }
 
-/* Ensure dark theme baseline */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Ensure light theme baseline */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+}
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+  color: #1a2335;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.font-serif {
+  font-family: 'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+}
+
+.font-mono {
+  font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+:root {
+  --font-heading: 'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-button: 'Jost', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.typ-hero {
+  font-family: var(--font-heading);
+  font-size: 86px;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.typ-section {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  line-height: 1.1;
+}
+
+.typ-feature-title {
+  font-family: var(--font-heading);
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.typ-card-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.typ-price {
+  font-family: var(--font-heading);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.typ-body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.typ-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.typ-subtitle {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+}
+
+.typ-nav {
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.typ-button {
+  font-family: var(--font-button);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+@media (max-width: 1024px) {
+  .typ-hero {
+    font-size: 64px;
+  }
+
+  .typ-section {
+    font-size: 36px;
+  }
+
+  .typ-feature-title {
+    font-size: 30px;
+  }
+
+  .typ-card-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .typ-hero {
+    font-size: 38px;
+  }
+
+  .typ-section {
+    font-size: 30px;
+  }
+
+  .typ-feature-title {
+    font-size: 26px;
+  }
+
+  .typ-card-title {
+    font-size: 22px;
+  }
 }
 
 /* Hide author names globally (temporary) */

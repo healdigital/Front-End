@@ -1,0 +1,151 @@
+---
+import { type CollectionEntry } from 'astro:content';
+
+interface Props {
+  name: string;
+  description?: string;
+  image?: string | string[];
+  authorName?: string;
+  datePublished?: string;
+  dateModified?: string;
+  prepTime?: number; // minutes
+  cookTime?: number; // minutes
+  totalTime?: number; // minutes
+  recipeYield?: string | number;
+  recipeCategory?: string;
+  recipeCuisine?: string;
+  keywords?: string;
+  ingredients: string[];
+  instructions: { 
+    text: string; 
+    name?: string; 
+    image?: string;
+    position?: number;
+  }[] | string[];
+  nutrition?: {
+    calories?: string;
+    protein?: string;
+    fat?: string;
+    carbs?: string;
+    fiber?: string;
+    sugar?: string;
+    sodium?: string;
+  };
+  rating?: {
+    value: number;
+    count: number;
+  };
+  video?: {
+    name: string;
+    description: string;
+    thumbnailUrl: string;
+    uploadDate: string;
+    contentUrl: string;
+  };
+}
+
+const {
+  name,
+  description,
+  image,
+  authorName = 'La Cuisine De Bernard',
+  datePublished,
+  dateModified,
+  prepTime,
+  cookTime,
+  totalTime,
+  recipeYield,
+  recipeCategory,
+  recipeCuisine,
+  keywords,
+  ingredients,
+  instructions,
+  nutrition,
+  rating,
+  video
+} = Astro.props;
+
+const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL || Astro.site?.href || 'https://lacuisinedebernard.com/';
+const siteUrl = new URL(configuredSiteUrl).href;
+const logoUrl = new URL('/logo.png', siteUrl).href;
+
+// Helper to format duration to ISO 8601 duration format (PTxMxS)
+const formatDuration = (minutes?: number) => {
+  if (minutes === undefined || minutes === null) return undefined;
+  return `PT${Math.round(minutes)}M`;
+};
+
+const processedTotalTime = totalTime !== undefined 
+  ? totalTime 
+  : (prepTime || 0) + (cookTime || 0);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Recipe',
+  name,
+  description,
+  image,
+  author: {
+    '@type': 'Person',
+    name: authorName
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'La Cuisine De Bernard',
+    logo: {
+      '@type': 'ImageObject',
+      url: logoUrl
+    }
+  },
+  datePublished,
+  dateModified: dateModified || datePublished,
+  prepTime: formatDuration(prepTime),
+  cookTime: formatDuration(cookTime),
+  totalTime: formatDuration(processedTotalTime),
+  recipeYield,
+  recipeCategory,
+  recipeCuisine,
+  keywords,
+  recipeIngredient: ingredients,
+  recipeInstructions: instructions.map((step, index) => {
+    if (typeof step === 'string') {
+      return {
+        '@type': 'HowToStep',
+        text: step,
+        position: index + 1
+      };
+    }
+    return {
+      '@type': 'HowToStep',
+      text: step.text,
+      name: step.name,
+      image: step.image,
+      position: step.position || index + 1
+    };
+  }),
+  nutrition: nutrition ? {
+    '@type': 'NutritionInformation',
+    calories: nutrition.calories,
+    proteinContent: nutrition.protein,
+    fatContent: nutrition.fat,
+    carbohydrateContent: nutrition.carbs,
+    fiberContent: nutrition.fiber,
+    sugarContent: nutrition.sugar,
+    sodiumContent: nutrition.sodium
+  } : undefined,
+  aggregateRating: rating ? {
+    '@type': 'AggregateRating',
+    ratingValue: rating.value,
+    ratingCount: rating.count
+  } : undefined,
+  video: video ? {
+    '@type': 'VideoObject',
+    ...video
+  } : undefined
+};
+
+// Remove undefined/null values
+const cleanSchema = JSON.parse(JSON.stringify(schema));
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(cleanSchema)} />

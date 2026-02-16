@@ -1,0 +1,47 @@
+---
+/**
+ * Props for the `SocialShare` molecule.
+ */
+interface Props {
+  /** Canonical URL shared on social platforms. */
+  url?: string;
+  /** Message used in social post text and email subject. */
+  title?: string;
+  /** Optional utility classes applied to the wrapper. */
+  class?: string;
+}
+
+const { url = Astro.url.href, title = 'Check this out!', class: className } = Astro.props;
+
+const shareLinks = [
+  {
+    icon: 'fab fa-facebook-f',
+    label: 'Facebook',
+    href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  },
+  {
+    icon: 'fab fa-pinterest-p',
+    label: 'Pinterest',
+    href: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title)}`,
+  },
+  {
+    icon: 'far fa-envelope',
+    label: 'Email',
+    href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`,
+  },
+];
+---
+
+<div class:list={["flex items-center gap-3 text-text-secondary", className]}>
+  {shareLinks.map((link) => (
+    <a
+      href={link.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="hover:text-primary-turquoise transition-colors"
+      aria-label={`Partager sur ${link.label}`}
+    >
+      <i class={link.icon}></i>
+    </a>
+  ))}
+</div>

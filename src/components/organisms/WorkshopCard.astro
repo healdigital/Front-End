@@ -1,0 +1,80 @@
+---
+import Button from '../atoms/Button.astro';
+import Icon from '../atoms/Icon.astro';
+
+interface Props {
+  title: string;
+  image: string;
+  date: Date;
+  price: number;
+  duration: string;
+  maxParticipants: number;
+  currentParticipants?: number;
+  slug: string;
+}
+
+const {
+  title,
+  image,
+  date,
+  price,
+  duration,
+  maxParticipants,
+  currentParticipants = 0,
+  slug,
+} = Astro.props;
+
+const isFull = currentParticipants >= maxParticipants;
+const spotsLeft = maxParticipants - currentParticipants;
+
+let statusLabel = 'Places disponibles';
+let statusClass = 'text-status-success';
+
+if (isFull) {
+  statusLabel = 'Complet';
+  statusClass = 'text-status-error';
+} else if (spotsLeft <= 2) {
+  statusLabel = 'Derni&egrave;res places';
+  statusClass = 'text-status-error';
+}
+
+const formatter = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'short',
+});
+const parts = formatter.formatToParts(date);
+const day = parts.find((p) => p.type === 'day')?.value || '';
+const month = parts.find((p) => p.type === 'month')?.value || '';
+---
+
+<article class="w-full max-w-[388px] rounded-[12px] bg-white overflow-hidden shadow-md border border-border-light">
+  <div class="relative h-[220px]">
+    <img src={image} alt={title} class="w-full h-full object-cover" loading="lazy" />
+    <div class="absolute bottom-4 left-4 bg-white rounded-lg p-2 text-center min-w-[54px] shadow-sm">
+      <span class="block text-[10px] uppercase text-text-secondary">{month}</span>
+      <span class="block text-[18px] font-heading text-text-primary">{day}</span>
+    </div>
+  </div>
+
+  <div class="p-5">
+    <p class={`text-[11px] uppercase tracking-widest font-mono ${statusClass} typ-meta`} set:html={statusLabel}></p>
+    <h3 class="font-heading text-[22px] leading-[1.1] text-text-primary mt-2 typ-feature-title">{title}</h3>
+
+    <div class="flex items-center gap-4 text-text-secondary text-[12px] mt-3">
+      <span class="flex items-center gap-1"><Icon name="users" size="sm" /> {maxParticipants} personnes maximum</span>
+      <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> {duration}</span>
+    </div>
+
+    <p class="text-[13px] text-text-secondary mt-4 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+
+    <div class="flex items-center justify-between mt-5">
+      <div>
+        <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
+        <div class="font-heading text-[26px] text-text-primary typ-price">{price}&euro;</div>
+      </div>
+      <Button href={isFull ? undefined : slug} variant={isFull ? 'disabled' : 'primary'} size="sm">
+        {isFull ? 'Complet' : 'R&eacute;server'}
+      </Button>
+    </div>
+  </div>
+</article>

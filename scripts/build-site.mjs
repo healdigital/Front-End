@@ -24,6 +24,7 @@ const articleOnlyBuild =
 const disableSearch = isTruthy(env.BUILD_DISABLE_SEARCH);
 const useLocalJson = isTruthy(env.USE_LOCAL_JSON);
 const preparedUrl = env.PREPARED_JSON_URL || '';
+const autoAlgoliaIndex = isTruthy(env.ALGOLIA_AUTO_INDEX);
 
 const downloadPreparedSnapshot = () => {
   if (!preparedUrl) return;
@@ -49,6 +50,11 @@ try {
   }
 
   run('npx astro build', env);
+
+  if (autoAlgoliaIndex) {
+    console.log('ALGOLIA_AUTO_INDEX enabled: indexing articles...');
+    run('npm run index:algolia', env);
+  }
 
   if (articleOnlyBuild) {
     // Keep homepage + article routes, remove non-article static outputs before deploy sync.

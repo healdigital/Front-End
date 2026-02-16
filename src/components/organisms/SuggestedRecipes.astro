@@ -1,0 +1,61 @@
+---
+import RecipeCard from './RecipeCard.astro';
+import FilterDropdown from '../molecules/FilterDropdown.astro';
+
+interface Recipe {
+  title: string;
+  description: string;
+  image: string;
+  category?: string;
+  prepTime: string;
+  difficulty: string;
+  slug: string;
+}
+
+interface Props {
+  recipes: Recipe[];
+}
+
+const { recipes } = Astro.props;
+
+const recipeFilters = [
+  { label: 'Toutes les recettes', value: 'toutes' },
+  { label: 'Recettes sucr&eacute;es', value: 'sucrees' },
+  { label: 'Recettes sal&eacute;es', value: 'salees' },
+];
+---
+
+<section class="py-16 md:py-24 bg-secondary-cream">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+    <div class="flex items-center gap-6 mb-10">
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section">Ces recettes pourrez vous int&eacute;resser</h2>
+      <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 mb-8">
+      <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
+      <div class="flex items-center gap-3">
+        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue grille">
+          <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue liste">
+          <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {recipes.map((recipe) => (
+        <RecipeCard
+          title={recipe.title}
+          description={recipe.description}
+          image={recipe.image}
+          category={recipe.category}
+          prepTime={recipe.prepTime}
+          difficulty={recipe.difficulty}
+          slug={recipe.slug}
+        />
+      ))}
+    </div>
+  </div>
+</section>

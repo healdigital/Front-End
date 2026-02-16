@@ -1,0 +1,26 @@
+---
+interface Props {
+  name: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  class?: string;
+}
+
+const { name, size = 'md', class: className, ...rest } = Astro.props;
+
+const sizes = {
+  sm: 'text-sm',
+  md: 'text-base',
+  lg: 'text-lg',
+  xl: 'text-xl',
+  '2xl': 'text-2xl',
+};
+
+const computedClass = [
+  'fa-solid',
+  `fa-${name}`,
+  sizes[size],
+  className
+].join(' ');
+---
+
+<i class={computedClass} {...rest}></i>

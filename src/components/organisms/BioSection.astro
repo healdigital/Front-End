@@ -1,0 +1,58 @@
+---
+import Icon from '../atoms/Icon.astro';
+
+const features = [
+  {
+    title: 'Vrai Chef, Vraies Recettes',
+    description: 'Form&eacute; dans les plus grandes maisons parisiennes',
+    icon: 'utensils',
+  },
+  {
+    title: 'Contenu 100% Original',
+    description: 'Aucune IA, aucun plagiat, que de l&apos;authenticit&eacute;',
+    icon: 'check',
+  },
+  {
+    title: 'Test&eacute;es et Approuv&eacute;es',
+    description: 'Chaque recette valid&eacute;e par des centaines de lecteurs',
+    icon: 'star',
+  },
+];
+---
+
+<section class="py-16 md:py-24 bg-secondary-cream">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <div class="flex-1">
+        <img
+          src="/images/bernard-blog.png"
+          alt="Bernard Laurance"
+          class="w-full h-[420px] lg:h-[520px] object-cover rounded-lg"
+          loading="lazy"
+        />
+      </div>
+      <div class="flex-1 bg-white rounded-lg border border-border-light p-8 lg:p-12">
+        <p class="font-mono text-[12px] uppercase tracking-widest text-text-secondary typ-meta">L&apos;humain derri&egrave;re les recettes</p>
+        <h2 class="font-heading text-4xl lg:text-5xl text-text-primary mt-4 typ-section">
+          Bernard, Chef cuisinier depuis 2010
+        </h2>
+        <p class="text-[15px] text-text-secondary leading-relaxed mt-4 typ-body">
+          Dans un monde satur&eacute; de contenu g&eacute;n&eacute;r&eacute; automatiquement, je m&apos;engage &agrave; vous offrir des recettes authentiques, test&eacute;es dans ma cuisine et celles de mes ateliers. Chaque technique, chaque astuce, chaque photo provient d&apos;une exp&eacute;rience r&eacute;elle.
+        </p>
+        <div class="mt-6 border-t border-border-light pt-6 space-y-4">
+          {features.map((feature) => (
+            <div class="flex gap-4">
+              <div class="w-10 h-10 rounded-full bg-secondary-cream flex items-center justify-center text-primary-turquoise">
+                <Icon name={feature.icon as any} size="sm" />
+              </div>
+              <div>
+                <p class="text-[14px] font-body font-semibold text-text-primary" set:html={feature.title}></p>
+                <p class="text-[13px] text-text-secondary typ-body" set:html={feature.description}></p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

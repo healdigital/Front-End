@@ -1,0 +1,65 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * Props for the `Input` atom.
+ */
+interface Props extends HTMLAttributes<'input'> {
+  /** Optional accessible label shown above the input. */
+  label?: string;
+  /** Optional inline validation message. */
+  error?: string;
+  /** Explicit input id used by the label and error message. */
+  id?: string;
+  /** Utility classes applied to the label element. */
+  labelClass?: string;
+  /** Inline style string applied to the label element. */
+  labelStyle?: string;
+}
+
+const { 
+  label, 
+  error, 
+  id = `input-${Math.random().toString(36).substr(2, 9)}`,
+  labelClass,
+  labelStyle,
+  class: className,
+  type = 'text',
+  disabled,
+  ...rest 
+} = Astro.props;
+
+const baseStyles = "w-full rounded-md border text-base shadow-sm placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-text-tertiary transition-colors duration-200";
+
+const stateClasses = error
+  ? "border-status-error text-status-error focus:border-status-error focus:ring-status-error"
+  : "border-border-primary hover:border-border-dark focus:border-primary-turquoise focus:ring-primary-turquoise";
+
+const classes = [
+  baseStyles,
+  stateClasses,
+  className
+].join(" ");
+---
+
+<div class="flex flex-col gap-1.5 align-start w-full">
+  {label && <label for={id} class={["text-sm font-medium text-text-primary", labelClass].filter(Boolean).join(" ")} style={labelStyle}>
+    {label}
+  </label>}
+  
+  <input
+    id={id}
+    type={type}
+    disabled={disabled}
+    class={classes}
+    aria-invalid={!!error}
+    aria-describedby={error ? `${id}-error` : undefined}
+    {...rest}
+  />
+  
+  {error && (
+    <span id={`${id}-error`} class="text-xs text-status-error animate-pulse">
+      {error}
+    </span>
+  )}
+</div>
