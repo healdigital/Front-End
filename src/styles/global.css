@@ -44,19 +44,54 @@ body {
   --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-button: 'Jost', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --type-title-size: 86px;
+  --type-title-line: 0.95;
+  --type-h2-size: 44px;
+  --type-h2-line: 1.1;
+  --type-body-size: 15px;
+  --type-body-line: 1.7;
+  --type-caption-size: 12px;
+  --type-caption-line: 1.2;
+}
+
+.typ-title {
+  font-family: var(--font-heading);
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  letter-spacing: -0.01em;
+}
+
+.typ-h2 {
+  font-family: var(--font-heading);
+  font-size: var(--type-h2-size);
+  line-height: var(--type-h2-line);
+}
+
+.typ-body {
+  font-family: var(--font-body);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.typ-caption {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
 }
 
 .typ-hero {
   font-family: var(--font-heading);
-  font-size: 86px;
-  line-height: 0.95;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
   letter-spacing: -0.01em;
 }
 
 .typ-section {
   font-family: var(--font-heading);
-  font-size: 44px;
-  line-height: 1.1;
+  font-size: var(--type-h2-size);
+  line-height: var(--type-h2-line);
 }
 
 .typ-feature-title {
@@ -77,15 +112,9 @@ body {
   line-height: 1;
 }
 
-.typ-body {
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.7;
-}
-
 .typ-meta {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--type-caption-size);
   text-transform: uppercase;
   letter-spacing: 0.2em;
 }
@@ -112,6 +141,11 @@ body {
 }
 
 @media (max-width: 1024px) {
+  :root {
+    --type-title-size: 64px;
+    --type-h2-size: 36px;
+  }
+
   .typ-hero {
     font-size: 64px;
   }
@@ -130,8 +164,13 @@ body {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --type-title-size: 52px;
+    --type-h2-size: 30px;
+  }
+
   .typ-hero {
-    font-size: 38px;
+    font-size: 52px;
   }
 
   .typ-section {

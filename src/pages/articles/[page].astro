@@ -2,168 +2,232 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { getAllArticlesFromMongo } from '../../lib/mongo.server';
+import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 
 export const prerender = true;
+
+const lang = 'en';
+const articlesPerPage = 12;
+
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 50;
 };
 
-const articleSlug = (article: any) => {
-  if (!article) return '';
-  if (typeof article.slug === 'string') return article.slug;
-  if (article.slug?.current) return article.slug.current;
+const stripHtml = (value: string) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(value.children)) {
+      return value.children.map((child: any) => toText(child)).filter(Boolean).join(' ');
+    }
+    if (value.content) return toText(value.content);
+  }
   return '';
 };
 
-export async function getStaticPaths() {
-  // Use MongoDB as primary data source during build time
+const articleSlug = (article: any) => {
+  if (!article) return '';
+  const raw = typeof article.slug === 'string' ? article.slug : article.slug?.current;
+  return String(raw || '').replace(/^\/+|\/+$/g, '');
+};
+
+const getTitle = (article: any) => toText(article?.title) || 'Untitled article';
+
+const getExcerpt = (article: any) => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return 'Recette a decouvrir.';
+  return raw.length > 180 ? `${raw.slice(0, 180).trim()}...` : raw;
+};
+
+const getDate = (article: any) => {
+  const candidate = article?.publishedAt || article?.date || article?.modified;
+  if (!candidate) return '';
+  const parsed = new Date(candidate);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const getCategories = (article: any): string[] => {
+  if (!Array.isArray(article?.categories)) return [];
+  return article.categories
+    .map((category: any) => toText(category?.title || category?.name || category?.label || category))
+    .filter(Boolean)
+    .slice(0, 2);
+};
+
+async function loadAllArticles() {
   let allArticles = await getAllArticlesFromMongo();
-  
-  // Fallback to Payload if MongoDB fails
   if (!allArticles || allArticles.length === 0) {
     const result: any = await payloadFetch({
       collection: 'articles',
-      query: { depth: 1, limit: getBuildLimit() }
+      query: { depth: 2, limit: getBuildLimit() },
     });
     allArticles = result?.docs || result || [];
   }
-  
-  const articlesPerPage = 12;
+  return Array.isArray(allArticles) ? allArticles : [];
+}
+
+export async function getStaticPaths() {
+  const allArticles = await loadAllArticles();
   const totalPages = Math.ceil(allArticles.length / articlesPerPage);
 
-  const paths = Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
-    params: { page: String(i + 2) },
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
+    params: { page: String(index + 2) },
   }));
-
-  return paths;
 }
 
-const { page } = Astro.params;
-const currentPage = parseInt(page as string);
-const articlesPerPage = 12;
+const rawPage = Number(Astro.params.page);
+const currentPage = Number.isFinite(rawPage) && rawPage > 1 ? rawPage : 2;
 
-let allArticles = await getAllArticlesFromMongo();
-if (!allArticles || allArticles.length === 0) {
-  const result: any = await payloadFetch({
-    collection: 'articles',
-    query: { depth: 2, limit: getBuildLimit() }
-  });
-  allArticles = result?.docs || result || [];
-}
-const articles = (Array.isArray(allArticles) ? allArticles : []).filter((a: any) => a && a.title);
-const totalPages = Math.ceil(articles.length / articlesPerPage);
-const startIdx = (currentPage - 1) * articlesPerPage;
+const allArticles = await loadAllArticles();
+const normalizedArticles = allArticles
+  .map((article: any) => {
+    const slug = articleSlug(article);
+    const title = getTitle(article);
+    if (!slug || !title) return null;
+    return {
+      slug,
+      title,
+      excerpt: getExcerpt(article),
+      date: getDate(article),
+      image: processArticleImageUrl(article),
+      categories: getCategories(article),
+    };
+  })
+  .filter(Boolean);
+
+const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
+const safePage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
+const startIdx = (safePage - 1) * articlesPerPage;
 const endIdx = startIdx + articlesPerPage;
-const paginatedArticles = articles.slice(startIdx, endIdx);
+const paginatedArticles = normalizedArticles.slice(startIdx, endIdx);
 
-const stripHtml = (html: string) => {
-  if (!html) return '';
-  const text = html.replace(/<[^>]*>/g, '');
-  return text.substring(0, 150) + (text.length > 150 ? '...' : '');
-};
+const paginationItems = (() => {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
 
-const getExcerpt = (article: any) => {
-  if (article.excerpt && Array.isArray(article.excerpt)) {
-    const text = article.excerpt.map((block: any) => 
-      block.children?.map((child: any) => child.text).join(' ') || ''
-    ).join(' ');
-    return stripHtml(text);
+  const items: Array<number | string> = [1];
+  const rangeStart = Math.max(2, safePage - 1);
+  const rangeEnd = Math.min(totalPages - 1, safePage + 1);
+
+  if (rangeStart > 2) items.push('start-ellipsis');
+  for (let page = rangeStart; page <= rangeEnd; page += 1) {
+    items.push(page);
   }
-  if (article.content && Array.isArray(article.content)) {
-    const text = article.content.map((block: any) => 
-      block.children?.map((child: any) => child.text).join(' ') || ''
-    ).join(' ');
-    return stripHtml(text);
-  }
-  return '';
-};
+  if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
 
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
+  items.push(totalPages);
+  return items;
+})();
 ---
 
-<BaseLayout title={`Articles - Page ${currentPage}`}>
-  <main class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="mb-12">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Articles</h1>
-        <p class="text-xl text-gray-600 dark:text-gray-400">Page {currentPage} of {totalPages}</p>
-      </div>
+<BaseLayout title={`Articles - Page ${safePage}`} lang={lang}>
+  <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
+    <div
+      class="absolute inset-0 pointer-events-none opacity-30"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+    ></div>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] py-12 relative z-10">
+      <p class="text-[#8B7A4E] mb-3 typ-caption">Archive</p>
+      <h1 class="text-[#1A2335] typ-h2">Articles</h1>
+      <p class="text-[#4B5563] mt-3 typ-body">Page {safePage} sur {Math.max(totalPages, 1)}.</p>
+    </div>
+  </section>
 
+  <section class="bg-secondary-cream py-12 md:py-16">
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
       {paginatedArticles.length > 0 ? (
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {paginatedArticles.map((article: any) => (
-            <article class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
-              {article.featuredImageUrl && (
-                <div class="aspect-video overflow-hidden bg-gray-200">
-                  <img src={article.featuredImageUrl} alt={article.title} class="w-full h-full object-cover" />
-                </div>
-              )}
-              <div class="p-6">
-                {article.categories?.length > 0 && (
-                  <div class="flex flex-wrap gap-2 mb-2">
-                    {article.categories.map((cat: any) => (
-                      <a href={`/categories/${cat.slug?.current}`} class="inline-block px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded">
-                        {cat.title}
-                      </a>
-                    ))}
-                  </div>
-                )}
-                <h2 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                  <a href={`/articles/${articleSlug(article)}`} class="hover:text-blue-600">
-                    {article.title}
-                  </a>
-                </h2>
-                <p class="text-gray-600 text-sm mb-4 line-clamp-3">{getExcerpt(article)}</p>
-                <div class="flex items-center justify-between text-xs text-gray-500">
-                  <span>{formatDate(article.date)}</span>
-                  {article.author && <span class="author-meta">{article.author.name}</span>}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <div class="text-center py-12">
-          <p class="text-gray-600 text-lg">No articles found</p>
-        </div>
-      )}
+        <>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+            {paginatedArticles.map((article: any) => (
+              <a href={`/${article.slug}`} class="group rounded-lg border border-[#DDD8CA] bg-[#F7F5EF] overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="relative h-[230px] bg-[#ECE9DD] overflow-hidden">
+                  {article.image ? (
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      loading="lazy"
+                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center">
+                      <span class="text-[#8A8578] typ-caption">No image</span>
+                    </div>
+                  )}
 
-      {totalPages > 1 && (
-        <div class="flex justify-center items-center gap-2 mt-12">
-          {currentPage > 1 && (
-            <a href={currentPage === 2 ? '/articles' : `/articles/page/${currentPage - 1}`} class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
-              ← Previous
-            </a>
-          )}
-          
-          <div class="flex gap-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <a 
-                  href={pageNum === 1 ? '/articles' : `/articles/page/${pageNum}`}
-                  class={`px-3 py-2 rounded ${pageNum === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900 hover:bg-gray-300'}`}
-                >
-                  {pageNum}
-                </a>
-              );
-            })}
+                  {article.categories[0] && (
+                    <span class="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1 text-[11px] text-[#4B5563] typ-caption">
+                      {article.categories[0]}
+                    </span>
+                  )}
+                </div>
+                <div class="p-5">
+                  {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
+                  <h2 class="text-[#1A2335] mb-3 typ-card-title">{article.title}</h2>
+                  <p class="text-[#4B5563] mb-5 typ-body">{article.excerpt}</p>
+                  <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
+                </div>
+              </a>
+            ))}
           </div>
 
-          {currentPage < totalPages && (
-            <a href={`/articles/page/${currentPage + 1}`} class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
-              Next →
-            </a>
+          {totalPages > 1 && (
+            <nav class="mt-12 pt-8 border-t border-[#D8D2C2] flex flex-wrap items-center justify-between gap-4">
+              {safePage > 1 ? (
+                <a href={safePage === 2 ? '/articles' : `/articles/${safePage - 1}`} class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
+                  Pr&eacute;c&eacute;dent
+                </a>
+              ) : (
+                <span class="text-[#AAA] typ-caption">Pr&eacute;c&eacute;dent</span>
+              )}
+
+              <div class="flex items-center gap-4">
+                {paginationItems.map((item) =>
+                  typeof item === 'string' ? (
+                    <span class="text-[#999] typ-caption">...</span>
+                  ) : (
+                    <a
+                      href={item === 1 ? '/articles' : `/articles/${item}`}
+                      class={`text-[14px] ${item === safePage ? 'text-[#1A2335] font-semibold' : 'text-[#707070] hover:text-[#1A2335]'}`}
+                    >
+                      {item}
+                    </a>
+                  )
+                )}
+              </div>
+
+              {safePage < totalPages ? (
+                <a href={`/articles/${safePage + 1}`} class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
+                  Suivant
+                </a>
+              ) : (
+                <span class="text-[#AAA] typ-caption">Suivant</span>
+              )}
+            </nav>
           )}
+        </>
+      ) : (
+        <div class="text-center py-16">
+          <p class="text-[#6B7280] typ-body">Aucun article trouv&eacute;.</p>
         </div>
       )}
     </div>
-  </main>
+  </section>
 </BaseLayout>

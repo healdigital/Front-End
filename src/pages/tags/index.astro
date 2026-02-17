@@ -6,156 +6,67 @@ import { BUILD_ONLY_ARTICLE_PAGES } from '../../utils/buildFlags';
 let tagsWithCounts: any[] = [];
 
 if (!BUILD_ONLY_ARTICLE_PAGES) {
-  const result = await payloadFetch({
-    endpoint: '/collections/tags?limit=1000',
-    method: 'GET'
+  tagsWithCounts = await payloadFetch({
+    collection: 'tags',
+    query: { limit: 1000 },
   });
-
-  tagsWithCounts = result?.docs || [];
 }
 
-const tagsWithDetails = (Array.isArray(tagsWithCounts) ? tagsWithCounts : []).map((tag: any) => ({
-  ...tag,
-  sampleArticles: []
-})).sort((a: any, b: any) => (b.articleCount || 0) - (a.articleCount || 0));
+const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
 
-const title = 'Tags';
-const description = 'Browse articles by tag';
+const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
+  .map((tag: any) => {
+    const slug = normalizeSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
+    if (!slug) return null;
 
-// Tag icons and colors
-const tagConfigs: any = {
-  'recipe': { icon: '👨‍🍳', colors: 'from-orange-400 via-red-400 to-red-500', accent: 'orange' },
-  'cooking': { icon: '🍳', colors: 'from-orange-300 via-amber-400 to-orange-500', accent: 'orange' },
-  'dessert': { icon: '🍰', colors: 'from-pink-400 via-rose-400 to-red-400', accent: 'pink' },
-  'sweet': { icon: '🍬', colors: 'from-pink-400 via-rose-400 to-red-400', accent: 'pink' },
-  'savory': { icon: '🍜', colors: 'from-green-400 via-emerald-400 to-emerald-600', accent: 'green' },
-  'spicy': { icon: '🌶️', colors: 'from-red-400 via-orange-400 to-red-500', accent: 'red' },
-  'healthy': { icon: '🥗', colors: 'from-green-400 via-lime-400 to-emerald-500', accent: 'green' },
-  'quick': { icon: '⚡', colors: 'from-yellow-400 via-amber-400 to-orange-500', accent: 'yellow' },
-  'easy': { icon: '✨', colors: 'from-blue-400 via-purple-400 to-pink-500', accent: 'purple' },
-  'vegetarian': { icon: '🥬', colors: 'from-green-400 via-emerald-400 to-teal-600', accent: 'green' },
-  'vegan': { icon: '🌱', colors: 'from-green-500 via-emerald-500 to-teal-600', accent: 'green' },
-  'travel': { icon: '✈️', colors: 'from-indigo-400 via-purple-400 to-purple-500', accent: 'indigo' },
-  'interview': { icon: '🎙️', colors: 'from-purple-400 via-pink-400 to-pink-500', accent: 'purple' },
-  'news': { icon: '📰', colors: 'from-blue-400 via-cyan-400 to-cyan-500', accent: 'blue' },
-};
-
-const getConfig = (name: string) => {
-  const key = name.toLowerCase().replace(/\s+/g, '');
-  return tagConfigs[key] || { 
-    icon: '🏷️', 
-    colors: 'from-slate-400 to-gray-600', 
-    accent: 'gray' 
-  };
-};
+    return {
+      slug,
+      title: tag?.title || tag?.name || slug,
+      description: tag?.description || '',
+      articleCount: Number(tag?.articleCount || 0),
+    };
+  })
+  .filter(Boolean)
+  .sort((a: any, b: any) => b.articleCount - a.articleCount);
 ---
 
-<BaseLayout title={title} description={description}>
-  <main class="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
-    {/* Hero Section */}
-    <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 pt-20 pb-24">
-      {/* Animated Background Elements */}
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-500/20 to-pink-500/10 rounded-full blur-3xl opacity-30"></div>
-        <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-tr from-blue-500/20 to-cyan-500/10 rounded-full blur-3xl opacity-30"></div>
-      </div>
-
-      <div class="relative z-10 container mx-auto px-4">
-        <div class="text-center mb-8">
-          <div class="inline-block mb-4">
-            <span class="px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent font-bold text-lg">🏷️ EXPLORE</span>
-          </div>
-          <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
-            Article<br class="hidden md:block" /> Tags
-          </h1>
-          <p class="text-xl text-gray-300 max-w-2xl mx-auto mb-4">
-            Discover amazing content organized by tag. Find exactly what interests you.
-          </p>
-          <div class="flex justify-center gap-8 mt-8 flex-wrap">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-white">{tagsWithDetails.length}</div>
-              <div class="text-sm text-gray-400 mt-1">Tags</div>
-            </div>
-            <div class="h-12 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent"></div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-white">
-                {tagsWithDetails.reduce((sum: number, tag: any) => sum + tag.articleCount, 0)}
-              </div>
-              <div class="text-sm text-gray-400 mt-1">Articles</div>
-            </div>
-          </div>
-        </div>
-      </div>
+<BaseLayout title="Tags" description="Browse articles by tag">
+  <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
+    <div
+      class="absolute inset-0 pointer-events-none opacity-30"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+    ></div>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] py-12 relative z-10">
+      <p class="text-[#8B7A4E] mb-3 typ-caption">Explore</p>
+      <h1 class="text-[#1A2335] typ-h2">Tags</h1>
+      <p class="text-[#4B5563] mt-3 typ-body">{tags.length} tags disponibles.</p>
     </div>
+  </section>
 
-    {/* Tags Grid */}
-    <div class="relative container mx-auto px-4 -mt-12 pb-20 z-20">
+  <section class="bg-secondary-cream py-12 md:py-16">
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
       {BUILD_ONLY_ARTICLE_PAGES && (
-        <div class="mb-8 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+        <div class="mb-8 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
           Tag pages are excluded in article-only build mode (`BUILD_ONLY_ARTICLE_PAGES=1`).
         </div>
       )}
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {tagsWithDetails.map((tag: any) => {
-          const config = getConfig(tag.title);
-          return (
-            <a href={`/tags/${tag.slug.current}`} class="group h-full">
-              <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3 h-full flex flex-col border border-gray-700 hover:border-gray-600">
-                {/* Gradient Header with Icon */}
-                <div class={`bg-gradient-to-br ${config.colors} p-8 relative overflow-hidden group-hover:scale-105 transition-transform duration-300`}>
-                  <div class="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-                  <div class="relative z-10">
-                    <div class="text-5xl mb-3">{config.icon}</div>
-                    <h3 class="text-2xl font-bold text-white">
-                      {tag.title}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div class="p-6 flex-grow flex flex-col bg-gradient-to-b from-gray-800 to-gray-900">
-                  {/* Article Count */}
-                  <div class="mb-4 pb-4 border-b border-gray-700">
-                    <div class="inline-block bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm rounded-full px-3 py-1 border border-white/10">
-                      <span class="text-sm font-semibold text-white">
-                        {tag.articleCount} article{tag.articleCount !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  {tag.description && (
-                    <div class="mb-4 pb-4 border-b border-gray-700">
-                      <p class="text-sm text-gray-300 line-clamp-3">{tag.description}</p>
-                    </div>
-                  )}
-
-                  {/* Footer */}
-                  <div class="mt-auto pt-4 border-t border-gray-700">
-                    <div class="inline-flex items-center gap-2 text-white font-bold text-sm group-hover:gap-3 transition-all">
-                      View Articles
-                      <span class="group-hover:translate-x-1 transition">→</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      {tags.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {tags.map((tag: any) => (
+            <a href={`/tags/${tag.slug}`} class="group rounded-lg border border-[#DDD8CA] bg-[#F7F5EF] p-6 hover:shadow-lg transition-shadow">
+              <p class="text-[#8B7A4E] mb-3 typ-caption">{tag.articleCount} article{tag.articleCount !== 1 ? 's' : ''}</p>
+              <h2 class="text-[#1A2335] mb-3 typ-feature-title group-hover:text-primary-turquoise transition-colors">#{tag.title}</h2>
+              {tag.description && <p class="text-[#4B5563] typ-body">{tag.description}</p>}
             </a>
-          );
-        })}
-      </div>
-
-      {tagsWithDetails.length === 0 && (
+          ))}
+        </div>
+      ) : (
         <div class="text-center py-16">
-          <p class="text-gray-400 text-xl">No tags available yet.</p>
+          <p class="text-[#6B7280] typ-body">Aucun tag disponible.</p>
         </div>
       )}
     </div>
-  </main>
-
-  <style>
-    :global(body) {
-      overflow-x: hidden;
-    }
-  </style>
+  </section>
 </BaseLayout>

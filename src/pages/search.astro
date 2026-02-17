@@ -9,11 +9,16 @@ const title = translate('nav.search', lang);
 ---
 
 <BaseLayout title={title} lang={lang}>
-  <section class="bg-[#F5F1E8] border-b border-[#E2DAC8]">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] py-12">
-      <p class="font-mono text-xs uppercase tracking-[0.3em] text-[#8B7A4E] mb-3">Search</p>
-      <h1 class="font-serif text-4xl md:text-5xl text-[#1A2335] mb-4">Search articles</h1>
-      <p id="search-subtitle" class="text-[#4B5563] text-base md:text-lg">
+  <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
+    <div
+      class="absolute inset-0 pointer-events-none opacity-30"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+    ></div>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] py-12 relative z-10">
+      <p class="font-mono text-xs uppercase tracking-[0.3em] text-[#8B7A4E] mb-3 typ-caption relative z-10">Search</p>
+      <h1 class="font-serif text-[#1A2335] mb-4 typ-h2 relative z-10">Search articles</h1>
+      <p id="search-subtitle" class="text-[#4B5563] text-base md:text-lg typ-body relative z-10">
         Use the search bar in the header to find articles.
       </p>
     </div>
@@ -25,14 +30,14 @@ const title = translate('nav.search', lang);
         <p class="text-lg font-medium">No results found. Try a different search term.</p>
       </div>
 
-      <div id="results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div id="results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Results populated by JS -->
       </div>
     </div>
   </section>
 </BaseLayout>
 
-<script type="module" define:vars={{
+<script type="module" is:inline define:vars={{
   algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
   algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
   algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || 'lcdb_recipes',
@@ -62,22 +67,119 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
 
   const getIndexName = () => `${algoliaIndexPrefix}_${normalizeLang(getCurrentLanguage())}`;
 
+  const stripMarkup = (value) => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const toText = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return stripMarkup(value);
+    if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+    if (typeof value === 'object') {
+      const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+      for (const candidate of directCandidates) {
+        const text = toText(candidate);
+        if (text) return text;
+      }
+      if (Array.isArray(value.children)) {
+        return value.children.map((child) => toText(child)).filter(Boolean).join(' ');
+      }
+    }
+    return '';
+  };
+
+  const escapeHtml = (value) =>
+    String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+  const resolveTitle = (hit) => {
+    const options = [
+      toText(hit?.title),
+      toText(hit?.post_title),
+      toText(hit?.name),
+      toText(hit?._highlightResult?.title?.value),
+      toText(hit?._highlightResult?.post_title?.value),
+      toText(hit?._highlightResult?.name?.value),
+    ];
+    return options.find((value) => value.length > 0) || 'Untitled article';
+  };
+
+  const normalizeImageUrl = (value) => {
+    if (!value || typeof value !== 'string') return '';
+    const normalized = value.trim();
+    if (!normalized) return '';
+    if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('/')) {
+      return normalized;
+    }
+    return '';
+  };
+
+  const resolveImageUrl = (hit) => {
+    const candidates = [
+      hit?.image_url,
+      hit?.featured_image?.url,
+      hit?.featured_image_url,
+      hit?.featuredImageUrl,
+      hit?.featuredImage?.url,
+      hit?.image?.url,
+      hit?.image,
+      hit?.thumbnail,
+      hit?.heroImage,
+    ];
+    for (const candidate of candidates) {
+      const url = normalizeImageUrl(candidate);
+      if (url) return url;
+    }
+    return '';
+  };
+
+  const resolveCategory = (hit) => {
+    const options = [toText(hit?.category), toText(hit?.categories), toText(hit?.tags), toText(hit?.cuisine)];
+    return options.find((value) => value.length > 0) || '';
+  };
+
+  const resolveHref = (hit) => {
+    const directUrl = typeof hit?.url === 'string' ? hit.url.trim() : '';
+    if (directUrl) {
+      if (directUrl.startsWith('/')) return directUrl;
+      if (directUrl.startsWith('http://') || directUrl.startsWith('https://')) {
+        try {
+          const parsed = new URL(directUrl);
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        } catch {
+          return directUrl;
+        }
+      }
+    }
+
+    const slugRaw = typeof hit?.slug === 'string' ? hit.slug : '';
+    const slug = slugRaw.trim().replace(/^\/+|\/+$/g, '');
+    return slug ? `/${slug}` : '#';
+  };
+
   const renderCard = (hit) => {
-    const imageUrl = hit?.featured_image?.url;
-    const imageAlt = hit?.featured_image?.alt || hit?.title || 'Article';
-    const category = hit?.category || '';
-    const title = hit?.title || '';
-    const slug = hit?.slug || '';
+    const imageUrl = resolveImageUrl(hit);
+    const title = resolveTitle(hit);
+    const imageAlt = toText(hit?.featured_image?.alt) || title || 'Article';
+    const category = resolveCategory(hit);
+    const href = resolveHref(hit);
+    const safeTitle = escapeHtml(title);
+    const safeAlt = escapeHtml(imageAlt);
+    const safeCategory = escapeHtml(category);
+    const safeHref = escapeHtml(href);
+    const safeImageUrl = escapeHtml(imageUrl);
 
     return `
-      <a href="/${slug}" class="group rounded-xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm hover:shadow-lg hover:border-[#BBA86B] transition-all">
+      <a href="${safeHref}" class="group rounded-xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm hover:shadow-lg hover:border-[#BBA86B] transition-all">
         <div class="h-[140px] overflow-hidden bg-[#F3F4F6]">
-          ${imageUrl ? `<img src="${imageUrl}" alt="${imageAlt}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />` : ''}
+          ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeAlt}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />` : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">No image</span></div>`}
         </div>
         <div class="p-4 flex flex-col gap-3">
-          ${category ? `<span class="inline-flex items-center w-fit rounded-full bg-[#F1E7CF] text-[#8B6A1A] text-xs font-medium px-3 py-1">${category}</span>` : ''}
-          <h3 class="text-[15px] font-semibold text-[#1A2335] leading-snug group-hover:text-[#8B6A1A] transition-colors">
-            ${title}
+          ${safeCategory ? `<span class="inline-flex items-center w-fit rounded-full bg-[#F1E7CF] text-[#8B6A1A] text-xs font-medium px-3 py-1">${safeCategory}</span>` : ''}
+          <h3 class="text-[19px] font-heading text-[#1A2335] leading-snug group-hover:text-[#8B6A1A] transition-colors">
+            ${safeTitle}
           </h3>
         </div>
       </a>
@@ -155,4 +257,5 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     }
   });
 </script>
+
 

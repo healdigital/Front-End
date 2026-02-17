@@ -12,7 +12,7 @@ import BioSection from '../components/organisms/BioSection.astro';
 import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
-import { getAllArticlesFromMongo } from '../lib/mongo.server';
+import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
 import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
@@ -236,7 +236,7 @@ const toText = (value: any): string => {
   if (typeof value === 'object') {
     if (typeof value.rendered === 'string') return value.rendered;
     if (typeof value.text === 'string') return value.text;
-    if (Array.isArray(value.children)) return value.children.map((child) => toText(child)).join(' ');
+    if (Array.isArray(value.children)) return value.children.map((child: any) => toText(child)).join(' ');
     if (value.content) return toText(value.content);
   }
   return '';
@@ -319,9 +319,20 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   };
 };
 
-const allArticles = await getAllArticlesFromMongo();
+const getHomeRecipeLimit = () => {
+  const envLimit = Number(process.env.HOME_RECIPE_LIMIT);
+  if (Number.isFinite(envLimit) && envLimit > 0) return envLimit;
+  return 300;
+};
+
+let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
+if (!Array.isArray(allArticles) || allArticles.length === 0) {
+  allArticles = await getAllArticlesFromMongo();
+}
 const normalizedArticles = Array.isArray(allArticles)
-  ? allArticles.map(buildRecipeFromArticle).filter(Boolean)
+  ? allArticles
+      .map(buildRecipeFromArticle)
+      .filter((recipe): recipe is NonNullable<ReturnType<typeof buildRecipeFromArticle>> => Boolean(recipe))
   : [];
 
 const heroCards = normalizedArticles.length
@@ -333,12 +344,12 @@ const heroCards = normalizedArticles.length
     }))
   : fallbackHeroCards;
 
-const recipes = normalizedArticles.length ? normalizedArticles.slice(0, 10) : fallbackRecipes;
+const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
+const featuredRecipe = recipePool[0] || fallbackRecipes[0];
+const browseRecipes = recipePool.slice(1);
 const suggestedRecipes = normalizedArticles.length > 10
   ? normalizedArticles.slice(10, 14)
   : fallbackSuggestedRecipes;
-
-const featuredRecipe = recipes[0] || fallbackRecipes[0];
 ---
 
 <MainLayout
@@ -347,10 +358,15 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
 >
   <HeroCarousel cards={heroCards} />
 
-  <section class="py-16 md:py-24 bg-secondary-cream">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
-      <div class="flex flex-col lg:flex-row gap-7">
-        <div class="flex-1 min-w-0">
+  <section class="relative py-16 md:py-24 bg-secondary-cream overflow-hidden">
+    <div
+      class="absolute inset-0 pointer-events-none opacity-30"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+    ></div>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
+      <div class="flex flex-col lg:flex-row lg:items-start">
+        <div class="flex-1 min-w-0 lg:pr-7">
           <!-- Recette du moment -->
           <div class="mb-12">
             <div class="flex items-center gap-4 mb-8">
@@ -409,9 +425,10 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
             </div>
 
             <div class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10" data-recipe-grid>
-              {recipes.slice(1).map((recipe) => (
+              {browseRecipes.map((recipe, index) => (
                 <div
                   data-recipe-card
+                  data-recipe-index={index}
                   data-category={recipe.filterKey}
                   data-title={recipe.title.toLocaleLowerCase('fr')}
                   data-description={recipe.description.toLocaleLowerCase('fr')}
@@ -429,18 +446,16 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
               ))}
             </div>
 
-            <div class="flex items-center justify-center gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta">
-              <span>Pr&eacute;c&eacute;dent</span>
-              <div class="flex items-center gap-4">
+            <div class="flex items-center justify-center gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
+              <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-prev>
+                Pr&eacute;c&eacute;dent
+              </button>
+              <div class="flex items-center gap-4" data-pagination-pages>
                 <span class="text-text-primary">1</span>
-                <span>2</span>
-                <span>3</span>
-                <span>4</span>
-                <span>5</span>
-                <span>...</span>
-                <span>52</span>
               </div>
-              <span>Suivant</span>
+              <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-next>
+                Suivant
+              </button>
             </div>
           </div>
         </div>
@@ -455,18 +470,32 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
   <FeaturedMasterclass />
 
   <!-- Dark Section -->
-  <section class="relative py-16 md:py-24 bg-[#1C2639] overflow-hidden">
-    <div class="absolute inset-0 pointer-events-none opacity-20">
-      <svg class="absolute top-0 right-0 w-[600px] h-[600px] text-[#1F494C]" viewBox="0 0 600 600" fill="none">
-        <circle cx="400" cy="200" r="300" stroke="currentColor" stroke-width="1" opacity="0.3" />
-        <circle cx="350" cy="250" r="200" stroke="currentColor" stroke-width="1" opacity="0.2" />
-      </svg>
-    </div>
+  <section class="relative py-16 md:py-24 overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,#15355B_0%,#0F2039_45%,#0A162B_100%)]" aria-hidden="true"></div>
+    <div
+      class="absolute inset-0 pointer-events-none opacity-40"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+    ></div>
+    <img
+      src="/images/vector-left.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute left-[-30px] top-[90px] w-[170px] opacity-35 hidden lg:block"
+    />
+    <img
+      src="/images/vector-right.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute right-[-45px] bottom-[110px] w-[220px] opacity-30 hidden lg:block"
+    />
 
     <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-12">
         <div>
-          <h2 class="font-heading text-4xl lg:text-5xl text-primary-white typ-section">Passez au niveau sup&eacute;rieur</h2>
+          <h2 class="font-heading text-primary-white typ-section">
+            Passez au <span class="text-primary-turquoise">niveau sup&eacute;rieur</span>
+          </h2>
           <p class="text-[15px] text-[#B5BBBD] mt-3 max-w-2xl typ-body">
             Rejoignez notre communaut&eacute; de passionn&eacute;s et ma&icirc;trisez les techniques professionnelles.
           </p>
@@ -534,7 +563,9 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
 
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-10">
         <div>
-          <h3 class="font-heading text-4xl text-primary-white typ-section">Prochains Ateliers</h3>
+          <h3 class="font-heading text-primary-white typ-section">
+            Prochains <span class="text-primary-turquoise">Ateliers</span>
+          </h3>
           <p class="text-[15px] text-[#B5BBBD] mt-3 typ-body">Rejoignez-moi en pr&eacute;sentiel pour une exp&eacute;rience immersive.</p>
         </div>
         <a href="/ateliers" class="inline-flex items-center gap-2 bg-primary-turquoise text-primary-black px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm">
@@ -567,6 +598,7 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
 </MainLayout>
 
 <script>
+  // @ts-nocheck
   function setupHomepageFilters() {
     const filterRoot = document.querySelector('[data-homepage-filters]');
     if (!filterRoot || filterRoot.dataset.interactionsReady === 'true') return;
@@ -580,16 +612,83 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
 
     const cards = Array.from(document.querySelectorAll('[data-recipe-card]'));
     const filterItems = Array.from(filterRoot.querySelectorAll('[data-filter-item]'));
+    const paginationRoot = document.querySelector('[data-home-pagination]');
+    const paginationPages = paginationRoot?.querySelector('[data-pagination-pages]');
+    const paginationPrev = paginationRoot?.querySelector('[data-pagination-prev]');
+    const paginationNext = paginationRoot?.querySelector('[data-pagination-next]');
 
     let activeFilter = 'toutes';
+    let activePage = 1;
+    const cardsPerPage = 6;
 
-    const applyFilters = () => {
-      cards.forEach((card) => {
-        const category = (card.dataset.category || 'toutes').toLowerCase();
-        const matchesFilter = activeFilter === 'toutes' || category === activeFilter;
-        card.classList.toggle('hidden', !matchesFilter);
-        card.setAttribute('aria-hidden', String(!matchesFilter));
+    const createPageItems = (totalPages) => {
+      if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+      const items = [1];
+      const rangeStart = Math.max(2, activePage - 1);
+      const rangeEnd = Math.min(totalPages - 1, activePage + 1);
+
+      if (rangeStart > 2) items.push('start-ellipsis');
+      for (let page = rangeStart; page <= rangeEnd; page += 1) {
+        items.push(page);
+      }
+      if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
+      items.push(totalPages);
+      return items;
+    };
+
+    const renderPagination = (totalPages) => {
+      if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
+
+      paginationRoot.classList.toggle('hidden', totalPages <= 1);
+
+      paginationPages.innerHTML = '';
+      const pageItems = createPageItems(totalPages);
+      pageItems.forEach((item) => {
+        if (typeof item === 'string') {
+          const dot = document.createElement('span');
+          dot.className = 'text-text-secondary';
+          dot.textContent = '...';
+          paginationPages.appendChild(dot);
+          return;
+        }
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `transition-colors ${item === activePage ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'}`;
+        button.textContent = String(item);
+        button.setAttribute('data-page', String(item));
+        paginationPages.appendChild(button);
       });
+
+      paginationPrev.disabled = activePage <= 1;
+      paginationNext.disabled = activePage >= totalPages;
+    };
+
+    const applyFilters = (resetPage = false) => {
+      const filteredCards = cards.filter((card) => {
+        const category = (card.dataset.category || 'toutes').toLowerCase();
+        return activeFilter === 'toutes' || category === activeFilter;
+      });
+
+      const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
+      if (resetPage) {
+        activePage = 1;
+      } else {
+        activePage = Math.min(activePage, totalPages);
+      }
+
+      const start = (activePage - 1) * cardsPerPage;
+      const end = start + cardsPerPage;
+      const visibleCards = new Set(filteredCards.slice(start, end));
+
+      cards.forEach((card) => {
+        const isVisible = visibleCards.has(card);
+        card.classList.toggle('hidden', !isVisible);
+        card.setAttribute('aria-hidden', String(!isVisible));
+      });
+
+      renderPagination(totalPages);
 
       filterItems.forEach((item) => {
         const value = (item.getAttribute('data-filter-value') || '').toLowerCase();
@@ -615,11 +714,31 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
         const nextFilter = (item.getAttribute('data-filter-value') || '').toLowerCase();
         if (!filterLabels[nextFilter]) return;
         activeFilter = nextFilter;
-        applyFilters();
+        applyFilters(true);
       });
     });
 
-    applyFilters();
+    paginationPrev?.addEventListener('click', () => {
+      if (activePage <= 1) return;
+      activePage -= 1;
+      applyFilters();
+    });
+
+    paginationNext?.addEventListener('click', () => {
+      activePage += 1;
+      applyFilters();
+    });
+
+    paginationPages?.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const page = Number(target.getAttribute('data-page') || '');
+      if (!Number.isFinite(page) || page <= 0) return;
+      activePage = page;
+      applyFilters();
+    });
+
+    applyFilters(true);
   }
 
   function setupViewToggle() {

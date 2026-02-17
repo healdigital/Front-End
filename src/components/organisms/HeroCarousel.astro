@@ -13,21 +13,45 @@ interface Props {
 const { cards } = Astro.props;
 ---
 
-<section class="bg-[#E9E9E0] py-12 md:py-16 lg:py-20 overflow-hidden">
-  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
-
-    <!-- Section Header -->
-    <div class="mb-8 md:mb-12">
-      <h1 class="font-heading text-5xl md:text-6xl lg:text-[86px] text-primary-black leading-[0.95] mb-5 typ-hero">
-        &Agrave; la une
-      </h1>
-      <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary typ-subtitle">
-        Cette semaine dans la cuisine de Bernard
-      </p>
-    </div>
-
+<section class="relative bg-[#ECEBE4] py-12 md:py-16 lg:py-20 overflow-hidden">
+  <div
+    class="absolute inset-0 pointer-events-none opacity-45"
+    aria-hidden="true"
+    style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+  ></div>
+  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
     <!-- Carousel -->
     <div class="relative" data-hero-carousel>
+      <!-- Section Header -->
+      <div class="mb-8 md:mb-12 flex items-end justify-between gap-6">
+        <div>
+          <h1 class="font-heading text-primary-black mb-5 typ-title">
+            &Agrave; la une
+          </h1>
+          <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary typ-subtitle">
+            Cette semaine dans la cuisine de Bernard
+          </p>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <div class="hidden md:flex items-center gap-3 self-center">
+          <button
+            class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+            aria-label="Pr&eacute;c&eacute;dent"
+            data-carousel-prev
+          >
+            <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button
+            class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+            aria-label="Suivant"
+            data-carousel-next
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Cards Container -->
       <div
         class="flex gap-5 overflow-x-auto scroll-smooth pb-4 -mx-5 px-5 md:-mx-0 md:px-0 hero-scroll-container"
@@ -60,24 +84,6 @@ const { cards } = Astro.props;
             </div>
           </a>
         ))}
-      </div>
-
-      <!-- Navigation Arrows -->
-      <div class="hidden md:flex items-center gap-3 mt-4 justify-end">
-        <button
-          class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
-          aria-label="Pr&eacute;c&eacute;dent"
-          data-carousel-prev
-        >
-          <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-        <button
-          class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
-          aria-label="Suivant"
-          data-carousel-next
-        >
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
       </div>
     </div>
 
