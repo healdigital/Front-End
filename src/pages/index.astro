@@ -29,7 +29,7 @@ const fallbackImages = [
 
 const fallbackHeroCards = [
   { title: 'Entremet praline dubai, chantilly et ganache lactee', image: '/images/recipe-chocolate-cake.jpg', category: 'SUCRE', slug: '/entremet-praline-dubai' },
-  { title: 'Ateliers cuisine fevrier - mars 2026 ouverts', image: '/images/workshop-macarons.jpg', category: 'ATELIERS', slug: '/ateliers' },
+  { title: 'Ateliers cuisine fevrier - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: '/ateliers' },
   { title: 'Omelette du cure (crepes, pommes de terre, foie gras poele)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
   { title: 'Brioche tressee aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
   { title: 'Tarte figue sechee, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
@@ -159,7 +159,7 @@ const workshops = [
     id: '1',
     title: 'Atelier cuisine chinoise',
     date: new Date('2026-03-09'),
-    image: '/images/recipe-roast-chicken.jpg',
+    image: '/images/workshop-dumplings.jpg',
     price: 85,
     duration: '4 heures',
     maxParticipants: 8,
@@ -170,7 +170,7 @@ const workshops = [
     id: '2',
     title: 'Atelier cuisine bresilienne',
     date: new Date('2026-03-18'),
-    image: '/images/recipe-lasagnes.jpg',
+    image: '/images/workshop-soup.jpg',
     price: 90,
     duration: '6 heures',
     maxParticipants: 8,
@@ -181,7 +181,7 @@ const workshops = [
     id: '3',
     title: 'Atelier macarons',
     date: new Date('2026-03-23'),
-    image: '/images/workshop-macarons.jpg',
+    image: '/images/workshop-macarons-card.jpg',
     price: 95,
     duration: '3 heures',
     maxParticipants: 8,
@@ -348,7 +348,7 @@ const recipePool = normalizedArticles.length ? normalizedArticles : fallbackReci
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
 const browseRecipes = recipePool.slice(1);
 const suggestedRecipes = normalizedArticles.length > 10
-  ? normalizedArticles.slice(10, 14)
+  ? normalizedArticles.slice(10, 130)
   : fallbackSuggestedRecipes;
 ---
 
@@ -458,45 +458,53 @@ const suggestedRecipes = normalizedArticles.length > 10
               </button>
             </div>
           </div>
-
-          <BioSection embedded />
-
-          <FeaturedMasterclass embedded />
         </div>
+        <div class="lg:sticky lg:top-[112px] lg:self-start">
+          <RecipeSidebar />
+        </div>
+      </div>
 
-        <RecipeSidebar />
+      <div class="lg:pr-[440px]">
+        <BioSection embedded />
+        <FeaturedMasterclass embedded />
       </div>
     </div>
   </section>
 
   <!-- Dark Section -->
   <section class="relative py-16 md:py-24 overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,#15355B_0%,#0F2039_45%,#0A162B_100%)]" aria-hidden="true"></div>
-    <div
-      class="absolute inset-0 pointer-events-none opacity-40"
-      aria-hidden="true"
-      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
-    ></div>
+    <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
+    <img src="/images/dark-section-base.png" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover" />
+    <img src="/images/dark-section-grain.png" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover opacity-45 mix-blend-screen" />
     <img
       src="/images/vector-left.png"
       alt=""
       aria-hidden="true"
-      class="pointer-events-none absolute left-[-30px] top-[90px] w-[170px] opacity-35 hidden lg:block"
+      class="pointer-events-none absolute left-[-32px] top-[72px] w-[140px] opacity-35 hidden lg:block"
     />
     <img
-      src="/images/vector-right.png"
+      src="/images/vector-grapes.png"
       alt=""
       aria-hidden="true"
-      class="pointer-events-none absolute right-[-45px] bottom-[110px] w-[220px] opacity-30 hidden lg:block"
+      class="pointer-events-none absolute left-[-44px] bottom-[280px] w-[180px] opacity-40 hidden lg:block"
+    />
+    <img
+      src="/images/vector-whisk-top.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute right-[-30px] top-[72px] w-[170px] opacity-40 hidden lg:block"
     />
 
     <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-12">
         <div>
-          <h2 class="font-heading text-primary-white typ-section">
-            Passez au <span class="text-primary-turquoise">niveau sup&eacute;rieur</span>
-          </h2>
-          <p class="text-[15px] text-[#B5BBBD] mt-3 max-w-2xl typ-body">
+          <div class="flex items-center gap-6">
+            <h2 class="font-heading text-[#EAF1FF] typ-section">
+              Passez au <span class="text-primary-turquoise">niveau sup&eacute;rieur</span>
+            </h2>
+            <div class="hidden lg:block h-px flex-1 min-w-[260px] bg-[#335072]"></div>
+          </div>
+          <p class="text-[15px] text-[#C6CDD8] mt-3 max-w-2xl typ-body">
             Rejoignez notre communaut&eacute; de passionn&eacute;s et ma&icirc;trisez les techniques professionnelles.
           </p>
         </div>
@@ -505,7 +513,7 @@ const suggestedRecipes = normalizedArticles.length > 10
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
         <div class="max-w-[603px] mx-auto w-full rounded-lg bg-secondary-beige-warm overflow-hidden">
           <div class="relative h-[350px] lg:h-[460px]">
-            <img src="/images/workshop-macarons.jpg" alt="Ateliers physiques" class="w-full h-full object-cover" />
+            <img src="/images/ateliers-physiques.jpg" alt="Ateliers physiques" class="w-full h-full object-cover" />
             <div class="absolute bottom-4 left-4">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
                 <Icon name="map-pin" size="sm" /> Paris &amp; Lyon
@@ -531,7 +539,7 @@ const suggestedRecipes = normalizedArticles.length > 10
 
         <div class="max-w-[603px] mx-auto w-full rounded-lg bg-secondary-beige-warm overflow-hidden">
           <div class="relative h-[350px] lg:h-[460px]">
-            <img src="/images/masterclass-patisserie.jpg" alt="Masterclass" class="w-full h-full object-cover" />
+            <img src="/images/masterclass-video.jpg" alt="Masterclass" class="w-full h-full object-cover" />
             <div class="absolute bottom-4 left-4 flex items-center gap-2">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
                 <Icon name="lock" size="sm" /> Acc&egrave;s illimit&eacute;
@@ -563,12 +571,15 @@ const suggestedRecipes = normalizedArticles.length > 10
 
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-10">
         <div>
-          <h3 class="font-heading text-primary-white typ-section">
-            Prochains <span class="text-primary-turquoise">Ateliers</span>
-          </h3>
-          <p class="text-[15px] text-[#B5BBBD] mt-3 typ-body">Rejoignez-moi en pr&eacute;sentiel pour une exp&eacute;rience immersive.</p>
+          <div class="flex items-center gap-6">
+            <h3 class="font-heading text-[#EAF1FF] typ-section">
+              Prochains <span class="text-primary-turquoise">Ateliers</span>
+            </h3>
+            <div class="hidden lg:block h-px flex-1 min-w-[260px] bg-[#335072]"></div>
+          </div>
+          <p class="text-[15px] text-[#C6CDD8] mt-3 typ-body">Rejoignez-moi en pr&eacute;sentiel pour une exp&eacute;rience immersive et personnalis&eacute;e.</p>
         </div>
-        <a href="/ateliers" class="inline-flex items-center gap-2 bg-primary-turquoise text-primary-black px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm">
+        <a href="/ateliers" class="inline-flex items-center gap-2 bg-primary-turquoise text-[#EBFAFF] px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm typ-button">
           <Icon name="clock" size="sm" /> Voir le calendrier complet
         </a>
       </div>
@@ -602,7 +613,9 @@ const suggestedRecipes = normalizedArticles.length > 10
           <BooksSection embedded />
           <SuggestedRecipes recipes={suggestedRecipes} embedded />
         </div>
-        <RecipeSidebar variant="popular" />
+        <div class="lg:sticky lg:top-[112px] lg:self-start">
+          <RecipeSidebar variant="popular" />
+        </div>
       </div>
     </div>
   </section>

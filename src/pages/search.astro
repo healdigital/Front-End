@@ -94,6 +94,11 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       if (Array.isArray(value.children)) {
         return value.children.map((child) => toText(child)).filter(Boolean).join(' ');
       }
+      const objectValues = Object.values(value);
+      for (const nested of objectValues) {
+        const text = toText(nested);
+        if (text) return text;
+      }
     }
     return '';
   };
@@ -119,11 +124,24 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
   };
 
   const normalizeImageUrl = (value) => {
-    if (!value || typeof value !== 'string') return '';
+    if (!value) return '';
+    if (typeof value === 'object') {
+      const nestedOptions = [value.url, value.src, value.href, value.value, value.original];
+      for (const candidate of nestedOptions) {
+        const nested = normalizeImageUrl(candidate);
+        if (nested) return nested;
+      }
+      return '';
+    }
+    if (typeof value !== 'string') return '';
     const normalized = value.trim();
     if (!normalized) return '';
+    if (normalized.startsWith('//')) return `https:${normalized}`;
     if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('/')) {
       return normalized;
+    }
+    if (normalized.startsWith('images/') || normalized.startsWith('uploads/')) {
+      return `/${normalized.replace(/^\/+/, '')}`;
     }
     return '';
   };
@@ -133,19 +151,31 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       hit?.image_url,
       hit?.imageUrl,
       hit?.featured_image?.url,
+      hit?.featured_image?.src,
+      hit?.featured_image?.sizes?.medium,
+      hit?.featured_image?.sizes?.large,
       hit?.featured_image_url,
       hit?.featuredImageUrl,
       hit?.featuredImage?.url,
+      hit?.featuredImage?.src,
+      hit?.featuredImage?.node?.sourceUrl,
       hit?.featuredImage,
       hit?.image?.url,
       hit?.image?.src,
+      hit?.image?.sizes?.medium,
       hit?.image,
       hit?.media?.url,
       hit?.media?.src,
+      hit?.media?.thumbnail,
+      hit?._highlightResult?.featured_image?.url?.value,
+      hit?._highlightResult?.image_url?.value,
+      hit?._snippetResult?.featured_image?.value,
       hit?.images?.[0]?.url,
       hit?.images?.[0]?.src,
+      hit?.images?.[0],
       hit?.thumbnail,
       hit?.heroImage,
+      hit?.coverImage,
     ];
     for (const candidate of candidates) {
       const url = normalizeImageUrl(candidate);
@@ -192,7 +222,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
 
     return `
       <a href="${safeHref}" class="group rounded-xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm hover:shadow-lg hover:border-[#BBA86B] transition-all">
-        <div class="h-[140px] overflow-hidden bg-[#F3F4F6]">
+        <div class="aspect-[4/5] overflow-hidden bg-[#F3F4F6]">
           ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeAlt}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />` : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">No image</span></div>`}
         </div>
         <div class="p-4 flex flex-col gap-3">

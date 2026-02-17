@@ -169,7 +169,7 @@ const paginationItems = (() => {
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
             {paginatedArticles.map((article: any) => (
               <a href={`/${article.slug}`} class="group rounded-lg border border-[#DDD8CA] bg-[#F7F5EF] overflow-hidden hover:shadow-lg transition-shadow">
-                <div class="relative h-[230px] bg-[#ECE9DD] overflow-hidden">
+                <div class="relative aspect-[4/5] bg-[#ECE9DD] overflow-hidden">
                   {article.image ? (
                     <img
                       src={article.image}

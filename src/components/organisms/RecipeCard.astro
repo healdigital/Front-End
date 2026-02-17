@@ -42,11 +42,11 @@ const truncatedDescription = description.length > MAX_LENGTH
 
 <article class="group w-full rounded-[12px] bg-white overflow-hidden shadow-sm border border-[#E6E2D8] transition-all duration-300 hover:shadow-lg">
   <!-- Image Container -->
-  <div class="relative w-full overflow-hidden">
+  <div class="relative w-full overflow-hidden aspect-[4/5]">
     <img
       src={image}
       alt={title}
-      class="w-full h-[250px] md:h-[280px] object-cover transition-transform duration-500 group-hover:scale-105"
+      class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
       loading="lazy"
     />
 

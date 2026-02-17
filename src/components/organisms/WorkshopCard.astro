@@ -48,7 +48,7 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
 ---
 
 <article class="w-full max-w-[388px] rounded-[12px] bg-white overflow-hidden shadow-md border border-border-light">
-  <div class="relative h-[220px]">
+  <div class="relative aspect-[4/5] max-h-[470px]">
     <img src={image} alt={title} class="w-full h-full object-cover" loading="lazy" />
     <div class="absolute bottom-4 left-4 bg-white rounded-lg p-2 text-center min-w-[54px] shadow-sm">
       <span class="block text-[10px] uppercase text-text-secondary">{month}</span>

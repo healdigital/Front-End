@@ -24,9 +24,23 @@ const recipeFilters = [
   { label: 'Recettes sucr&eacute;es', value: 'sucrees' },
   { label: 'Recettes sal&eacute;es', value: 'salees' },
 ];
+
+const normalizeToken = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const getFilterValue = (recipe: Recipe): string => {
+  const normalized = normalizeToken(recipe.category || '');
+  if (normalized.includes('sucre')) return 'sucrees';
+  if (normalized.includes('sale')) return 'salees';
+  return 'toutes';
+};
 ---
 
-<section class={`relative ${embedded ? 'py-12 md:py-16' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
+<section class={`relative ${embedded ? 'py-12 md:py-16' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`} data-suggested-recipes>
   {!embedded && (
     <div
       class="absolute inset-0 pointer-events-none opacity-28"
@@ -43,27 +57,196 @@ const recipeFilters = [
     <div class="flex items-center justify-between gap-4 mb-8">
       <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
       <div class="flex items-center gap-3">
-        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue grille">
+        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue grille" data-suggested-view="grid">
           <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         </button>
-        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue liste">
+        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue liste" data-suggested-view="list">
           <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
       </div>
     </div>
 
-    <div class={`grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`}>
-      {recipes.map((recipe) => (
-        <RecipeCard
-          title={recipe.title}
-          description={recipe.description}
-          image={recipe.image}
-          category={recipe.category}
-          prepTime={recipe.prepTime}
-          difficulty={recipe.difficulty}
-          slug={recipe.slug}
-        />
+    <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
+      {recipes.map((recipe, index) => (
+        <div
+          data-suggested-card
+          data-suggested-index={index}
+          data-category={getFilterValue(recipe)}
+          data-title={recipe.title.toLocaleLowerCase('fr')}
+          data-description={recipe.description.toLocaleLowerCase('fr')}
+        >
+          <RecipeCard
+            title={recipe.title}
+            description={recipe.description}
+            image={recipe.image}
+            category={recipe.category}
+            prepTime={recipe.prepTime}
+            difficulty={recipe.difficulty}
+            slug={recipe.slug}
+          />
+        </div>
       ))}
+    </div>
+
+    <div class="mt-10 pt-6 border-t border-[#D8D2C2] flex items-center justify-center gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta hidden" data-suggested-pagination>
+      <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-suggested-prev>
+        Pr&eacute;c&eacute;dent
+      </button>
+      <div class="flex items-center gap-4" data-suggested-pages>
+        <span class="text-text-primary">1</span>
+      </div>
+      <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-suggested-next>
+        Suivant
+      </button>
     </div>
   </div>
 </section>
+
+<script>
+  // @ts-nocheck
+  function setupSuggestedRecipes() {
+    const sections = Array.from(document.querySelectorAll('[data-suggested-recipes]'));
+    sections.forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
+      if (section.dataset.interactionsReady === 'true') return;
+      section.dataset.interactionsReady = 'true';
+
+      const cards = Array.from(section.querySelectorAll('[data-suggested-card]'));
+      if (cards.length === 0) return;
+
+      const filterItems = Array.from(section.querySelectorAll('[data-filter-item]'));
+      const paginationRoot = section.querySelector('[data-suggested-pagination]');
+      const paginationPages = paginationRoot?.querySelector('[data-suggested-pages]');
+      const paginationPrev = paginationRoot?.querySelector('[data-suggested-prev]');
+      const paginationNext = paginationRoot?.querySelector('[data-suggested-next]');
+      const grid = section.querySelector('[data-suggested-grid]');
+      const viewButtons = Array.from(section.querySelectorAll('[data-suggested-view]'));
+
+      let activeFilter = 'toutes';
+      let activePage = 1;
+      const cardsPerPage = 4;
+
+      const createPageItems = (totalPages) => {
+        if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+        const items = [1];
+        const rangeStart = Math.max(2, activePage - 1);
+        const rangeEnd = Math.min(totalPages - 1, activePage + 1);
+        if (rangeStart > 2) items.push('start-ellipsis');
+        for (let page = rangeStart; page <= rangeEnd; page += 1) items.push(page);
+        if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
+        items.push(totalPages);
+        return items;
+      };
+
+      const renderPagination = (totalPages) => {
+        if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
+        paginationRoot.classList.toggle('hidden', totalPages <= 1);
+        paginationPages.innerHTML = '';
+        createPageItems(totalPages).forEach((item) => {
+          if (typeof item === 'string') {
+            const dot = document.createElement('span');
+            dot.className = 'text-text-secondary';
+            dot.textContent = '...';
+            paginationPages.appendChild(dot);
+            return;
+          }
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = `transition-colors ${item === activePage ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'}`;
+          button.textContent = String(item);
+          button.setAttribute('data-page', String(item));
+          paginationPages.appendChild(button);
+        });
+        paginationPrev.disabled = activePage <= 1;
+        paginationNext.disabled = activePage >= totalPages;
+      };
+
+      const applyFilters = (resetPage = false) => {
+        const filteredCards = cards.filter((card) => {
+          const category = String(card.getAttribute('data-category') || 'toutes').toLowerCase();
+          return activeFilter === 'toutes' || category === activeFilter;
+        });
+
+        const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
+        if (resetPage) {
+          activePage = 1;
+        } else {
+          activePage = Math.min(activePage, totalPages);
+        }
+
+        const start = (activePage - 1) * cardsPerPage;
+        const end = start + cardsPerPage;
+        const visibleCards = new Set(filteredCards.slice(start, end));
+
+        cards.forEach((card) => {
+          const isVisible = visibleCards.has(card);
+          card.classList.toggle('hidden', !isVisible);
+          card.setAttribute('aria-hidden', String(!isVisible));
+        });
+
+        renderPagination(totalPages);
+
+        filterItems.forEach((item) => {
+          const value = String(item.getAttribute('data-filter-value') || '').toLowerCase();
+          const isActive = value === activeFilter;
+          item.setAttribute('aria-current', isActive ? 'true' : 'false');
+          const check = item.querySelector('[data-filter-check]');
+          const box = item.querySelector('[data-filter-checkbox]');
+          if (check && box) {
+            check.classList.toggle('opacity-0', !isActive);
+            box.classList.toggle('border-primary-turquoise', isActive);
+          }
+        });
+      };
+
+      filterItems.forEach((item) => {
+        item.addEventListener('click', (event) => {
+          event.preventDefault();
+          const nextFilter = String(item.getAttribute('data-filter-value') || '').toLowerCase();
+          if (!['toutes', 'sucrees', 'salees'].includes(nextFilter)) return;
+          activeFilter = nextFilter;
+          applyFilters(true);
+        });
+      });
+
+      paginationPrev?.addEventListener('click', () => {
+        if (activePage <= 1) return;
+        activePage -= 1;
+        applyFilters();
+      });
+
+      paginationNext?.addEventListener('click', () => {
+        activePage += 1;
+        applyFilters();
+      });
+
+      paginationPages?.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const page = Number(target.getAttribute('data-page') || '');
+        if (!Number.isFinite(page) || page <= 0) return;
+        activePage = page;
+        applyFilters();
+      });
+
+      viewButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const view = btn.getAttribute('data-suggested-view');
+          if (!grid || !view) return;
+          grid.setAttribute('data-view', view);
+        });
+      });
+
+      applyFilters(true);
+    });
+  }
+
+  setupSuggestedRecipes();
+  document.addEventListener('astro:page-load', setupSuggestedRecipes);
+</script>
+
+<style>
+  .suggested-grid[data-view='list'] {
+    grid-template-columns: 1fr;
+  }
+</style>
