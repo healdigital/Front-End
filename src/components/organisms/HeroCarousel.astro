@@ -70,14 +70,13 @@ const { cards } = Astro.props;
             />
             <!-- Gradient overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <!-- Category badge -->
-            <div class="absolute top-4 left-4">
-              <span class="inline-block rounded-full bg-white/80 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
-                {card.category}
-              </span>
-            </div>
             <!-- Title -->
             <div class="absolute bottom-0 left-0 right-0 p-5">
+              <div class="mb-3">
+                <span class="inline-block rounded-full bg-white/90 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
+                  {card.category}
+                </span>
+              </div>
               <h3 class="font-body text-[17px] text-white font-medium leading-snug line-clamp-3">
                 {card.title}
               </h3>
@@ -85,10 +84,39 @@ const { cards } = Astro.props;
           </a>
         ))}
       </div>
+
+      <!-- Mobile controls -->
+      <div class="mt-6 flex items-center justify-between md:hidden">
+        <div class="flex items-center gap-3">
+          <button
+            class="w-[54px] h-[54px] rounded-full border border-primary-black flex items-center justify-center"
+            aria-label="Pr&eacute;c&eacute;dent"
+            data-carousel-prev
+          >
+            <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button
+            class="w-[54px] h-[54px] rounded-full border border-primary-black flex items-center justify-center"
+            aria-label="Suivant"
+            data-carousel-next
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          {cards.map((_, index) => (
+            <span
+              class={`w-2 h-2 rounded-full ${index === 0 ? 'bg-text-primary' : 'bg-text-tertiary/60'}`}
+              aria-hidden="true"
+            ></span>
+          ))}
+        </div>
+      </div>
     </div>
 
-    <!-- Dots -->
-    <div class="mt-6 flex items-center gap-3">
+    <!-- Dots (desktop) -->
+    <div class="mt-6 hidden md:flex items-center gap-3">
       {cards.map((_, index) => (
         <span
           class={`w-2 h-2 rounded-full ${index === 0 ? 'bg-text-primary' : 'bg-text-tertiary/60'}`}
@@ -117,17 +145,21 @@ const { cards } = Astro.props;
   const carousel = document.querySelector('[data-hero-carousel]');
   if (carousel) {
     const track = carousel.querySelector('[data-carousel-track]');
-    const prevBtn = carousel.querySelector('[data-carousel-prev]');
-    const nextBtn = carousel.querySelector('[data-carousel-next]');
+    const prevButtons = Array.from(carousel.querySelectorAll('[data-carousel-prev]'));
+    const nextButtons = Array.from(carousel.querySelectorAll('[data-carousel-next]'));
 
     const scrollAmount = 330;
 
-    prevBtn?.addEventListener('click', () => {
-      track?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    prevButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        track?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      });
     });
 
-    nextBtn?.addEventListener('click', () => {
-      track?.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    nextButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        track?.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      });
     });
   }
 </script>

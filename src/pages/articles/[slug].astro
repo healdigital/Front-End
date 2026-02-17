@@ -45,6 +45,8 @@ export async function getStaticPaths() {
     return [];
   }
 
+  const normalize = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+
   let articles = await getAllArticlesFromMongo();
   if (!articles || articles.length === 0) {
     const response: any = await payloadFetch({
@@ -60,7 +62,7 @@ export async function getStaticPaths() {
 
   return articles
     .map((article: any) => {
-      const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+      const slug = normalize(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
       if (!slug) return null;
       return {
         params: { slug },

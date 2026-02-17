@@ -458,16 +458,16 @@ const suggestedRecipes = normalizedArticles.length > 10
               </button>
             </div>
           </div>
+
+          <BioSection embedded />
+
+          <FeaturedMasterclass embedded />
         </div>
 
         <RecipeSidebar />
       </div>
     </div>
   </section>
-
-  <BioSection />
-
-  <FeaturedMasterclass />
 
   <!-- Dark Section -->
   <section class="relative py-16 md:py-24 overflow-hidden">
@@ -590,9 +590,22 @@ const suggestedRecipes = normalizedArticles.length > 10
     </div>
   </section>
 
-  <BooksSection />
-
-  <SuggestedRecipes recipes={suggestedRecipes} />
+  <section class="relative py-16 md:py-24 bg-secondary-cream overflow-hidden">
+    <div
+      class="absolute inset-0 pointer-events-none opacity-28"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
+    ></div>
+    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
+      <div class="flex flex-col lg:flex-row lg:items-start">
+        <div class="flex-1 min-w-0 lg:pr-7">
+          <BooksSection embedded />
+          <SuggestedRecipes recipes={suggestedRecipes} embedded />
+        </div>
+        <RecipeSidebar variant="popular" />
+      </div>
+    </div>
+  </section>
 
   <NewsletterModal triggerId="open-newsletter-footer" />
 </MainLayout>

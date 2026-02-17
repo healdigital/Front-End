@@ -65,7 +65,19 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return stored || htmlLang || 'en';
   };
 
-  const getIndexName = () => `${algoliaIndexPrefix}_${normalizeLang(getCurrentLanguage())}`;
+  const getIndexCandidates = () => {
+    const preferred = normalizeLang(getCurrentLanguage());
+    const candidates = [`${algoliaIndexPrefix}_${preferred}`];
+
+    ['fr', 'en'].forEach((lang) => {
+      const indexName = `${algoliaIndexPrefix}_${lang}`;
+      if (!candidates.includes(indexName)) {
+        candidates.push(indexName);
+      }
+    });
+
+    return candidates;
+  };
 
   const stripMarkup = (value) => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -119,12 +131,19 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
   const resolveImageUrl = (hit) => {
     const candidates = [
       hit?.image_url,
+      hit?.imageUrl,
       hit?.featured_image?.url,
       hit?.featured_image_url,
       hit?.featuredImageUrl,
       hit?.featuredImage?.url,
+      hit?.featuredImage,
       hit?.image?.url,
+      hit?.image?.src,
       hit?.image,
+      hit?.media?.url,
+      hit?.media?.src,
+      hit?.images?.[0]?.url,
+      hit?.images?.[0]?.src,
       hit?.thumbnail,
       hit?.heroImage,
     ];
@@ -218,13 +237,54 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       return;
     }
 
-    const indexName = getIndexName();
     const client = algoliasearch(algoliaAppId, algoliaSearchKey);
-    const index = client.initIndex(indexName);
 
     try {
-      const { hits } = await index.search(query, { hitsPerPage: 50 });
-      updateUI(query, hits || []);
+      const searchInIndex = async (indexName) => {
+        if (typeof client.initIndex === 'function') {
+          const index = client.initIndex(indexName);
+          const result = await index.search(query, { hitsPerPage: 50 });
+          return result?.hits || [];
+        }
+
+        if (typeof client.searchSingleIndex === 'function') {
+          const result = await client.searchSingleIndex({
+            indexName,
+            searchParams: { query, hitsPerPage: 50 },
+          });
+          return result?.hits || [];
+        }
+
+        if (typeof client.search === 'function') {
+          const result = await client.search([
+            {
+              indexName,
+              query,
+              params: { hitsPerPage: 50 },
+            },
+          ]);
+          return result?.results?.[0]?.hits || [];
+        }
+
+        return [];
+      };
+
+      const indexCandidates = getIndexCandidates();
+      let bestHits = [];
+
+      for (const indexName of indexCandidates) {
+        const hits = await searchInIndex(indexName);
+        if (hits.length > 0) {
+          bestHits = hits;
+          break;
+        }
+
+        if (bestHits.length === 0) {
+          bestHits = hits;
+        }
+      }
+
+      updateUI(query, bestHits);
     } catch (error) {
       console.error('Algolia search failed:', error);
       if (subtitleEl) {

@@ -88,32 +88,33 @@ const accountItems = [
             type="search"
             placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
             class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/50 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-body text-[14px]"
+            data-header-search
           />
         </div>
       </div>
 
+      <div class="hidden lg:block w-px h-8 bg-white/25"></div>
+
       <!-- Desktop actions -->
-      <div class="hidden lg:flex items-center gap-6 ml-auto">
-        <a href="/contact" class="flex items-center gap-2 text-white/80 hover:text-white text-[14px] typ-nav">
+      <div class="hidden lg:flex items-center gap-7 ml-auto">
+        <a href="/contact" class="flex items-center gap-2 text-white/85 hover:text-white text-[14px] typ-nav">
           <Icon name="mail" size="sm" />
           <span>Contact</span>
         </a>
-        <button class="lang-btn flex items-center gap-2 text-white/80 hover:text-white text-[14px] typ-nav" data-lang={lang}>
-          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/40">
-            <Icon name="globe" size="sm" />
-          </span>
+        <button class="lang-btn flex items-center gap-2 text-white/85 hover:text-white text-[14px] typ-nav" data-lang={lang}>
+          <Icon name="globe" size="sm" />
           <span set:html={languageLabel} />
         </button>
-        <a href="/compte" class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25" aria-label="Mon compte">
-          <Icon name="user" size="sm" />
+        <a href="/compte" class="w-9 h-9 rounded-full overflow-hidden border border-white/20" aria-label="Mon compte">
+          <img src="/images/bernard-blog.png" alt="" class="w-full h-full object-cover" />
         </a>
-        <a href="/favoris" class="relative text-white/80 hover:text-white" aria-label="Favoris">
+        <a href="/favoris" class="inline-flex items-center gap-2 text-white/85 hover:text-white" aria-label="Favoris">
           <Icon name="heart" size="md" />
-          <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">3</span>
+          <span class="text-[18px] leading-none font-body">3</span>
         </a>
-        <a href="/panier" class="relative text-white/80 hover:text-white" aria-label="Panier">
+        <a href="/panier" class="inline-flex items-center gap-2 text-white/85 hover:text-white" aria-label="Panier">
           <Icon name="shopping-bag" size="md" />
-          <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
+          <span class="text-[18px] leading-none font-body">1</span>
         </a>
       </div>
 
@@ -123,7 +124,7 @@ const accountItems = [
           <Icon name="shopping-bag" size="md" />
           <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
         </a>
-        <button class="text-white/80" aria-label="Rechercher">
+        <button class="text-white/80" aria-label="Rechercher" data-mobile-search>
           <Icon name="search" size="md" />
         </button>
       </div>
@@ -217,6 +218,7 @@ const accountItems = [
 </header>
 
 <script>
+  // @ts-nocheck
   const promoBar = document.querySelector('[data-promo-bar]');
   const promoClose = document.querySelector('[data-promo-close]');
 
@@ -237,7 +239,18 @@ const accountItems = [
   const menuClose = document.querySelector('[data-menu-close]');
   const menuOverlay = document.querySelector('[data-menu-overlay]');
   const menuDrawer = document.querySelector('[data-menu-drawer]');
+  const headerSearchInputs = Array.from(document.querySelectorAll('[data-header-search]'));
+  const mobileSearchButton = document.querySelector('[data-mobile-search]');
   const body = document.body;
+
+  function submitHeaderSearch(rawValue) {
+    const query = String(rawValue || '').trim();
+    if (!query) {
+      window.location.href = '/search';
+      return;
+    }
+    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+  }
 
   function toggleMenu(show) {
     if (!menuDrawer || !menuOverlay) return;
@@ -261,6 +274,17 @@ const accountItems = [
   menuTrigger?.addEventListener('click', () => toggleMenu(true));
   menuClose?.addEventListener('click', () => toggleMenu(false));
   menuOverlay?.addEventListener('click', () => toggleMenu(false));
+  headerSearchInputs.forEach((input) => {
+    input.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      submitHeaderSearch(input.value);
+    });
+  });
+  mobileSearchButton?.addEventListener('click', () => {
+    const desktopSearch = headerSearchInputs[0];
+    submitHeaderSearch(desktopSearch && 'value' in desktopSearch ? desktopSearch.value : '');
+  });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') toggleMenu(false);

@@ -85,8 +85,19 @@ async function loadAllArticles() {
 }
 
 export async function getStaticPaths() {
-  const allArticles = await loadAllArticles();
-  const totalPages = Math.ceil(allArticles.length / articlesPerPage);
+  // Keep this function self-contained so Astro's route module generation
+  // does not miss helper references during static build.
+  let allArticles = await getAllArticlesFromMongo();
+  if (!allArticles || allArticles.length === 0) {
+    const result: any = await payloadFetch({
+      collection: 'articles',
+      query: { depth: 2, limit: getBuildLimit() },
+    });
+    allArticles = result?.docs || result || [];
+  }
+
+  const safeArticles = Array.isArray(allArticles) ? allArticles : [];
+  const totalPages = Math.ceil(safeArticles.length / 12);
 
   return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
     params: { page: String(index + 2) },

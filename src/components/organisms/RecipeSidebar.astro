@@ -2,6 +2,13 @@
 import Icon from '../atoms/Icon.astro';
 import Button from '../atoms/Button.astro';
 
+interface Props {
+  variant?: 'full' | 'popular';
+}
+
+const { variant = 'full' } = Astro.props as Props;
+const isFull = variant === 'full';
+
 const popularArticles = [
   {
     title: 'Salade de nouilles de tofu aux 5 parfums, l&eacute;gumes frais et sauce...',
@@ -37,6 +44,7 @@ const popularArticles = [
 ---
 
 <aside class="hidden lg:flex flex-col w-[412px] flex-shrink-0 border-l border-[#D8D2C2] bg-white/40 backdrop-blur-[1px]">
+  {isFull && (
   <div class="px-6 py-8 border-b border-[#D8D2C2] text-center">
     <img
       src="/images/bernard-blog.png"
@@ -60,7 +68,9 @@ const popularArticles = [
       D&eacute;couvrir son univers
     </a>
   </div>
+  )}
 
+  {isFull && (
   <div class="px-6 py-8 border-b border-[#D8D2C2]">
     <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Apprendre en atelier</h4>
     <div class="bg-secondary-cream rounded-lg p-5 border border-border-light">
@@ -89,7 +99,9 @@ const popularArticles = [
       Voir le calendrier complet
     </a>
   </div>
+  )}
 
+  {isFull && (
   <div class="px-6 py-8 border-b border-[#D8D2C2]">
     <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Masterclass vid&eacute;os</h4>
     <div class="bg-secondary-cream rounded-lg overflow-hidden border border-border-light">
@@ -123,7 +135,9 @@ const popularArticles = [
       Voir toutes les vid&eacute;os masterclass
     </a>
   </div>
+  )}
 
+  {isFull && (
   <div class="px-6 py-8 border-b border-[#D8D2C2]">
     <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Rejoignez mon club</h4>
     <ul class="space-y-3 text-[13px] text-text-secondary">
@@ -135,7 +149,9 @@ const popularArticles = [
       Rejoindre le club
     </a>
   </div>
+  )}
 
+  {isFull && (
   <div class="px-6 py-8 border-b border-[#D8D2C2]">
     <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Mes livres pour approfondir</h4>
     <div class="grid grid-cols-2 gap-3">
@@ -148,6 +164,7 @@ const popularArticles = [
       Voir tous les livres
     </a>
   </div>
+  )}
 
   <div class="px-6 py-8 border-b border-[#D8D2C2]">
     <h4 class="font-body text-[14px] uppercase tracking-wide text-text-primary mb-4 typ-meta">Articles populaires</h4>
@@ -164,7 +181,7 @@ const popularArticles = [
     </div>
   </div>
 
-  <div class="px-6 py-8 border-b border-[#D8D2C2]">
+  <div class="px-6 py-8">
     <div class="bg-secondary-cream rounded-lg border border-border-light h-[240px] flex items-center justify-center text-text-secondary text-[12px] uppercase tracking-wider typ-meta">
       Espace publicit&eacute;
     </div>
