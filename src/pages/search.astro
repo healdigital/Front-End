@@ -37,7 +37,9 @@ const title = translate('nav.search', lang);
   algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
   algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || 'lcdb_recipes',
 }}>
-  import algoliasearch from 'algoliasearch/lite';
+  // Inline module scripts in Astro pages are not bundled, so we must use a fully
+// resolved URL for the Algolia client to avoid runtime resolution errors.
+import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algoliasearch-lite.esm.browser.js';
 
   const subtitleEl = document.getElementById('search-subtitle');
   const resultsGrid = document.getElementById('results-grid');
@@ -153,3 +155,4 @@ const title = translate('nav.search', lang);
     }
   });
 </script>
+
