@@ -16,24 +16,24 @@ const { embedded = false } = Astro.props as Props;
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
     <div class="flex items-center gap-6 mb-12">
-      <h2 class="font-heading text-3xl lg:text-5xl text-[#161A22] whitespace-nowrap typ-section">Mes livres de recettes</h2>
-      <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
+      <h2 class="font-heading text-3xl lg:text-5xl text-[#171F2C] whitespace-nowrap typ-section">Mes livres de recettes</h2>
+      <div class="flex-1 h-px bg-[#D7D1C2] hidden md:block"></div>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-8 rounded-lg overflow-hidden">
+    <div class="flex flex-col lg:flex-row rounded-[10px] overflow-hidden border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_18px_48px_rgba(14,24,39,0.06)]">
       <div class="w-full lg:w-[457px] h-[360px] lg:h-[652px] flex-shrink-0">
         <img
           src="/images/bernard-books.png"
           alt="Bernard Laurance"
-          class="w-full h-full object-cover object-top rounded-[10px]"
+          class="w-full h-full object-cover object-top"
           loading="lazy"
         />
       </div>
 
-      <div class="flex-1 bg-[#F7F5EF] rounded-[10px] border border-[#DDD8CA] p-8 lg:p-12 flex flex-col gap-6">
-        <p class="font-mono text-[12px] uppercase tracking-[0.24em] text-[#2F3441] typ-meta">L&apos;humain derri&egrave;re les recettes</p>
-        <h3 class="font-heading text-[38px] md:text-[52px] lg:text-[66px] leading-[1.02] text-[#161A22]">Mes livres pour approfondir</h3>
-        <p class="text-[15px] text-[#555C67] leading-[1.7] typ-body">
+      <div class="flex-1 bg-[#F7F5EF] p-7 md:p-10 lg:p-12 flex flex-col gap-6">
+        <p class="font-mono text-[12px] uppercase tracking-[0.24em] text-[#2B3342] typ-meta">L&apos;humain derri&egrave;re les recettes</p>
+        <h3 class="font-heading text-[52px] md:text-[66px] lg:text-[86px] leading-[0.95] text-[#161A22]">Mes livres pour approfondir</h3>
+        <p class="text-[15px] text-[#59606D] leading-[1.68] typ-body">
           Bienvenue dans mon univers culinaire. Voyageur curieux, j&apos;ai ramen&eacute; de mes p&eacute;riples bien plus que des souvenirs : des saveurs oubli&eacute;es et des tours de main ancestraux. Aujourd&apos;hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
         </p>
         <a

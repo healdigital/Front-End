@@ -1,6 +1,4 @@
 ---
-import Icon from '../atoms/Icon.astro';
-
 interface Props {
   embedded?: boolean;
 }
@@ -11,17 +9,17 @@ const features = [
   {
     title: 'Vrai Chef, Vraies Recettes',
     description: 'Form&eacute; dans les plus grandes maisons parisiennes',
-    icon: 'utensils',
+    icon: '/images/feature-fish.svg',
   },
   {
     title: 'Contenu 100% Original',
     description: 'Aucune IA, aucun plagiat, que de l&apos;authenticit&eacute;',
-    icon: 'check',
+    icon: '/images/feature-shrimp.svg',
   },
   {
     title: 'Test&eacute;es et Approuv&eacute;es',
     description: 'Chaque recette valid&eacute;e par des centaines de lecteurs',
-    icon: 'star',
+    icon: '/images/feature-bowl.svg',
   },
 ];
 ---
@@ -35,35 +33,37 @@ const features = [
     ></div>
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
-    <div class="flex flex-col lg:flex-row gap-8">
-      <div class="flex-1 min-w-0">
-        <img
-          src="/images/bernard-chef-2010.png"
-          alt="Bernard Laurance"
-          class="w-full h-[520px] lg:h-[760px] object-cover object-top rounded-[10px]"
-          loading="lazy"
-        />
-      </div>
-      <div class="flex-1 bg-[#F7F5EF] rounded-[10px] border border-[#DDD8CA] p-8 lg:p-12">
-        <p class="font-mono text-[12px] uppercase tracking-[0.24em] text-[#2F3441] typ-meta">L&apos;humain derri&egrave;re les recettes</p>
-        <h2 class="font-heading text-[44px] md:text-[56px] lg:text-[72px] leading-[1.02] text-[#161A22] mt-4">
-          Bernard, Chef cuisinier depuis 2010
-        </h2>
-        <p class="text-[15px] text-[#555C67] leading-[1.7] mt-5 typ-body">
-          Dans un monde satur&eacute; de contenu g&eacute;n&eacute;r&eacute; automatiquement, je m&apos;engage &agrave; vous offrir des recettes authentiques, test&eacute;es dans ma cuisine et celles de mes ateliers. Chaque technique, chaque astuce, chaque photo provient d&apos;une exp&eacute;rience r&eacute;elle.
-        </p>
-        <div class="mt-7 border-t border-[#D8D2C2] pt-7 space-y-5">
-          {features.map((feature) => (
-            <div class="flex gap-4">
-              <div class="w-10 h-10 flex items-center justify-center text-primary-turquoise flex-shrink-0">
-                <Icon name={feature.icon as any} size="sm" />
+    <div class="rounded-[10px] overflow-hidden border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_18px_48px_rgba(14,24,39,0.06)]">
+      <div class="flex flex-col lg:flex-row">
+        <div class="w-full lg:w-[52%] flex-shrink-0">
+          <img
+            src="/images/bernard-chef-2010.png"
+            alt="Bernard Laurance"
+            class="w-full h-[520px] md:h-[640px] lg:h-[922px] object-cover object-top"
+            loading="lazy"
+          />
+        </div>
+        <div class="w-full lg:w-[48%] p-7 md:p-10 lg:p-12">
+          <p class="font-mono text-[12px] uppercase tracking-[0.24em] text-[#2B3342] typ-meta">L&apos;humain derri&egrave;re les recettes</p>
+          <h2 class="font-heading text-[52px] md:text-[66px] lg:text-[86px] leading-[0.95] text-[#161A22] mt-4">
+            Bernard, Chef cuisinier depuis 2010
+          </h2>
+          <p class="text-[15px] text-[#59606D] leading-[1.68] mt-5 typ-body">
+            Dans un monde satur&eacute; de contenu g&eacute;n&eacute;r&eacute; automatiquement, je m&apos;engage &agrave; vous offrir des recettes authentiques, test&eacute;es dans ma cuisine et celles de mes ateliers. Chaque technique, chaque astuce, chaque photo provient d&apos;une exp&eacute;rience r&eacute;elle.
+          </p>
+          <div class="mt-8 border-t border-[#D6D0C2] pt-8 space-y-6">
+            {features.map((feature) => (
+              <div class="flex gap-5">
+                <div class="w-[56px] h-[56px] flex items-center justify-center flex-shrink-0">
+                  <img src={feature.icon} alt="" aria-hidden="true" class="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p class="text-[20px] leading-[1.2] font-body text-[#23313B] md:text-[22px]" set:html={feature.title}></p>
+                  <p class="text-[15px] text-[#6A717E] leading-[1.5] typ-body" set:html={feature.description}></p>
+                </div>
               </div>
-              <div>
-                <p class="text-[20px] leading-[1.25] font-body font-semibold text-[#22303B] md:text-[22px]" set:html={feature.title}></p>
-                <p class="text-[15px] text-[#6B7280] typ-body" set:html={feature.description}></p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
