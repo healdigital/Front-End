@@ -296,9 +296,11 @@
     align-items: stretch;
     gap: 0;
   }
-  .home-shell-width{
+
+  .home-shell-width {
     padding-left: 45px;
   }
+
   .home-main-column {
     padding-right: 36px;
   }
@@ -511,4 +513,124 @@
     font-size: 43px;
     line-height: 43px;
   }
+}
+
+.sidebar-title {
+  font-family: Maison Neue;
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 18px;
+  leading-trim: NONE;
+  line-height: 27px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+
+}
+
+.sidebar-subtitle {
+  font-family: Roboto Mono;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 13px;
+  leading-trim: NONE;
+  line-height: 21px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+  color: #9E0606;
+}
+
+.font-heading {
+  font-family: Instrument Serif;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 43px;
+  leading-trim: NONE;
+  line-height: 43px;
+  letter-spacing: 0%;
+
+}
+
+.date-box {
+  width: 77px;
+  height: 77px;
+  angle: 0 deg;
+  opacity: 1;
+  top: 1757px;
+  left: 1317px;
+  border-radius: 10px;
+  border-width: 1px;
+
+}
+
+.month-title {
+  font-family: Roboto Mono;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 17px;
+  leading-trim: NONE;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  text-transform: uppercase;
+
+}
+
+.date-title {
+  font-family: Instrument Serif;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 44px;
+  leading-trim: NONE;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  vertical-align: middle;
+  text-transform: uppercase;
+
+}
+.description-data{
+  font-family: Maison Neue;
+  font-weight: 400;
+  font-style: Book;
+  font-size: 16px;
+  leading-trim: NONE;
+  line-height: 27px;
+  letter-spacing: 0%;
+
+}
+.button-data{
+ width: 159.4481201171875px;
+  height: 55px;
+  angle: 0 deg;
+  opacity: 1;
+  top: 2037px;
+  left: 1235px;
+  border-radius: 5px;
+  font-family: Maison Neue;
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 16px;
+  leading-trim: NONE;
+  line-height: 100%;
+  letter-spacing: 15%;
+  text-align: center;
+  text-transform: uppercase;
+  background: #54B6B1;  
+
+}
+.label-data{
+  font-family: Jost;
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 14px;
+  leading-trim: NONE;
+  line-height: 21px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-style: solid;
+  text-decoration-offset: 0%;
+  text-decoration-thickness: 0%;
+  text-decoration-skip-ink: auto;
+  color: #54B6B1;
 }

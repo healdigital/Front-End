@@ -13,36 +13,28 @@ interface Props {
 const { cards } = Astro.props;
 ---
 
-<section class="relative bg-[#ECEBE4] py-12 md:py-16 lg:py-20 overflow-hidden">
-  <div
-    class="section-noise-overlay absolute inset-0 pointer-events-none opacity-45"
-    aria-hidden="true"
-  ></div>
-  <div class="home-shell-width relative z-10">
-    <!-- Carousel -->
+<section class="relative bg-[#ECEBE4] pt-10 pb-8 md:pt-14 md:pb-10 lg:pt-12 lg:pb-9 overflow-hidden">
+  <div class="section-noise-overlay absolute inset-0 pointer-events-none opacity-45" aria-hidden="true"></div>
+  <div class="home-shell relative z-10">
     <div class="relative" data-hero-carousel>
-      <!-- Section Header -->
-      <div class="mb-8 md:mb-12 flex items-end justify-between gap-6">
+      <div class="mb-8 md:mb-10 lg:mb-9 flex items-end justify-between gap-6">
         <div>
-          <h1 class="font-heading text-primary-black mb-5 typ-title">
-            &Agrave; la une
-          </h1>
-          <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary typ-subtitle">
+          <h1 class="font-heading text-primary-black mb-3 typ-title">&Agrave; la une</h1>
+          <p class="font-mono text-[13px] uppercase tracking-[0.3em] text-text-secondary typ-subtitle">
             Cette semaine dans la cuisine de Bernard
           </p>
         </div>
 
-        <!-- Navigation Arrows -->
-        <div class="hidden md:flex items-center gap-3 self-center">
+        <div class="hidden md:flex items-center gap-3 self-start pt-2">
           <button
-            class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+            class="hero-arrow-btn w-[62px] h-[62px] rounded-full border border-[#1A2335] flex items-center justify-center hover:bg-[#1A2335] hover:text-white transition-colors"
             aria-label="Pr&eacute;c&eacute;dent"
             data-carousel-prev
           >
             <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
           <button
-            class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+            class="hero-arrow-btn w-[62px] h-[62px] rounded-full border border-[#1A2335] flex items-center justify-center hover:bg-[#1A2335] hover:text-white transition-colors"
             aria-label="Suivant"
             data-carousel-next
           >
@@ -51,114 +43,151 @@ const { cards } = Astro.props;
         </div>
       </div>
 
-      <!-- Cards Container -->
-      <div
-        class="flex gap-5 overflow-x-auto scroll-smooth pb-4 -mx-5 px-5 md:-mx-0 md:px-0 hero-scroll-container"
-        data-carousel-track
-      >
-        {cards.map((card) => (
-          <a
-            href={card.slug}
-            class="flex-shrink-0 w-[260px] md:w-[311px] h-[420px] md:h-[500px] rounded-lg overflow-hidden relative group block"
-          >
-            <img
-              src={card.image}
-              alt={card.title}
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="eager"
-            />
-            <!-- Gradient overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <!-- Title -->
-            <div class="absolute bottom-0 left-0 right-0 p-5">
-              <div class="mb-3">
-                <span class="inline-block rounded-full bg-white/90 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
-                  {card.category}
-                </span>
+      <div class="hero-scroll-shell">
+        <div class="flex gap-5 overflow-x-auto scroll-smooth pb-4 hero-scroll-container" data-carousel-track>
+          {cards.map((card) => (
+            <a href={card.slug} class="hero-slide flex-shrink-0 rounded-[10px] overflow-hidden relative group block">
+              <img
+                src={card.image}
+                alt={card.title}
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/72 via-black/30 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-6">
+                <div class="mb-3">
+                  <span class="inline-flex rounded-full bg-white/95 px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.1em] text-[#26323E]">
+                    {card.category}
+                  </span>
+                </div>
+                <h3 class="font-body text-[34px] md:text-[35px] text-white leading-[1.08] line-clamp-2">
+                  {card.title}
+                </h3>
               </div>
-              <h3 class="font-body text-[17px] text-white font-medium leading-snug line-clamp-3">
-                {card.title}
-              </h3>
-            </div>
-          </a>
-        ))}
-      </div>
-
-      <!-- Mobile controls -->
-      <div class="mt-6 flex items-center justify-between md:hidden">
-        <div class="flex items-center gap-3">
-          <button
-            class="w-[54px] h-[54px] rounded-full border border-primary-black flex items-center justify-center"
-            aria-label="Pr&eacute;c&eacute;dent"
-            data-carousel-prev
-          >
-            <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-          <button
-            class="w-[54px] h-[54px] rounded-full border border-primary-black flex items-center justify-center"
-            aria-label="Suivant"
-            data-carousel-next
-          >
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-
-        <div class="flex items-center gap-3">
-          {cards.map((_, index) => (
-            <span
-              class={`w-2 h-2 rounded-full ${index === 0 ? 'bg-text-primary' : 'bg-text-tertiary/60'}`}
-              aria-hidden="true"
-            ></span>
+            </a>
           ))}
         </div>
       </div>
-    </div>
 
-    <!-- Dots (desktop) -->
-    <div class="mt-6 hidden md:flex items-center gap-3">
-      {cards.map((_, index) => (
-        <span
-          class={`w-2 h-2 rounded-full ${index === 0 ? 'bg-text-primary' : 'bg-text-tertiary/60'}`}
-          aria-hidden="true"
-        ></span>
-      ))}
+      <div class="mt-4 md:hidden flex items-center justify-start gap-3">
+        <button
+          class="hero-arrow-btn w-[56px] h-[56px] rounded-full border border-[#1A2335] flex items-center justify-center"
+          aria-label="Pr&eacute;c&eacute;dent"
+          data-carousel-prev
+        >
+          <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button
+          class="hero-arrow-btn w-[56px] h-[56px] rounded-full border border-[#1A2335] flex items-center justify-center"
+          aria-label="Suivant"
+          data-carousel-next
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="mt-1 md:mt-4 flex items-center gap-3">
+        {[0, 1, 2, 3].map((dot, index) => (
+          <span
+            class={`hero-dot ${index === 0 ? 'is-active' : ''}`}
+            data-carousel-dot={dot}
+            aria-hidden="true"
+          ></span>
+        ))}
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  .hero-scroll-shell {
+    width: 100%;
+    overflow: hidden;
+  }
+
   .hero-scroll-container {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
+
   .hero-scroll-container::-webkit-scrollbar {
     display: none;
   }
-  .hero-scroll-container > a {
+
+  .hero-slide {
+    width: 262px;
+    height: 370px;
     scroll-snap-align: start;
+  }
+
+  .hero-arrow-btn {
+    color: #1a2335;
+    background: transparent;
+  }
+
+  .hero-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(49, 56, 68, 0.22);
+    transition: background-color 0.2s ease;
+  }
+
+  .hero-dot.is-active {
+    background: #1a2335;
+  }
+
+  @media (min-width: 768px) {
+    .hero-slide {
+      width: 300px;
+      height: 495px;
+    }
   }
 </style>
 
 <script>
-  const carousel = document.querySelector('[data-hero-carousel]');
-  if (carousel) {
+  const carousels = Array.from(document.querySelectorAll('[data-hero-carousel]'));
+  carousels.forEach((carousel) => {
     const track = carousel.querySelector('[data-carousel-track]');
+    if (!track) return;
+
+    const dots = Array.from(carousel.querySelectorAll('[data-carousel-dot]'));
     const prevButtons = Array.from(carousel.querySelectorAll('[data-carousel-prev]'));
     const nextButtons = Array.from(carousel.querySelectorAll('[data-carousel-next]'));
 
-    const scrollAmount = 330;
+    const getStep = () => {
+      const firstCard = track.firstElementChild;
+      if (!(firstCard instanceof HTMLElement)) return 320;
+      const styles = window.getComputedStyle(track);
+      const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+      return firstCard.getBoundingClientRect().width + gap;
+    };
+
+    const updateDots = () => {
+      if (dots.length === 0) return;
+      const maxScroll = Math.max(track.scrollWidth - track.clientWidth, 1);
+      const ratio = Math.min(Math.max(track.scrollLeft / maxScroll, 0), 1);
+      const activeIndex = Math.round(ratio * (dots.length - 1));
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('is-active', index === activeIndex);
+      });
+    };
 
     prevButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        track?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        track.scrollBy({ left: -getStep(), behavior: 'smooth' });
       });
     });
 
     nextButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        track?.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        track.scrollBy({ left: getStep(), behavior: 'smooth' });
       });
     });
-  }
+
+    track.addEventListener('scroll', updateDots, { passive: true });
+    window.addEventListener('resize', updateDots);
+    updateDots();
+  });
 </script>

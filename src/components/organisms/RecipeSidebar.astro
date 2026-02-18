@@ -12,32 +12,32 @@ const isFull = variant === 'full';
 
 const popularArticles = [
   {
-    title: 'Salade de nouilles de tofu aux 5 parfums, l&eacute;gumes frais et sauce...',
-    date: 'R&eacute;dig&eacute; le 3 janv 2026',
+    title: 'Salade de nouilles de tofu aux 5 parfums, legumes frais et sauce...',
+    date: 'Redige le 3 jan 2026',
     image: '/images/workshop-soup.jpg',
     slug: '/salade-nouilles-tofu',
   },
   {
-    title: 'Concombres marin&eacute;s',
-    date: 'R&eacute;dig&eacute; le 8 janv 2026',
+    title: 'Concombres marines',
+    date: 'Redige le 8 janv 2026',
     image: '/images/workshop-dumplings.jpg',
     slug: '/concombres-marines',
   },
   {
-    title: 'Caldo de feijao (soupe br&eacute;silienne de haricots)',
-    date: 'R&eacute;dig&eacute; le 12 janv 2026',
+    title: 'Caldo de feijao (soupe bresilienne de haricots)',
+    date: 'Redige le 12 janv 2026',
     image: '/images/masterclass-featured.jpg',
     slug: '/caldo-feijao',
   },
   {
     title: 'Les indispensables de ma cuisine professionnelle',
-    date: 'R&eacute;dig&eacute; le 14 f&eacute;v 2026',
+    date: 'Redige le 14 fev 2026',
     image: '/images/ateliers-physiques.jpg',
     slug: '/indispensables-cuisine-pro',
   },
   {
     title: 'Lohikeitto (soupe de saumon finlandaise)',
-    date: 'R&eacute;dig&eacute; le 23 f&eacute;v 2026',
+    date: 'Redige le 23 fev 2026',
     image: '/images/masterclass-video.jpg',
     slug: '/lohikeitto',
   },
@@ -46,28 +46,26 @@ const popularArticles = [
 
 <aside class={`hidden lg:flex flex-col w-full min-h-full ${className}`}>
   {isFull && (
-    <div class="px-5 py-8 border-b border-[#D8D2C2] text-center">
-      <img
-        src="/images/bernard-avatar-mask.png"
-        alt="Bernard Laurance"
-        class="w-[130px] h-[130px] rounded-full object-cover object-top mx-auto"
-      />
-      <h3 class="font-heading text-[26px] leading-[1.02] text-text-primary mt-5">Bernard Laurance</h3>
-      <p class="font-mono text-[13px] uppercase tracking-[0.14em] text-text-secondary mt-3 typ-meta">
-        Cuisine r&eacute;elle, recettes test&eacute;es depuis 2010
+    <div class="sidebar-block px-6 py-8 text-center">
+      <img src="/images/bernard-avatar-mask.png" alt="Bernard Laurance" class="w-[130px] h-[130px] rounded-full object-cover object-top mx-auto" />
+      <h3 class="font-body text-[28px] leading-[1.05] text-[#1A2335] mt-6">Bernard Laurance</h3>
+      <p class="font-mono text-[13px] uppercase tracking-[0.15em] text-[#3E4652] mt-3">
+        Cuisine reelle, recettes testees depuis 2010
       </p>
-      <p class="text-[16px] text-text-secondary leading-[1.7] mt-5 typ-body">
-        Voyageur et passionn&eacute; de cuisine, je vous livre tous mes secrets de cuisine, sans d&eacute;tour. J&apos;essaie de rendre hommage aux traditions, du canel&eacute; de Bordeaux aux dim-sums de Hong Kong. Les recettes de Bernard, ce sont des dizaines de recettes de p&acirc;tisseries, d&apos;entr&eacute;es et de plats divers.
+      <p class="text-[16px] text-[#2F3B4A] leading-[1.65] mt-5">
+        Voyageur et passionne de cuisine, je vous livre tous mes secrets de cuisine, sans detour.
+        J'essaie de rendre hommage aux traditions, du canele de Bordeaux aux dim-sums de Hong Kong.
+        Les recettes de Bernard, ce sont des dizaines de recettes de patisseries, d'entrees et de plats divers.
       </p>
 
-      <div class="mt-7">
-        <div class="flex items-center justify-center gap-6 text-[#171F2C]">
-          <span class="w-11 h-11 rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-facebook-f text-[20px]"></i></span>
-          <span class="w-11 h-11 rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-instagram text-[20px]"></i></span>
-          <span class="w-11 h-11 rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-youtube text-[20px]"></i></span>
-          <span class="w-11 h-11 rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-pinterest text-[20px]"></i></span>
+      <div class="mt-8">
+        <div class="flex items-center justify-center gap-5 text-[#121C28]">
+          <span class="w-[43px] h-[43px] rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-facebook-f text-[20px]"></i></span>
+          <span class="w-[43px] h-[43px] rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-instagram text-[20px]"></i></span>
+          <span class="w-[43px] h-[43px] rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-youtube text-[20px]"></i></span>
+          <span class="w-[43px] h-[43px] rounded-full bg-[#F0EFE8] flex items-center justify-center"><i class="fab fa-pinterest text-[20px]"></i></span>
         </div>
-        <div class="mt-3 flex items-center justify-center gap-9 text-[#23313B] text-[15px]">
+        <div class="mt-3 flex items-center justify-center gap-7 text-[#1A2335] text-[13px]">
           <span>145 .7k</span>
           <span>62k</span>
           <span>1k</span>
@@ -75,136 +73,147 @@ const popularArticles = [
         </div>
       </div>
 
-      <a href="/a-propos" class="inline-block mt-8 text-primary-turquoise font-body text-[13px] uppercase tracking-[0.08em] underline underline-offset-2 typ-button">
-        D&eacute;couvrir son univers
+      <a href="/a-propos" class="inline-block mt-8 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] underline underline-offset-2 typ-button">
+        Decouvrir son univers
       </a>
     </div>
   )}
 
   {isFull && (
-    <div class="px-5 py-8 border-b border-[#D8D2C2]">
-      <h4 class="font-body text-[18px] uppercase tracking-[0.03em] text-text-primary mb-5">Apprendre en atelier</h4>
-      <div class="bg-[#F7F5EF] rounded-[10px] p-6 border border-[#D8D2C2]">
-        <p class="text-[13px] uppercase tracking-[0.14em] text-status-error font-mono mb-3 typ-meta">Derni&egrave;res places</p>
-
-        <div class="flex items-start justify-between gap-4">
-          <h5 class="font-heading text-[43px] leading-[1] text-text-primary">Atelier cuisine chinoise</h5>
-          <div class="bg-[#F7F5EF] rounded-[14px] p-2 text-center min-w-[76px] border border-[#D8D2C2]">
-            <span class="block text-[13px] uppercase text-text-secondary font-mono">Mar</span>
-            <span class="block text-[50px] leading-none text-text-primary font-heading">9</span>
+    <div class="sidebar-block px-6 py-8">
+      <h4 class="sidebar-title">Apprendre en atelier</h4>
+      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 mt-5">
+        <p class="sidebar-subtitle font-mono text-[13px] uppercase tracking-[0.14em] text-[#B24639]">Dernieres places</p>
+        <div class="mt-3 flex items-start justify-between gap-4">
+          <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111]">Atelier cuisine chinoise</h5>
+          <div class="date-box bg-[#F7F5EF] rounded-[14px] p-2 text-center min-w-[74px] border border-[#D8D2C2]">
+            <span class="block text-[13px] uppercase text-[#8B8880] font-mono month-title">Mar</span>
+            <span class="block text-[34px] leading-none text-[#111111] font-heading date-title">9</span>
           </div>
         </div>
 
-        <div class="flex items-center gap-5 text-[#2E3441] text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
+        <div class="flex items-center gap-4 text-[#2D3440] text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
           <span class="flex items-center gap-1"><Icon name="users" size="sm" /> 8 personnes maximum</span>
           <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 4 heures</span>
         </div>
 
-        <p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+        <p class="text-[16px] text-[#5F6671] mt-5 leading-[1.65] description-data">Apprenez directement a mes cotes dans un atelier intimiste.</p>
 
-        <div class="flex items-center justify-between mt-8 pt-5 border-t border-[#D8D2C2]">
+        <div class="flex items-end justify-between mt-8 pt-5 border-t border-[#D8D2C2]">
           <div>
-            <span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span>
-            <div class="font-heading text-[60px] leading-none text-text-primary">85&euro;</div>
+            <span class="text-[13px] uppercase tracking-[0.14em] text-[#5F6671]">A partir de</span>
+            <div class="font-heading text-[44px] leading-none text-[#111111]">85&euro;</div>
           </div>
-          <Button href="/atelier-cuisine-chinoise" variant="primary" size="sm">R&eacute;server</Button>
+          <Button href="/atelier-cuisine-chinoise" class="button-data" variant="primary" size="sm">Reserver</Button>
         </div>
       </div>
 
-      <a href="/ateliers" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+      <a href="/ateliers" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir le calendrier complet
       </a>
     </div>
   )}
 
   {isFull && (
-    <div class="px-5 py-8 border-b border-[#D8D2C2]">
-      <h4 class="font-body text-[18px] uppercase tracking-[0.03em] text-text-primary mb-5">Masterclass vid&eacute;os</h4>
-      <div class="bg-[#F7F5EF] rounded-[10px] overflow-hidden border border-[#D8D2C2]">
+    <div class="sidebar-block px-6 py-8">
+      <h4 class="sidebar-title">Masterclass videos</h4>
+      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden mt-5">
         <div class="relative">
-          <img src="/images/masterclass-video.jpg" alt="Masterclass" class="w-full h-[165px] object-cover" />
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-[70px] h-[70px] rounded-full bg-white/90 flex items-center justify-center">
-              <Icon name="video" size="sm" class="text-primary-turquoise" />
-            </div>
+          <img src="/images/masterclass-video.jpg" alt="Masterclass" class="w-full h-[184px] object-cover" />
+          <div class="absolute top-4 right-4 w-[68px] h-[68px] rounded-full bg-white/95 flex items-center justify-center text-[#1A2335]">
+            <Icon name="video" size="sm" />
           </div>
         </div>
 
         <div class="p-6">
-          <div class="flex items-center gap-2 mb-2 flex-wrap">
-            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-text-primary">
-              <Icon name="lock" size="sm" /> Acc&egrave;s illimit&eacute;
+          <div class="flex items-center gap-2 mb-3 flex-wrap">
+            <span class="inline-flex items-center gap-2 rounded-full bg-[#ECEBE4] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-[#1E2B3A]">
+              <Icon name="lock" size="sm" /> Acces illimite
             </span>
             <span class="inline-flex items-center gap-2 rounded-full bg-[#BBA86B] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-white">
-              R&eacute;serv&eacute; Premium
+              Reserve Premium
             </span>
           </div>
 
-          <h5 class="font-heading text-[43px] leading-[1] text-text-primary mt-3">G&acirc;teau indien aux carottes !</h5>
+          <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111] mt-1">Gateau indien aux carottes !</h5>
 
-          <div class="flex items-center gap-4 text-text-secondary text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
+          <div class="flex items-center gap-4 text-[#2F3642] text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
             <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 2h</span>
-            <span class="flex items-center gap-1"><Icon name="video" size="sm" /> Vid&eacute;o 4K</span>
+            <span class="flex items-center gap-1"><Icon name="video" size="sm" /> Video 4K</span>
           </div>
 
-          <p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Technique professionnelle pas &agrave; pas.</p>
-          <Button href="/masterclass" variant="primary" size="sm" class="w-full mt-4">Voir la vid&eacute;o</Button>
+          <p class="description-data text-[16px] text-[#5F6671] mt-5 leading-[1.65]">Technique professionnelle pas a pas.</p>
+          <Button href="/masterclass" variant="primary" size="sm" class="button-data w-full mt-5">Voir la video</Button>
         </div>
       </div>
 
-      <a href="/masterclass" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
-        Voir toutes les vid&eacute;os masterclass
+      <a href="/masterclass" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+        Voir toutes les videos masterclass
       </a>
     </div>
   )}
 
   {isFull && (
-    <div class="px-5 py-8 border-b border-[#D8D2C2]">
-      <h4 class="font-body text-[18px] uppercase tracking-[0.03em] text-text-primary mb-5">Rejoignez mon club</h4>
-      <ul class="space-y-4 text-[16px] text-text-secondary">
-        <li class="flex items-center gap-2"><Icon name="book" size="sm" /> &Eacute;changes passionn&eacute;s</li>
-        <li class="flex items-center gap-2"><Icon name="star" size="sm" /> Recettes avanc&eacute;es</li>
-        <li class="flex items-center gap-2"><Icon name="check" size="sm" /> Conseils exclusifs</li>
+    <div class="sidebar-block px-6 py-8">
+      <h4 class="sidebar-title">Rejoignez mon club</h4>
+      <ul class="mt-4 space-y-4 text-[16px] text-[#2A3543]">
+        <li class="flex items-center gap-2"><Icon name="book" size="sm" /> Echanges passionnes</li>
+        <li class="flex items-center gap-2"><Icon name="refresh" size="sm" /> Recettes avancees</li>
+        <li class="flex items-center gap-2"><Icon name="video" size="sm" /> Conseils exclusifs</li>
       </ul>
-      <a href="/club" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+      <a href="/club" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-6 underline underline-offset-2 typ-button">
         Rejoindre le club
       </a>
     </div>
   )}
 
   {isFull && (
-    <div class="px-5 py-8 border-b border-[#D8D2C2]">
-      <h4 class="font-body text-[18px] uppercase tracking-[0.03em] text-text-primary mb-5">Mes livres pour approfondir</h4>
-      <div class="grid grid-cols-2 gap-3">
-        <img src="/images/book-1.png" alt="Livre 1" class="w-full h-[120px] object-cover rounded-md" />
-        <img src="/images/book-2.jpg" alt="Livre 2" class="w-full h-[120px] object-cover rounded-md" />
-        <img src="/images/book-3.png" alt="Livre 3" class="w-full h-[120px] object-cover rounded-md" />
-        <img src="/images/book-4.jpg" alt="Livre 4" class="w-full h-[120px] object-cover rounded-md" />
+    <div class="sidebar-block px-6 py-8">
+      <h4 class="sidebar-title">Mes livres pour approfondir</h4>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <img src="/images/book-desserts.png" alt="Mes desserts" class="w-full h-[214px] object-cover rounded-[2px]" />
+        <img src="/images/book-vege.png" alt="Vege-terrien" class="w-full h-[214px] object-cover rounded-[2px]" />
+        <img src="/images/book-chocolat.png" alt="Je fais mon chocolat maison" class="w-full h-[214px] object-cover rounded-[2px]" />
+        <img src="/images/book-bouchee.png" alt="Je n'en ferai qu'une bouchee" class="w-full h-[214px] object-cover rounded-[2px]" />
       </div>
-      <a href="/livres" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+      <a href="/livres" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir tous les livres
       </a>
     </div>
   )}
 
-  <div class="px-5 py-8 border-b border-[#D8D2C2]">
-    <h4 class="font-body text-[18px] uppercase tracking-[0.03em] text-text-primary mb-5">Articles populaires</h4>
-    <div class="space-y-4">
+  <div class="sidebar-block px-6 py-8">
+    <h4 class="sidebar-title">Articles populaires</h4>
+    <div class="space-y-4 mt-5">
       {popularArticles.map((article) => (
         <a href={article.slug} class="flex gap-3 items-start border-b border-[#D8D2C2] pb-4 last:border-b-0 last:pb-0">
-          <img src={article.image} alt="" class="w-[166px] h-[93px] object-cover rounded-md" />
+          <img src={article.image} alt="" class="w-[166px] h-[93px] object-cover rounded-[8px]" />
           <div>
-            <p class="text-[13px] uppercase tracking-[0.08em] text-text-secondary typ-meta" set:html={article.date}></p>
-            <p class="text-[28px] leading-[1] text-text-primary mt-2 font-heading" set:html={article.title}></p>
+            <p class="text-[13px] uppercase tracking-[0.08em] text-[#2D3643] font-mono">{article.date}</p>
+            <p class="text-[20px] leading-[1.1] text-[#111111] mt-2 font-heading">{article.title}</p>
           </div>
         </a>
       ))}
     </div>
   </div>
 
-  <div class="px-5 py-8">
-    <div class="bg-secondary-cream rounded-lg border border-[#D8D2C2] h-[240px] flex items-center justify-center text-text-secondary text-[13px] uppercase tracking-[0.12em] typ-meta">
-      Espace publicit&eacute;
+  <div class="sidebar-block px-6 py-8">
+    <div class="bg-[#DCDCCF] rounded-[2px] border border-[#D8D2C2] h-[240px] flex items-start justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em] pt-8">
+      Espace publicite
     </div>
   </div>
 </aside>
+
+<style>
+  .sidebar-block {
+    border-bottom: 1px solid #d8d2c2;
+  }
+
+  .sidebar-title {
+    font-family: var(--font-body);
+    color: #111111;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+</style>

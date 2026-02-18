@@ -7,14 +7,15 @@ const navigationLinks = [
 ];
 
 const legalLinks = [
-  { label: 'Mentions l&eacute;gales', url: '/mentions-legales' },
-  { label: 'Politique de confidentialit&eacute;', url: '/rgpd' },
+  { label: 'Mentions legales', url: '/mentions-legales' },
+  { label: 'Politique de confidentialite', url: '/rgpd' },
   { label: 'CGV', url: '/cgv' },
 ];
 
 const socialLinks = [
   { icon: 'fab fa-facebook-f', label: 'Facebook', url: 'https://www.facebook.com/lacuisinedebernard' },
   { icon: 'fab fa-youtube', label: 'YouTube', url: 'https://www.youtube.com/@lacuisinedebernard' },
+  { icon: 'fab fa-twitch', label: 'Twitch', url: 'https://www.twitch.tv/' },
   { icon: 'fab fa-pinterest', label: 'Pinterest', url: 'https://www.pinterest.com/lacuisinedebernard' },
   { icon: 'far fa-envelope', label: 'Email', url: 'mailto:contact@lacuisinedebernard.com' },
 ];
@@ -24,63 +25,56 @@ const socialLinks = [
   <div class="home-shell pt-14 pb-12">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
       <div>
-        <h3 class="text-primary-turquoise text-[30px] md:text-[34px] leading-[1.05] font-body">La Cuisine de Bernard</h3>
-        <p class="text-white/70 text-[14px] md:text-[15px] leading-relaxed mt-4 typ-body max-w-[320px]">
-          Des recettes authentiques et des techniques professionnelles pour tous les passionn&eacute;s de p&acirc;tisserie depuis 2010.
+        <h3 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">La Cuisine de Bernard</h3>
+        <p class="text-white/70 text-[16px] leading-relaxed mt-4 max-w-[320px]">
+          Des recettes authentiques et des techniques professionnelles pour tous les passionnes de patisserie depuis 2010.
         </p>
       </div>
 
       <div>
-        <h4 class="text-primary-turquoise text-[28px] md:text-[32px] leading-[1.05] font-body">Navigation</h4>
-        <ul class="mt-4 space-y-3 text-[15px] md:text-[16px] text-white/70">
+        <h4 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">Navigation</h4>
+        <ul class="mt-4 space-y-3 text-[16px] text-white/70">
           {navigationLinks.map((link) => (
             <li>
-              <a href={link.url} class="hover:text-primary-turquoise transition-colors" set:html={link.label}></a>
+              <a href={link.url} class="hover:text-primary-turquoise transition-colors">{link.label}</a>
             </li>
           ))}
         </ul>
       </div>
 
       <div>
-        <h4 class="text-primary-turquoise text-[28px] md:text-[32px] leading-[1.05] font-body">L&eacute;gal</h4>
-        <ul class="mt-4 space-y-3 text-[15px] md:text-[16px] text-white/70">
+        <h4 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">Legal</h4>
+        <ul class="mt-4 space-y-3 text-[16px] text-white/70">
           {legalLinks.map((link) => (
             <li>
-              <a href={link.url} class="hover:text-primary-turquoise transition-colors" set:html={link.label}></a>
+              <a href={link.url} class="hover:text-primary-turquoise transition-colors">{link.label}</a>
             </li>
           ))}
         </ul>
       </div>
 
       <div>
-        <h4 class="text-primary-turquoise text-[28px] md:text-[32px] leading-[1.05] font-body">Suivez-moi</h4>
+        <h4 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">Suivez-moi</h4>
         <div class="flex items-center gap-6 mt-4 text-primary-turquoise text-[22px]">
           {socialLinks.map((link) => (
-            <a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={link.label}
-              class="hover:text-white transition-colors"
-            >
+            <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.label} class="hover:text-white transition-colors">
               <i class={link.icon}></i>
             </a>
           ))}
         </div>
         <a
           href="/contact"
-          class="inline-flex items-center gap-4 justify-center mt-6 px-7 py-4 bg-primary-turquoise text-primary-black font-button font-medium text-[20px] md:text-[24px] leading-none rounded-sm"
+          class="inline-flex items-center gap-4 justify-center mt-6 px-7 py-4 bg-primary-turquoise text-primary-black font-button font-medium text-[18px] leading-none rounded-[2px] tracking-[0.2em] uppercase"
         >
           <span>Contactez-moi</span>
-          <span class="block h-px w-9 bg-primary-black/70"></span>
         </a>
       </div>
     </div>
   </div>
 
   <div class="border-t border-white/10">
-    <div class="home-shell py-7 text-center text-white/65 text-[15px] typ-body">
-      &copy; {new Date().getFullYear()} La Cuisine de Bernard. Tous droits r&eacute;serv&eacute;s. Fait avec passion &agrave; Paris.
+    <div class="home-shell py-6 text-center text-white/65 text-[14px]">
+      &copy; {new Date().getFullYear()} La Cuisine de Bernard. Tous droits reserves. Fait avec passion a Paris.
     </div>
   </div>
 </footer>

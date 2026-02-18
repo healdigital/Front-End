@@ -6,12 +6,9 @@ interface Props {
 const { embedded = false } = Astro.props as Props;
 ---
 
-<section class={`relative ? '' : ' bg-secondary-cream overflow-hidden'}`}>
+<section class={`relative ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
   {!embedded && (
-    <div
-      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
-      aria-hidden="true"
-    ></div>
+    <div class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28" aria-hidden="true"></div>
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
     <div class="flex items-center gap-6 mb-12 mt-12">
@@ -22,27 +19,18 @@ const { embedded = false } = Astro.props as Props;
     <div class="books-section-card">
       <div class="books-section-grid">
         <div class="books-section-media">
-          <img
-            src="/images/bernard-books.png"
-            alt="Bernard Laurance"
-            class="books-section-media-image"
-            loading="lazy"
-          />
+          <img src="/images/bernard-books.png" alt="Bernard Laurance" class="books-section-media-image" loading="lazy" />
         </div>
 
         <div class="books-section-content">
           <div class="books-section-inner">
-            <p class="books-section-eyebrow">L&apos;humain derri&egrave;re les recettes</p>
+            <p class="books-section-eyebrow">L'humain derriere les recettes</p>
             <h3 class="books-section-title">Mes livres pour approfondir</h3>
             <p class="books-section-description">
-              Bienvenue dans mon univers culinaire. Voyageur curieux, j&apos;ai ramen&eacute; de mes p&eacute;riples bien plus que des souvenirs : des saveurs oubli&eacute;es et des tours de main ancestraux. Aujourd&apos;hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
+              Bienvenue dans mon univers culinaire. Voyageur curieux, j'ai ramene de mes periples bien plus que des souvenirs : des saveurs oubliees et des tours de main ancestraux.
+              Aujourd'hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
             </p>
-            <a
-              href="/livres"
-              class="books-section-button"
-            >
-              D&eacute;couvrir mes livres
-            </a>
+            <a href="/livres" class="books-section-button">Decouvrir mes livres</a>
           </div>
         </div>
       </div>
