@@ -588,7 +588,8 @@
   text-transform: uppercase;
 
 }
-.description-data{
+
+.description-data {
   font-family: Maison Neue;
   font-weight: 400;
   font-style: Book;
@@ -598,8 +599,9 @@
   letter-spacing: 0%;
 
 }
-.button-data{
- width: 159.4481201171875px;
+
+.button-data {
+  width: 159.4481201171875px;
   height: 55px;
   angle: 0 deg;
   opacity: 1;
@@ -615,10 +617,11 @@
   letter-spacing: 15%;
   text-align: center;
   text-transform: uppercase;
-  background: #54B6B1;  
+  background: #54B6B1;
 
 }
-.label-data{
+
+.label-data {
   font-family: Jost;
   font-weight: 500;
   font-style: Medium;
@@ -633,4 +636,27 @@
   text-decoration-thickness: 0%;
   text-decoration-skip-ink: auto;
   color: #54B6B1;
+}
+
+.article-title {
+  font-family: Maison Neue;
+  font-weight: 400;
+  font-style: Book;
+  font-size: 18px;
+  leading-trim: NONE;
+  line-height: 25px;
+  letter-spacing: 0%;
+
+}
+
+.article-date {
+  font-family: Roboto Mono;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 13px;
+  leading-trim: NONE;
+  line-height: 25px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+
 }
