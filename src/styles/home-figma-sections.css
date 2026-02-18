@@ -1,0 +1,512 @@
+.section-noise-overlay {
+  background-image: url('/images/noise.png');
+  background-size: 180px 180px;
+}
+
+.home-shell {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.home-two-column {
+  display: block;
+}
+
+.home-main-column {
+  min-width: 0;
+}
+
+.home-sidebar-column {
+  display: none;
+}
+
+.home-sidebar-sticky {
+  position: static;
+}
+
+.bio-section-card,
+.books-section-card {
+  border: 1px solid #d8d2c2;
+  border-radius: 10px;
+  background: #f7f5ef;
+  box-shadow: 0 18px 48px rgba(14, 24, 39, 0.06);
+  overflow: hidden;
+}
+
+.bio-section-grid,
+.books-section-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.bio-section-media,
+.books-section-media {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.bio-section-media-image {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.bio-section-content {
+  width: 100%;
+  padding: 32px 28px;
+}
+
+.bio-section-content-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 33px;
+}
+
+.bio-section-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bio-section-eyebrow,
+.books-section-eyebrow,
+.featured-masterclass-eyebrow {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 21px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #111111;
+}
+
+.bio-section-title,
+.books-section-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 50px;
+  letter-spacing: 0;
+  color: #111111;
+}
+
+.bio-section-description,
+.books-section-description,
+.featured-masterclass-description {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 27px;
+  letter-spacing: 0;
+  color: #59606d;
+}
+
+.bio-section-features {
+  display: flex;
+  flex-direction: column;
+  gap: 43px;
+  padding-top: 15px;
+  border-top: 1px solid #d6d0c2;
+}
+
+.bio-section-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 19px;
+}
+
+.bio-section-feature-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.bio-section-feature-title {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #23313b;
+}
+
+.bio-section-feature-description {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: #6a717e;
+}
+
+.books-section-media {
+  height: 360px;
+}
+
+.books-section-media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.books-section-content {
+  width: 100%;
+  padding: 32px 28px;
+}
+
+.books-section-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.books-section-button {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 16px 32px;
+  border-radius: 2px;
+  background: #57bbb8;
+  color: #ffffff;
+  font-family: var(--font-button);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.books-section-button:hover {
+  opacity: 0.9;
+}
+
+.featured-masterclass-card {
+  border: 1px solid #d8d2c2;
+  border-radius: 10px;
+  background: #f7f5ef;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(14, 24, 39, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-masterclass-media {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  flex-shrink: 0;
+}
+
+.featured-masterclass-media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featured-masterclass-panel {
+  width: 100%;
+  padding: 32px 28px;
+  background: #f7f5ef;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.featured-masterclass-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.featured-masterclass-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 38px;
+  letter-spacing: 0;
+  color: #111111;
+}
+
+.featured-masterclass-features {
+  margin-top: 8px;
+  border-top: 1px solid #d6d0c2;
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.featured-masterclass-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 21px;
+  color: #5f6672;
+}
+
+@media (min-width: 768px) {
+  .home-shell {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+
+@media (min-width: 768px) {
+  .bio-section-media-image {
+    height: 640px;
+  }
+
+  .bio-section-title,
+  .books-section-title {
+    font-size: 50px;
+    line-height: 60px;
+  }
+
+  .featured-masterclass-title {
+    font-size: 39px;
+    line-height: 41px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-shell {
+    padding-left: 60px;
+    padding-right: 60px;
+  }
+
+  .home-two-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 472px;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .home-main-column {
+    padding-right: 36px;
+  }
+
+  .home-sidebar-column {
+    display: block;
+    border-left: 1px solid #d8d2c2;
+    background: rgba(255, 255, 255, 0.72);
+    padding-left: 22px;
+    padding-right: 20px;
+  }
+
+  .home-sidebar-sticky {
+    position: sticky;
+    top: 112px;
+  }
+
+  .bio-section-grid,
+  .books-section-grid {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .bio-section-media,
+  .books-section-media {
+    width: 52.3%;
+    height: auto;
+  }
+
+  .bio-section-content,
+  .books-section-content {
+    width: 47.7%;
+    height: auto;
+    padding: 38px 28px;
+  }
+
+  .bio-section-media-image,
+  .books-section-media-image {
+    width: 100%;
+    height: 100%;
+    min-height: 620px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+
+  .bio-section-content {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  .bio-section-content-inner,
+  .books-section-inner,
+  .featured-masterclass-copy {
+    width: 100%;
+    height: auto;
+  }
+
+  .bio-section-title,
+  .books-section-title {
+    font-size: 52px;
+    line-height: 60px;
+  }
+
+  .bio-section-title,
+  .bio-section-description,
+  .bio-section-intro,
+  .bio-section-features,
+  .bio-section-feature {
+    width: 100%;
+    height: auto;
+  }
+
+  .featured-masterclass-card {
+    width: 100%;
+    flex-direction: row;
+  }
+
+  .featured-masterclass-media {
+    width: 56.2%;
+    height: 560px;
+  }
+
+  .featured-masterclass-panel {
+    width: 43.8%;
+    height: 560px;
+    padding: 34px 30px;
+  }
+
+  .featured-masterclass-title {
+    font-size: 39px;
+    line-height: 41px;
+  }
+}
+
+@media (min-width: 1360px) {
+  .home-shell {
+    padding-left: 88px;
+    padding-right: 0;
+  }
+
+  .home-two-column {
+    grid-template-columns: minmax(0, 1fr) 472px;
+  }
+
+  .bio-section-grid,
+  .books-section-grid,
+  .featured-masterclass-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bio-section-media {
+    width: 457px;
+    height: 921px;
+  }
+
+  .bio-section-media-image {
+    width: 457px;
+    height: 921px;
+    min-height: 0;
+  }
+
+  .bio-section-content {
+    width: 417px;
+    height: 921px;
+    padding: 45px 37px 57px;
+  }
+
+  .bio-section-content-inner {
+    width: 343px;
+    height: 819px;
+    gap: 33px;
+  }
+
+  .bio-section-intro {
+    width: 343px;
+    height: 420px;
+    gap: 15px;
+  }
+
+  .bio-section-eyebrow {
+    width: 235px;
+    height: 21px;
+    text-align: center;
+  }
+
+  .bio-section-title,
+  .books-section-title {
+    font-size: 60px;
+    line-height: 69px;
+  }
+
+  .bio-section-title {
+    width: 343px;
+    height: 207px;
+  }
+
+  .bio-section-description {
+    width: 343px;
+    height: 162px;
+  }
+
+  .bio-section-features {
+    width: 343px;
+    height: 332px;
+    gap: 43px;
+  }
+
+  .bio-section-feature {
+    width: 343px;
+    height: 82px;
+    gap: 19px;
+  }
+
+  .books-section-media {
+    width: 457px;
+    height: 652px;
+  }
+
+  .books-section-content {
+    width: 417px;
+    height: 652px;
+    padding: 45px 37px 57px;
+  }
+
+  .books-section-inner {
+    width: 343px;
+  }
+
+  .books-section-button {
+    width: 338px;
+  }
+
+  .featured-masterclass-media {
+    width: 492px;
+    height: 639px;
+  }
+
+  .featured-masterclass-panel {
+    width: 383px;
+    height: 639px;
+    padding: 34px;
+  }
+
+  .featured-masterclass-copy {
+    width: 298px;
+  }
+
+  .featured-masterclass-title {
+    font-size: 43px;
+    line-height: 43px;
+  }
+}

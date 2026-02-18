@@ -47,30 +47,30 @@ const day = parts.find((p) => p.type === 'day')?.value || '';
 const month = parts.find((p) => p.type === 'month')?.value || '';
 ---
 
-<article class="w-full max-w-[388px] rounded-[12px] bg-white overflow-hidden shadow-md border border-border-light">
-  <div class="relative aspect-[4/5] max-h-[470px]">
+<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]">
+  <div class="relative aspect-[0.98] max-h-[386px]">
     <img src={image} alt={title} class="w-full h-full object-cover" loading="lazy" />
-    <div class="absolute bottom-4 left-4 bg-white rounded-lg p-2 text-center min-w-[54px] shadow-sm">
-      <span class="block text-[10px] uppercase text-text-secondary">{month}</span>
-      <span class="block text-[18px] font-heading text-text-primary">{day}</span>
+    <div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm">
+      <span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">{month}</span>
+      <span class="block text-[50px] leading-none font-heading text-[#111111]">{day}</span>
     </div>
   </div>
 
-  <div class="p-5">
-    <p class={`text-[11px] uppercase tracking-widest font-mono ${statusClass} typ-meta`} set:html={statusLabel}></p>
-    <h3 class="font-heading text-[22px] leading-[1.1] text-text-primary mt-2 typ-feature-title">{title}</h3>
+  <div class="p-6">
+    <p class={`text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta`} set:html={statusLabel}></p>
+    <h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">{title}</h3>
 
-    <div class="flex items-center gap-4 text-text-secondary text-[12px] mt-3">
-      <span class="flex items-center gap-1"><Icon name="users" size="sm" /> {maxParticipants} personnes maximum</span>
-      <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> {duration}</span>
+    <div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4">
+      <span class="flex items-center gap-2"><Icon name="users" size="sm" /> {maxParticipants} personnes maximum</span>
+      <span class="flex items-center gap-2"><Icon name="clock" size="sm" /> {duration}</span>
     </div>
 
-    <p class="text-[13px] text-text-secondary mt-4 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+    <p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
 
-    <div class="flex items-center justify-between mt-5">
+    <div class="flex items-center justify-between mt-8">
       <div>
-        <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
-        <div class="font-heading text-[26px] text-text-primary typ-price">{price}&euro;</div>
+        <span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span>
+        <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>
       </div>
       <Button href={isFull ? undefined : slug} variant={isFull ? 'disabled' : 'primary'} size="sm">
         {isFull ? 'Complet' : 'R&eacute;server'}

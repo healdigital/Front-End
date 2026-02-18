@@ -358,18 +358,17 @@ const suggestedRecipes = normalizedArticles.length > 10
 >
   <HeroCarousel cards={heroCards} />
 
-  <section class="relative py-16 md:py-24 bg-secondary-cream overflow-hidden">
+  <section class="relative bg-secondary-cream overflow-hidden">
     <div
-      class="absolute inset-0 pointer-events-none opacity-30"
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-30"
       aria-hidden="true"
-      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
     ></div>
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
-      <div class="flex flex-col lg:flex-row lg:items-start">
-        <div class="flex-1 min-w-0 lg:pr-7">
+    <div class="home-shell relative z-10">
+      <div class="home-two-column">
+        <div class="home-main-column">
           <!-- Recette du moment -->
           <div class="mb-12">
-            <div class="flex items-center gap-4 mb-8">
+            <div class="flex items-center gap-4 mb-8 mt-8">
               <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section">Recette du moment</h2>
               <div class="flex-1 h-px bg-border-primary"></div>
             </div>
@@ -458,15 +457,16 @@ const suggestedRecipes = normalizedArticles.length > 10
               </button>
             </div>
           </div>
-        </div>
-        <div class="lg:sticky lg:top-[112px] lg:self-start">
-          <RecipeSidebar />
-        </div>
-      </div>
 
-      <div class="lg:pr-[440px]">
-        <BioSection embedded />
-        <FeaturedMasterclass embedded />
+          <BioSection embedded />
+          <FeaturedMasterclass embedded />
+        </div>
+
+        <div class="home-sidebar-column">
+          <div class="home-sidebar-sticky">
+            <RecipeSidebar />
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -480,22 +480,22 @@ const suggestedRecipes = normalizedArticles.length > 10
       src="/images/vector-left.png"
       alt=""
       aria-hidden="true"
-      class="pointer-events-none absolute left-[-32px] top-[72px] w-[140px] opacity-35 hidden lg:block"
+      class="pointer-events-none absolute left-0 top-[34px] w-[120px] opacity-65 hidden lg:block"
     />
     <img
       src="/images/vector-grapes.png"
       alt=""
       aria-hidden="true"
-      class="pointer-events-none absolute left-[-44px] bottom-[280px] w-[180px] opacity-40 hidden lg:block"
+      class="pointer-events-none absolute left-0 bottom-[32px] w-[150px] opacity-60 hidden lg:block"
     />
     <img
       src="/images/vector-whisk-top.png"
       alt=""
       aria-hidden="true"
-      class="pointer-events-none absolute right-[-30px] top-[72px] w-[170px] opacity-40 hidden lg:block"
+      class="pointer-events-none absolute right-0 top-[360px] w-[120px] opacity-62 hidden lg:block"
     />
 
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
+    <div class="home-shell relative z-10">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-12">
         <div>
           <div class="flex items-center gap-6">
@@ -603,18 +603,19 @@ const suggestedRecipes = normalizedArticles.length > 10
 
   <section class="relative py-16 md:py-24 bg-secondary-cream overflow-hidden">
     <div
-      class="absolute inset-0 pointer-events-none opacity-28"
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"
-      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
     ></div>
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
-      <div class="flex flex-col lg:flex-row lg:items-start">
-        <div class="flex-1 min-w-0 lg:pr-7">
+    <div class="home-shell relative z-10">
+      <div class="home-two-column">
+        <div class="home-main-column">
           <BooksSection embedded />
           <SuggestedRecipes recipes={suggestedRecipes} embedded />
         </div>
-        <div class="lg:sticky lg:top-[112px] lg:self-start">
-          <RecipeSidebar variant="popular" />
+        <div class="home-sidebar-column">
+          <div class="home-sidebar-sticky">
+            <RecipeSidebar variant="popular" />
+          </div>
         </div>
       </div>
     </div>

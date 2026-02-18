@@ -39,7 +39,7 @@ const accountItems = [
 <header class="relative z-50" data-header>
   <!-- Promo bar -->
   <div class="bg-[#F8F8F8] h-[36px] lg:h-[40px] hidden lg:flex items-center justify-center relative" data-promo-bar>
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full flex items-center justify-center">
+    <div class="home-shell w-full flex items-center justify-center">
       <p class="font-mono text-[12px] lg:text-[13px] tracking-wide text-text-primary flex items-center gap-2">
         <span aria-hidden="true">&#10024;</span>
         Acc&eacute;dez en illimit&eacute; au meilleur pour seulement 9,99 &euro; / mois.
@@ -57,7 +57,7 @@ const accountItems = [
 
   <!-- Main header -->
   <div class="bg-[#1A2335]">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] h-[64px] lg:h-[72px] flex items-center gap-5">
+    <div class="home-shell h-[64px] lg:h-[72px] flex items-center gap-5">
       <!-- Mobile menu trigger -->
       <button
         class="lg:hidden text-white/80 hover:text-white transition-colors"
@@ -133,7 +133,7 @@ const accountItems = [
 
   <!-- Secondary navigation -->
   <div class="hidden lg:flex bg-secondary-cream/95 border-b border-[#D0D0C5]">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] w-full h-[70px] flex items-center">
+    <div class="home-shell w-full h-[70px] flex items-center">
       <nav class="flex items-center gap-8" aria-label="Navigation principale">
         {navItems.map((item) => (
           <a

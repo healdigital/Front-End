@@ -6,42 +6,45 @@ interface Props {
 const { embedded = false } = Astro.props as Props;
 ---
 
-<section class={`relative ${embedded ? 'py-12 md:py-16' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
+<section class={`relative ? '' : ' bg-secondary-cream overflow-hidden'}`}>
   {!embedded && (
     <div
-      class="absolute inset-0 pointer-events-none opacity-28"
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"
-      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
     ></div>
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
-    <div class="flex items-center gap-6 mb-12">
+    <div class="flex items-center gap-6 mb-12 mt-12">
       <h2 class="font-heading text-3xl lg:text-5xl text-[#171F2C] whitespace-nowrap typ-section">Mes livres de recettes</h2>
       <div class="flex-1 h-px bg-[#D7D1C2] hidden md:block"></div>
     </div>
 
-    <div class="flex flex-col lg:flex-row rounded-[10px] overflow-hidden border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_18px_48px_rgba(14,24,39,0.06)]">
-      <div class="w-full lg:w-[457px] h-[360px] lg:h-[652px] flex-shrink-0">
-        <img
-          src="/images/bernard-books.png"
-          alt="Bernard Laurance"
-          class="w-full h-full object-cover object-top"
-          loading="lazy"
-        />
-      </div>
+    <div class="books-section-card">
+      <div class="books-section-grid">
+        <div class="books-section-media">
+          <img
+            src="/images/bernard-books.png"
+            alt="Bernard Laurance"
+            class="books-section-media-image"
+            loading="lazy"
+          />
+        </div>
 
-      <div class="flex-1 bg-[#F7F5EF] p-7 md:p-10 lg:p-12 flex flex-col gap-6">
-        <p class="font-mono text-[12px] uppercase tracking-[0.24em] text-[#2B3342] typ-meta">L&apos;humain derri&egrave;re les recettes</p>
-        <h3 class="font-heading text-[52px] md:text-[66px] lg:text-[86px] leading-[0.95] text-[#161A22]">Mes livres pour approfondir</h3>
-        <p class="text-[15px] text-[#59606D] leading-[1.68] typ-body">
-          Bienvenue dans mon univers culinaire. Voyageur curieux, j&apos;ai ramen&eacute; de mes p&eacute;riples bien plus que des souvenirs : des saveurs oubli&eacute;es et des tours de main ancestraux. Aujourd&apos;hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
-        </p>
-        <a
-          href="/livres"
-          class="inline-flex items-center justify-center px-8 py-4 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90 w-full md:w-fit md:min-w-[338px] typ-button"
-        >
-          D&eacute;couvrir mes livres
-        </a>
+        <div class="books-section-content">
+          <div class="books-section-inner">
+            <p class="books-section-eyebrow">L&apos;humain derri&egrave;re les recettes</p>
+            <h3 class="books-section-title">Mes livres pour approfondir</h3>
+            <p class="books-section-description">
+              Bienvenue dans mon univers culinaire. Voyageur curieux, j&apos;ai ramen&eacute; de mes p&eacute;riples bien plus que des souvenirs : des saveurs oubli&eacute;es et des tours de main ancestraux. Aujourd&apos;hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
+            </p>
+            <a
+              href="/livres"
+              class="books-section-button"
+            >
+              D&eacute;couvrir mes livres
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>

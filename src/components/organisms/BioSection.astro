@@ -27,42 +27,44 @@ const features = [
 <section class={`relative ${embedded ? 'py-12 md:py-16' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
   {!embedded && (
     <div
-      class="absolute inset-0 pointer-events-none opacity-28"
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"
-      style="background-image: url('/images/noise.png'); background-size: 180px 180px;"
     ></div>
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
-    <div class="rounded-[10px] overflow-hidden border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_18px_48px_rgba(14,24,39,0.06)]">
-      <div class="flex flex-col lg:flex-row">
-        <div class="w-full lg:w-[52%] flex-shrink-0">
+    <div class="bio-section-card">
+      <div class="bio-section-grid">
+        <div class="bio-section-media">
           <img
             src="/images/bernard-chef-2010.png"
             alt="Bernard Laurance"
-            class="w-full h-[520px] md:h-[640px] lg:h-[922px] object-cover object-top"
+            class="bio-section-media-image"
             loading="lazy"
           />
         </div>
-        <div class="w-full lg:w-[48%] p-7 md:p-10 lg:p-12">
-          <p class="font-mono text-[12px] uppercase tracking-[0.24em] text-[#2B3342] typ-meta">L&apos;humain derri&egrave;re les recettes</p>
-          <h2 class="font-heading text-[52px] md:text-[66px] lg:text-[86px] leading-[0.95] text-[#161A22] mt-4">
-            Bernard, Chef cuisinier depuis 2010
-          </h2>
-          <p class="text-[15px] text-[#59606D] leading-[1.68] mt-5 typ-body">
-            Dans un monde satur&eacute; de contenu g&eacute;n&eacute;r&eacute; automatiquement, je m&apos;engage &agrave; vous offrir des recettes authentiques, test&eacute;es dans ma cuisine et celles de mes ateliers. Chaque technique, chaque astuce, chaque photo provient d&apos;une exp&eacute;rience r&eacute;elle.
-          </p>
-          <div class="mt-8 border-t border-[#D6D0C2] pt-8 space-y-6">
-            {features.map((feature) => (
-              <div class="flex gap-5">
-                <div class="w-[56px] h-[56px] flex items-center justify-center flex-shrink-0">
-                  <img src={feature.icon} alt="" aria-hidden="true" class="w-full h-full object-contain" />
+        <div class="bio-section-content">
+          <div class="bio-section-content-inner">
+            <div class="bio-section-intro">
+              <p class="bio-section-eyebrow">L&apos;humain derri&egrave;re les recettes</p>
+              <h2 class="bio-section-title">
+                Bernard, Chef cuisinier depuis 2010
+              </h2>
+              <p class="bio-section-description">
+                Dans un monde satur&eacute; de contenu g&eacute;n&eacute;r&eacute; automatiquement, je m&apos;engage &agrave; vous offrir des recettes authentiques, test&eacute;es dans ma cuisine et celles de mes ateliers. Chaque technique, chaque astuce, chaque photo provient d&apos;une exp&eacute;rience r&eacute;elle.
+              </p>
+            </div>
+
+            <div class="bio-section-features">
+              {features.map((feature) => (
+                <div class="bio-section-feature">
+                  <img src={feature.icon} alt="" aria-hidden="true" class="bio-section-feature-icon" />
+                  <div>
+                    <p class="bio-section-feature-title" set:html={feature.title}></p>
+                    <p class="bio-section-feature-description" set:html={feature.description}></p>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-[20px] leading-[1.2] font-body text-[#23313B] md:text-[22px]" set:html={feature.title}></p>
-                  <p class="text-[15px] text-[#6A717E] leading-[1.5] typ-body" set:html={feature.description}></p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
