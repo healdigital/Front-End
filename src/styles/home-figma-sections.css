@@ -296,7 +296,9 @@
     align-items: stretch;
     gap: 0;
   }
-
+  .home-shell-width{
+    padding-left: 45px;
+  }
   .home-main-column {
     padding-right: 36px;
   }
