@@ -426,7 +426,7 @@ export async function getArticleBySlugFromMongo(slug: string) {
     const article = await articlesCollection.findOne({
       $or: [
         { slug: { $in: variants } },             // plain string slug
-        { 'slug.current': { $in: variants } },   // Sanity-style { current: '...' }
+        { 'slug.current': { $in: variants } },   // nested slug object { current: '...' }
       ],
     });
 

@@ -34,7 +34,7 @@
 |----------|--------|--------|
 | **Framework** | Astro v5.16.11 (static site generator) | ✅ |
 | **Hosting (Production)** | Cloudflare Pages / Vercel Pro / Netlify Pro | ✅ |
-| **CMS** | Sanity CMS | ✅ |
+| **CMS** | Payload CMS + MongoDB | ✅ |
 | **Search** | Algolia | ✅ |
 | **Image CDN** | Responsive formats (Frankfurt region) | ✅ |
 | **Ads Platform** | Mediavine (Phase 5) | ✅ |
@@ -577,7 +577,7 @@ npm run build
 
 ## � AVAILABLE FIELDS FOR TRANSLATION
 
-### Article Fields (from Sanity)
+### Article Fields (from CMS)
 **Currently Being Fetched:**
 ```
 ✅ _id                  - Article unique identifier
@@ -595,7 +595,7 @@ npm run build
 ✅ postType             - Type of post (article, page, etc.)
 ```
 
-### Recipe Fields (from Sanity)
+### Recipe Fields (from CMS)
 **Currently Being Used:**
 ```
 ✅ _id                  - Recipe unique ID
