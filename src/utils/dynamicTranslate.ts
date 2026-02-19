@@ -11,6 +11,14 @@ let translationsData: TranslationsData = {};
 let currentLanguage: string = 'en';
 let sourceLanguage: string = 'en';
 let translationInProgress = false;
+let deeplUnavailable = false;
+let deeplUnavailableLogged = false;
+let appliedLanguage: string | null = null;
+let languageChangeQueue: Promise<void> = Promise.resolve();
+let languageSwitcherBound = false;
+let storageWatcherBound = false;
+
+const deepLDisabledSessionKey = 'translate-api-disabled-endpoint';
 
 const rawDeeplEndpoint =
   import.meta.env.PUBLIC_TRANSLATE_API_URL ||
@@ -32,6 +40,17 @@ const normalizeDeeplEndpoint = (endpoint: string): string => {
 };
 
 const deeplEndpoint = normalizeDeeplEndpoint(rawDeeplEndpoint);
+
+if (typeof window !== 'undefined' && deeplEndpoint) {
+  try {
+    const disabledEndpoint = sessionStorage.getItem(deepLDisabledSessionKey);
+    if (disabledEndpoint && disabledEndpoint === deeplEndpoint) {
+      deeplUnavailable = true;
+    }
+  } catch {
+    // Ignore sessionStorage read failures
+  }
+}
 
 const deeplLanguageMap: Record<string, string> = {
   en: 'EN',
@@ -67,6 +86,25 @@ const originalTextMap = new WeakMap<Node, string>();
 const originalAttributeMap = new WeakMap<Element, Map<string, string>>();
 const translatableAttributes = ['placeholder', 'title', 'aria-label', 'alt'];
 
+const markDeepLUnavailable = (reason: string, error?: unknown): void => {
+  deeplUnavailable = true;
+  if (typeof window !== 'undefined' && deeplEndpoint) {
+    try {
+      sessionStorage.setItem(deepLDisabledSessionKey, deeplEndpoint);
+    } catch {
+      // Ignore sessionStorage write failures
+    }
+  }
+  if (deeplUnavailableLogged) return;
+  deeplUnavailableLogged = true;
+
+  if (error) {
+    console.error(`[translate] DeepL disabled for this session: ${reason}`, error);
+  } else {
+    console.error(`[translate] DeepL disabled for this session: ${reason}`);
+  }
+};
+
 /**
  * Initialize translations - load all translation files
  */
@@ -87,6 +125,7 @@ export async function initializeTranslations(): Promise<void> {
 
     sourceLanguage = resolvePageLanguage();
     currentLanguage = sourceLanguage;
+    appliedLanguage = null;
 
     // Load saved language preference
     const savedLang = localStorage.getItem('preferred-language');
@@ -100,7 +139,7 @@ export async function initializeTranslations(): Promise<void> {
       currentLanguage = 'en';
     }
 
-    console.log('✓ Translations initialized for languages:', Object.keys(translationsData).join(', '));
+    console.log('Translations initialized for languages:', Object.keys(translationsData).join(', '));
   } catch (error) {
     console.error('Failed to initialize translations:', error);
   }
@@ -172,7 +211,7 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
 };
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
-  if (!deeplEndpoint) return texts;
+  if (!deeplEndpoint || deeplUnavailable) return texts;
   const requestUrl = deeplEndpoint.endsWith('/translate')
     ? deeplEndpoint
     : `${deeplEndpoint}/translate`;
@@ -193,12 +232,22 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
   try {
     response = await fetch(requestUrl, requestInit);
   } catch (error) {
-    console.warn('[translate] DeepL network error:', error);
+    const message = String((error as any)?.message || error || '');
+    if (message.includes('ERR_CERT_AUTHORITY_INVALID')) {
+      markDeepLUnavailable(
+        'TLS certificate is invalid on translate API endpoint. Use a valid HTTPS cert.',
+        error,
+      );
+    } else {
+      markDeepLUnavailable('Network error while calling translate API.', error);
+    }
     return texts;
   }
 
   if (!response.ok) {
-    console.warn('[translate] DeepL API error:', response.status, response.statusText);
+    markDeepLUnavailable(
+      `Translate API responded with ${response.status} ${response.statusText}.`,
+    );
     return texts;
   }
 
@@ -208,7 +257,7 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 };
 
 const translateTextNodes = async (targetLang: string): Promise<void> => {
-  if (!deeplEndpoint) return;
+  if (!deeplEndpoint || deeplUnavailable) return;
   if (translationInProgress) return;
   translationInProgress = true;
 
@@ -230,6 +279,7 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
       });
 
       const translations = await requestDeepLTranslation(texts, target);
+      if (deeplUnavailable) break;
       translations.forEach((translated, idx) => {
         if (typeof translated === 'string') {
           batch[idx].textContent = translated;
@@ -237,10 +287,13 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
       });
     }
 
+    if (deeplUnavailable) return;
+
     for (let i = 0; i < attributeTargets.length; i += batchSize) {
       const batch = attributeTargets.slice(i, i + batchSize);
       const texts = batch.map((item) => item.original);
       const translations = await requestDeepLTranslation(texts, target);
+      if (deeplUnavailable) break;
 
       translations.forEach((translated, idx) => {
         if (typeof translated === 'string') {
@@ -343,32 +396,45 @@ export function translatePageContent(): void {
  * Change language and update entire page
  */
 export async function changeLanguage(newLang: string): Promise<void> {
-  if (!Object.keys(translationsData).includes(newLang)) {
-    console.error(`Language ${newLang} not available`);
-    return;
-  }
+  languageChangeQueue = languageChangeQueue
+    .then(async () => {
+      if (!Object.keys(translationsData).includes(newLang)) {
+        console.error(`Language ${newLang} not available`);
+        return;
+      }
 
-  currentLanguage = newLang;
-  localStorage.setItem('preferred-language', newLang);
-  
-  // Update HTML lang attribute
-  document.documentElement.lang = newLang;
-  document.documentElement.setAttribute('data-lang', newLang);
-  document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-  
-  // Translate page content using DeepL when configured
-  if (deeplEndpoint) {
-    if (newLang === sourceLanguage) {
-      restoreOriginalText();
-    } else {
-      await translateTextNodes(newLang);
-    }
-  }
+      if (appliedLanguage === newLang) {
+        return;
+      }
 
-  // Update i18n labels/attributes
-  translatePageContent();
-  
-  console.log(`✓ Language changed to: ${newLang}`);
+      currentLanguage = newLang;
+      localStorage.setItem('preferred-language', newLang);
+
+      // Update HTML lang attribute
+      document.documentElement.lang = newLang;
+      document.documentElement.setAttribute('data-lang', newLang);
+      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+
+      // Translate page content using DeepL when configured
+      if (deeplEndpoint) {
+        if (newLang === sourceLanguage) {
+          restoreOriginalText();
+        } else {
+          await translateTextNodes(newLang);
+        }
+      }
+
+      // Update i18n labels/attributes
+      translatePageContent();
+      appliedLanguage = newLang;
+
+      console.log(`Language changed to: ${newLang}`);
+    })
+    .catch((error) => {
+      console.error('[translate] Failed to apply language change:', error);
+    });
+
+  await languageChangeQueue;
 }
 
 /**
@@ -382,6 +448,9 @@ export function getCurrentLanguage(): string {
  * Set up language switcher handlers
  */
 export function setupLanguageSwitcher(): void {
+  if (languageSwitcherBound) return;
+  languageSwitcherBound = true;
+
   // Listen for language button clicks
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
@@ -419,6 +488,9 @@ export function setupLanguageSwitcher(): void {
  * Watch for localStorage changes (from other tabs/windows)
  */
 export function watchLanguageChanges(): void {
+  if (storageWatcherBound) return;
+  storageWatcherBound = true;
+
   window.addEventListener('storage', (e) => {
     if (e.key === 'preferred-language' && e.newValue && e.newValue !== currentLanguage) {
       changeLanguage(e.newValue);

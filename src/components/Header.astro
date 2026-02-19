@@ -160,10 +160,54 @@ const accountItems = [
           <Icon name="shopping-bag" size="md" />
           <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
         </a>
-        <button class="text-white/80" aria-label="Rechercher" data-mobile-search>
+        <button
+          type="button"
+          class="text-white/80"
+          aria-label="Rechercher"
+          aria-expanded="false"
+          aria-controls="header-mobile-search"
+          data-mobile-search
+        >
           <Icon name="search" size="md" />
         </button>
       </div>
+    </div>
+  </div>
+
+  <div
+    id="header-mobile-search"
+    class="hidden lg:hidden bg-[#1A2335] border-t border-white/10"
+    data-mobile-search-panel
+  >
+    <div class="home-shell py-3">
+      <form class="flex items-center gap-2" data-mobile-search-form>
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/50">
+            <Icon name="search" size="sm" />
+          </div>
+          <input
+            type="search"
+            placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
+            class="w-full h-[42px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/50 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-body text-[14px]"
+            data-mobile-header-search
+          />
+        </div>
+        <button
+          type="submit"
+          class="h-[42px] px-4 rounded-full bg-white text-[#1A2335] text-[12px] font-semibold tracking-wide uppercase"
+          aria-label="Lancer la recherche"
+        >
+          Go
+        </button>
+        <button
+          type="button"
+          class="h-[42px] w-[42px] rounded-full border border-white/25 text-white/80 hover:text-white flex items-center justify-center"
+          aria-label="Fermer la recherche"
+          data-mobile-search-close
+        >
+          <Icon name="close" size="sm" />
+        </button>
+      </form>
     </div>
   </div>
 
@@ -277,6 +321,10 @@ const accountItems = [
   const menuDrawer = document.querySelector('[data-menu-drawer]');
   const headerSearchInputs = Array.from(document.querySelectorAll('[data-header-search]'));
   const mobileSearchButton = document.querySelector('[data-mobile-search]');
+  const mobileSearchPanel = document.querySelector('[data-mobile-search-panel]');
+  const mobileSearchForm = document.querySelector('[data-mobile-search-form]');
+  const mobileSearchInput = document.querySelector('[data-mobile-header-search]');
+  const mobileSearchClose = document.querySelector('[data-mobile-search-close]');
   const languageMenu = document.querySelector('[data-lang-menu]');
   const languageTrigger = languageMenu?.querySelector('[data-lang-trigger]');
   const languageDropdown = languageMenu?.querySelector('[data-lang-dropdown]');
@@ -300,6 +348,7 @@ const accountItems = [
     menuOverlay.setAttribute('aria-hidden', String(!show));
 
     if (show) {
+      toggleMobileSearch(false);
       menuDrawer.removeAttribute('inert');
       menuDrawer.classList.remove('-translate-x-full');
       menuOverlay.classList.remove('opacity-0', 'pointer-events-none');
@@ -309,6 +358,19 @@ const accountItems = [
       menuDrawer.classList.add('-translate-x-full');
       menuOverlay.classList.add('opacity-0', 'pointer-events-none');
       body.classList.remove('overflow-hidden');
+    }
+  }
+
+  function toggleMobileSearch(show) {
+    if (!mobileSearchPanel) return;
+    mobileSearchPanel.classList.toggle('hidden', !show);
+
+    if (mobileSearchButton) {
+      mobileSearchButton.setAttribute('aria-expanded', String(show));
+    }
+
+    if (show && mobileSearchInput instanceof HTMLInputElement) {
+      requestAnimationFrame(() => mobileSearchInput.focus());
     }
   }
 
@@ -363,10 +425,17 @@ const accountItems = [
       submitHeaderSearch(input.value);
     });
   });
-  mobileSearchButton?.addEventListener('click', () => {
-    const desktopSearch = headerSearchInputs[0];
-    submitHeaderSearch(desktopSearch && 'value' in desktopSearch ? desktopSearch.value : '');
+  mobileSearchButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    const isOpen = mobileSearchButton.getAttribute('aria-expanded') === 'true';
+    toggleMobileSearch(!isOpen);
   });
+  mobileSearchForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const query = mobileSearchInput instanceof HTMLInputElement ? mobileSearchInput.value : '';
+    submitHeaderSearch(query);
+  });
+  mobileSearchClose?.addEventListener('click', () => toggleMobileSearch(false));
 
   syncLanguageMenu(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr');
 
@@ -374,6 +443,7 @@ const accountItems = [
     if (event.key === 'Escape') {
       toggleMenu(false);
       toggleLanguageMenu(false);
+      toggleMobileSearch(false);
     }
   });
 </script>
