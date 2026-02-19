@@ -9,6 +9,7 @@ export interface TranslationsData {
 
 let translationsData: TranslationsData = {};
 let currentLanguage: string = 'en';
+let sourceLanguage: string = 'en';
 let translationInProgress = false;
 
 const deeplEndpoint =
@@ -22,6 +23,19 @@ const deeplLanguageMap: Record<string, string> = {
   es: 'ES',
   'pt-br': 'PT-BR',
   ar: 'AR',
+};
+
+const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
+
+const resolvePageLanguage = (): string => {
+  const raw = (
+    document.documentElement.getAttribute('data-lang') ||
+    document.documentElement.lang ||
+    'en'
+  ).toLowerCase();
+
+  if (supportedLanguages.includes(raw)) return raw;
+  return 'en';
 };
 
 const ignoreTags = new Set([
@@ -41,7 +55,7 @@ const originalTextMap = new WeakMap<Node, string>();
 export async function initializeTranslations(): Promise<void> {
   try {
     // Import all translation files
-    const languages = ['en', 'fr', 'es', 'pt-br', 'ar'];
+    const languages = supportedLanguages;
     
     for (const lang of languages) {
       try {
@@ -52,6 +66,9 @@ export async function initializeTranslations(): Promise<void> {
         console.warn(`Failed to load ${lang} translations:`, error);
       }
     }
+
+    sourceLanguage = resolvePageLanguage();
+    currentLanguage = sourceLanguage;
 
     // Load saved language preference
     const savedLang = localStorage.getItem('preferred-language');
@@ -256,7 +273,7 @@ export async function changeLanguage(newLang: string): Promise<void> {
   
   // Translate page content using DeepL when configured
   if (deeplEndpoint) {
-    if (newLang === 'en') {
+    if (newLang === sourceLanguage) {
       restoreOriginalText();
     } else {
       await translateTextNodes(newLang);
