@@ -1,4 +1,6 @@
 import * as algoliasearchModule from 'algoliasearch';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Handle different Algolia package export shapes
 let algoliasearch;
@@ -23,6 +25,27 @@ if (!appId || !adminKey) {
 
 const indexPrefix = process.env.ALGOLIA_INDEX_PREFIX || 'lcdb_recipes';
 const batchSize = Number(process.env.ALGOLIA_BATCH_SIZE || 500);
+const preparedJsonPath = path.join(process.cwd(), 'prepared-articles.json');
+
+const getAlgoliaSource = () => String(process.env.ALGOLIA_SOURCE || '').trim().toLowerCase();
+
+const shouldUsePreparedFirst = () => {
+  const source = getAlgoliaSource();
+  return source !== 'mongo' && source !== 'api';
+};
+
+const readPreparedArticles = () => {
+  if (!fs.existsSync(preparedJsonPath)) return null;
+
+  try {
+    const raw = fs.readFileSync(preparedJsonPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (error) {
+    console.warn('[ALGOLIA] Failed to parse prepared-articles.json:', error?.message || error);
+    return null;
+  }
+};
 
 const normalizeLang = (value) =>
   String(value || 'en')
@@ -114,6 +137,15 @@ const processArticleImageUrl = (article) => {
 };
 
 async function fetchArticles() {
+  if (shouldUsePreparedFirst()) {
+    const prepared = readPreparedArticles();
+    if (Array.isArray(prepared) && prepared.length > 0) {
+      console.log(`[ALGOLIA] Using prepared-articles.json (${prepared.length} articles).`);
+      return prepared;
+    }
+    console.warn('[ALGOLIA] prepared-articles.json not found/empty. Falling back to Mongo/API.');
+  }
+
   // Try to load Mongo helper; gracefully fallback to Payload API if TS import fails.
   let articles = [];
   try {
