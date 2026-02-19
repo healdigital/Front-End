@@ -1272,3 +1272,47 @@ p.bio-section-description {
     font-family: var(--font-maison);
 }
  
+p {
+    font-family: var(--font-maison);
+    font-weight: 400 !important;
+}
+ 
+span.text-\[13px\].uppercase.tracking-\[0\.14em\].text-\[\#5F6671\] {
+    font-family: 'Roboto Mono' !important;
+}
+ 
+h3.font-body.text-\[28px\].leading-\[1\.05\].text-\[\#1A2335\].mt-6 {
+    font-family: 'Maison Neue';
+    font-weight: 400 !important;
+    color: #111111 !important;
+}
+ 
+p.text-\[15px\].text-text-secondary.leading-relaxed.mt-4.typ-body {
+    font-family: 'Maison Neue';
+}
+ 
+.home-sidebar-sticky .mt-3.flex.items-center.justify-center.gap-7.text-\[\#1A2335\].text-\[13px\] span {
+    font-family: 'Roboto Mono' !important;
+}
+ 
+ul.mt-4.space-y-4.text-\[16px\].text-\[\#2A3543\] li {
+    font-family: 'Maison Neue';
+    text-transform: uppercase;
+}
+ 
+.article-title {
+    font-weight: 400 !important;
+}
+ 
+.typ-body {
+    font-family: 'Maison Neue';
+}
+
+a.hover\:text-primary-turquoise.transition-colors {
+    font-family: 'Maison Neue';
+    font-weight: 300 !important;
+}
+ 
+section.relative.bg-secondary-cream.overflow-hidden.p-4 {
+    padding-bottom: 0;
+}
