@@ -472,7 +472,6 @@ span.text-\[13px\].uppercase.tracking-\[0\.14em\].text-\[\#5F6671\] {
 
 .text-left span {color: #000000 !important;font-size: 16px !important;}
 
-a.hover\:text-primary-turquoise.transition-colors {color: #111111 !important;}
 
 ul.mt-4.space-y-4.text-\[16px\].text-\[\#2A3543\] li {
     color: #111111;
@@ -603,12 +602,6 @@ button.transition-colors.text-text-primary {
 
 button.hover\:text-text-primary.transition-colors.disabled\:opacity-40 {
     color: #111111;
-}
-
-footer.bg-\[\#071C36\].text-white.border-t.border-white\/10 {}
-
-footer a.hover\:text-primary-turquoise.transition-colors {
-    color: #BCBCBC !important;
 }
 
 footer h4 {
@@ -1308,10 +1301,6 @@ ul.mt-4.space-y-4.text-\[16px\].text-\[\#2A3543\] li {
     font-family: 'Maison Neue';
 }
 
-a.hover\:text-primary-turquoise.transition-colors {
-    font-family: 'Maison Neue';
-    font-weight: 300 !important;
-}
  
 section.relative.bg-secondary-cream.overflow-hidden.p-4 {
 

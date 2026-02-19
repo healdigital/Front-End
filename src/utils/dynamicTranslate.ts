@@ -48,6 +48,8 @@ const ignoreTags = new Set([
 ]);
 
 const originalTextMap = new WeakMap<Node, string>();
+const originalAttributeMap = new WeakMap<Element, Map<string, string>>();
+const translatableAttributes = ['placeholder', 'title', 'aria-label', 'alt'];
 
 /**
  * Initialize translations - load all translation files
@@ -72,8 +74,14 @@ export async function initializeTranslations(): Promise<void> {
 
     // Load saved language preference
     const savedLang = localStorage.getItem('preferred-language');
-    if (savedLang && Object.keys(translationsData).includes(savedLang)) {
+    if (
+      savedLang &&
+      Object.keys(translationsData).includes(savedLang) &&
+      savedLang !== sourceLanguage
+    ) {
       currentLanguage = savedLang;
+    } else {
+      currentLanguage = 'en';
     }
 
     console.log('✓ Translations initialized for languages:', Object.keys(translationsData).join(', '));
@@ -88,10 +96,8 @@ const getDeepLTargetLang = (lang: string): string => {
 
 const shouldIgnoreElement = (element: Element | null): boolean => {
   if (!element) return true;
-  if (element.closest('[data-no-translate="true"]')) return true;
   const tag = element.tagName;
   if (ignoreTags.has(tag)) return true;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'OPTION') return true;
   if ((element as HTMLElement).isContentEditable) return true;
   return false;
 };
@@ -117,6 +123,36 @@ const collectTextNodes = (root: HTMLElement): Text[] => {
     current = walker.nextNode();
   }
   return nodes;
+};
+
+const getOriginalAttributeValue = (element: Element, attr: string, currentValue: string): string => {
+  let attrs = originalAttributeMap.get(element);
+  if (!attrs) {
+    attrs = new Map<string, string>();
+    originalAttributeMap.set(element, attrs);
+  }
+  if (!attrs.has(attr)) {
+    attrs.set(attr, currentValue);
+  }
+  return attrs.get(attr) || currentValue;
+};
+
+const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; attr: string; original: string }> => {
+  const targets: Array<{ element: Element; attr: string; original: string }> = [];
+  const elements = root.querySelectorAll('*');
+
+  elements.forEach((element) => {
+    if (shouldIgnoreElement(element)) return;
+
+    translatableAttributes.forEach((attr) => {
+      const value = element.getAttribute(attr);
+      if (!value || !value.trim()) return;
+      const original = getOriginalAttributeValue(element, attr, value);
+      targets.push({ element, attr, original });
+    });
+  });
+
+  return targets;
 };
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
@@ -152,6 +188,7 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
   try {
     const root = document.body;
     const nodes = collectTextNodes(root);
+    const attributeTargets = collectAttributeTargets(root);
     const batchSize = 40;
     const target = getDeepLTargetLang(targetLang);
 
@@ -172,6 +209,18 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
         }
       });
     }
+
+    for (let i = 0; i < attributeTargets.length; i += batchSize) {
+      const batch = attributeTargets.slice(i, i + batchSize);
+      const texts = batch.map((item) => item.original);
+      const translations = await requestDeepLTranslation(texts, target);
+
+      translations.forEach((translated, idx) => {
+        if (typeof translated === 'string') {
+          batch[idx].element.setAttribute(batch[idx].attr, translated);
+        }
+      });
+    }
   } catch (error) {
     console.error('[translate] Failed to translate page:', error);
   } finally {
@@ -187,6 +236,15 @@ const restoreOriginalText = (): void => {
     if (original !== undefined) {
       node.textContent = original;
     }
+  });
+
+  const elements = root.querySelectorAll('*');
+  elements.forEach((element) => {
+    const attrs = originalAttributeMap.get(element);
+    if (!attrs) return;
+    attrs.forEach((value, attr) => {
+      element.setAttribute(attr, value);
+    });
   });
 };
 
