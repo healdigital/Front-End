@@ -692,6 +692,8 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   letter-spacing: 15%;
   text-align: center;
   text-transform: uppercase;
+  background-color: #54B6B1;
+  color: #FFFFFF;
 
 }
 .footer-btn{
