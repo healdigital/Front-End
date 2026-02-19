@@ -70,6 +70,8 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return `${algoliaIndexPrefix}_${preferred}`;
   };
 
+  const resolveHitLanguage = (hit) => normalizeLang(hit?.language || hit?.lang || '');
+
   const stripMarkup = (value) => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
   const toText = (value) => {
@@ -301,7 +303,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       const indexName = getCurrentIndexName();
       const currentLangKey = normalizeLang(getCurrentLanguage());
       const hits = (await searchInIndex(indexName)).filter(
-        (hit) => normalizeLang(hit?.language || currentLangKey) === currentLangKey,
+        (hit) => resolveHitLanguage(hit) === currentLangKey,
       );
       updateUI(query, hits);
     } catch (error) {
