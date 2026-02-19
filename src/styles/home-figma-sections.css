@@ -1314,5 +1314,16 @@ a.hover\:text-primary-turquoise.transition-colors {
 }
  
 section.relative.bg-secondary-cream.overflow-hidden.p-4 {
+
     padding-bottom: 0;
+
 }
+ 
+footer a.hover\:text-primary-turquoise.transition-colors {
+
+    color: #bcbcbc!important;
+
+    font-family: 'Maison Neue';
+
+}
+ 
