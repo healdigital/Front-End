@@ -24,15 +24,8 @@ const normalizeDeeplEndpoint = (endpoint: string): string => {
 
   // Prevent mixed-content requests from https pages to http API endpoints.
   if (window.location.protocol === 'https:' && trimmed.startsWith('http://')) {
-    try {
-      const parsed = new URL(trimmed);
-      if (parsed.hostname === window.location.hostname) {
-        return parsed.pathname || '/api';
-      }
-      return `https://${trimmed.slice('http://'.length)}`;
-    } catch {
-      return `https://${trimmed.slice('http://'.length)}`;
-    }
+    console.warn('[translate] PUBLIC_TRANSLATE_API_URL is http on an https page. Trying https upgrade.');
+    return `https://${trimmed.slice('http://'.length)}`;
   }
 
   return trimmed;
@@ -188,13 +181,21 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
   params.append('targetLang', targetLang);
   texts.forEach((text) => params.append('text', text));
 
-  const response = await fetch(requestUrl, {
+  const requestInit = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
     },
     body: params.toString(),
-  });
+  };
+
+  let response: Response;
+  try {
+    response = await fetch(requestUrl, requestInit);
+  } catch (error) {
+    console.warn('[translate] DeepL network error:', error);
+    return texts;
+  }
 
   if (!response.ok) {
     console.warn('[translate] DeepL API error:', response.status, response.statusText);
