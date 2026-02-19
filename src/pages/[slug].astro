@@ -244,7 +244,8 @@ const articleJsonLd = buildArticleJsonLd(
   "https://lacuisinedebernard.com",
 );
 const breadcrumbJsonLd = buildBreadcrumbJsonLd(
-  article.title,
+  title,
+  slug,
   "https://lacuisinedebernard.com",
 );
 const recipeJsonLd = buildRecipeJsonLd(article);
@@ -287,12 +288,6 @@ const articleUrl = `https://lacuisinedebernard.com/${slug}`;
               href="/"
               class="hover:text-orange-600 transition-colors"
               >Home</a
-            >
-            <span>/</span>
-            <a
-              href="/articles"
-              class="hover:text-orange-600 transition-colors"
-              >Articles</a
             >
             <span>/</span>
             <span class="text-gray-900 font-semibold truncate"

@@ -66,7 +66,14 @@ export function buildArticleJsonLd(article: any, domain: string = 'https://lacui
   };
 }
 
-export function buildBreadcrumbJsonLd(title: string, domain: string = 'https://lacuisinedebernard.com') {
+export function buildBreadcrumbJsonLd(
+  title: string,
+  slug: string,
+  domain: string = 'https://lacuisinedebernard.com',
+) {
+  const normalizedSlug = String(slug || '').replace(/^\/+|\/+$/g, '');
+  const articleUrl = normalizedSlug ? `${domain}/${normalizedSlug}` : domain;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -80,14 +87,8 @@ export function buildBreadcrumbJsonLd(title: string, domain: string = 'https://l
       {
         '@type': 'ListItem',
         'position': 2,
-        'name': 'Articles',
-        'item': `${domain}/articles`
-      },
-      {
-        '@type': 'ListItem',
-        'position': 3,
         'name': title,
-        'item': `${domain}/${title.toLowerCase().replace(/\s+/g, '-')}`
+        'item': articleUrl
       }
     ]
   };

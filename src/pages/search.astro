@@ -189,14 +189,22 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return options.find((value) => value.length > 0) || '';
   };
 
+  const normalizeArticlePath = (path) => {
+    if (!path) return '';
+    const clean = String(path).trim();
+    if (!clean.startsWith('/')) return clean;
+    return clean.replace(/^\/articles\/+/i, '/');
+  };
+
   const resolveHref = (hit) => {
     const directUrl = typeof hit?.url === 'string' ? hit.url.trim() : '';
     if (directUrl) {
-      if (directUrl.startsWith('/')) return directUrl;
+      if (directUrl.startsWith('/')) return normalizeArticlePath(directUrl);
       if (directUrl.startsWith('http://') || directUrl.startsWith('https://')) {
         try {
           const parsed = new URL(directUrl);
-          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+          const normalizedPath = normalizeArticlePath(parsed.pathname);
+          return `${normalizedPath}${parsed.search}${parsed.hash}`;
         } catch {
           return directUrl;
         }
@@ -204,7 +212,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     }
 
     const slugRaw = typeof hit?.slug === 'string' ? hit.slug : '';
-    const slug = slugRaw.trim().replace(/^\/+|\/+$/g, '');
+    const slug = slugRaw.trim().replace(/^\/+|\/+$/g, '').replace(/^articles\/+/i, '');
     return slug ? `/${slug}` : '#';
   };
 
