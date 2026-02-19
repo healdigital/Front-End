@@ -65,18 +65,9 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return stored || htmlLang || 'en';
   };
 
-  const getIndexCandidates = () => {
+  const getCurrentIndexName = () => {
     const preferred = normalizeLang(getCurrentLanguage());
-    const candidates = [`${algoliaIndexPrefix}_${preferred}`];
-
-    ['fr', 'en'].forEach((lang) => {
-      const indexName = `${algoliaIndexPrefix}_${lang}`;
-      if (!candidates.includes(indexName)) {
-        candidates.push(indexName);
-      }
-    });
-
-    return candidates;
+    return `${algoliaIndexPrefix}_${preferred}`;
   };
 
   const stripMarkup = (value) => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -307,22 +298,12 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
         return [];
       };
 
-      const indexCandidates = getIndexCandidates();
-      let bestHits = [];
-
-      for (const indexName of indexCandidates) {
-        const hits = await searchInIndex(indexName);
-        if (hits.length > 0) {
-          bestHits = hits;
-          break;
-        }
-
-        if (bestHits.length === 0) {
-          bestHits = hits;
-        }
-      }
-
-      updateUI(query, bestHits);
+      const indexName = getCurrentIndexName();
+      const currentLangKey = normalizeLang(getCurrentLanguage());
+      const hits = (await searchInIndex(indexName)).filter(
+        (hit) => normalizeLang(hit?.language || currentLangKey) === currentLangKey,
+      );
+      updateUI(query, hits);
     } catch (error) {
       console.error('Algolia search failed:', error);
       if (subtitleEl) {
