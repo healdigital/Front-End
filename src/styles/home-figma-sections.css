@@ -1251,3 +1251,24 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   border-radius: 10px;
   border-width: 1px;
 }
+
+.featured-masterclass-features span {
+    font-family: var(--font-maison);
+}
+ 
+p.featured-masterclass-description {
+    font-family: var(--font-maison);
+}
+ 
+p.bio-section-feature-description {
+    font-family: var(--font-maison);
+}
+ 
+p.bio-section-feature-title {
+    font-family: var(--font-maison);
+}
+ 
+p.bio-section-description {
+    font-family: var(--font-maison);
+}
+ 
