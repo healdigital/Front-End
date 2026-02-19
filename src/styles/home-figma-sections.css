@@ -675,6 +675,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
     line-height: 22px;
     letter-spacing: 0%;
 }
+
 .button-data-full{
   width: 337px;
   height: 55px;
@@ -696,6 +697,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   color: #FFFFFF;
 
 }
+
 .footer-btn{
   width: 227;
   height: 55;
@@ -707,6 +709,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   background-color: #54B6B1;
   
 }
+
 .footer-btn span {
   font-family: Jost;
   font-weight: 400;
@@ -719,6 +722,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   text-transform: uppercase;
   color: #FFFFFF  ;
 } 
+
 .acces-data {
   width: 160px;
   height: 44px;
@@ -740,7 +744,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
 
 }
 .reserve-data {
-  width: 169px;
+  /* width: 169px; */
   height: 44px;
   angle: 0 deg;
   opacity: 1;
@@ -769,5 +773,14 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   height: 20px;
   angle: 0 deg;
   opacity: 1;
-
+}
+.pannel-data {
+  width: 389px;
+  height: 648px;
+  angle: 0 deg;
+  opacity: 1;
+  top: 2299px;
+  left: 1030px;
+  border-radius: 10px;
+  border-width: 1px;
 }
