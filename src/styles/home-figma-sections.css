@@ -778,8 +778,8 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
 @media (min-width: 1024px) {
   .home-shell {
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .home-two-column {
@@ -890,7 +890,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 @media (min-width: 1360px) {
   .home-shell {
     padding-left: 88px;
-    padding-right: 0;
+    /* padding-right: 0; */
   }
 
   .home-two-column {
