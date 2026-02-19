@@ -9,7 +9,91 @@ body {
   font-family: "Roboto Mono", monospace;
 }
  
+ .overflow-hidden {
+    overflow: hidden;
+    aspect-ratio: unset;
+}
+.header-main img.h-8.lg\:h-9.w-auto {
+    width: 93px;
+    height: 67px;
+}
  
+.header-bottom span {
+    color: #091D23;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: var(--font-maison);
+}
+ 
+.header-bottom svg {
+    color: #54B6B1;
+}
+ 
+.header-bottom {
+    background: #fff;
+}
+ 
+.header-main input {
+    color: #FFFFFFAB;
+    font-weight: 300;
+    font-size: 16px;
+    font-family: var(--font-maison);
+}
+ 
+.header-main span {
+    font-size: 14px;
+    font-family: var(--font-maison);
+}
+ 
+.data-promo-bar p {
+    font-family: var(--font-maison) !important;
+}
+ 
+footer h3.text-primary-turquoise.text-\[40px\].leading-\[1\.02\].font-body {
+    font-size: 18px;
+    color: #54B6B1;
+    font-family: var(--font-maison);
+}
+ 
+footer h4 {
+    font-family: var(--font-maison);
+}
+ 
+footer .home-shell.py-6.text-center.text-white\/65.text-\[14px\] {
+    font-family: var(--font-maison);
+}
+ 
+.typ-body {
+    font-family: var(--font-maison);
+}
+ 
+p.text-\[20px\].leading-\[1\.1\].text-\[\#111111\].mt-2.font-heading.article-title {
+    font-family: var(--font-maison);
+}
+ 
+h4.sidebar-title {
+    font-family: var(--font-maison);
+}
+ 
+.home-shell p.text-\[15px\].text-\[\#D6DEEC\].mt-3.typ-body {
+    font-family: var(--font-maison);
+}
+ 
+.home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button {
+    font-family: var(--font-maison);
+}
+ 
+.btn-hover-transition[data-astro-cid-3pspvxuc] {
+    font-family: var(--font-maison);
+}
+ 
+.home-shell p.text-\[15px\].text-\[\#D6DEEC\].mt-3.max-w-2xl.typ-body {
+    font-family: var(--font-maison);
+}
+ 
+.typ-button {
+    font-family: var(--font-maison);
+}
 .section-noise-overlay {
   /* background-image: url('/images/noise.png'); */
   background-size: 180px 180px;
@@ -1166,90 +1250,4 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   left: 1030px;
   border-radius: 10px;
   border-width: 1px;
-}
-.overflow-hidden {
-    overflow: hidden;
-    aspect-ratio: unset;
-}
-
-.header-main img.h-8.lg\:h-9.w-auto {
-    width: 93px;
-    height: 67px;
-}
- 
-.header-bottom span {
-    color: #091D23;
-    font-size: 15px;
-    font-weight: 500;
-    font-family: var(--font-maison);
-}
- 
-.header-bottom svg {
-    color: #54B6B1;
-}
- 
-.header-bottom {
-    background: #fff;
-}
- 
-.header-main input {
-    color: #FFFFFFAB;
-    font-weight: 300;
-    font-size: 16px;
-    font-family: var(--font-maison);
-}
- 
-.header-main span {
-    font-size: 14px;
-    font-family: var(--font-maison);
-}
- 
-.data-promo-bar p {
-    font-family: var(--font-maison) !important;
-}
- 
-footer h3.text-primary-turquoise.text-\[40px\].leading-\[1\.02\].font-body {
-    font-size: 18px;
-    color: #54B6B1;
-    font-family: var(--font-maison);
-}
- 
-footer h4 {
-    font-family: var(--font-maison);
-}
- 
-footer .home-shell.py-6.text-center.text-white\/65.text-\[14px\] {
-    font-family: var(--font-maison);
-}
- 
-.typ-body {
-    font-family: var(--font-maison);
-}
- 
-p.text-\[20px\].leading-\[1\.1\].text-\[\#111111\].mt-2.font-heading.article-title {
-    font-family: var(--font-maison);
-}
- 
-h4.sidebar-title {
-    font-family: var(--font-maison);
-}
- 
-.home-shell p.text-\[15px\].text-\[\#D6DEEC\].mt-3.typ-body {
-    font-family: var(--font-maison);
-}
- 
-.home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button {
-    font-family: var(--font-maison);
-}
- 
-.btn-hover-transition[data-astro-cid-3pspvxuc] {
-    font-family: var(--font-maison);
-}
- 
-.home-shell p.text-\[15px\].text-\[\#D6DEEC\].mt-3.max-w-2xl.typ-body {
-    font-family: var(--font-maison);
-}
- 
-.typ-button {
-    font-family: var(--font-maison);
 }
