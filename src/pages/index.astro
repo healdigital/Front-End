@@ -358,7 +358,7 @@ const suggestedRecipes = normalizedArticles.length > 10
 >
   <HeroCarousel cards={heroCards} />
 
-  <section class="relative bg-secondary-cream overflow-hidden">
+  <section class="relative bg-secondary-cream overflow-hidden p-4">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-30"
       aria-hidden="true"
@@ -375,7 +375,7 @@ const suggestedRecipes = normalizedArticles.length > 10
 
             <article class="bg-white rounded-lg border border-border-light overflow-hidden flex flex-col md:flex-row">
               <div class="relative md:w-[55%]">
-                <img src={featuredRecipe.image} alt={featuredRecipe.title} class="w-full h-[300px] md:h-full object-cover" />
+                <img src={featuredRecipe.image} alt={featuredRecipe.title} class="w-full md:h-full object-cover" />
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
@@ -445,7 +445,7 @@ const suggestedRecipes = normalizedArticles.length > 10
               ))}
             </div>
 
-            <div class="flex items-center justify-center gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
+            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
               <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-prev>
                 Pr&eacute;c&eacute;dent
               </button>
@@ -561,7 +561,7 @@ const suggestedRecipes = normalizedArticles.length > 10
                 <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
               </div>
-              <Button href="/masterclass" class="bg-[#BBA86B] hover:bg-[#A89558] !text-black border-none" size="sm">
+              <Button href="/masterclass" class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none" size="sm">
                 Devenir Premium
               </Button>
             </div>
@@ -601,7 +601,7 @@ const suggestedRecipes = normalizedArticles.length > 10
     </div>
   </section>
 
-  <section class="relative bg-secondary-cream overflow-hidden">
+  <section class="relative bg-secondary-cream overflow-hidden p-4">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"

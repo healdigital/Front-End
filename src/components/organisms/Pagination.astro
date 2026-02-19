@@ -59,14 +59,14 @@ const nextUrl = currentPage < totalPages ? `${baseUrl}/${currentPage + 1}` : nul
 const pages = getPageNumbers(currentPage, totalPages);
 ---
 
-<nav aria-label="Pagination" class="flex justify-center items-center gap-2" id="pagination-nav">
+<nav aria-label="Pagination" class="flex justify-between items-center gap-2" id="pagination-nav">
   <!-- Previous Button -->
   {prevUrl ? (
     <a
       href={prevUrl}
       aria-label="Page précédente"
       class="
-        inline-flex items-center justify-center w-10 h-10 rounded-full border border-transparent
+        inline-flex items-center justify-between w-10 h-10 rounded-full border border-transparent
         transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise
         text-primary-black hover:bg-gray-100 active:bg-gray-200
       "
