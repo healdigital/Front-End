@@ -15,7 +15,13 @@ const languageLabels: Record<string, string> = {
   ar: '&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;',
 };
 
-const languageLabel = languageLabels[lang] || languageLabels.fr;
+const supportedLanguages = ['fr', 'en', 'es', 'pt-br', 'ar'];
+const currentLang = supportedLanguages.includes(lang) ? lang : 'fr';
+const languageLabel = languageLabels[currentLang];
+const languageOptions = supportedLanguages.map((code) => ({
+  code,
+  label: languageLabels[code],
+}));
 
 const navItems = [
   { label: 'MES LIVRES', href: '/books', icon: 'book' },
@@ -101,10 +107,40 @@ const accountItems = [
           <Icon name="mail" size="sm" />
           <span>Contact</span>
         </a>
-        <button class="lang-btn flex items-center gap-2 text-white/85 hover:text-white text-[14px] typ-nav" data-lang={lang}>
-          <Icon name="globe" size="sm" />
-          <span set:html={languageLabel} />
-        </button>
+        <div class="relative" data-lang-menu data-no-translate="true">
+          <button
+            type="button"
+            class="flex items-center gap-2 text-white/85 hover:text-white text-[14px] typ-nav"
+            data-lang-trigger
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="header-language-dropdown"
+          >
+            <Icon name="globe" size="sm" />
+            <span data-lang-current-label set:html={languageLabel} />
+            <Icon name="chevron-down" size="sm" class="w-4 h-4" />
+          </button>
+          <div
+            id="header-language-dropdown"
+            class="absolute right-0 top-full mt-3 w-[172px] rounded-2xl border border-white/15 bg-[#111927] p-2 shadow-2xl hidden"
+            data-lang-dropdown
+            role="menu"
+            aria-label="Language selection"
+          >
+            {languageOptions.map((option) => (
+              <button
+                type="button"
+                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] typ-nav text-white/85 transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
+                data-lang={option.code}
+                data-lang-option
+                role="menuitemradio"
+                aria-checked={option.code === currentLang}
+              >
+                <span set:html={option.label} />
+              </button>
+            ))}
+          </div>
+        </div>
         <a href="/compte" class="w-9 h-9 rounded-full overflow-hidden border border-white/20" aria-label="Mon compte">
           <img src="/images/bernard-blog.png" alt="" class="w-full h-full object-cover" />
         </a>
@@ -132,7 +168,7 @@ const accountItems = [
   </div>
 
   <!-- Secondary navigation -->
-  <div class="hidden lg:flex bg-secondary-cream/95 border-b border-[#D0D0C5]">
+  <div class="hidden lg:flex bg-secondary-cream/95 border-b border-[#D0D0C5] header-bottom">
     <div class="home-shell w-full h-[70px] flex items-center">
       <nav class="flex items-center gap-8" aria-label="Navigation principale">
         {navItems.map((item) => (
@@ -241,6 +277,11 @@ const accountItems = [
   const menuDrawer = document.querySelector('[data-menu-drawer]');
   const headerSearchInputs = Array.from(document.querySelectorAll('[data-header-search]'));
   const mobileSearchButton = document.querySelector('[data-mobile-search]');
+  const languageMenu = document.querySelector('[data-lang-menu]');
+  const languageTrigger = languageMenu?.querySelector('[data-lang-trigger]');
+  const languageDropdown = languageMenu?.querySelector('[data-lang-dropdown]');
+  const currentLangLabel = languageMenu?.querySelector('[data-lang-current-label]');
+  const languageOptions = Array.from(languageMenu?.querySelectorAll('[data-lang-option]') || []);
   const body = document.body;
 
   function submitHeaderSearch(rawValue) {
@@ -271,9 +312,50 @@ const accountItems = [
     }
   }
 
+  function toggleLanguageMenu(show) {
+    if (!languageDropdown || !languageTrigger) return;
+    languageDropdown.classList.toggle('hidden', !show);
+    languageTrigger.setAttribute('aria-expanded', String(show));
+  }
+
+  function syncLanguageMenu(selectedLang) {
+    if (!languageOptions.length) return;
+
+    languageOptions.forEach((button) => {
+      const buttonLang = button.getAttribute('data-lang');
+      const isSelected = buttonLang === selectedLang;
+      button.classList.toggle('hidden', isSelected);
+      button.setAttribute('aria-checked', String(isSelected));
+
+      if (isSelected && currentLangLabel) {
+        currentLangLabel.innerHTML = button.innerHTML;
+      }
+    });
+  }
+
   menuTrigger?.addEventListener('click', () => toggleMenu(true));
   menuClose?.addEventListener('click', () => toggleMenu(false));
   menuOverlay?.addEventListener('click', () => toggleMenu(false));
+  languageTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const isOpen = languageTrigger.getAttribute('aria-expanded') === 'true';
+    toggleLanguageMenu(!isOpen);
+  });
+  languageOptions.forEach((button) => {
+    button.addEventListener('click', () => {
+      toggleLanguageMenu(false);
+    });
+  });
+  window.addEventListener('page-translated', (event) => {
+    const selectedLang = event?.detail?.lang;
+    if (!selectedLang) return;
+    syncLanguageMenu(selectedLang);
+  });
+  document.addEventListener('click', (event) => {
+    if (!languageMenu || !event.target || languageMenu.contains(event.target)) return;
+    toggleLanguageMenu(false);
+  });
   headerSearchInputs.forEach((input) => {
     input.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;
@@ -286,7 +368,12 @@ const accountItems = [
     submitHeaderSearch(desktopSearch && 'value' in desktopSearch ? desktopSearch.value : '');
   });
 
+  syncLanguageMenu(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr');
+
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') toggleMenu(false);
+    if (event.key === 'Escape') {
+      toggleMenu(false);
+      toggleLanguageMenu(false);
+    }
   });
 </script>
