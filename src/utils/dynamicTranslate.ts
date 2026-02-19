@@ -12,10 +12,33 @@ let currentLanguage: string = 'en';
 let sourceLanguage: string = 'en';
 let translationInProgress = false;
 
-const deeplEndpoint =
+const rawDeeplEndpoint =
   import.meta.env.PUBLIC_TRANSLATE_API_URL ||
   import.meta.env.PUBLIC_PAYLOAD_API_URL ||
   (import.meta.env.DEV ? '/api' : '');
+
+const normalizeDeeplEndpoint = (endpoint: string): string => {
+  if (!endpoint) return '';
+  const trimmed = endpoint.trim().replace(/\/+$/, '');
+  if (typeof window === 'undefined') return trimmed;
+
+  // Prevent mixed-content requests from https pages to http API endpoints.
+  if (window.location.protocol === 'https:' && trimmed.startsWith('http://')) {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.hostname === window.location.hostname) {
+        return parsed.pathname || '/api';
+      }
+      return `https://${trimmed.slice('http://'.length)}`;
+    } catch {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+  }
+
+  return trimmed;
+};
+
+const deeplEndpoint = normalizeDeeplEndpoint(rawDeeplEndpoint);
 
 const deeplLanguageMap: Record<string, string> = {
   en: 'EN',
@@ -157,12 +180,15 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
   if (!deeplEndpoint) return texts;
+  const requestUrl = deeplEndpoint.endsWith('/translate')
+    ? deeplEndpoint
+    : `${deeplEndpoint}/translate`;
 
   const params = new URLSearchParams();
   params.append('targetLang', targetLang);
   texts.forEach((text) => params.append('text', text));
 
-  const response = await fetch(`${deeplEndpoint}/translate`, {
+  const response = await fetch(requestUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
