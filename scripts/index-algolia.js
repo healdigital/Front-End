@@ -253,24 +253,16 @@ async function indexAlgolia() {
   }
 
   const client = algoliasearch(appId, adminKey);
+  const supportsTopLevelIndexing =
+    typeof client.setSettings === 'function' &&
+    typeof client.saveObjects === 'function';
 
   for (const [langKey, records] of recordsByLang.entries()) {
     const indexName = buildIndexName(langKey);
-    
-    // Handle both v4 (initIndex) and v5 (index) API
-    let index;
-    if (typeof client.initIndex === 'function') {
-      index = client.initIndex(indexName);
-    } else if (typeof client.index === 'function') {
-      index = client.index(indexName);
-    } else {
-      console.warn(`[ALGOLIA] Client does not support initIndex or index methods. Skipping index: ${indexName}`);
-      continue;
-    }
 
     console.log(`[ALGOLIA] Indexing ${records.length} records -> ${indexName}`);
 
-    await index.setSettings({
+    const indexSettings = {
       searchableAttributes: [
         'title',
         'excerpt',
@@ -280,7 +272,38 @@ async function indexAlgolia() {
         'author',
       ],
       attributesForFaceting: ['filterOnly(language)'],
-    });
+    };
+
+    if (supportsTopLevelIndexing) {
+      await client.setSettings({
+        indexName,
+        indexSettings,
+      });
+
+      for (let i = 0; i < records.length; i += batchSize) {
+        const batch = records.slice(i, i + batchSize);
+        await client.saveObjects({
+          indexName,
+          objects: batch,
+        });
+        console.log(`[ALGOLIA] ${indexName}: ${Math.min(i + batch.length, records.length)}/${records.length}`);
+      }
+
+      continue;
+    }
+
+    // Backward compatibility for older clients.
+    let index;
+    if (typeof client.initIndex === 'function') {
+      index = client.initIndex(indexName);
+    } else if (typeof client.index === 'function') {
+      index = client.index(indexName);
+    } else {
+      console.warn(`[ALGOLIA] Client does not support index operations. Skipping index: ${indexName}`);
+      continue;
+    }
+
+    await index.setSettings(indexSettings);
 
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
