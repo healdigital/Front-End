@@ -24,6 +24,14 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 <!doctype html>
 <html lang={lang} data-lang={lang}>
   <head>
+    <script is:inline>
+      (function () {
+        const { pathname, search, hash } = window.location;
+        if (!pathname || pathname === '/' || pathname.endsWith('/')) return;
+        if (/\.[a-z0-9]+$/i.test(pathname)) return;
+        window.location.replace(`${pathname}/${search}${hash}`);
+      })();
+    </script>
     <SEO
       title={title}
       description={description}
