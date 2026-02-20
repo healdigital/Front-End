@@ -1,14 +1,122 @@
-# ISR + Build Status Tracker (Updated: 2026-02-16)
+# LCDB Tracker + Chat Summary (Updated: 2026-02-19)
 
-## Active (Client Requests)
+## Completed (Shipped)
 
-| Status | Area | Task | Notes |
-| --- | --- | --- | --- |
-| Ready for QA | Design | Integrate `new-design` branch (selective merge, no generated artifacts) | Homepage uses new components + data mapping |
-| Ready for QA | Search | Algolia search on `/search` with language-specific results | Run `npm run index:algolia` to populate indices |
-| Done | Security | Remove leaked `Front` / `Front.pub` keys + ignore | Removed locally + added to `.gitignore` |
+- [x] Responsive UI updates completed for both desktop and mobile layouts.
+- [x] Header language dropdown added with selectable languages.
+- [x] Header language option text styling updated for readability (white text in dropdown context).
+- [x] Re-added missing language/translation related code after accidental deletion.
+- [x] Fixed Astro compile error caused by merge conflict markers in `src/pages/index.astro`.
+- [x] Search result URL normalized to remove `/articles/` prefix and use direct slug path (`/${slug}`).
+- [x] Breadcrumb/search path handling aligned so `articles` segment does not appear.
+- [x] Mobile header search updated: icon opens inline header search first, then navigates to `/search` on submit (desktop-like flow).
+- [x] Translation client flow hardened to avoid infinite retry/request loops.
+- [x] Removed Sanity-specific/unused translation flow from active implementation.
+- [x] Removed Vercel-specific translation dependency from active implementation.
+- [x] Environment-driven translation endpoint usage aligned with `.env`.
+- [x] Algolia search language behavior updated to current language only.
+- [x] Search hit language compatibility fixed (`hit.language` or `hit.lang`).
+- [x] Algolia indexing script updated to prefer local `prepared-articles.json`.
+- [x] Algolia client compatibility fixed for newer API style (`setSettings`, `saveObjects`) with fallback.
+- [x] Reindex command executed successfully on 2026-02-19.
+- [x] Pushed current branch state without pull, as requested.
+- [x] Added persistent project agent docs: `PROJECT-AGENT.md` + `TASK-BRIEF.md`.
 
-## On Hold
+## Historical Completed Baseline
+
+- [x] Pure SSG Astro build (`output: 'static'`).
+- [x] Payload webhook -> GitHub Action (`payload-update`) -> Coolify deploy.
+- [x] Prepared snapshot moved off Git LFS (no LFS budget issues).
+- [x] Snapshot stored as GitHub Release (`prepared-snapshot`).
+- [x] Build downloads snapshot via `PREPARED_JSON_URL`.
+- [x] Build uses JSON only (`USE_LOCAL_JSON=1`, `BUILD_ONLY_ARTICLE_PAGES=1`).
+- [x] Snapshot update uses ID/slug/title matching; snapshot includes `id` + `_id`.
+- [x] Disqus comments integrated (replaced Giscus).
+- [x] Translation endpoint integration added in frontend flow.
+- [x] Author/meta display hidden via CSS (temporary).
+- [x] Algolia indexing script + per-language search wiring.
+- [x] Static pages created for header + footer links.
+- [x] My Account footer link set to atelier-lacuisinedebernard.com.
+- [x] Static page loader updated to read HTML from `src/content/static-pages` using absolute path.
+
+## Reindex Run Log (2026-02-19)
+
+Command:
+
+```bash
+npm run index:algolia
+```
+
+Result:
+
+- [x] Source used: `prepared-articles.json` (4554 articles)
+- [x] Indexed `lcdb_recipes_fr`: 1094
+- [x] Indexed `lcdb_recipes_ar`: 956
+- [x] Indexed `lcdb_recipes_pt_br`: 789
+- [x] Indexed `lcdb_recipes_es`: 938
+- [x] Indexed `lcdb_recipes_en`: 776
+- [x] Indexed `lcdb_recipes_zh_hans`: 1
+- [x] Status: indexing complete
+
+## Important Notes
+
+- Translation API calls from browser require valid HTTPS with trusted SSL certificate.
+- If certificate is invalid, browser blocks request with `ERR_CERT_AUTHORITY_INVALID`.
+- Build/index flow is confirmed to use prepared snapshot data when configured (`prepared-articles.json`), not direct Mongo fetch in that mode.
+
+## Chat Summary (Till 2026-02-19)
+
+1. Header language selector feature was requested and implemented with clickable language options.
+2. Missing/deleted code was restored and language feature work was continued.
+3. Code was pushed directly without pull, per instruction.
+4. Merge conflict syntax in `index.astro` caused compiler error and was fixed.
+5. Header language option styling and full-page translation expectations were reviewed and adjusted.
+6. Clarification given that Sanity should not be used; Sanity-related usage was removed from active path.
+7. Mixed-content and SSL certificate translation failures were investigated from network errors.
+8. Search page slug URL behavior was fixed so `/articles/...` is removed from result links and breadcrumbs.
+9. Translation infinite request loop issue was fixed in frontend behavior.
+10. Mobile search UX was changed to desktop-like flow (open search input first, submit to navigate).
+11. Algolia search was updated to show only current language content.
+12. Reindexing was run, and source verification confirmed prepared snapshot usage.
+13. Indexing script was improved for robust source selection and Algolia SDK compatibility.
+14. Fresh index run completed successfully with all per-language counts logged.
+
+## Imported Chat Summaries (Important)
+
+### 1) `reply-to-greeting-task.md`
+
+- Scope was expanded from greeting to a full design parity pass against `Webdesign`/Figma references.
+- Major UI work tracked in that chat:
+- Typography normalization (`Title/H2/Body/Caption`) across home/search/articles/category/tag templates.
+- Hero (`A la une`) controls and badge placement corrected (desktop + mobile behavior updates).
+- Homepage section alignment improved (left content flow, sidebar structure/order, spacing, and card proportions).
+- Search page bug fixed where Algolia results were showing tags/links but not reliable title/image rendering.
+- Algolia field-shape handling was hardened for multiple key variants (e.g., title/image from alternative fields).
+- Build/compile blockers were iteratively fixed in that thread (route `getStaticPaths` scope issues and `BioSection` compiler break).
+- Design-specific requests tracked there:
+- Portrait image treatment.
+- Section-level parity for `Bernard...`, `Mes livres...`, dark section color/visibility, and vector/texture usage from `Webdesign` assets.
+
+### 2) `fix-undefined-featured-image-url.md`
+
+- Core issue captured from logs: `featured_img_url` was `undefined` while image data existed in other fields.
+- Main root-cause pattern from that context:
+- Rendering/indexing logic depending on one image key is unsafe.
+- Data can arrive under `featured_image_url`, `featured_image.url`, or related fallback shapes.
+- Tracking takeaway for this project:
+- Any card/search/article image resolver must keep fallback chain logic (not single-field only).
+- Build/runtime log issues around image-field shape should be treated as data-shape mismatch first, not only missing content.
+
+## Current Guardrails (Do Not Regress)
+
+- Keep search result rendering resilient to Algolia field variants for both title and image.
+- Keep language-scoped search behavior strict to current language only.
+- Keep recipe/article URLs without `/articles/` prefix where direct slug routing is expected.
+- Keep mobile search behavior desktop-like: open inline field first, navigate on submit.
+- Keep translation flow free from infinite retry loops and avoid blocked mixed-content/cert-invalid endpoints.
+- Keep indexing source aligned to `prepared-articles.json` flow when configured.
+
+## Carry Forward Backlog (On Hold)
 
 | Status | Area | Task | Notes |
 | --- | --- | --- | --- |
@@ -23,20 +131,3 @@
 | On Hold | ContentV2 | Build legacy migration tool | Dry-run + batch + rollback logs |
 | On Hold | ContentV2 | Add migration safety fields | `migrationStatus`, `migrationNotes`, `legacySnapshot` |
 | On Hold | ContentV2 | Migration QA workflow | Legacy vs V2 + JSON-LD parity |
-
-## Completed
-
-- [x] Pure SSG Astro build (`output: 'static'`).
-- [x] Payload webhook -> GitHub Action (`payload-update`) -> Coolify deploy.
-- [x] Prepared snapshot moved off Git LFS (no LFS budget issues).
-- [x] Snapshot stored as GitHub Release (`prepared-snapshot`).
-- [x] Build downloads snapshot via `PREPARED_JSON_URL`.
-- [x] Build uses JSON only (`USE_LOCAL_JSON=1`, `BUILD_ONLY_ARTICLE_PAGES=1`).
-- [x] Snapshot update uses ID/slug/title matching; snapshot now includes `id` + `_id`.
-- [x] Disqus comments integrated (replaced Giscus).
-- [x] DeepL translation API working via Astro `/api/translate`.
-- [x] Author/meta display hidden via CSS (temporary).
-- [x] Algolia indexing script + per-language search wiring.
-- [x] Static pages created for header + footer links.
-- [x] My Account footer link set to atelier-lacuisinedebernard.com.
-- [x] Static page loader updated to read HTML from `src/content/static-pages` using absolute path.
