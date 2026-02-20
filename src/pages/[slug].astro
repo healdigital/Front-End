@@ -265,6 +265,10 @@ const publishDate = article.date || new Date().toISOString();
 const modifiedDate = article.modified || article.updated || publishDate;
 const author = article.author?.name || "La Cuisine De Bernard";
 const articleUrl = `https://lacuisinedebernard.com/${slug}`;
+const numericPostId = Number(article?.post_id);
+const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
+  ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
+  : slug;
 ---
 
 <BaseLayout
@@ -404,7 +408,7 @@ const articleUrl = `https://lacuisinedebernard.com/${slug}`;
 
         <!-- Comments Section - Disqus -->
         <div class="bg-[#fffaf0] rounded-lg shadow p-6 border border-[#eadfcb]">
-          <DisqusComments url={articleUrl} identifier={slug} title={title} />
+          <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
         </div>
 
         <!-- You Might Like Section -->

@@ -133,6 +133,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
 const publishedDate = formatDate(article?.publishedAt || article?.date || article?.modified);
 const articleUrl = `https://lacuisinedebernard.com/${slug}`;
+const numericPostId = Number(article?.post_id);
+const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
+  ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
+  : slug;
 ---
 
 <BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl}>
@@ -192,7 +196,7 @@ const articleUrl = `https://lacuisinedebernard.com/${slug}`;
           </div>
 
           <div class="pt-8 border-t border-[#D8D2C2]">
-            <DisqusComments url={articleUrl} identifier={slug} title={title} />
+            <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
           </div>
         </div>
       </article>
