@@ -7,7 +7,22 @@ interface Props {
 
 const { identifier, url, title } = Astro.props;
 const shortname = import.meta.env.PUBLIC_DISQUS_SHORTNAME || '';
-const isConfigured = Boolean(shortname && identifier && url);
+const normalizedUrl = (() => {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+
+  try {
+    const parsed = new URL(raw);
+    parsed.hash = '';
+    parsed.search = '';
+    parsed.pathname = `${parsed.pathname.replace(/\/+$/, '')}/`;
+    return parsed.toString();
+  } catch {
+    return raw.replace(/[?#].*$/, '').replace(/\/+$/, '') + '/';
+  }
+})();
+
+const isConfigured = Boolean(shortname && identifier && normalizedUrl);
 ---
 
 <div id="comments-section" class="mt-8" data-no-translate="true">
@@ -18,7 +33,7 @@ const isConfigured = Boolean(shortname && identifier && url);
       <div id="disqus_thread"></div>
       <script
         is:inline
-        define:vars={{ disqusUrl: url, disqusIdentifier: identifier, disqusTitle: title ?? identifier, disqusShortname: shortname }}
+        define:vars={{ disqusUrl: normalizedUrl, disqusIdentifier: identifier, disqusTitle: title ?? identifier, disqusShortname: shortname }}
       >
         var disqus_config = function () {
           this.page.url = disqusUrl;

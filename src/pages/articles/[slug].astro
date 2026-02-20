@@ -132,7 +132,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .filter(Boolean);
 
 const publishedDate = formatDate(article?.publishedAt || article?.date || article?.modified);
-const articleUrl = `https://lacuisinedebernard.com/${slug}`;
+const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
 const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`

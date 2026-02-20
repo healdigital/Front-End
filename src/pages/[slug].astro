@@ -264,7 +264,7 @@ const keywords = article.tags?.map((t: any) => t.title || t.name).join(", ") || 
 const publishDate = article.date || new Date().toISOString();
 const modifiedDate = article.modified || article.updated || publishDate;
 const author = article.author?.name || "La Cuisine De Bernard";
-const articleUrl = `https://lacuisinedebernard.com/${slug}`;
+const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
 const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
