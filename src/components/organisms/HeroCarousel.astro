@@ -51,7 +51,7 @@ const { cards } = Astro.props;
               <img
                 src={card.image}
                 alt={card.title}
-                class="w-full h-full object-contain bg-[#f7f5ef] transition-transform duration-500 group-hover:scale-105"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchpriority={index === 0 ? 'high' : 'low'}
                 decoding="async"

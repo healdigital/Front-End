@@ -353,10 +353,19 @@ const heroCards = normalizedArticles.length
 
 const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
-const browseRecipes = recipePool.slice(1);
-const suggestedRecipes = normalizedArticles.length > 10
-  ? normalizedArticles.slice(10, 34)
+const getHomeInitialRenderCount = () => {
+  const envCount = Number(process.env.HOME_INITIAL_RENDER_COUNT);
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
+};
+const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
+const getSuggestedInitialRenderCount = () => {
+  const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 30;
+};
+const suggestedRecipesPool = normalizedArticles.length > 10
+  ? normalizedArticles.slice(10)
   : fallbackSuggestedRecipes;
+const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRenderCount());
 ---
 
 <MainLayout
@@ -439,7 +448,11 @@ const suggestedRecipes = normalizedArticles.length > 10
               </div>
             </div>
 
-            <div class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10" data-recipe-grid>
+            <div
+              class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
+              data-recipe-grid
+              data-recipes-source="/search-index.json"
+            >
               {browseRecipes.map((recipe, index) => (
                 <div
                   class="home-recipe-card-shell"
@@ -448,6 +461,7 @@ const suggestedRecipes = normalizedArticles.length > 10
                   data-category={recipe.filterKey}
                   data-title={recipe.title.toLocaleLowerCase('fr')}
                   data-description={recipe.description.toLocaleLowerCase('fr')}
+                  data-slug={recipe.slug}
                 >
                   <RecipeCard
                     title={recipe.title}
@@ -663,7 +677,12 @@ const suggestedRecipes = normalizedArticles.length > 10
       <div class="home-two-column">
         <div class="home-main-column">
           <BooksSection embedded />
-          <SuggestedRecipes recipes={suggestedRecipes} embedded />
+          <SuggestedRecipes
+            recipes={suggestedRecipes}
+            embedded
+            source="/search-index.json"
+            offset={10}
+          />
         </div>
         <div class="home-sidebar-column">
           <div class="home-sidebar-sticky">
@@ -690,7 +709,8 @@ const suggestedRecipes = normalizedArticles.length > 10
       salees: 'Recettes sal&eacute;es',
     };
 
-    const cards = Array.from(document.querySelectorAll('[data-recipe-card]'));
+    const grid = document.querySelector('[data-recipe-grid]');
+    let cards = Array.from(document.querySelectorAll('[data-recipe-card]'));
     const filterItems = Array.from(filterRoot.querySelectorAll('[data-filter-item]'));
     const paginationRoot = document.querySelector('[data-home-pagination]');
     const paginationPages = paginationRoot?.querySelector('[data-pagination-pages]');
@@ -743,6 +763,178 @@ const suggestedRecipes = normalizedArticles.length > 10
 
       paginationPrev.disabled = activePage <= 1;
       paginationNext.disabled = activePage >= totalPages;
+    };
+
+    const normalizeToken = (value = '') =>
+      String(value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    const getFilterKey = (categoryLabel = '') => {
+      const normalized = normalizeToken(categoryLabel);
+      if (normalized.includes('sucre') || normalized.includes('sweet') || normalized.includes('dessert')) return 'sucrees';
+      if (normalized.includes('sale') || normalized.includes('savour') || normalized.includes('savory')) return 'salees';
+      return 'toutes';
+    };
+
+    const normalizeSlug = (value = '') => String(value).replace(/^\/+|\/+$/g, '');
+
+    const clipDescription = (value = '') => {
+      const cleaned = String(value || '').replace(/\s+/g, ' ').trim();
+      if (!cleaned) return 'Recette a decouvrir.';
+      return cleaned.length > 200 ? `${cleaned.slice(0, 200).trim()}...` : cleaned;
+    };
+
+    const buildCardElement = (templateCard, recipe, index) => {
+      const card = templateCard.cloneNode(true);
+      if (!(card instanceof HTMLElement)) return null;
+
+      const slug = `/${normalizeSlug(recipe.slug)}`;
+      const absoluteUrl = new URL(slug, window.location.origin).href;
+      const encodedUrl = encodeURIComponent(absoluteUrl);
+      const encodedTitle = encodeURIComponent(recipe.title || '');
+
+      card.dataset.recipeIndex = String(index);
+      card.dataset.category = recipe.filterKey || 'toutes';
+      card.dataset.title = String(recipe.title || '').toLowerCase();
+      card.dataset.description = String(recipe.description || '').toLowerCase();
+      card.dataset.slug = slug;
+      card.classList.add('hidden');
+      card.setAttribute('aria-hidden', 'true');
+
+      const imageEl = card.querySelector('img');
+      if (imageEl instanceof HTMLImageElement) {
+        const imageSrc = recipe.image || imageEl.getAttribute('data-fallback-src') || '';
+        imageEl.src = imageSrc;
+        imageEl.alt = recipe.title || 'Recipe image';
+        imageEl.setAttribute('data-fallback-src', recipe.imageFallback || imageSrc);
+      }
+
+      const titleLink = card.querySelector('h3 a');
+      if (titleLink instanceof HTMLAnchorElement) {
+        titleLink.href = slug;
+        titleLink.textContent = recipe.title || 'Recette';
+      }
+
+      const readMoreLink = card.querySelector('a.typ-button');
+      if (readMoreLink instanceof HTMLAnchorElement) {
+        readMoreLink.href = slug;
+      }
+
+      const descriptionEl = card.querySelector('p.typ-body');
+      if (descriptionEl instanceof HTMLElement) {
+        descriptionEl.textContent = clipDescription(recipe.description);
+      }
+
+      card.querySelectorAll('a[href]').forEach((link) => {
+        if (!(link instanceof HTMLAnchorElement)) return;
+        const href = link.getAttribute('href') || '';
+        if (href.includes('facebook.com/sharer/sharer.php')) {
+          link.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        } else if (href.includes('pinterest.com/pin/create/button')) {
+          link.href = `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}`;
+        } else if (href.startsWith('mailto:')) {
+          link.href = `mailto:?subject=${encodedTitle}&body=${encodeURIComponent(absoluteUrl)}`;
+        }
+      });
+
+      return card;
+    };
+
+    const hydrateCardsFromSearchIndex = async () => {
+      if (!(grid instanceof HTMLElement)) return;
+      if (grid.dataset.recipesHydrated === 'true' || grid.dataset.recipesHydrated === 'loading') return;
+
+      const source = grid.getAttribute('data-recipes-source') || '/search-index.json';
+      const templateCard = cards[0];
+      if (!(templateCard instanceof HTMLElement)) return;
+
+      grid.dataset.recipesHydrated = 'loading';
+
+      try {
+        const response = await fetch(source, { cache: 'force-cache' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const records = await response.json();
+        if (!Array.isArray(records) || records.length === 0) {
+          grid.dataset.recipesHydrated = 'true';
+          return;
+        }
+
+        const existingSlugs = new Set(
+          cards
+            .map((card) => normalizeSlug(card.getAttribute('data-slug') || ''))
+            .filter(Boolean),
+        );
+
+        const recipes = [];
+        records.forEach((record) => {
+          const slug = normalizeSlug(record?.slug || record?.url || '');
+          const title = String(record?.title || '').trim();
+          if (!slug || !title || existingSlugs.has(slug)) return;
+
+          existingSlugs.add(slug);
+          recipes.push({
+            slug,
+            title,
+            description: record?.excerpt || record?.content || '',
+            image:
+              record?.featured_image?.url ||
+              record?.featuredImage?.url ||
+              record?.image ||
+              '',
+            imageFallback:
+              record?.featured_image?.url ||
+              record?.featuredImage?.url ||
+              record?.image ||
+              '',
+            filterKey: getFilterKey(record?.category || ''),
+          });
+        });
+
+        if (recipes.length === 0) {
+          grid.dataset.recipesHydrated = 'true';
+          return;
+        }
+
+        let pointer = 0;
+        const chunkSize = 60;
+
+        const pump = () => {
+          const fragment = document.createDocumentFragment();
+          let appended = 0;
+
+          while (pointer < recipes.length && appended < chunkSize) {
+            const card = buildCardElement(templateCard, recipes[pointer], cards.length);
+            pointer += 1;
+            if (!card) continue;
+            cards.push(card);
+            fragment.appendChild(card);
+            appended += 1;
+          }
+
+          if (fragment.childNodes.length > 0) {
+            grid.appendChild(fragment);
+          }
+
+          if (pointer < recipes.length) {
+            if (typeof window.requestIdleCallback === 'function') {
+              window.requestIdleCallback(pump, { timeout: 250 });
+            } else {
+              window.requestAnimationFrame(pump);
+            }
+            return;
+          }
+
+          grid.dataset.recipesHydrated = 'true';
+          applyFilters();
+        };
+
+        pump();
+      } catch (error) {
+        console.warn('[HOME] Failed to hydrate additional recipe cards:', error);
+        grid.dataset.recipesHydrated = 'error';
+      }
     };
 
     const applyFilters = (resetPage = false) => {
@@ -819,6 +1011,16 @@ const suggestedRecipes = normalizedArticles.length > 10
     });
 
     applyFilters(true);
+
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(() => {
+        hydrateCardsFromSearchIndex();
+      }, { timeout: 1200 });
+    } else {
+      window.setTimeout(() => {
+        hydrateCardsFromSearchIndex();
+      }, 300);
+    }
   }
 
   function setupViewToggle() {
