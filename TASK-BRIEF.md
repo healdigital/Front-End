@@ -2,6 +2,13 @@
 
 Copy this block when assigning a task:
 
+## Project Context Snapshot (Required)
+
+- Current branch/commit:
+- Tracker checked (`TODO-ISR.md`)?
+- Agent playbook checked (`PROJECT-AGENT.md`)?
+- Any temporary toggles/disabled sections active?
+
 ## Goal
 
 - What exactly should be built/fixed?
@@ -25,6 +32,7 @@ Copy this block when assigning a task:
 - Keep/avoid:
 - Design/source of truth:
 - API/env constraints:
+- Large-list strategy (SSR only vs SSR + post-load hydration):
 
 ## Acceptance Criteria
 
@@ -39,4 +47,3 @@ Copy this block when assigning a task:
 ## Notes
 
 - Screenshots/links/reference details
-

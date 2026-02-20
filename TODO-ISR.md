@@ -1,4 +1,23 @@
-# LCDB Tracker + Chat Summary (Updated: 2026-02-19)
+# LCDB Tracker + Chat Summary (Updated: 2026-02-20)
+
+## Completed Today (2026-02-20)
+
+- [x] Temporarily disabled `You might like` related section and related fetch/call on article page (`src/pages/[slug].astro`).
+- [x] Fixed homepage image source handling to avoid forced square `-500x500` variant and use real/original image URL.
+- [x] Updated homepage image rendering for portrait-safe behavior in key recipe cards and featured blocks.
+- [x] Corrected hero slider image presentation to fill card correctly after portrait handling adjustments.
+- [x] Fixed article build-limit fallback regression (`50 -> 6000`) across article/static path files and Mongo helper.
+- [x] Restored full article availability for `D&eacute;couvrez mes recettes` on home (no 48 hard cap).
+- [x] Implemented progressive hydration for home recipe grid:
+- [x] Initial lightweight render first.
+- [x] Remaining recipes loaded after page load from `/search-index.json`.
+- [x] Pagination and filters auto-update after hydration.
+- [x] Fixed `Ces recettes pourrez vous int&eacute;resser` cap (previous slice limiting around ~30).
+- [x] Implemented progressive hydration for suggested-recipes section as well:
+- [x] Initial lightweight render first.
+- [x] Remaining recipes loaded after page load from `/search-index.json` with offset.
+- [x] Pagination and filters auto-update after hydration.
+- [x] Build verification completed after each major change (`npm run build` successful).
 
 ## Completed (Shipped)
 

@@ -4,6 +4,24 @@
 
 Use this file as the default operating contract for this project so work stays consistent, fast, and on-track.
 
+## Latest Session Context (2026-02-20)
+
+- Article page related section (`You might like`) is intentionally disabled for now in `src/pages/[slug].astro`.
+- Home article build limits were normalized to avoid accidental 50-item fallback:
+- default fallback now aligns to high-cap flow (`6000`) across article/page builders.
+- Homepage image source handling no longer forces square `-500x500` variants.
+- Hero slider image behavior:
+- slider cards use `object-cover` to avoid top empty strips.
+- Home recipe grid (`D&eacute;couvrez mes recettes`) now uses progressive hydration:
+- initial SSR render count is limited (`HOME_INITIAL_RENDER_COUNT`, default 48),
+- remaining cards are appended client-side from `/search-index.json`,
+- pagination/filter state recalculates after hydration.
+- Suggested recipes section (`Ces recettes pourrez vous int&eacute;resser`) now uses same progressive hydration model:
+- initial SSR render count (`SUGGESTED_INITIAL_RENDER_COUNT`, default 30),
+- client-side hydration from `/search-index.json` with `offset={10}`,
+- pagination/filter recalculation after hydration.
+- Project tracker must remain updated in `TODO-ISR.md` after significant behavior changes.
+
 ## Current Project Truth (Must Hold)
 
 - Frontend stack is Astro; production output is static-first with prepared snapshot flow.
@@ -60,4 +78,3 @@ When a new task comes, resolve it against:
 3. This file for guardrails
 
 If conflict appears, latest explicit user instruction wins.
-
