@@ -2,6 +2,7 @@
 interface HeroCard {
   title: string;
   image: string;
+  imageFallback?: string;
   category: string;
   slug: string;
 }
@@ -54,6 +55,8 @@ const { cards } = Astro.props;
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchpriority={index === 0 ? 'high' : 'low'}
                 decoding="async"
+                data-fallback-src={card.imageFallback || card.image}
+                onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-black/72 via-black/30 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6">

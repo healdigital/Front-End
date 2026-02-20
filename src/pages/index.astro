@@ -13,7 +13,7 @@ import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.ast
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
-import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import { processArticleImageUrl, buildWpSquareVariantUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
@@ -304,13 +304,15 @@ const buildRecipeFromArticle = (article: any, index: number) => {
 
   const categoryLabel = getCategoryLabel(article);
   const filterKey = getFilterKey(categoryLabel);
-  const image = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
+  const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
+  const image = buildWpSquareVariantUrl(fallbackImage, 500);
 
   return {
     id: article?._id?.toString?.() || article?.id?.toString?.() || `${index + 1}`,
     title,
     description: getDescription(article),
     image,
+    imageFallback: fallbackImage,
     category: categoryLabel ? categoryLabel.toUpperCase() : 'RECETTE',
     filterKey,
     prepTime: '--',
@@ -322,7 +324,8 @@ const buildRecipeFromArticle = (article: any, index: number) => {
 const getHomeRecipeLimit = () => {
   const envLimit = Number(process.env.HOME_RECIPE_LIMIT);
   if (Number.isFinite(envLimit) && envLimit > 0) return envLimit;
-  return 300;
+  // Keep homepage payload light; larger lists are rendered on dedicated pages.
+  return 72;
 };
 
 let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
@@ -339,6 +342,7 @@ const heroCards = normalizedArticles.length
   ? normalizedArticles.slice(0, 5).map((recipe) => ({
       title: recipe.title,
       image: recipe.image,
+      imageFallback: recipe.imageFallback,
       category: recipe.category,
       slug: recipe.slug,
     }))
@@ -346,9 +350,9 @@ const heroCards = normalizedArticles.length
 
 const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
-const browseRecipes = recipePool.slice(1);
+const browseRecipes = recipePool.slice(1, 49);
 const suggestedRecipes = normalizedArticles.length > 10
-  ? normalizedArticles.slice(10, 130)
+  ? normalizedArticles.slice(10, 34)
   : fallbackSuggestedRecipes;
 ---
 
@@ -382,6 +386,8 @@ const suggestedRecipes = normalizedArticles.length > 10
                   loading="eager"
                   fetchpriority="high"
                   decoding="async"
+                  data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
+                  onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
                 />
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -433,6 +439,7 @@ const suggestedRecipes = normalizedArticles.length > 10
             <div class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10" data-recipe-grid>
               {browseRecipes.map((recipe, index) => (
                 <div
+                  class="home-recipe-card-shell"
                   data-recipe-card
                   data-recipe-index={index}
                   data-category={recipe.filterKey}
@@ -443,6 +450,7 @@ const suggestedRecipes = normalizedArticles.length > 10
                     title={recipe.title}
                     description={recipe.description}
                     image={recipe.image}
+                    imageFallback={recipe.imageFallback}
                     category={recipe.category}
                     prepTime={recipe.prepTime}
                     difficulty={recipe.difficulty}
@@ -835,6 +843,11 @@ const suggestedRecipes = normalizedArticles.length > 10
 <style>
   .recipe-grid-home[data-view='list'] {
     grid-template-columns: 1fr;
+  }
+
+  .home-recipe-card-shell {
+    content-visibility: auto;
+    contain-intrinsic-size: 780px;
   }
 </style>
 

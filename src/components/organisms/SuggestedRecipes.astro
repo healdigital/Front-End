@@ -6,6 +6,7 @@ interface Recipe {
   title: string;
   description: string;
   image: string;
+  imageFallback?: string;
   category?: string;
   prepTime: string;
   difficulty: string;
@@ -69,6 +70,7 @@ const getFilterValue = (recipe: Recipe): string => {
     <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
       {recipes.map((recipe, index) => (
         <div
+          class="suggested-card-shell"
           data-suggested-card
           data-suggested-index={index}
           data-category={getFilterValue(recipe)}
@@ -79,6 +81,7 @@ const getFilterValue = (recipe: Recipe): string => {
             title={recipe.title}
             description={recipe.description}
             image={recipe.image}
+            imageFallback={recipe.imageFallback}
             category={recipe.category}
             prepTime={recipe.prepTime}
             difficulty={recipe.difficulty}
@@ -246,8 +249,13 @@ const getFilterValue = (recipe: Recipe): string => {
 </script>
 
 <style>
-  .suggested-grid[data-view='list'] {
-    grid-template-columns: 1fr;
-  }
+.suggested-grid[data-view='list'] {
+  grid-template-columns: 1fr;
+}
+
+.suggested-card-shell {
+  content-visibility: auto;
+  contain-intrinsic-size: 780px;
+}
 </style>
 

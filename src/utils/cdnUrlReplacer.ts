@@ -14,6 +14,34 @@ export function replaceCdnUrl(url: string): string {
 }
 
 /**
+ * Build a smaller square variant URL for WordPress uploads.
+ * Many imported assets include generated square derivatives (e.g. -500x500).
+ */
+export function buildWpSquareVariantUrl(url: string, size = 500): string {
+  if (!url || typeof url !== 'string') return '';
+
+  const normalized = replaceCdnUrl(url);
+  if (!/\/wp-content\/uploads\//i.test(normalized)) return normalized;
+
+  const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+  if (!match) return normalized;
+
+  const base = match[1];
+  const ext = match[2];
+  const query = match[3] ? `?${match[3]}` : '';
+  const hash = match[4] ? `#${match[4]}` : '';
+
+  // Keep explicit size variants as-is.
+  if (/-\d+x\d+$/i.test(base)) {
+    return `${base}${ext}${query}${hash}`;
+  }
+
+  // WordPress "-scaled" originals are usually very large; prefer square preview.
+  const withoutScaled = base.replace(/-scaled$/i, '');
+  return `${withoutScaled}-${size}x${size}${ext}${query}${hash}`;
+}
+
+/**
  * Process article image URLs to use the new CDN
  */
 export function processArticleImageUrl(article: any): string {
