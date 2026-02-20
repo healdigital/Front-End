@@ -322,10 +322,13 @@ const buildRecipeFromArticle = (article: any, index: number) => {
 };
 
 const getHomeRecipeLimit = () => {
-  const envLimit = Number(process.env.HOME_RECIPE_LIMIT);
-  if (Number.isFinite(envLimit) && envLimit > 0) return envLimit;
-  // Keep homepage payload light; larger lists are rendered on dedicated pages.
-  return 72;
+  const homeLimit = Number(process.env.HOME_RECIPE_LIMIT);
+  if (Number.isFinite(homeLimit) && homeLimit > 0) return homeLimit;
+
+  const globalLimit = Number(process.env.MAX_SSG_ARTICLES);
+  if (Number.isFinite(globalLimit) && globalLimit > 0) return globalLimit;
+
+  return 6000;
 };
 
 let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
@@ -350,7 +353,7 @@ const heroCards = normalizedArticles.length
 
 const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
-const browseRecipes = recipePool.slice(1, 49);
+const browseRecipes = recipePool.slice(1);
 const suggestedRecipes = normalizedArticles.length > 10
   ? normalizedArticles.slice(10, 34)
   : fallbackSuggestedRecipes;

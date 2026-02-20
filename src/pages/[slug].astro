@@ -23,7 +23,7 @@ export const prerender = true;
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 50;
+  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
 
 export async function getStaticPaths() {

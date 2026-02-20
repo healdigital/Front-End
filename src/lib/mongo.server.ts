@@ -17,7 +17,7 @@ const isDevMode = () => process.env.NODE_ENV !== 'production';
 
 const getBuildLimit = () => {
   const envMax = Number(process.env.MAX_SSG_ARTICLES);
-  const requestedLimit = Number.isFinite(envMax) && envMax > 0 ? envMax : 50;
+  const requestedLimit = Number.isFinite(envMax) && envMax > 0 ? envMax : 6000;
 
   // Keep local dev light even if production MAX_SSG_ARTICLES is high.
   if (isDevMode()) {

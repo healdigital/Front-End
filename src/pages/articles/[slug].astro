@@ -11,7 +11,7 @@ export const prerender = !import.meta.env.DEV;
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 50;
+  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
 
 const stripHtml = (value: string) =>
