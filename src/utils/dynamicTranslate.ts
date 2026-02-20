@@ -17,6 +17,8 @@ let appliedLanguage: string | null = null;
 let languageChangeQueue: Promise<void> = Promise.resolve();
 let languageSwitcherBound = false;
 let storageWatcherBound = false;
+let hasTranslatedContent = false;
+const loadedTranslationLangs = new Set<string>();
 
 const deepLDisabledSessionKey = 'translate-api-disabled-endpoint';
 
@@ -61,15 +63,44 @@ const deeplLanguageMap: Record<string, string> = {
 };
 
 const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
+const supportedLanguageSet = new Set(supportedLanguages);
+
+const normalizeLanguageCode = (lang: string): string => {
+  const raw = String(lang || '').trim().toLowerCase();
+  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+  return raw;
+};
+
+const isSupportedLanguage = (lang: string): boolean => {
+  return supportedLanguageSet.has(normalizeLanguageCode(lang));
+};
+
+const loadTranslationData = async (lang: string): Promise<boolean> => {
+  const normalizedLang = normalizeLanguageCode(lang);
+  if (!supportedLanguageSet.has(normalizedLang)) return false;
+  if (loadedTranslationLangs.has(normalizedLang) && translationsData[normalizedLang]) {
+    return true;
+  }
+
+  try {
+    const translations = await import(`../i18n/${normalizedLang}.json`);
+    translationsData[normalizedLang] = translations.default || translations;
+    loadedTranslationLangs.add(normalizedLang);
+    return true;
+  } catch (error) {
+    console.warn(`Failed to load ${normalizedLang} translations:`, error);
+    return false;
+  }
+};
 
 const resolvePageLanguage = (): string => {
-  const raw = (
+  const raw = normalizeLanguageCode(
     document.documentElement.getAttribute('data-lang') ||
     document.documentElement.lang ||
     'en'
-  ).toLowerCase();
+  );
 
-  if (supportedLanguages.includes(raw)) return raw;
+  if (supportedLanguageSet.has(raw)) return raw;
   return 'en';
 };
 
@@ -110,33 +141,35 @@ const markDeepLUnavailable = (reason: string, error?: unknown): void => {
  */
 export async function initializeTranslations(): Promise<void> {
   try {
-    // Import all translation files
-    const languages = supportedLanguages;
-    
-    for (const lang of languages) {
-      try {
-        // For Astro, we import the JSON directly
-        const translations = await import(`../i18n/${lang}.json`);
-        translationsData[lang] = translations.default || translations;
-      } catch (error) {
-        console.warn(`Failed to load ${lang} translations:`, error);
-      }
-    }
-
     sourceLanguage = resolvePageLanguage();
     currentLanguage = sourceLanguage;
     appliedLanguage = null;
+    hasTranslatedContent = false;
 
     // Load saved language preference
-    const savedLang = localStorage.getItem('preferred-language');
+    const savedLang = normalizeLanguageCode(localStorage.getItem('preferred-language') || '');
+    const requiredLanguages = new Set<string>(['en', sourceLanguage]);
+    if (isSupportedLanguage(savedLang)) {
+      requiredLanguages.add(savedLang);
+    }
+
+    for (const lang of requiredLanguages) {
+      await loadTranslationData(lang);
+    }
+
     if (
       savedLang &&
+      isSupportedLanguage(savedLang) &&
       Object.keys(translationsData).includes(savedLang) &&
       savedLang !== sourceLanguage
     ) {
       currentLanguage = savedLang;
     } else {
       currentLanguage = 'en';
+    }
+
+    if (!Object.keys(translationsData).includes(currentLanguage)) {
+      currentLanguage = sourceLanguage;
     }
 
     console.log('Translations initialized for languages:', Object.keys(translationsData).join(', '));
@@ -289,8 +322,9 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
     const root = document.body;
     const nodes = collectTextNodes(root);
     const attributeTargets = collectAttributeTargets(root);
-    const batchSize = 80;
+    const batchSize = 120;
     const target = getDeepLTargetLang(targetLang);
+    let anyChanges = false;
 
     for (let i = 0; i < nodes.length; i += batchSize) {
       const batch = nodes.slice(i, i + batchSize);
@@ -305,8 +339,12 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
       const translations = await requestDeepLTranslation(texts, target);
       if (deeplUnavailable) break;
       translations.forEach((translated, idx) => {
-        if (typeof translated === 'string') {
+        if (
+          typeof translated === 'string' &&
+          batch[idx].textContent !== translated
+        ) {
           batch[idx].textContent = translated;
+          anyChanges = true;
         }
       });
     }
@@ -320,10 +358,18 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
       if (deeplUnavailable) break;
 
       translations.forEach((translated, idx) => {
-        if (typeof translated === 'string') {
+        if (
+          typeof translated === 'string' &&
+          batch[idx].element.getAttribute(batch[idx].attr) !== translated
+        ) {
           batch[idx].element.setAttribute(batch[idx].attr, translated);
+          anyChanges = true;
         }
       });
+    }
+
+    if (anyChanges) {
+      hasTranslatedContent = true;
     }
   } catch (error) {
     console.error('[translate] Failed to translate page:', error);
@@ -333,6 +379,8 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
 };
 
 const restoreOriginalText = (): void => {
+  if (!hasTranslatedContent) return;
+
   const root = document.body;
   const nodes = collectTextNodes(root);
   nodes.forEach((node) => {
@@ -350,13 +398,15 @@ const restoreOriginalText = (): void => {
       element.setAttribute(attr, value);
     });
   });
+
+  hasTranslatedContent = false;
 };
 
 /**
  * Get translation for a key using dot notation
  */
 export function getTranslation(key: string, lang?: string): string {
-  const targetLang = lang || currentLanguage;
+  const targetLang = normalizeLanguageCode(lang || currentLanguage);
   const parts = key.split('.');
   
   if (!translationsData[targetLang]) {
@@ -422,37 +472,46 @@ export function translatePageContent(): void {
 export async function changeLanguage(newLang: string): Promise<void> {
   languageChangeQueue = languageChangeQueue
     .then(async () => {
-      if (!Object.keys(translationsData).includes(newLang)) {
+      const normalizedLang = normalizeLanguageCode(newLang);
+      if (!isSupportedLanguage(normalizedLang)) {
         console.error(`Language ${newLang} not available`);
         return;
       }
 
-      if (appliedLanguage === newLang) {
+      if (!Object.keys(translationsData).includes(normalizedLang)) {
+        const loaded = await loadTranslationData(normalizedLang);
+        if (!loaded) {
+          console.error(`Language ${normalizedLang} not available`);
+          return;
+        }
+      }
+
+      if (appliedLanguage === normalizedLang) {
         return;
       }
 
-      currentLanguage = newLang;
-      localStorage.setItem('preferred-language', newLang);
+      currentLanguage = normalizedLang;
+      localStorage.setItem('preferred-language', normalizedLang);
 
       // Update HTML lang attribute
-      document.documentElement.lang = newLang;
-      document.documentElement.setAttribute('data-lang', newLang);
-      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = normalizedLang;
+      document.documentElement.setAttribute('data-lang', normalizedLang);
+      document.documentElement.dir = normalizedLang === 'ar' ? 'rtl' : 'ltr';
 
       // Translate page content using DeepL when configured
       if (deeplEndpoint) {
-        if (newLang === sourceLanguage) {
+        if (normalizedLang === sourceLanguage) {
           restoreOriginalText();
         } else {
-          await translateTextNodes(newLang);
+          await translateTextNodes(normalizedLang);
         }
       }
 
       // Update i18n labels/attributes
       translatePageContent();
-      appliedLanguage = newLang;
+      appliedLanguage = normalizedLang;
 
-      console.log(`Language changed to: ${newLang}`);
+      console.log(`Language changed to: ${normalizedLang}`);
     })
     .catch((error) => {
       console.error('[translate] Failed to apply language change:', error);
@@ -485,8 +544,8 @@ export function setupLanguageSwitcher(): void {
       if (langEl.tagName === 'A') {
         e.preventDefault();
       }
-      const lang = langEl.getAttribute('data-lang');
-      if (!lang) return;
+      const lang = normalizeLanguageCode(langEl.getAttribute('data-lang') || '');
+      if (!lang || !isSupportedLanguage(lang)) return;
 
       // Just change the language - let the appropriate handler take care of content
       changeLanguage(lang);
@@ -516,8 +575,14 @@ export function watchLanguageChanges(): void {
   storageWatcherBound = true;
 
   window.addEventListener('storage', (e) => {
-    if (e.key === 'preferred-language' && e.newValue && e.newValue !== currentLanguage) {
-      changeLanguage(e.newValue);
+    const nextLang = normalizeLanguageCode(e.newValue || '');
+    if (
+      e.key === 'preferred-language' &&
+      nextLang &&
+      isSupportedLanguage(nextLang) &&
+      nextLang !== currentLanguage
+    ) {
+      changeLanguage(nextLang);
     }
   });
 }

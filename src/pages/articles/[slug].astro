@@ -137,9 +137,18 @@ const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
   : slug;
+const normalizePageLanguage = (value: any) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+  if (['en', 'fr', 'es', 'pt-br', 'ar'].includes(raw)) return raw;
+  return 'fr';
+};
+const pageLang = normalizePageLanguage(
+  article?.lang || article?.language || article?.locale,
+);
 ---
 
-<BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl}>
+<BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl} lang={pageLang} loadAds={true}>
   <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
     <div
       class="absolute inset-0 pointer-events-none opacity-30"

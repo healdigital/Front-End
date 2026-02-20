@@ -269,6 +269,15 @@ const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
   : slug;
+const normalizePageLanguage = (value: any) => {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "pt" || raw === "pt_br" || raw === "ptbr") return "pt-br";
+  if (["en", "fr", "es", "pt-br", "ar"].includes(raw)) return raw;
+  return "fr";
+};
+const pageLang = normalizePageLanguage(
+  article?.lang || article?.language || article?.locale,
+);
 ---
 
 <BaseLayout
@@ -278,6 +287,8 @@ const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   image={image}
   jsonLd={[articleJsonLd, breadcrumbJsonLd, recipeJsonLd].filter(Boolean)}
   slug={slug}
+  lang={pageLang}
+  loadAds={true}
 >
   <!-- Main Article Content -->
   <div class="bg-[#fdf6e9]">
