@@ -13,7 +13,7 @@ import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.ast
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
-import { processArticleImageUrl, buildWpSquareVariantUrl } from '../utils/cdnUrlReplacer';
+import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
@@ -305,7 +305,7 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   const categoryLabel = getCategoryLabel(article);
   const filterKey = getFilterKey(categoryLabel);
   const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
-  const image = buildWpSquareVariantUrl(fallbackImage, 500);
+  const image = fallbackImage;
 
   return {
     id: article?._id?.toString?.() || article?.id?.toString?.() || `${index + 1}`,
@@ -382,7 +382,7 @@ const suggestedRecipes = normalizedArticles.length > 10
                 <img
                   src={featuredRecipe.image}
                   alt={featuredRecipe.title}
-                  class="w-full md:h-full object-cover"
+                  class="w-full md:h-full object-contain bg-[#f7f5ef]"
                   loading="eager"
                   fetchpriority="high"
                   decoding="async"
