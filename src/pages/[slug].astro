@@ -10,10 +10,7 @@ import MediavineSlot from "../components/MediavineSlot.astro";
 import { payloadFetch } from "../lib/payload.client";
 import {
   getAllArticlesFromMongo,
-  getRelatedArticlesFromMongo,
-  getMongoConnection,
 } from "../lib/mongo.server";
-import { decodeHtmlEntities as decodeEntities } from "../utils/decodeHtmlEntities";
 import {
   buildArticleJsonLd,
   buildBreadcrumbJsonLd,
@@ -28,9 +25,6 @@ const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 50;
 };
-
-// Expensive per-page related queries are opt-in to keep CI/deploy builds fast.
-const shouldBuildRelated = process.env.BUILD_RELATED === "1";
 
 export async function getStaticPaths() {
   let articles: any[] = [];
@@ -97,7 +91,7 @@ const slug =
 // TODO: Replace Payload comments with client-side SaaS comments
 const comments = [];
 
-// For SSG: Fetch related articles at build time
+/* For SSG: related articles fetch temporarily disabled.
 let relatedArticles: any[] = [];
 if (article && shouldBuildRelated) {
   try {
@@ -144,6 +138,7 @@ if (article && shouldBuildRelated) {
     relatedArticles = [];
   }
 }
+*/
 
 // Helper: Extract title
 const getTitle = () => {
@@ -422,6 +417,7 @@ const pageLang = normalizePageLanguage(
           <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
         </div>
 
+        {/* You Might Like Section (temporarily disabled)
         <!-- You Might Like Section -->
         <div class="bg-[#fffaf0] rounded-lg shadow p-6 border border-[#eadfcb]">
           <h2 class="text-2xl font-bold text-gray-900 mb-6">
@@ -494,6 +490,7 @@ const pageLang = normalizePageLanguage(
             )
           }
         </div>
+        */}
       </div>
 
       <!-- Right Section: Global Sidebar -->
