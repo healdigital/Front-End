@@ -47,7 +47,13 @@ const popularArticles = [
 <aside class={`hidden lg:flex flex-col w-full min-h-full ${className}`}>
   {isFull && (
     <div class="sidebar-block px-6 py-8 text-center">
-      <img src="/images/bernard-avatar-mask.png" alt="Bernard Laurance" class="w-[130px] h-[130px] rounded-full object-cover object-top mx-auto" />
+      <img
+        src="/images/bernard-avatar-mask.png"
+        alt="Bernard Laurance"
+        class="w-[130px] h-[130px] rounded-full object-cover object-top mx-auto"
+        loading="lazy"
+        decoding="async"
+      />
       <h3 class="font-body text-[28px] leading-[1.05] text-[#1A2335] mt-6">Bernard Laurance</h3>
       <p class="font-mono text-[13px] uppercase tracking-[0.15em] text-[#3E4652] mt-3">
         Cuisine reelle, recettes testees depuis 2010
@@ -119,7 +125,13 @@ const popularArticles = [
       <h4 class="sidebar-title">Masterclass videos</h4>
       <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden mt-5 pannel-data">
         <div class="relative">
-          <img src="/images/masterclass-video.jpg" alt="Masterclass" class="w-full h-[184px] object-cover" />
+          <img
+            src="/images/masterclass-video.jpg"
+            alt="Masterclass"
+            class="w-full h-[184px] object-cover"
+            loading="lazy"
+            decoding="async"
+          />
           <div class="absolute top-4 right-4 w-[68px] h-[68px] rounded-full bg-white/95 flex items-center justify-center text-[#1A2335]">
             <Icon name="video" size="sm" />
           </div>
@@ -178,10 +190,10 @@ const popularArticles = [
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Mes livres pour approfondir</h4>
       <div class="grid grid-cols-2 gap-3 mt-4">
-        <img src="/images/book-desserts.png" alt="Mes desserts" class="w-full h-[214px] object-cover rounded-[2px]" />
-        <img src="/images/book-vege.png" alt="Vege-terrien" class="w-full h-[214px] object-cover rounded-[2px]" />
-        <img src="/images/book-chocolat.png" alt="Je fais mon chocolat maison" class="w-full h-[214px] object-cover rounded-[2px]" />
-        <img src="/images/book-bouchee.png" alt="Je n'en ferai qu'une bouchee" class="w-full h-[214px] object-cover rounded-[2px]" />
+        <img src="/images/book-desserts.png" alt="Mes desserts" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
+        <img src="/images/book-vege.png" alt="Vege-terrien" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
+        <img src="/images/book-chocolat.png" alt="Je fais mon chocolat maison" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
+        <img src="/images/book-bouchee.png" alt="Je n'en ferai qu'une bouchee" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
       </div>
       <a href="/livres" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir tous les livres
@@ -194,7 +206,13 @@ const popularArticles = [
     <div class="space-y-4 mt-5">
       {popularArticles.map((article) => (
         <a href={article.slug} class="flex gap-3 items-start border-b border-[#D8D2C2] pb-4 last:border-b-0 last:pb-0">
-          <img src={article.image} alt="" class="w-[166px] h-[93px] object-cover rounded-[8px]" />
+          <img
+            src={article.image}
+            alt=""
+            class="w-[166px] h-[93px] object-cover rounded-[8px]"
+            loading="lazy"
+            decoding="async"
+          />
           <div>
             <p class="text-[13px] uppercase tracking-[0.08em] text-[#2D3643] font-mono article-date">{article.date}</p>
             <p class="text-[20px] leading-[1.1] text-[#111111] mt-2 font-heading article-title">{article.title}</p>

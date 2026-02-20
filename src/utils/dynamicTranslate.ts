@@ -153,6 +153,7 @@ const shouldIgnoreElement = (element: Element | null): boolean => {
   if (!element) return true;
   const tag = element.tagName;
   if (ignoreTags.has(tag)) return true;
+  if (element.closest('[data-no-translate="true"], [translate="no"]')) return true;
   if ((element as HTMLElement).isContentEditable) return true;
   return false;
 };
@@ -194,7 +195,7 @@ const getOriginalAttributeValue = (element: Element, attr: string, currentValue:
 
 const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; attr: string; original: string }> => {
   const targets: Array<{ element: Element; attr: string; original: string }> = [];
-  const elements = root.querySelectorAll('*');
+  const elements = root.querySelectorAll('[placeholder], [title], [aria-label], [alt]');
 
   elements.forEach((element) => {
     if (shouldIgnoreElement(element)) return;
@@ -212,13 +213,31 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
   if (!deeplEndpoint || deeplUnavailable) return texts;
+  if (!texts.length) return texts;
+
+  // Reduce API payload when batches contain repeated labels.
+  const uniqueTexts: string[] = [];
+  const textToIndex = new Map<string, number>();
+  const indexMap: number[] = [];
+  texts.forEach((text) => {
+    const existing = textToIndex.get(text);
+    if (existing !== undefined) {
+      indexMap.push(existing);
+      return;
+    }
+    const nextIndex = uniqueTexts.length;
+    uniqueTexts.push(text);
+    textToIndex.set(text, nextIndex);
+    indexMap.push(nextIndex);
+  });
+
   const requestUrl = deeplEndpoint.endsWith('/translate')
     ? deeplEndpoint
     : `${deeplEndpoint}/translate`;
 
   const params = new URLSearchParams();
   params.append('targetLang', targetLang);
-  texts.forEach((text) => params.append('text', text));
+  uniqueTexts.forEach((text) => params.append('text', text));
 
   const requestInit = {
     method: 'POST',
@@ -253,7 +272,12 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 
   const data = await response.json();
   const translations = Array.isArray(data?.translations) ? data.translations : [];
-  return translations.length ? translations : texts;
+  if (!translations.length) return texts;
+
+  return indexMap.map((index, originalIndex) => {
+    const translated = translations[index];
+    return typeof translated === 'string' ? translated : texts[originalIndex];
+  });
 };
 
 const translateTextNodes = async (targetLang: string): Promise<void> => {
@@ -265,7 +289,7 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
     const root = document.body;
     const nodes = collectTextNodes(root);
     const attributeTargets = collectAttributeTargets(root);
-    const batchSize = 40;
+    const batchSize = 80;
     const target = getDeepLTargetLang(targetLang);
 
     for (let i = 0; i < nodes.length; i += batchSize) {

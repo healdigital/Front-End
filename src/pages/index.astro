@@ -375,7 +375,14 @@ const suggestedRecipes = normalizedArticles.length > 10
 
             <article class="bg-white rounded-lg border border-border-light overflow-hidden flex flex-col md:flex-row">
               <div class="relative md:w-[55%]">
-                <img src={featuredRecipe.image} alt={featuredRecipe.title} class="w-full md:h-full object-cover" />
+                <img
+                  src={featuredRecipe.image}
+                  alt={featuredRecipe.title}
+                  class="w-full md:h-full object-cover"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                />
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
@@ -474,25 +481,48 @@ const suggestedRecipes = normalizedArticles.length > 10
   <!-- Dark Section -->
   <section class="relative py-16 md:py-24 overflow-hidden">
     <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
-    <img src="/images/dark-section-base.png" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover" />
-    <img src="/images/dark-section-grain.png" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover opacity-45 mix-blend-screen" />
+    <img
+      src="/images/dark-section-base.png"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 w-full h-full object-cover"
+      loading="lazy"
+      decoding="async"
+    />
+    <picture class="absolute inset-0 w-full h-full">
+      <source srcset="/images/dark-section-grain.avif" type="image/avif" />
+      <img
+        src="/images/dark-section-grain.webp"
+        alt=""
+        aria-hidden="true"
+        class="w-full h-full object-cover opacity-45 mix-blend-screen"
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
     <img
       src="/images/vector-left.png"
       alt=""
       aria-hidden="true"
       class="pointer-events-none absolute left-0 top-[34px] w-[120px] opacity-65 hidden lg:block"
+      loading="lazy"
+      decoding="async"
     />
     <img
       src="/images/vector-grapes.png"
       alt=""
       aria-hidden="true"
       class="pointer-events-none absolute left-0 bottom-[32px] w-[150px] opacity-60 hidden lg:block"
+      loading="lazy"
+      decoding="async"
     />
     <img
       src="/images/vector-whisk-top.png"
       alt=""
       aria-hidden="true"
       class="pointer-events-none absolute right-0 top-[360px] w-[120px] opacity-62 hidden lg:block"
+      loading="lazy"
+      decoding="async"
     />
 
     <div class="home-shell relative z-10">
@@ -513,7 +543,13 @@ const suggestedRecipes = normalizedArticles.length > 10
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
         <div class="max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
-            <img src="/images/ateliers-physiques.jpg" alt="Ateliers physiques" class="w-full h-full object-cover" />
+            <img
+              src="/images/ateliers-physiques.jpg"
+              alt="Ateliers physiques"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
             <div class="absolute bottom-4 left-4">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
                 <Icon name="map-pin" size="sm" /> Paris &amp; Lyon
@@ -539,7 +575,13 @@ const suggestedRecipes = normalizedArticles.length > 10
 
         <div class="max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
-            <img src="/images/masterclass-video.jpg" alt="Masterclass" class="w-full h-full object-cover" />
+            <img
+              src="/images/masterclass-video.jpg"
+              alt="Masterclass"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
             <div class="absolute bottom-4 left-4 flex items-center gap-2">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
                 <Icon name="lock" size="sm" /> Acc&egrave;s illimit&eacute;
