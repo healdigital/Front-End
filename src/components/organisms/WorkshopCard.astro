@@ -11,6 +11,7 @@ interface Props {
   maxParticipants: number;
   currentParticipants?: number;
   slug: string;
+  status?: 'OPEN' | 'LIMITED' | 'SOLD_OUT';
 }
 
 const {
@@ -22,19 +23,23 @@ const {
   maxParticipants,
   currentParticipants = 0,
   slug,
+  status = 'OPEN',
 } = Astro.props;
 
-const isFull = currentParticipants >= maxParticipants;
-const spotsLeft = maxParticipants - currentParticipants;
+const safeMaxParticipants = Number.isFinite(maxParticipants) && maxParticipants > 0 ? maxParticipants : 0;
+const safeCurrentParticipants = Number.isFinite(currentParticipants) && currentParticipants >= 0 ? currentParticipants : 0;
+const normalizedStatus = String(status || 'OPEN').toUpperCase();
+const spotsLeft = Math.max(safeMaxParticipants - safeCurrentParticipants, 0);
+const isFull = normalizedStatus === 'SOLD_OUT' || (safeMaxParticipants > 0 && spotsLeft <= 0);
 
 let statusLabel = 'Places disponibles';
 let statusClass = 'text-status-success';
 
-if (isFull) {
-  statusLabel = 'Complet';
+if (normalizedStatus === 'SOLD_OUT' || isFull) {
+  statusLabel = 'Fully booked';
   statusClass = 'text-status-error';
-} else if (spotsLeft <= 2) {
-  statusLabel = 'Derni&egrave;res places';
+} else if (normalizedStatus === 'LIMITED') {
+  statusLabel = 'Last spots';
   statusClass = 'text-status-error';
 }
 
@@ -61,7 +66,7 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
     <h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">{title}</h3>
 
     <div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4">
-      <span class="flex items-center gap-2"><Icon name="users" size="sm" /> {maxParticipants} personnes maximum</span>
+      <span class="flex items-center gap-2"><Icon name="users" size="sm" /> {safeMaxParticipants || '--'} personnes maximum</span>
       <span class="flex items-center gap-2"><Icon name="clock" size="sm" /> {duration}</span>
     </div>
 
@@ -73,7 +78,7 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
         <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>
       </div>
       <Button href={isFull ? undefined : slug} variant={isFull ? 'disabled' : 'primary'} size="sm">
-        {isFull ? 'Complet' : 'R&eacute;server'}
+        {isFull ? 'Fully booked' : 'R&eacute;server'}
       </Button>
     </div>
   </div>

@@ -154,7 +154,7 @@ const fallbackRecipes = [
   },
 ];
 
-const workshops = [
+const fallbackWorkshops = [
   {
     id: '1',
     title: 'Atelier cuisine chinoise',
@@ -165,6 +165,7 @@ const workshops = [
     maxParticipants: 8,
     currentParticipants: 7,
     slug: '/atelier-cuisine-chinoise',
+    status: 'LIMITED',
   },
   {
     id: '2',
@@ -176,6 +177,7 @@ const workshops = [
     maxParticipants: 8,
     currentParticipants: 4,
     slug: '/atelier-cuisine-bresilienne',
+    status: 'OPEN',
   },
   {
     id: '3',
@@ -187,8 +189,133 @@ const workshops = [
     maxParticipants: 8,
     currentParticipants: 8,
     slug: '/atelier-macarons',
+    status: 'SOLD_OUT',
   },
 ];
+
+const WORKSHOPS_SOURCE_URL =
+  process.env.WORKSHOPS_CACHE_URL ||
+  'https://quiet-sound-809e.naveengoyal002.workers.dev/';
+const WORKSHOPS_FETCH_TIMEOUT_MS = 2000;
+const WORKSHOPS_LIMIT = 6;
+
+const decodeEntities = (value: string): string =>
+  String(value || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, '"')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&ndash;/g, '-')
+    .replace(/&mdash;/g, '-')
+    .replace(/&hellip;/g, '...')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toPositiveNumber = (value: any, fallback = 0): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
+};
+
+const toWorkshopDate = (value: any): Date | null => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatWorkshopDuration = (value: any): string => {
+  const minutes = toPositiveNumber(value, 0);
+  if (!minutes) return '--';
+  const hours = Math.floor(minutes / 60);
+  const restMinutes = minutes % 60;
+  if (hours && restMinutes) return `${hours}h ${restMinutes}m`;
+  if (hours) return `${hours}h`;
+  return `${restMinutes}m`;
+};
+
+const normalizeWorkshopStatus = (value: any): 'OPEN' | 'LIMITED' | 'SOLD_OUT' => {
+  const raw = String(value || '').toUpperCase().trim();
+  if (raw === 'SOLD_OUT') return 'SOLD_OUT';
+  if (raw === 'LIMITED') return 'LIMITED';
+  return 'OPEN';
+};
+
+const mapWorkshopItem = (item: any, index: number) => {
+  if (!item || typeof item !== 'object') return null;
+
+  const parsedDate = toWorkshopDate(item.startAt || item.date);
+  if (!parsedDate) return null;
+
+  const title = decodeEntities(item.title || '');
+  if (!title) return null;
+
+  const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
+  const spotsLeft = toPositiveNumber(item.spotsLeft, 0);
+  const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
+
+  return {
+    id: String(item.id || item.slug || index + 1),
+    title,
+    date: parsedDate,
+    image: item?.image?.src || fallbackWorkshops[index % fallbackWorkshops.length]?.image || '/images/workshop-dumplings.jpg',
+    price: toPositiveNumber(item.price, fallbackWorkshops[index % fallbackWorkshops.length]?.price || 0),
+    duration: formatWorkshopDuration(item.durationMin || item.duration || 0),
+    maxParticipants: maxParticipants || fallbackWorkshops[index % fallbackWorkshops.length]?.maxParticipants || 0,
+    currentParticipants,
+    slug: String(item.bookingUrl || item.slug || '/ateliers'),
+    status: normalizeWorkshopStatus(item.status),
+  };
+};
+
+const loadUpcomingWorkshops = async () => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), WORKSHOPS_FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(WORKSHOPS_SOURCE_URL, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`workshops_fetch_http_${response.status}`);
+    }
+
+    const payload = await response.json();
+    const items = Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload)
+      ? payload
+      : [];
+
+    const normalized = items
+      .map((item: any, index: number) => mapWorkshopItem(item, index))
+      .filter(Boolean)
+      .sort((a: any, b: any) => a.date.getTime() - b.date.getTime())
+      .slice(0, WORKSHOPS_LIMIT);
+
+    if (normalized.length > 0) {
+      return normalized;
+    }
+
+    return fallbackWorkshops;
+  } catch (error) {
+    console.warn('[HOME] Workshops cache fetch failed, using fallback:', error);
+    return fallbackWorkshops;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const workshops = await loadUpcomingWorkshops();
 
 const fallbackSuggestedRecipes = [
   {
@@ -584,16 +711,16 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           <div class="p-6 lg:p-7">
             <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">Ateliers Physiques</h3>
             <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
-              <span class="flex items-center gap-1"><Icon name="users" size="sm" /> 8 personnes maximum</span>
-              <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 4 heures</span>
+              <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>8 personnes maximum</span></span>
+              <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>4 heures</span></span>
             </div>
             <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
-                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
+                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>145&euro;</div>
               </div>
-              <Button href="/ateliers" variant="primary" size="sm">R&eacute;server</Button>
+              <Button href="/ateliers" variant="primary" size="sm" data-workshops-feature-cta>R&eacute;server</Button>
             </div>
           </div>
         </div>
@@ -651,7 +778,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         </a>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center"
+        data-workshops-grid
+        data-workshops-api={WORKSHOPS_SOURCE_URL}
+        data-workshops-limit={String(WORKSHOPS_LIMIT)}
+      >
         {workshops.map((workshop) => (
           <WorkshopCard
             title={workshop.title}
@@ -662,6 +794,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             maxParticipants={workshop.maxParticipants}
             currentParticipants={workshop.currentParticipants}
             slug={workshop.slug}
+            status={workshop.status as 'OPEN' | 'LIMITED' | 'SOLD_OUT'}
           />
         ))}
       </div>
@@ -1037,9 +1170,202 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     });
   }
 
+  function setupWorkshopsLiveData() {
+    const grid = document.querySelector('[data-workshops-grid]');
+    if (!(grid instanceof HTMLElement)) return;
+    if (grid.dataset.workshopsHydrated === 'loading' || grid.dataset.workshopsHydrated === 'true') return;
+
+    const apiUrl = String(grid.dataset.workshopsApi || '').trim();
+    if (!apiUrl) return;
+
+    const capacityEl = document.querySelector('[data-workshops-feature-capacity]');
+    const durationEl = document.querySelector('[data-workshops-feature-duration]');
+    const priceEl = document.querySelector('[data-workshops-feature-price]');
+    const featureCtaEl = document.querySelector('[data-workshops-feature-cta]');
+
+    const limitValue = Number(grid.dataset.workshopsLimit || '3');
+    const limit = Number.isFinite(limitValue) && limitValue > 0 ? Math.floor(limitValue) : 3;
+    const parser = new DOMParser();
+    const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+    });
+
+    const decodeEntities = (value = '') =>
+      parser.parseFromString(`<!doctype html><body>${String(value || '')}`, 'text/html').body.textContent || '';
+
+    const escapeHtml = (value = '') =>
+      String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const toPositiveNumber = (value, fallback = 0) => {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
+    };
+
+    const formatDuration = (value) => {
+      const minutes = toPositiveNumber(value, 0);
+      if (!minutes) return '--';
+      const hours = Math.floor(minutes / 60);
+      const restMinutes = minutes % 60;
+      if (hours && restMinutes) return `${hours}h ${restMinutes}m`;
+      if (hours) return `${hours}h`;
+      return `${restMinutes}m`;
+    };
+
+    const normalizeStatus = (value) => {
+      const raw = String(value || '').toUpperCase().trim();
+      if (raw === 'SOLD_OUT') return 'SOLD_OUT';
+      if (raw === 'LIMITED') return 'LIMITED';
+      return 'OPEN';
+    };
+
+    const normalizeHref = (value = '') => {
+      const raw = String(value || '').trim();
+      if (!raw) return '/ateliers';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
+    };
+
+    const mapWorkshopItem = (item, index) => {
+      if (!item || typeof item !== 'object') return null;
+
+      const parsedDate = new Date(item.startAt || item.date || '');
+      if (Number.isNaN(parsedDate.getTime())) return null;
+
+      const title = decodeEntities(item.title || '').replace(/\s+/g, ' ').trim();
+      if (!title) return null;
+
+      const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
+      const spotsLeft = toPositiveNumber(item.spotsLeft, 0);
+      const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
+
+      return {
+        id: String(item.id || item.slug || index + 1),
+        title,
+        date: parsedDate,
+        image: String(item?.image?.src || ''),
+        price: toPositiveNumber(item.price, 0),
+        duration: formatDuration(item.durationMin || item.duration || 0),
+        maxParticipants,
+        currentParticipants,
+        status: normalizeStatus(item.status),
+        slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
+      };
+    };
+
+    const formatDateParts = (date) => {
+      const parts = dateFormatter.formatToParts(date);
+      return {
+        day: parts.find((part) => part.type === 'day')?.value || '',
+        month: parts.find((part) => part.type === 'month')?.value || '',
+      };
+    };
+
+    const usersIcon = '<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 inline-block flex-shrink-0 " aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle><path d="M23 21v-2a4 4 0 00-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    const clockIcon = '<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 inline-block flex-shrink-0 " aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>';
+
+    const renderWorkshopCard = (workshop) => {
+      const { day, month } = formatDateParts(workshop.date);
+      const spotsLeft = Math.max(workshop.maxParticipants - workshop.currentParticipants, 0);
+      const isFull = workshop.status === 'SOLD_OUT' || (workshop.maxParticipants > 0 && spotsLeft <= 0);
+      const statusLabel = workshop.status === 'LIMITED' ? 'Last spots' : workshop.status === 'SOLD_OUT' || isFull ? 'Fully booked' : 'Places disponibles';
+      const statusClass = workshop.status === 'LIMITED' || workshop.status === 'SOLD_OUT' || isFull ? 'text-status-error' : 'text-status-success';
+      const isExternal = /^https?:\/\//i.test(workshop.slug);
+      const cta = isFull
+        ? '<button type="button" class="inline-flex items-center justify-center font-button rounded border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2 bg-status-disabled text-primary-white cursor-not-allowed opacity-70 px-3 py-1.5 text-sm " disabled aria-disabled="true">Fully booked</button>'
+        : `<a href="${escapeHtml(workshop.slug)}" class="inline-flex items-center justify-center font-button rounded border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary-turquoise text-primary-white hover:bg-opacity-90 active:scale-95 focus:ring-primary-turquoise px-3 py-1.5 text-sm " ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ''}>R&eacute;server</a>`;
+
+      const capacityLabel = workshop.maxParticipants > 0 ? `${workshop.maxParticipants} personnes maximum` : '--';
+      const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
+      const imageSrc = workshop.image || '/images/workshop-dumplings.jpg';
+
+      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${statusLabel}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
+    };
+
+    const updateFeatureCard = (workshopList) => {
+      if (!Array.isArray(workshopList) || workshopList.length === 0) return;
+
+      const firstWorkshop = workshopList[0];
+      const minPrice = workshopList.reduce((currentMin, workshop) => {
+        const price = toPositiveNumber(workshop.price, 0);
+        if (price <= 0) return currentMin;
+        return price < currentMin ? price : currentMin;
+      }, Number.POSITIVE_INFINITY);
+
+      if (capacityEl instanceof HTMLElement) {
+        capacityEl.textContent = firstWorkshop.maxParticipants > 0 ? `${firstWorkshop.maxParticipants} personnes maximum` : '--';
+      }
+
+      if (durationEl instanceof HTMLElement) {
+        durationEl.textContent = firstWorkshop.duration || '--';
+      }
+
+      if (priceEl instanceof HTMLElement && Number.isFinite(minPrice)) {
+        priceEl.innerHTML = `${Math.round(minPrice)}&euro;`;
+      }
+
+      if (featureCtaEl instanceof HTMLAnchorElement && firstWorkshop.slug) {
+        featureCtaEl.href = firstWorkshop.slug;
+        if (/^https?:\/\//i.test(firstWorkshop.slug)) {
+          featureCtaEl.target = '_blank';
+          featureCtaEl.rel = 'noopener noreferrer';
+        } else {
+          featureCtaEl.removeAttribute('target');
+          featureCtaEl.removeAttribute('rel');
+        }
+      }
+    };
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3500);
+    grid.dataset.workshopsHydrated = 'loading';
+
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload) ? payload : [];
+        const normalized = items
+          .map((item, index) => mapWorkshopItem(item, index))
+          .filter(Boolean)
+          .sort((a, b) => a.date.getTime() - b.date.getTime())
+          .slice(0, limit);
+
+        if (normalized.length === 0) {
+          grid.dataset.workshopsHydrated = 'empty';
+          return;
+        }
+
+        grid.innerHTML = normalized.map((workshop) => renderWorkshopCard(workshop)).join('');
+        updateFeatureCard(normalized);
+        grid.dataset.workshopsHydrated = 'true';
+      })
+      .catch((error) => {
+        console.warn('[HOME] Live workshops fetch failed, keeping prerendered cards:', error);
+        grid.dataset.workshopsHydrated = 'error';
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+      });
+  }
+
+  setupWorkshopsLiveData();
   setupHomepageFilters();
   setupViewToggle();
   document.addEventListener('astro:page-load', () => {
+    setupWorkshopsLiveData();
     setupHomepageFilters();
     setupViewToggle();
   });
