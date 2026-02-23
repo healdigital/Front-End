@@ -9,6 +9,9 @@ interface Props {
 
 const { variant = 'full', className = '' } = Astro.props as Props;
 const isFull = variant === 'full';
+const workshopsApiUrl =
+  process.env.WORKSHOPS_CACHE_URL ||
+  'https://quiet-sound-809e.naveengoyal002.workers.dev/';
 
 const popularArticles = [
   {
@@ -88,19 +91,19 @@ const popularArticles = [
   {isFull && (
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Apprendre en atelier</h4>
-      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 mt-5">
-        <p class="sidebar-subtitle font-mono text-[13px] uppercase tracking-[0.14em] text-[#B24639]">Dernieres places</p>
+      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 mt-5" data-sidebar-workshop data-workshops-api={workshopsApiUrl}>
+        <p class="sidebar-subtitle font-mono text-[13px] uppercase tracking-[0.14em] text-[#5F6671]" data-sidebar-workshop-status>Chargement...</p>
         <div class="mt-3 flex items-start justify-between gap-4">
-          <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111]">Atelier cuisine chinoise</h5>
+          <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111]" data-sidebar-workshop-title>Atelier a venir</h5>
           <div class="date-box bg-[#F7F5EF] rounded-[14px] p-2 text-center min-w-[74px] border border-[#D8D2C2]">
-            <span class="block text-[13px] uppercase text-[#8B8880] font-mono month-title">Mar</span>
-            <span class="block text-[34px] leading-none text-[#111111] font-heading date-title">9</span>
+            <span class="block text-[13px] uppercase text-[#8B8880] font-mono month-title" data-sidebar-workshop-month>--</span>
+            <span class="block text-[34px] leading-none text-[#111111] font-heading date-title" data-sidebar-workshop-day>--</span>
           </div>
         </div>
 
         <div class="flex items-center gap-4 text-[#2D3440] text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
-          <span class="flex items-center gap-1"><Icon name="users" size="sm" /> 8 personnes maximum</span>
-          <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 4 heures</span>
+          <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-sidebar-workshop-capacity>--</span></span>
+          <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-sidebar-workshop-duration>--</span></span>
         </div>
 
         <p class="text-[16px] text-[#5F6671] mt-5 leading-[1.65] description-data">Apprenez directement a mes cotes dans un atelier intimiste.</p>
@@ -108,9 +111,9 @@ const popularArticles = [
         <div class="flex items-end justify-between mt-8 pt-5 border-t border-[#D8D2C2]">
           <div>
             <span class="text-[13px] uppercase tracking-[0.14em] text-[#5F6671]">A partir de</span>
-            <div class="font-heading text-[44px] leading-none text-[#111111]">85&euro;</div>
+            <div class="font-heading text-[44px] leading-none text-[#111111]" data-sidebar-workshop-price>--</div>
           </div>
-          <Button href="/atelier-cuisine-chinoise" class="button-data" variant="primary" size="sm">Reserver</Button>
+          <Button href="/ateliers" class="button-data" variant="primary" size="sm" data-sidebar-workshop-cta>Reserver</Button>
         </div>
       </div>
 
@@ -228,3 +231,175 @@ const popularArticles = [
     </div>
   </div>
 </aside>
+
+<script>
+  // @ts-nocheck
+  function setupSidebarWorkshopData() {
+    const blocks = Array.from(document.querySelectorAll('[data-sidebar-workshop]'));
+    if (!blocks.length) return;
+
+    const parser = new DOMParser();
+    const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+    });
+
+    const decodeEntities = (value = '') =>
+      parser.parseFromString(`<!doctype html><body>${String(value || '')}`, 'text/html').body.textContent || '';
+
+    const toPositiveNumber = (value, fallback = 0) => {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
+    };
+
+    const formatDuration = (value) => {
+      const minutes = toPositiveNumber(value, 0);
+      if (!minutes) return '--';
+      const hours = Math.floor(minutes / 60);
+      const restMinutes = minutes % 60;
+      if (hours && restMinutes) return `${hours}h ${restMinutes}m`;
+      if (hours) return `${hours}h`;
+      return `${restMinutes}m`;
+    };
+
+    const normalizeStatus = (value) => {
+      const raw = String(value || '').toUpperCase().trim();
+      if (raw === 'SOLD_OUT') return 'SOLD_OUT';
+      if (raw === 'LIMITED') return 'LIMITED';
+      return 'OPEN';
+    };
+
+    const normalizeHref = (value = '') => {
+      const raw = String(value || '').trim();
+      if (!raw) return '/ateliers';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
+    };
+
+    const mapWorkshopItem = (item) => {
+      if (!item || typeof item !== 'object') return null;
+      const parsedDate = new Date(item.startAt || item.date || '');
+      if (Number.isNaN(parsedDate.getTime())) return null;
+
+      const title = decodeEntities(item.title || '').replace(/\s+/g, ' ').trim();
+      if (!title) return null;
+
+      const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
+      const spotsLeft = toPositiveNumber(item.spotsLeft, 0);
+      const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
+
+      return {
+        title,
+        date: parsedDate,
+        price: toPositiveNumber(item.price, 0),
+        duration: formatDuration(item.durationMin || item.duration || 0),
+        maxParticipants,
+        currentParticipants,
+        status: normalizeStatus(item.status),
+        slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
+      };
+    };
+
+    blocks.forEach((block) => {
+      if (!(block instanceof HTMLElement)) return;
+      if (block.dataset.workshopLoaded === 'loading' || block.dataset.workshopLoaded === 'true') return;
+
+      const apiUrl = String(block.dataset.workshopsApi || '').trim();
+      if (!apiUrl) return;
+
+      block.dataset.workshopLoaded = 'loading';
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 5000);
+
+      fetch(apiUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+        signal: controller.signal,
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then((payload) => {
+          const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload) ? payload : [];
+          const workshops = items
+            .map((item) => mapWorkshopItem(item))
+            .filter(Boolean)
+            .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+          const firstWorkshop = workshops[0];
+          if (!firstWorkshop) {
+            block.dataset.workshopLoaded = 'empty';
+            return;
+          }
+
+          const monthEl = block.querySelector('[data-sidebar-workshop-month]');
+          const dayEl = block.querySelector('[data-sidebar-workshop-day]');
+          const titleEl = block.querySelector('[data-sidebar-workshop-title]');
+          const statusEl = block.querySelector('[data-sidebar-workshop-status]');
+          const capacityEl = block.querySelector('[data-sidebar-workshop-capacity]');
+          const durationEl = block.querySelector('[data-sidebar-workshop-duration]');
+          const priceEl = block.querySelector('[data-sidebar-workshop-price]');
+          const ctaEl = block.querySelector('[data-sidebar-workshop-cta]');
+
+          if (titleEl instanceof HTMLElement) {
+            titleEl.textContent = firstWorkshop.title;
+          }
+
+          const dateParts = dateFormatter.formatToParts(firstWorkshop.date);
+          const month = dateParts.find((part) => part.type === 'month')?.value || '--';
+          const day = dateParts.find((part) => part.type === 'day')?.value || '--';
+
+          if (monthEl instanceof HTMLElement) monthEl.textContent = month;
+          if (dayEl instanceof HTMLElement) dayEl.textContent = day;
+
+          if (statusEl instanceof HTMLElement) {
+            const spotsLeft = Math.max(firstWorkshop.maxParticipants - firstWorkshop.currentParticipants, 0);
+            const isSoldOut = firstWorkshop.status === 'SOLD_OUT' || (firstWorkshop.maxParticipants > 0 && spotsLeft <= 0);
+            statusEl.textContent = isSoldOut
+              ? 'Complet'
+              : firstWorkshop.status === 'LIMITED'
+              ? 'Dernieres places'
+              : 'Places disponibles';
+            statusEl.style.color = isSoldOut || firstWorkshop.status === 'LIMITED' ? '#B24639' : '#2E7D5A';
+          }
+
+          if (capacityEl instanceof HTMLElement) {
+            capacityEl.textContent = firstWorkshop.maxParticipants > 0 ? `${firstWorkshop.maxParticipants} personnes maximum` : '--';
+          }
+
+          if (durationEl instanceof HTMLElement) {
+            durationEl.textContent = firstWorkshop.duration || '--';
+          }
+
+          if (priceEl instanceof HTMLElement) {
+            priceEl.textContent = firstWorkshop.price > 0 ? `${Math.round(firstWorkshop.price)}€` : '--';
+          }
+
+          if (ctaEl instanceof HTMLAnchorElement) {
+            ctaEl.href = firstWorkshop.slug || '/ateliers';
+            if (/^https?:\/\//i.test(firstWorkshop.slug || '')) {
+              ctaEl.target = '_blank';
+              ctaEl.rel = 'noopener noreferrer';
+            } else {
+              ctaEl.removeAttribute('target');
+              ctaEl.removeAttribute('rel');
+            }
+          }
+
+          block.dataset.workshopLoaded = 'true';
+        })
+        .catch((error) => {
+          console.warn('[SIDEBAR] Failed to load workshop data:', error);
+          block.dataset.workshopLoaded = 'error';
+        })
+        .finally(() => {
+          window.clearTimeout(timeout);
+        });
+    });
+  }
+
+  setupSidebarWorkshopData();
+  document.addEventListener('astro:page-load', setupSidebarWorkshopData);
+</script>
