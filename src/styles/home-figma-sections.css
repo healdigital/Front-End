@@ -128,6 +128,37 @@ h4.sidebar-title {
   position: static;
 }
 
+section.home-page-section {
+  padding-top: 48px !important;
+  padding-bottom: 48px !important;
+}
+
+.home-main-column-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.home-main-column-stack > section {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.home-main-column-stack > .home-main-block {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  section.home-page-section {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  .home-main-column-stack {
+    gap: 64px;
+  }
+}
+
 .bio-section-card,
 .books-section-card {
   border: 1px solid #d8d2c2;

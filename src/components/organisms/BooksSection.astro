@@ -11,7 +11,7 @@ const { embedded = false } = Astro.props as Props;
     <div class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28" aria-hidden="true"></div>
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
-    <div class="flex items-center gap-6 mb-12 mt-12">
+    <div class={`flex items-center gap-6 mb-12 ${embedded ? '' : 'mt-12'}`}>
       <h2 class="font-heading text-3xl lg:text-5xl text-[#171F2C] whitespace-nowrap typ-section">Mes livres de recettes</h2>
       <div class="flex-1 h-px bg-[#D7D1C2] hidden md:block"></div>
     </div>

@@ -10,6 +10,7 @@ interface Props {
   duration: string;
   maxParticipants: number;
   currentParticipants?: number;
+  spotsLeft?: number;
   slug: string;
   status?: 'OPEN' | 'LIMITED' | 'SOLD_OUT';
 }
@@ -22,6 +23,7 @@ const {
   duration,
   maxParticipants,
   currentParticipants = 0,
+  spotsLeft: spotsLeftProp,
   slug,
   status = 'OPEN',
 } = Astro.props;
@@ -29,18 +31,28 @@ const {
 const safeMaxParticipants = Number.isFinite(maxParticipants) && maxParticipants > 0 ? maxParticipants : 0;
 const safeCurrentParticipants = Number.isFinite(currentParticipants) && currentParticipants >= 0 ? currentParticipants : 0;
 const normalizedStatus = String(status || 'OPEN').toUpperCase();
-const spotsLeft = Math.max(safeMaxParticipants - safeCurrentParticipants, 0);
-const isFull = normalizedStatus === 'SOLD_OUT' || (safeMaxParticipants > 0 && spotsLeft <= 0);
+const derivedSpotsLeft = safeMaxParticipants > 0 ? Math.max(safeMaxParticipants - safeCurrentParticipants, 0) : null;
+const safeSpotsLeft = Number.isFinite(spotsLeftProp) && spotsLeftProp >= 0 ? spotsLeftProp : derivedSpotsLeft;
+const hasSpotsInfo = Number.isFinite(safeSpotsLeft);
+const isFull = normalizedStatus === 'SOLD_OUT' || ((safeMaxParticipants > 0 || hasSpotsInfo) && (safeSpotsLeft ?? 0) <= 0);
 
 let statusLabel = 'Places disponibles';
 let statusClass = 'text-status-success';
 
 if (normalizedStatus === 'SOLD_OUT' || isFull) {
-  statusLabel = 'Fully booked';
+  statusLabel = 'Complet';
   statusClass = 'text-status-error';
-} else if (normalizedStatus === 'LIMITED') {
-  statusLabel = 'Last spots';
-  statusClass = 'text-status-error';
+} else {
+  if (hasSpotsInfo) {
+    const plural = safeSpotsLeft === 1 ? '' : 's';
+    statusLabel = `${safeSpotsLeft} place${plural} disponible${plural}`;
+  } else if (normalizedStatus === 'LIMITED') {
+    statusLabel = 'Dernieres places';
+  }
+
+  if (normalizedStatus === 'LIMITED') {
+    statusClass = 'text-status-error';
+  }
 }
 
 const formatter = new Intl.DateTimeFormat('fr-FR', {
@@ -62,7 +74,7 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
   </div>
 
   <div class="p-6">
-    <p class={`text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta`} set:html={statusLabel}></p>
+    <p class={`text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta`}>{statusLabel}</p>
     <h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">{title}</h3>
 
     <div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4">
@@ -78,7 +90,7 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
         <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>
       </div>
       <Button href={isFull ? undefined : slug} variant={isFull ? 'disabled' : 'primary'} size="sm">
-        {isFull ? 'Fully booked' : 'R&eacute;server'}
+        {isFull ? 'Complet' : 'R&eacute;server'}
       </Button>
     </div>
   </div>

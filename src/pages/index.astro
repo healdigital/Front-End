@@ -223,7 +223,12 @@ const mapWorkshopItem = (item: any, index: number) => {
   if (!title) return null;
 
   const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
-  const spotsLeft = toPositiveNumber(item.spotsLeft, 0);
+  const rawSpotsLeft = toPositiveNumber(item.spotsLeft, Number.NaN);
+  const spotsLeft = Number.isFinite(rawSpotsLeft)
+    ? rawSpotsLeft
+    : maxParticipants > 0
+    ? Math.max(maxParticipants - toPositiveNumber(item.currentParticipants, 0), 0)
+    : 0;
   const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
 
   return {
@@ -235,6 +240,7 @@ const mapWorkshopItem = (item: any, index: number) => {
     duration: formatWorkshopDuration(item.durationMin || item.duration || 0),
     maxParticipants,
     currentParticipants,
+    spotsLeft,
     location: decodeEntities(item.location || ''),
     slug: normalizeWorkshopHref(item.bookingUrl || item.slug || '/ateliers'),
     status: normalizeWorkshopStatus(item.status),
@@ -280,6 +286,62 @@ const loadUpcomingWorkshops = async () => {
 };
 
 const workshops = await loadUpcomingWorkshops();
+const featuredWorkshop = workshops[0] || null;
+
+const getWorkshopAvailability = (workshop: any) => {
+  if (!workshop || typeof workshop !== 'object') {
+    return {
+      label: 'Places disponibles',
+      className: 'text-status-success',
+    };
+  }
+
+  const maxParticipants = toPositiveNumber(workshop.maxParticipants, 0);
+  const currentParticipants = toPositiveNumber(workshop.currentParticipants, 0);
+  const directSpotsLeft = toPositiveNumber(workshop.spotsLeft, Number.NaN);
+  const spotsLeft = Number.isFinite(directSpotsLeft)
+    ? directSpotsLeft
+    : maxParticipants > 0
+    ? Math.max(maxParticipants - currentParticipants, 0)
+    : Number.NaN;
+  const hasSpotsInfo = Number.isFinite(spotsLeft);
+
+  const isFull =
+    String(workshop.status || '').toUpperCase() === 'SOLD_OUT' ||
+    ((maxParticipants > 0 || hasSpotsInfo) && (spotsLeft || 0) <= 0);
+
+  if (isFull) {
+    return {
+      label: 'Complet',
+      className: 'text-status-error',
+    };
+  }
+
+  if (hasSpotsInfo) {
+    const plural = spotsLeft === 1 ? '' : 's';
+    return {
+      label: `${spotsLeft} place${plural} disponible${plural}`,
+      className:
+        String(workshop.status || '').toUpperCase() === 'LIMITED'
+          ? 'text-status-error'
+          : 'text-status-success',
+    };
+  }
+
+  if (String(workshop.status || '').toUpperCase() === 'LIMITED') {
+    return {
+      label: 'Dernieres places',
+      className: 'text-status-error',
+    };
+  }
+
+  return {
+    label: 'Places disponibles',
+    className: 'text-status-success',
+  };
+};
+
+const featuredWorkshopAvailability = getWorkshopAvailability(featuredWorkshop);
 
 const fallbackSuggestedRecipes = [
   {
@@ -465,17 +527,17 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 >
   <HeroCarousel cards={heroCards} />
 
-  <section class="relative bg-secondary-cream overflow-hidden p-4">
+  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-30"
       aria-hidden="true"
     ></div>
     <div class="home-shell-width relative z-10">
       <div class="home-two-column">
-        <div class="home-main-column">
+        <div class="home-main-column home-main-column-stack">
           <!-- Recette du moment -->
-          <div class="mb-12">
-            <div class="flex items-center gap-4 mb-8 mt-8">
+          <div class="home-main-block">
+            <div class="flex items-center gap-4 mb-8">
               <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section">Recette du moment</h2>
               <div class="flex-1 h-px bg-border-primary"></div>
             </div>
@@ -521,7 +583,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           </div>
 
           <!-- Decouvrez mes recettes -->
-          <div>
+          <div class="home-main-block">
             <div class="flex items-center gap-4 mb-8">
               <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section">D&eacute;couvrez mes recettes</h2>
               <div class="flex-1 h-px bg-border-primary"></div>
@@ -595,7 +657,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   </section>
 
   <!-- Dark Section -->
-  <section class="relative py-16 md:py-24 overflow-hidden">
+  <section class="relative overflow-hidden home-page-section home-page-section--dark">
     <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
     <img
       src="/images/dark-section-base.png"
@@ -660,8 +722,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         <div class="max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
             <img
-              src={workshops[0]?.image || WORKSHOP_FALLBACK_IMAGE}
-              alt={workshops[0]?.title || 'Atelier'}
+              src={featuredWorkshop?.image || WORKSHOP_FALLBACK_IMAGE}
+              alt={featuredWorkshop?.title || 'Atelier'}
               class="w-full h-full object-cover"
               loading="lazy"
               decoding="async"
@@ -669,23 +731,26 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             />
             <div class="absolute bottom-4 left-4">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
-                <Icon name="map-pin" size="sm" /> <span data-workshops-feature-location>{workshops[0]?.location || 'Paris'}</span>
+                <Icon name="map-pin" size="sm" /> <span data-workshops-feature-location>{featuredWorkshop?.location || 'Paris'}</span>
               </span>
             </div>
           </div>
           <div class="p-6 lg:p-7">
-            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3" data-workshops-feature-title>{workshops[0]?.title || 'Ateliers Physiques'}</h3>
+            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3" data-workshops-feature-title>{featuredWorkshop?.title || 'Ateliers Physiques'}</h3>
+            <p class={`text-[13px] uppercase tracking-[0.14em] font-mono mb-4 ${featuredWorkshopAvailability.className}`} data-workshops-feature-availability>
+              {featuredWorkshopAvailability.label}
+            </p>
             <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
-              <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>{workshops[0]?.maxParticipants ? `${workshops[0].maxParticipants} personnes maximum` : '--'}</span></span>
-              <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>{workshops[0]?.duration || '--'}</span></span>
+              <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>{featuredWorkshop?.maxParticipants ? `${featuredWorkshop.maxParticipants} personnes maximum` : '--'}</span></span>
+              <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>{featuredWorkshop?.duration || '--'}</span></span>
             </div>
             <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
-                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{workshops[0]?.price ? `${Math.round(workshops[0].price)}€` : '--'}</div>
+                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}\u20AC` : '--'}</div>
               </div>
-              <Button href={workshops[0]?.slug || '/ateliers'} variant="primary" size="sm" data-workshops-feature-cta>R&eacute;server</Button>
+              <Button href={featuredWorkshop?.slug || '/ateliers'} variant="primary" size="sm" data-workshops-feature-cta>R&eacute;server</Button>
             </div>
           </div>
         </div>
@@ -757,6 +822,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             duration={workshop.duration}
             maxParticipants={workshop.maxParticipants}
             currentParticipants={workshop.currentParticipants}
+            spotsLeft={workshop.spotsLeft}
             slug={workshop.slug}
             status={workshop.status as 'OPEN' | 'LIMITED' | 'SOLD_OUT'}
           />
@@ -765,14 +831,14 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     </div>
   </section>
 
-  <section class="relative bg-secondary-cream overflow-hidden p-4">
+  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"
     ></div>
     <div class="home-shell-width relative z-10">
       <div class="home-two-column">
-        <div class="home-main-column">
+        <div class="home-main-column home-main-column-stack">
           <BooksSection embedded />
           <SuggestedRecipes
             recipes={suggestedRecipes}
@@ -1149,6 +1215,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     const featureImageEl = document.querySelector('[data-workshops-feature-image]');
     const featureTitleEl = document.querySelector('[data-workshops-feature-title]');
     const featureLocationEl = document.querySelector('[data-workshops-feature-location]');
+    const featureAvailabilityEl = document.querySelector('[data-workshops-feature-availability]');
 
     const limitValue = Number(grid.dataset.workshopsLimit || '');
     const hasLimit = Number.isFinite(limitValue) && limitValue > 0;
@@ -1208,7 +1275,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       if (!title) return null;
 
       const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
-      const spotsLeft = toPositiveNumber(item.spotsLeft, 0);
+      const rawSpotsLeft = toPositiveNumber(item.spotsLeft, Number.NaN);
+      const spotsLeft = Number.isFinite(rawSpotsLeft)
+        ? rawSpotsLeft
+        : maxParticipants > 0
+        ? Math.max(maxParticipants - toPositiveNumber(item.currentParticipants, 0), 0)
+        : 0;
       const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
 
       return {
@@ -1220,6 +1292,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         duration: formatDuration(item.durationMin || item.duration || 0),
         maxParticipants,
         currentParticipants,
+        spotsLeft,
         location: decodeEntities(item.location || ''),
         status: normalizeStatus(item.status),
         slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
@@ -1237,22 +1310,58 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     const usersIcon = '<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 inline-block flex-shrink-0 " aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle><path d="M23 21v-2a4 4 0 00-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
     const clockIcon = '<svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 inline-block flex-shrink-0 " aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>';
 
+    const getAvailability = (workshop) => {
+      if (!workshop || typeof workshop !== 'object') {
+        return { label: 'Places disponibles', tone: 'success' };
+      }
+
+      const maxParticipants = toPositiveNumber(workshop.maxParticipants, 0);
+      const currentParticipants = toPositiveNumber(workshop.currentParticipants, 0);
+      const directSpotsLeft = toPositiveNumber(workshop.spotsLeft, Number.NaN);
+      const spotsLeft = Number.isFinite(directSpotsLeft)
+        ? directSpotsLeft
+        : maxParticipants > 0
+        ? Math.max(maxParticipants - currentParticipants, 0)
+        : Number.NaN;
+      const hasSpotsInfo = Number.isFinite(spotsLeft);
+      const isFull =
+        workshop.status === 'SOLD_OUT' ||
+        ((maxParticipants > 0 || hasSpotsInfo) && (spotsLeft || 0) <= 0);
+
+      if (isFull) {
+        return { label: 'Complet', tone: 'error' };
+      }
+
+      if (hasSpotsInfo) {
+        const plural = spotsLeft === 1 ? '' : 's';
+        return {
+          label: `${spotsLeft} place${plural} disponible${plural}`,
+          tone: workshop.status === 'LIMITED' ? 'error' : 'success',
+        };
+      }
+
+      if (workshop.status === 'LIMITED') {
+        return { label: 'Dernieres places', tone: 'error' };
+      }
+
+      return { label: 'Places disponibles', tone: 'success' };
+    };
+
     const renderWorkshopCard = (workshop) => {
       const { day, month } = formatDateParts(workshop.date);
-      const spotsLeft = Math.max(workshop.maxParticipants - workshop.currentParticipants, 0);
-      const isFull = workshop.status === 'SOLD_OUT' || (workshop.maxParticipants > 0 && spotsLeft <= 0);
-      const statusLabel = workshop.status === 'LIMITED' ? 'Last spots' : workshop.status === 'SOLD_OUT' || isFull ? 'Fully booked' : 'Places disponibles';
-      const statusClass = workshop.status === 'LIMITED' || workshop.status === 'SOLD_OUT' || isFull ? 'text-status-error' : 'text-status-success';
+      const availability = getAvailability(workshop);
+      const statusClass = availability.tone === 'error' ? 'text-status-error' : 'text-status-success';
+      const isFull = availability.label === 'Complet';
       const isExternal = /^https?:\/\//i.test(workshop.slug);
       const cta = isFull
-        ? '<button type="button" class="inline-flex items-center justify-center font-button rounded border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2 bg-status-disabled text-primary-white cursor-not-allowed opacity-70 px-3 py-1.5 text-sm " disabled aria-disabled="true">Fully booked</button>'
+        ? '<button type="button" class="inline-flex items-center justify-center font-button rounded border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2 bg-status-disabled text-primary-white cursor-not-allowed opacity-70 px-3 py-1.5 text-sm " disabled aria-disabled="true">Complet</button>'
         : `<a href="${escapeHtml(workshop.slug)}" class="inline-flex items-center justify-center font-button rounded border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary-turquoise text-primary-white hover:bg-opacity-90 active:scale-95 focus:ring-primary-turquoise px-3 py-1.5 text-sm " ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ''}>R&eacute;server</a>`;
 
       const capacityLabel = workshop.maxParticipants > 0 ? `${workshop.maxParticipants} personnes maximum` : '--';
       const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
       const imageSrc = workshop.image || '/images/ateliers-physiques.jpg';
 
-      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${statusLabel}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
+      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
     };
 
     const updateFeatureCard = (workshopList) => {
@@ -1270,7 +1379,14 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       }
 
       if (priceEl instanceof HTMLElement) {
-        priceEl.textContent = firstPrice > 0 ? `${Math.round(firstPrice)}€` : '--';
+        priceEl.textContent = firstPrice > 0 ? `${Math.round(firstPrice)}\u20AC` : '--';
+      }
+
+      if (featureAvailabilityEl instanceof HTMLElement) {
+        const availability = getAvailability(firstWorkshop);
+        featureAvailabilityEl.textContent = availability.label;
+        featureAvailabilityEl.classList.remove('text-status-success', 'text-status-error');
+        featureAvailabilityEl.classList.add(availability.tone === 'error' ? 'text-status-error' : 'text-status-success');
       }
 
       if (featureCtaEl instanceof HTMLAnchorElement && firstWorkshop.slug) {
@@ -1361,4 +1477,3 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     contain-intrinsic-size: 780px;
   }
 </style>
-

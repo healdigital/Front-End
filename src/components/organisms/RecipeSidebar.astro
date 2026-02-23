@@ -285,7 +285,12 @@ const popularArticles = [
       if (!title) return null;
 
       const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
-      const spotsLeft = toPositiveNumber(item.spotsLeft, 0);
+      const rawSpotsLeft = toPositiveNumber(item.spotsLeft, Number.NaN);
+      const spotsLeft = Number.isFinite(rawSpotsLeft)
+        ? rawSpotsLeft
+        : maxParticipants > 0
+        ? Math.max(maxParticipants - toPositiveNumber(item.currentParticipants, 0), 0)
+        : 0;
       const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
 
       return {
@@ -295,6 +300,7 @@ const popularArticles = [
         duration: formatDuration(item.durationMin || item.duration || 0),
         maxParticipants,
         currentParticipants,
+        spotsLeft,
         status: normalizeStatus(item.status),
         slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
       };
@@ -355,14 +361,28 @@ const popularArticles = [
           if (dayEl instanceof HTMLElement) dayEl.textContent = day;
 
           if (statusEl instanceof HTMLElement) {
-            const spotsLeft = Math.max(firstWorkshop.maxParticipants - firstWorkshop.currentParticipants, 0);
-            const isSoldOut = firstWorkshop.status === 'SOLD_OUT' || (firstWorkshop.maxParticipants > 0 && spotsLeft <= 0);
-            statusEl.textContent = isSoldOut
-              ? 'Complet'
-              : firstWorkshop.status === 'LIMITED'
-              ? 'Dernieres places'
-              : 'Places disponibles';
-            statusEl.style.color = isSoldOut || firstWorkshop.status === 'LIMITED' ? '#B24639' : '#2E7D5A';
+            const directSpotsLeft = toPositiveNumber(firstWorkshop.spotsLeft, Number.NaN);
+            const spotsLeft = Number.isFinite(directSpotsLeft)
+              ? directSpotsLeft
+              : firstWorkshop.maxParticipants > 0
+              ? Math.max(firstWorkshop.maxParticipants - firstWorkshop.currentParticipants, 0)
+              : Number.NaN;
+            const hasSpotsInfo = Number.isFinite(spotsLeft);
+            const isSoldOut =
+              firstWorkshop.status === 'SOLD_OUT' ||
+              ((firstWorkshop.maxParticipants > 0 || hasSpotsInfo) && (spotsLeft || 0) <= 0);
+
+            if (isSoldOut) {
+              statusEl.textContent = 'Complet';
+              statusEl.style.color = '#B24639';
+            } else if (hasSpotsInfo) {
+              const plural = spotsLeft === 1 ? '' : 's';
+              statusEl.textContent = `${spotsLeft} place${plural} disponible${plural}`;
+              statusEl.style.color = firstWorkshop.status === 'LIMITED' ? '#B24639' : '#2E7D5A';
+            } else {
+              statusEl.textContent = firstWorkshop.status === 'LIMITED' ? 'Dernieres places' : 'Places disponibles';
+              statusEl.style.color = firstWorkshop.status === 'LIMITED' ? '#B24639' : '#2E7D5A';
+            }
           }
 
           if (capacityEl instanceof HTMLElement) {
