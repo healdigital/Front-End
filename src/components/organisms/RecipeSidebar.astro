@@ -11,7 +11,7 @@ const { variant = 'full', className = '' } = Astro.props as Props;
 const isFull = variant === 'full';
 const workshopsApiUrl =
   process.env.WORKSHOPS_CACHE_URL ||
-  'https://lacuisinedebernard.com/api/workshops-cache/';
+  'https://lacuisinedebernard.com/api/workshops-cache';
 
 const popularArticles = [
   {
