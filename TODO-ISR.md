@@ -2,23 +2,16 @@
 
 ## In Progress Now (2026-02-23)
 
-- [x] Client provided go-ahead + access path for Cloudflare Worker setup for workshops cache flow.
-- [ ] Create Cloudflare Worker endpoint for public cache route:
-- [ ] Route: `/api/workshops-cache` on `www.lacuisinedebernard.com`
-- [ ] Upstream fetch: `https://atelier-lacuisinedebernard.com/api/upcoming-workshops`
-- [ ] Edge cache config: `cacheEverything=true`, `cacheTtl=300`
-- [ ] Error fallback contract: return cached response if available, else `{ "items": [], "error": "upstream_unavailable" }` with status `200`.
-- [ ] Configure Worker route binding in Cloudflare dashboard for production domain.
-- [ ] Update Astro homepage workshops integration to fetch Worker route server-side (no client-side hydration dependency).
-- [ ] Homepage rendering rules:
-- [ ] Max 3 workshops
-- [ ] Badge mapping: `SOLD_OUT -> Fully booked`, `LIMITED -> Last spots`
-- [ ] CTA uses `bookingUrl`
-- [ ] Preserve portrait-safe image presentation (no aggressive crop)
-- [ ] QA evidence to collect for handoff:
-- [ ] curl output for cache endpoint
-- [ ] homepage screenshot with workshops
-- [ ] cache behavior proof (~300s window)
+- [x] Workshops source switched to production endpoint: `https://lacuisinedebernard.com/api/workshops-cache`.
+- [x] Homepage workshops now API-driven (no dummy fallback), including booking URL/image/price/capacity/duration/status mapping.
+- [x] Sidebar workshop card now hydrates from workshops API (same endpoint chain as homepage).
+- [x] Front-End endpoint alignment committed and pushed (`fb28bd3` on `lcdb-dev/Front-End main`).
+- [x] Back-End Docker deploy issues resolved (lock mismatch, missing `/public`, healthcheck tooling) and pushed (`69cd1cc` on `lcdb-dev/Back-End main/master`).
+- [x] Latest Back-End deploy is healthy (container passed healthcheck, rolling update completed).
+- [x] Latest Front-End deploy is healthy (custom Docker healthcheck passed, rolling update completed).
+- [x] Secret build args for critical vars no longer present in latest deploy logs (`DEEPL_API_KEY`, `PAYLOAD_SECRET`, `DATABASE_URL`, `GITHUB_DISPATCH_TOKEN`).
+- [ ] Ops follow-up: rotate all credentials previously exposed in chat/screenshots and update Coolify vars.
+- [ ] Optional cleanup: remove build-time Mongo warning (`MONGODB_URI not found`) from Front-End logs by ensuring intended build env mode.
 
 ## Completed Today (2026-02-23)
 
