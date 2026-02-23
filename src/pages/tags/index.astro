@@ -31,21 +31,16 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
 ---
 
 <BaseLayout title="Tags" description="Browse articles by tag">
-  <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
-    <div
-      class="absolute inset-0 pointer-events-none opacity-30"
-      aria-hidden="true"
-      style="background-image: url('/images/noise.webp'); background-size: 180px 180px;"
-    ></div>
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] py-12 relative z-10">
-      <p class="text-[#8B7A4E] mb-3 typ-caption">Explore</p>
-      <h1 class="text-[#1A2335] typ-h2">Tags</h1>
-      <p class="text-[#4B5563] mt-3 typ-body">{tags.length} tags disponibles.</p>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <p class="lcdb-page-eyebrow typ-caption">Explore</p>
+      <h1 class="lcdb-page-title typ-h2">Tags</h1>
+      <p class="lcdb-page-description typ-body">{tags.length} tags disponibles.</p>
     </div>
   </section>
 
-  <section class="bg-secondary-cream py-12 md:py-16">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
       {BUILD_ONLY_ARTICLE_PAGES && (
         <div class="mb-8 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
           Tag pages are excluded in article-only build mode (`BUILD_ONLY_ARTICLE_PAGES=1`).
@@ -53,19 +48,17 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
       )}
 
       {tags.length > 0 ? (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {tags.map((tag: any) => (
-            <a href={`/tags/${tag.slug}`} class="group rounded-lg border border-[#DDD8CA] bg-[#F7F5EF] p-6 hover:shadow-lg transition-shadow">
+            <a href={`/tags/${tag.slug}`} class="lcdb-surface-card p-6 transition-shadow hover:shadow-lg">
               <p class="text-[#8B7A4E] mb-3 typ-caption">{tag.articleCount} article{tag.articleCount !== 1 ? 's' : ''}</p>
-              <h2 class="text-[#1A2335] mb-3 typ-feature-title group-hover:text-primary-turquoise transition-colors">#{tag.title}</h2>
+              <h2 class="lcdb-article-card-title mb-3">#{tag.title}</h2>
               {tag.description && <p class="text-[#4B5563] typ-body">{tag.description}</p>}
             </a>
           ))}
         </div>
       ) : (
-        <div class="text-center py-16">
-          <p class="text-[#6B7280] typ-body">Aucun tag disponible.</p>
-        </div>
+        <div class="lcdb-empty-state"><p class="typ-body">Aucun tag disponible.</p></div>
       )}
     </div>
   </section>

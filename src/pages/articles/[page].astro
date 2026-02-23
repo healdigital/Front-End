@@ -149,33 +149,28 @@ const paginationItems = (() => {
 ---
 
 <BaseLayout title={`Articles - Page ${safePage}`} lang={lang}>
-  <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
-    <div
-      class="absolute inset-0 pointer-events-none opacity-30"
-      aria-hidden="true"
-      style="background-image: url('/images/noise.webp'); background-size: 180px 180px;"
-    ></div>
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] py-12 relative z-10">
-      <p class="text-[#8B7A4E] mb-3 typ-caption">Archive</p>
-      <h1 class="text-[#1A2335] typ-h2">Articles</h1>
-      <p class="text-[#4B5563] mt-3 typ-body">Page {safePage} sur {Math.max(totalPages, 1)}.</p>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <p class="lcdb-page-eyebrow typ-caption">Archive</p>
+      <h1 class="lcdb-page-title typ-h2">Articles</h1>
+      <p class="lcdb-page-description typ-body">Page {safePage} sur {Math.max(totalPages, 1)}.</p>
     </div>
   </section>
 
-  <section class="bg-secondary-cream py-12 md:py-16">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
       {paginatedArticles.length > 0 ? (
         <>
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+          <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {paginatedArticles.map((article: any) => (
-              <a href={`/${article.slug}`} class="group rounded-lg border border-[#DDD8CA] bg-[#F7F5EF] overflow-hidden hover:shadow-lg transition-shadow">
-                <div class="relative aspect-[4/5] bg-[#ECE9DD] overflow-hidden">
+              <a href={`/${article.slug}`} class="lcdb-article-card">
+                <div class="lcdb-article-card-media">
                   {article.image ? (
                     <img
                       src={article.image}
                       alt={article.title}
                       loading="lazy"
-                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      class="w-full h-full object-cover"
                     />
                   ) : (
                     <div class="w-full h-full flex items-center justify-center">
@@ -184,15 +179,15 @@ const paginationItems = (() => {
                   )}
 
                   {article.categories[0] && (
-                    <span class="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1 text-[11px] text-[#4B5563] typ-caption">
+                    <span class="absolute top-4 left-4 lcdb-chip">
                       {article.categories[0]}
                     </span>
                   )}
                 </div>
-                <div class="p-5">
+                <div class="lcdb-article-card-content">
                   {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
-                  <h2 class="text-[#1A2335] mb-3 typ-card-title">{article.title}</h2>
-                  <p class="text-[#4B5563] mb-5 typ-body">{article.excerpt}</p>
+                  <h2 class="lcdb-article-card-title">{article.title}</h2>
+                  <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
                   <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
                 </div>
               </a>
@@ -200,7 +195,7 @@ const paginationItems = (() => {
           </div>
 
           {totalPages > 1 && (
-            <nav class="mt-12 pt-8 border-t border-[#D8D2C2] flex flex-wrap items-center justify-between gap-4">
+            <nav class="lcdb-pagination">
               {safePage > 1 ? (
                 <a href={safePage === 2 ? '/articles' : `/articles/${safePage - 1}`} class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
                   Pr&eacute;c&eacute;dent
@@ -235,9 +230,7 @@ const paginationItems = (() => {
           )}
         </>
       ) : (
-        <div class="text-center py-16">
-          <p class="text-[#6B7280] typ-body">Aucun article trouv&eacute;.</p>
-        </div>
+        <div class="lcdb-empty-state"><p class="typ-body">Aucun article trouv&eacute;.</p></div>
       )}
     </div>
   </section>

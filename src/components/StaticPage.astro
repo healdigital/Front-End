@@ -7,49 +7,65 @@ interface Props {
 const { title, subtitle } = Astro.props;
 ---
 
-<section class="static-page min-h-[60vh] bg-gray-50 dark:bg-gray-900">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <header class="mb-8">
-      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
-        {title}
-      </h1>
-      {subtitle && (
-        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
-          {subtitle}
-        </p>
-      )}
-    </header>
+<section class="static-page">
+  <div class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <p class="lcdb-page-eyebrow typ-caption">Page</p>
+      <h1 class="lcdb-page-title typ-h2">{title}</h1>
+      {subtitle && <p class="lcdb-page-description typ-body">{subtitle}</p>}
+    </div>
+  </div>
 
-    <div class="prose max-w-none dark:prose-invert">
-      <slot />
+  <div class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <article class="lcdb-surface-card static-page-body">
+        <div class="static-page-content">
+          <slot />
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
 <style is:global>
-  .static-page .wp-content,
-  .static-page .prose {
-    font-size: 1.05rem;
-    line-height: 1.8;
+  .static-page .static-page-body {
+    padding: 26px;
   }
 
-  .static-page .wp-content h2,
-  .static-page .wp-content h3,
-  .static-page .wp-content h4 {
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
+  .static-page .static-page-content {
+    color: #5b5b5b;
+    font-family: var(--font-maison);
+    font-size: 16px;
+    line-height: 1.72;
   }
 
-  .static-page .wp-content p {
-    margin: 1.25rem 0;
+  .static-page .static-page-content h2,
+  .static-page .static-page-content h3,
+  .static-page .static-page-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.8rem;
+    color: #111111;
+    font-family: var(--font-heading);
+    line-height: 1.15;
   }
 
-  .static-page .wp-content .wpb-content-wrapper {
+  .static-page .static-page-content h2 {
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+  }
+
+  .static-page .static-page-content h3 {
+    font-size: clamp(1.45rem, 2.3vw, 1.95rem);
+  }
+
+  .static-page .static-page-content p {
+    margin: 1rem 0;
+  }
+
+  .static-page .static-page-content .wpb-content-wrapper {
     max-width: 100%;
   }
 
-  .static-page .wp-content .penci-grid {
+  .static-page .static-page-content .penci-grid {
     list-style: none;
     padding: 0;
     margin: 1.5rem 0;
@@ -58,77 +74,86 @@ const { title, subtitle } = Astro.props;
     gap: 1.5rem;
   }
 
-  .static-page .wp-content .penci-grid .grid-style,
-  .static-page .wp-content .mag-post-box {
+  .static-page .static-page-content .penci-grid .grid-style,
+  .static-page .static-page-content .mag-post-box {
     background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(14, 24, 39, 0.06);
     padding: 1rem;
   }
 
-  .static-page .wp-content .mag-post-box {
-    margin-bottom: 1.25rem;
+  .static-page .static-page-content .mag-post-box {
+    margin-bottom: 1.2rem;
   }
 
-  .static-page .wp-content .penci-image-holder {
+  .static-page .static-page-content .penci-image-holder {
     display: block;
     width: 100%;
     aspect-ratio: 1 / 1;
     background-size: cover;
     background-position: center;
-    border-radius: 14px;
+    border-radius: 10px;
     margin-bottom: 0.85rem;
   }
 
-  .static-page .wp-content .grid-title,
-  .static-page .wp-content .magcat-title-small,
-  .static-page .wp-content .magcat-titlte {
-    font-weight: 700;
+  .static-page .static-page-content .grid-title,
+  .static-page .static-page-content .magcat-title-small,
+  .static-page .static-page-content .magcat-titlte {
+    font-family: var(--font-maison);
     font-size: 1rem;
-    line-height: 1.4;
+    line-height: 1.45;
+    color: #111111;
   }
 
-  .static-page .wp-content .grid-header-box,
-  .static-page .wp-content .magcat-detail {
+  .static-page .static-page-content .grid-header-box,
+  .static-page .static-page-content .magcat-detail {
     margin-top: 0.5rem;
   }
 
-  .static-page .wp-content img,
-  .static-page .wp-content iframe {
+  .static-page .static-page-content img,
+  .static-page .static-page-content iframe {
     max-width: 100%;
     height: auto;
-    border-radius: 18px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    border-radius: 12px;
+    border: 1px solid #d8d2c2;
+    box-shadow: 0 16px 38px rgba(14, 24, 39, 0.08);
     margin: 1.5rem auto;
   }
 
-  .static-page .wp-content iframe {
+  .static-page .static-page-content iframe {
     width: 100%;
     min-height: 360px;
   }
 
-  .static-page .wp-content figure,
-  .static-page .wp-content .separator {
+  .static-page .static-page-content figure,
+  .static-page .static-page-content .separator {
     margin: 1.75rem 0;
   }
 
-  .static-page .wp-content a {
-    color: #0f766e;
-    font-weight: 600;
+  .static-page .static-page-content a {
+    color: #54b6b1;
+    font-weight: 500;
     text-decoration: underline;
     text-underline-offset: 4px;
   }
 
-  .static-page .wp-content ul,
-  .static-page .wp-content ol {
+  .static-page .static-page-content ul,
+  .static-page .static-page-content ol {
     margin: 1.5rem 0 1.5rem 1.5rem;
   }
 
-  .static-page .wp-content blockquote {
-    border-left: 4px solid #14b8a6;
+  .static-page .static-page-content blockquote {
+    border-left: 4px solid #54b6b1;
     padding-left: 1rem;
-    color: #475569;
+    color: #5b5b5b;
     margin: 1.5rem 0;
     font-style: italic;
+  }
+
+  @media (max-width: 767px) {
+    .static-page .static-page-body {
+      padding: 18px;
+    }
   }
 </style>

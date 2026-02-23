@@ -1,20 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import RecipeIngredients from "../components/RecipeIngredients.astro";
-import RecipeInstructions from "../components/RecipeInstructions.astro";
-import RecipeNutrition from "../components/RecipeNutrition.astro";
-import GlobalSidebar from "../components/GlobalSidebar.astro";
 import DisqusComments from "../components/DisqusComments.astro";
-import MediavineSlot from "../components/MediavineSlot.astro";
+import RecipeSidebar from "../components/organisms/RecipeSidebar.astro";
 
 import { payloadFetch } from "../lib/payload.client";
-import {
-  getAllArticlesFromMongo,
-} from "../lib/mongo.server";
-import {
-  buildArticleJsonLd,
-  buildBreadcrumbJsonLd,
-} from "../utils/buildArticleJsonLd";
+import { getAllArticlesFromMongo } from "../lib/mongo.server";
+import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "../utils/buildArticleJsonLd";
 import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
 import { processArticleImageUrl } from "../utils/cdnUrlReplacer";
 import { renderArticleContent } from "../utils/renderArticleContent";
@@ -25,6 +16,32 @@ const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
+
+const stripHtml = (value: string) =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return "";
+  if (typeof value === "string") return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(value.children)) {
+      return value.children.map((child: any) => toText(child)).filter(Boolean).join(" ");
+    }
+    if (value.content) return toText(value.content);
+  }
+  return "";
+};
+
+const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
 
 export async function getStaticPaths() {
   let articles: any[] = [];
@@ -40,10 +57,7 @@ export async function getStaticPaths() {
   try {
     articles = await getAllArticlesFromMongo();
   } catch (error) {
-    console.error(
-      "⚠️ getAllArticlesFromMongo failed, falling back to Payload:",
-      error,
-    );
+    console.error("getAllArticlesFromMongo failed, falling back to Payload:", error);
   }
 
   if (!articles || articles.length === 0) {
@@ -54,23 +68,20 @@ export async function getStaticPaths() {
       });
       articles = payloadResponse?.docs || payloadResponse || [];
     } catch (error) {
-      console.error("⚠️ payloadFetch fallback failed:", error);
+      console.error("payloadFetch fallback failed:", error);
     }
   }
 
   if (!Array.isArray(articles)) return [];
 
   return articles
-    .filter((article: any) => article?.slug)
-    .map((article: any) => {
-      const rawSlug =
-        typeof article.slug === "string"
-          ? article.slug
-          : article.slug?.current || "";
+    .filter((item: any) => item?.slug)
+    .map((item: any) => {
+      const rawSlug = typeof item.slug === "string" ? item.slug : item.slug?.current || "";
       const slugValue = decodeSafe(rawSlug);
       return {
         params: { slug: slugValue },
-        props: { article: { ...article, slug: slugValue } },
+        props: { article: { ...item, slug: slugValue } },
       };
     });
 }
@@ -79,173 +90,35 @@ interface Props {
   article: any;
 }
 
-const { article } = Astro.props;
+const { article } = Astro.props as Props;
+
 if (!article) {
   throw new Error("Article data missing at build time");
 }
-const slug =
-  typeof article.slug === "string" ? article.slug : article.slug?.current || "";
 
-// For SSG, we can't fetch comments at build time as they change frequently
-// Comments will be loaded client-side using Disqus
-// TODO: Replace Payload comments with client-side SaaS comments
-const comments = [];
+const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
 
-/* For SSG: related articles fetch temporarily disabled.
-let relatedArticles: any[] = [];
-if (article && shouldBuildRelated) {
-  try {
-
-    // First try to get articles by category
-    if (article.categories && article.categories.length > 0) {
-      const categoryIds = article.categories
-        .map((cat: any) => {
-          if (typeof cat === "string") return cat;
-          if (cat && cat._id) return cat._id;
-          if (cat && cat.id) return cat.id;
-          return cat;
-        })
-        .filter((id) => id);
-
-      relatedArticles = await getRelatedArticlesFromMongo(
-        categoryIds,
-        article._id,
-        3,
-      );
-    }
-
-    // If no category-based results, get random articles
-    if (!relatedArticles || relatedArticles.length === 0) {
-
-      const db = await getMongoConnection();
-      const articlesCollection = db.collection("articles");
-
-      // Get 3 random articles excluding current one
-      const randomArticles = await articlesCollection
-        .aggregate([
-          { $match: { _id: { $ne: article._id } } },
-          { $sample: { size: 3 } },
-        ])
-        .toArray();
-
-      relatedArticles = randomArticles.map((doc) => ({
-        _id: doc._id?.toString(),
-        ...doc,
-      }));
-    }
-  } catch (error) {
-    console.error("❌ [RELATED] Error fetching related articles:", error);
-    relatedArticles = [];
-  }
-}
-*/
-
-// Helper: Extract title
-const getTitle = () => {
-  if (!article) return "Untitled";
-  return article.title || "Untitled";
-};
-
-// Helper: Extract content (contentV2 first, legacy fallback)
-const getContent = () => renderArticleContent(article);
-
-// Helper: Extract excerpt
 const getExcerpt = () => {
-  if (!article) return "";
-  if (typeof article.excerpt === "string") {
-    return article.excerpt.substring(0, 160);
-  }
+  if (typeof article.excerpt === "string") return article.excerpt.substring(0, 160);
   if (Array.isArray(article.excerpt)) {
     return article.excerpt
-      .map(
-        (block: any) =>
-          block.children?.map((child: any) => child.text).join(" ") || "",
-      )
+      .map((block: any) => block.children?.map((child: any) => child.text).join(" ") || "")
       .join(" ")
       .substring(0, 160);
   }
   return "";
 };
 
-// Helper: Extract image
-const getImage = () => {
-  if (!article) return "";
-  return processArticleImageUrl(article);
-};
-
-// Helper: Extract image alt text
-const getImageAlt = () => {
-  if (!article) return "";
-  if (article.featuredMedia?.alt) {
-    return article.featuredMedia.alt;
-  }
-  if (article.featuredImage?.alt) {
-    return article.featuredImage.alt;
-  }
-  if (article.featured_image?.alt) {
-    return article.featured_image.alt;
-  }
-  return "Article featured image";
-};
-
-// Helper: Decode HTML entities
-const decodeHtmlEntities = (text: string): string => {
-  if (!text) return "";
-
-  let decoded = text;
-
-  // Handle common HTML entities
-  const entityMap: Record<string, string> = {
-    "&nbsp;": " ",
-    "&quot;": '"',
-    "&amp;": "&",
-    "&lt;": "<",
-    "&gt;": ">",
-    "&apos;": "'",
-    "&#039;": "'",
-    "&rsquo;": "'",
-    "&lsquo;": "'",
-    "&rdquo;": '"',
-    "&ldquo;": '"',
-    "&ndash;": "–",
-    "&mdash;": "—",
-    "&hellip;": "…",
-    "&copy;": "©",
-    "&reg;": "®",
-    "&deg;": "°",
-  };
-
-  for (const [ent, char] of Object.entries(entityMap)) {
-    decoded = decoded.split(ent).join(char);
-  }
-
-  return decoded;
-};
-
-// Prepare final values
-const title = getTitle();
-const content = getContent();
+const title = article.title || "Untitled";
+const content = renderArticleContent(article);
 const excerpt = getExcerpt();
-const image = getImage();
-const imageAlt = getImageAlt();
+const image = processArticleImageUrl(article);
+const imageAlt = toText(article.featuredMedia?.alt || article.featuredImage?.alt || article.featured_image?.alt) || "Article featured image";
 
-if (!article) {
-  return new Response("Article not found", { status: 404 });
-}
-
-// Build JSON-LD schemas
-const articleJsonLd = buildArticleJsonLd(
-  article,
-  "https://lacuisinedebernard.com",
-);
-const breadcrumbJsonLd = buildBreadcrumbJsonLd(
-  title,
-  slug,
-  "https://lacuisinedebernard.com",
-);
+const articleJsonLd = buildArticleJsonLd(article, "https://lacuisinedebernard.com");
+const breadcrumbJsonLd = buildBreadcrumbJsonLd(title, slug, "https://lacuisinedebernard.com");
 const recipeJsonLd = buildRecipeJsonLd(article);
 
-// Format date
 const date = article.date
   ? new Date(article.date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -254,25 +127,36 @@ const date = article.date
     })
   : "";
 
-// Prepare SEO data
-const keywords = article.tags?.map((t: any) => t.title || t.name).join(", ") || title;
-const publishDate = article.date || new Date().toISOString();
-const modifiedDate = article.modified || article.updated || publishDate;
-const author = article.author?.name || "La Cuisine De Bernard";
 const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
 const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
   : slug;
+
 const normalizePageLanguage = (value: any) => {
   const raw = String(value || "").trim().toLowerCase();
   if (raw === "pt" || raw === "pt_br" || raw === "ptbr") return "pt-br";
   if (["en", "fr", "es", "pt-br", "ar"].includes(raw)) return raw;
   return "fr";
 };
-const pageLang = normalizePageLanguage(
-  article?.lang || article?.language || article?.locale,
-);
+
+const pageLang = normalizePageLanguage(article?.lang || article?.language || article?.locale);
+
+const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
+  .map((item: any) => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(typeof item?.slug === "string" ? item.slug : item?.slug?.current);
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter(Boolean);
+
+const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
+  .map((item: any) => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(typeof item?.slug === "string" ? item.slug : item?.slug?.current);
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter(Boolean);
 ---
 
 <BaseLayout
@@ -285,665 +169,224 @@ const pageLang = normalizePageLanguage(
   lang={pageLang}
   loadAds={true}
 >
-  <!-- Main Article Content -->
-  <div class="bg-[#fdf6e9]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left Section: Article Content -->
-      <div class="lg:col-span-2">
-        <!-- Breadcrumb Navigation -->
-        <nav class="mb-6 text-sm">
-          <div class="flex items-center gap-2 text-gray-700">
-            <a
-              href="/"
-              class="hover:text-orange-600 transition-colors"
-              >Home</a
-            >
-            <span>/</span>
-            <span class="text-gray-900 font-semibold truncate"
-              >{title}</span
-            >
-          </div>
-        </nav>
-
-        <!-- Featured Image -->
-        {
-          image && (
-            <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
-              <img
-                src={image}
-                alt={imageAlt}
-                class="w-full h-96 object-cover"
-              />
-            </div>
-          )
-        }
-
-        <!-- Article Header -->
-        <article class="bg-[#fffaf0] rounded-lg shadow p-6 mb-8 border border-[#eadfcb]">
-          <h1 class="text-4xl font-bold text-gray-900 mb-4">
-            {title}
-          </h1>
-
-          <!-- Article Metadata -->
-          <div
-            class="flex flex-wrap gap-4 mb-6 pb-6 border-b border-[#e2d6c0] text-sm"
-          >
-            {
-              date && (
-                <span class="text-gray-700">
-                  <i class="fas fa-calendar-alt mr-2 text-orange-600" />
-                  {date}
-                </span>
-              )
-            }
-            <span class="text-gray-700 author-meta">
-              <i class="fas fa-user mr-2 text-orange-600"></i>{author}
-            </span>
-            {
-              article.categories && article.categories.length > 0 && (
-                <span class="text-gray-700">
-                  <i class="fas fa-tag mr-2 text-orange-600" />
-                  {article.categories.map((cat: any) => cat.title || cat.name).join(", ")}
-                </span>
-              )
-            }
-          </div>
-
-          <!-- <div class="my-8">
-            <MediavineSlot slot="article-top" minHeight={280} />
-          </div> -->
-
-          <!-- Article Content -->
-          <div class="prose max-w-none mb-8">
-            <div
-              class="article-content text-gray-800 leading-relaxed"
-              set:html={content}
-            />
-          </div>
-
-          <!-- Social Share Icons -->
-          <div class="border-t border-[#e2d6c0] pt-6">
-            <h3
-              class="text-lg font-semibold text-gray-900 mb-4"
-            >
-              Share this article
-            </h3>
-            <div class="flex gap-4">
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-blue-600 hover:text-blue-700 transition-colors"
-                title="Share on Facebook"
-              >
-                <i class="fab fa-facebook-f w-6 h-6"></i>
-              </a>
-              <a
-                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(title)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-black hover:text-gray-700 transition-colors"
-                title="Share on X"
-              >
-                <i class="fab fa-x-twitter w-6 h-6"></i>
-              </a>
-              <a
-                href={`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(articleUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-red-600 hover:text-red-700 transition-colors"
-                title="Share on Pinterest"
-              >
-                <i class="fab fa-pinterest w-6 h-6"></i>
-              </a>
-              <a
-                href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`Check out this article: ${title} - ${articleUrl}`)}`}
-                class="text-gray-600 hover:text-gray-700 transition-colors"
-                title="Share via Email"
-              >
-                <i class="fas fa-envelope w-6 h-6"></i>
-              </a>
-            </div>
-          </div>
-        </article>
-
-        <!-- <div class="my-8">
-          <MediavineSlot slot="article-bottom" minHeight={280} />
-        </div> -->
-
-        <!-- Comments Section - Disqus -->
-        <div class="bg-[#fffaf0] rounded-lg shadow p-6 border border-[#eadfcb]">
-          <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
-        </div>
-
-        {/* You Might Like Section (temporarily disabled)
-        <!-- You Might Like Section -->
-        <div class="bg-[#fffaf0] rounded-lg shadow p-6 border border-[#eadfcb]">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">
-            You might like
-          </h2>
-          {
-            relatedArticles && relatedArticles.length > 0 ? (
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {relatedArticles.map((relatedArticle: any) => {
-                  const imageUrl = processArticleImageUrl(relatedArticle);
-                  return (
-                    <a
-                      href={`/${relatedArticle.slug}`}
-                      class="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all transform hover:scale-105"
-                    >
-                      {imageUrl ? (
-                        <div class="relative overflow-hidden bg-gray-200 h-48">
-                          <img
-                            src={imageUrl}
-                            alt={relatedArticle.title || "Article image"}
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                          />
-                        </div>
-                      ) : (
-                        <div class="relative overflow-hidden bg-gradient-to-br from-orange-100 to-amber-200 h-48 flex items-center justify-center">
-                          <div class="text-orange-600 text-4xl">
-                            <i class="fas fa-utensils" />
-                          </div>
-                        </div>
-                      )}
-                      <div class="p-4">
-                        <h3 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
-                          {relatedArticle.title || "Untitled Article"}
-                        </h3>
-                        {relatedArticle.excerpt && (
-                          <p class="text-sm text-gray-700 line-clamp-2 mb-3">
-                            {relatedArticle.excerpt.length > 100
-                              ? decodeHtmlEntities(
-                                  relatedArticle.excerpt
-                                    .replace(/<[^>]*>/g, "")
-                                    .trim(),
-                                ).substring(0, 100) + "..."
-                              : decodeHtmlEntities(
-                                  relatedArticle.excerpt
-                                    .replace(/<[^>]*>/g, "")
-                                    .trim(),
-                                )}
-                          </p>
-                        )}
-                        {relatedArticle.date && (
-                          <span class="text-xs text-gray-500">
-                            {new Date(relatedArticle.date).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            ) : (
-              <div class="text-center text-gray-600 py-8">
-                <div class="mb-4">
-                  <i class="fas fa-search text-4xl text-gray-300" />
-                </div>
-                <p class="text-lg font-medium mb-2">
-                  No related articles found
-                </p>
-                <p class="text-sm">Check out our other recipes and articles!</p>
-              </div>
-            )
-          }
-        </div>
-        */}
-      </div>
-
-      <!-- Right Section: Global Sidebar -->
-      <GlobalSidebar />
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
+        <a href="/" class="article-breadcrumb-link">Home</a>
+        <span>/</span>
+        <span class="article-breadcrumb-current">{title}</span>
+      </nav>
+      <p class="lcdb-page-eyebrow typ-caption">Recipe</p>
+      <h1 class="lcdb-page-title typ-h2">{title}</h1>
+      {date && <p class="lcdb-page-description typ-body">{date}</p>}
     </div>
-  </div>
-  </div>
+  </section>
 
-  <!-- Global About Section -->
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <div class="article-layout">
+        <div class="article-main-column">
+          {image && (
+            <figure class="lcdb-surface-card article-hero-image">
+              <img src={image} alt={imageAlt} loading="eager" />
+            </figure>
+          )}
+
+          <article class="lcdb-surface-card article-content-card">
+            {(categoryItems.length > 0 || tagItems.length > 0) && (
+              <div class="article-chip-groups">
+                {categoryItems.map((category: any) => (
+                  <a href={category.slug ? `/categories/${category.slug}` : "/categories"} class="lcdb-chip article-chip-link">
+                    {category.title}
+                  </a>
+                ))}
+                {tagItems.map((tag: any) => (
+                  <a href={tag.slug ? `/tags/${tag.slug}` : "/tags"} class="lcdb-chip article-chip-link article-tag-chip">
+                    #{tag.title}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            <div class="article-content typ-body" set:html={content} />
+          </article>
+
+          <section class="lcdb-surface-card comments-card">
+            <h2 class="comments-title">Comments</h2>
+            <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
+          </section>
+        </div>
+
+        <div class="article-sidebar-column">
+          <RecipeSidebar variant="popular" />
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // ===== WordPress Recipe Ingredient Servings Multiplier =====
-    const servingButtons = document.querySelectorAll(
-      ".wprm-recipe-adjustable-servings",
-    );
-    const ingredientAmounts = document.querySelectorAll(
-      ".wprm-recipe-ingredient-amount",
-    );
+    const servingButtons = document.querySelectorAll<HTMLElement>(".wprm-recipe-adjustable-servings");
+    const ingredientAmounts = document.querySelectorAll<HTMLElement>(".wprm-recipe-ingredient-amount");
 
-    // Store original amounts
+    if (!servingButtons.length || !ingredientAmounts.length) return;
+
     const originalAmounts = new Map();
     ingredientAmounts.forEach((el, index) => {
-      originalAmounts.set(index, parseFloat(el.textContent));
+      const value = Number.parseFloat(el.textContent || "");
+      if (Number.isFinite(value)) {
+        originalAmounts.set(index, value);
+      }
     });
 
     servingButtons.forEach((button) => {
       button.addEventListener("click", () => {
-        const multiplier = parseInt(button.dataset.multiplier);
+        const multiplier = Number.parseInt(button.dataset.multiplier || "1", 10);
+        if (!Number.isFinite(multiplier) || multiplier <= 0) return;
 
-        // Update all ingredient amounts
         ingredientAmounts.forEach((el, index) => {
           const original = originalAmounts.get(index);
-          if (original) {
-            const updated = original * multiplier;
-            // Round to 2 decimal places
-            el.textContent =
-              updated % 1 === 0 ? updated.toString() : updated.toFixed(2);
-          }
+          if (!Number.isFinite(original)) return;
+
+          const updated = original * multiplier;
+          el.textContent = updated % 1 === 0 ? updated.toString() : updated.toFixed(2);
         });
       });
     });
   });
 </script>
 
-<style scoped>
-  /* ===== MAIN CONTAINER ===== */
-  .article-main {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0;
-    background: #ffffff;
-    min-height: 100vh;
+<style>
+  .article-layout {
+    display: grid;
+    gap: 24px;
   }
 
-  /* ===== BREADCRUMB ===== */
-  .breadcrumb-nav {
-    background: #f9f9f9;
-    padding: 1rem 2rem;
-    margin: 0;
-    border-bottom: 1px solid #e9ecef;
-  }
-
-  .breadcrumb-content {
-    max-width: 1000px;
-    margin: 0 auto;
+  .article-main-column {
+    min-width: 0;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .article-sidebar-column {
+    min-width: 0;
+  }
+
+  .article-breadcrumb {
+    display: flex;
     flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    color: #7b7b6f;
   }
 
-  .breadcrumb-content a {
-    color: #0066cc;
-    text-decoration: none;
-    transition: color 0.3s;
-    font-weight: 500;
+  .article-breadcrumb-link {
+    color: #7b7b6f;
+    transition: color 0.2s ease;
   }
 
-  .breadcrumb-content a:hover {
-    color: #0052a3;
-    text-decoration: underline;
+  .article-breadcrumb-link:hover {
+    color: #111111;
   }
 
-  .breadcrumb-content .sep {
-    color: #ccc;
+  .article-breadcrumb-current {
+    color: #111111;
   }
 
-  .breadcrumb-content .current {
-    color: #666;
-    font-weight: 600;
-  }
-
-  /* ===== ARTICLE WRAPPER ===== */
-  .article-wrapper {
-    background: #ffffff;
-  }
-
-  /* ===== FEATURED BANNER ===== */
-  .featured-banner {
-    position: relative;
-    width: 100%;
-    height: 500px;
+  .article-hero-image {
     overflow: hidden;
-    background: linear-gradient(135deg, #f0f0f0 0%, #e9ecef 100%);
+    background: #ece9dd;
   }
 
-  .banner-image {
+  .article-hero-image img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-height: 680px;
+    object-fit: contain;
+    object-position: center;
     display: block;
   }
 
-  /* ===== ARTICLE HEADER ===== */
-  .article-header {
-    padding: 3rem 2rem;
-    background: #ffffff;
-    border-bottom: 2px solid #e9ecef;
+  .article-content-card {
+    padding: 24px;
   }
 
-  .article-title {
-    font-size: 3rem;
-    font-weight: 800;
-    color: #1a1a1a;
-    margin: 0 0 1.5rem 0;
-    line-height: 1.2;
-    letter-spacing: -0.5px;
-  }
-
-  .article-meta {
+  .article-chip-groups {
     display: flex;
     flex-wrap: wrap;
-    gap: 2rem;
-    font-size: 0.95rem;
-    color: #666;
+    gap: 8px;
+    margin-bottom: 24px;
   }
 
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
+  .article-chip-link {
+    text-decoration: none;
   }
 
-  /* ===== CONTENT SECTION ===== */
-  .content-section {
-    padding: 3rem 2rem;
-    width: 100%;
+  .article-tag-chip {
+    background: #f1eee5;
   }
 
-  .comments-wrapper {
-    padding: 0 2rem 3rem 2rem;
-    width: 100%;
+  .comments-card {
+    padding: 24px;
+  }
+
+  .comments-title {
+    margin: 0 0 16px;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 2.4vw, 2.2rem);
+    line-height: 1.05;
   }
 
   .article-content {
-    color: #333;
-    font-size: 1.05rem;
-    line-height: 1.85;
-  }
-
-  .article-content :global(.content-v2-block) {
-    margin: 2rem 0;
-  }
-
-  .article-content :global(.content-v2-note) {
-    border-left: 4px solid #e67e22;
-    background: #fff8f1;
-    padding: 1rem 1.25rem;
-    border-radius: 8px;
-  }
-
-  .article-content :global(.content-v2-note-tone) {
-    margin: 0 0 0.5rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #8c4d12;
-  }
-
-  .article-content :global(.content-v2-recipe-card) {
-    background: #fbfbfb;
-    border: 1px solid #e6e6e6;
-    border-radius: 12px;
-    padding: 1.5rem;
-  }
-
-  .article-content :global(.content-v2-recipe-meta) {
-    margin: 0 0 1.5rem 0;
-    padding-left: 1.2rem;
-  }
-
-  .article-content :global(.content-v2-recipe-section) {
-    margin-top: 1rem;
-  }
-
-  .article-content :global(.content-v2-gallery-grid) {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .article-content :global(.content-v2-gallery-item) {
-    margin: 0;
-  }
-
-  .article-content :global(.content-v2-gallery-item figcaption) {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    color: #555;
-  }
-
-  /* ===== RECIPE SPECIFIC STYLES ===== */
-  .article-content :global(.wprm-recipe-ingredients-container) {
-    background: #f9f9f9;
-    border-radius: 12px;
-    padding: 2rem;
-    margin: 2.5rem 0;
-    border: 1px solid #e9ecef;
-  }
-
-  .article-content :global(.wprm-recipe-header) {
-    display: block !important;
-    margin: 0 0 2rem 0 !important;
-    padding: 0 !important;
-    border: none !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredients-header) {
-    display: block !important;
-    font-size: 1.8rem !important;
-    font-weight: 700 !important;
-    color: #1a1a1a !important;
-    margin: 0 0 1.5rem 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-  }
-
-  .article-content :global(.wprm-decoration-line) {
-    display: none !important;
-  }
-
-  .article-content :global(.wprm-recipe-adjustable-servings-container) {
-    display: flex !important;
-    gap: 1rem !important;
-    margin: 1.5rem 0 !important;
-    justify-content: flex-start !important;
-  }
-
-  .article-content :global(.wprm-recipe-adjustable-servings) {
-    padding: 0.75rem 1.5rem !important;
-    background: #ffffff !important;
-    border: 2px solid #0066cc !important;
-    color: #0066cc !important;
-    border-radius: 6px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    font-size: 0.95rem !important;
-  }
-
-  .article-content :global(.wprm-recipe-adjustable-servings:hover) {
-    background: #f0f7ff !important;
-  }
-
-  .article-content
-    :global(.wprm-recipe-adjustable-servings.wprm-toggle-active) {
-    background: #0066cc !important;
-    color: #ffffff !important;
-    border-color: #0066cc !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient-group) {
-    margin: 2rem 0 !important;
-  }
-
-  .article-content :global(.wprm-recipe-group-name) {
-    font-size: 1.2rem !important;
-    font-weight: 600 !important;
-    color: #1a1a1a !important;
-    margin: 0 0 1rem 0 !important;
-    padding: 0 !important;
-    text-transform: capitalize !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredients) {
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient) {
-    padding: 0.75rem 0 !important;
-    margin: 0 !important;
-    border-bottom: 1px solid #e9ecef !important;
-    font-size: 1rem !important;
-    line-height: 1.6 !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient:last-child) {
-    border-bottom: none !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient-amount) {
-    font-weight: 700 !important;
-    color: #0066cc !important;
-    display: inline-block !important;
-    min-width: 50px !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient-unit) {
-    color: #666 !important;
-    margin-right: 0.5rem !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient-name) {
-    color: #333 !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient-name a) {
-    color: #0066cc !important;
-    text-decoration: none !important;
-  }
-
-  .article-content :global(.wprm-recipe-ingredient-name a:hover) {
-    text-decoration: underline !important;
-  }
-
-  /* ===== PARAGRAPHS & TEXT ===== */
-  .article-content :global(p) {
-    margin: 1.5rem 0;
+    color: #5b5b5b;
   }
 
   .article-content :global(h2),
   .article-content :global(h3),
-  .article-content :global(h4),
-  .article-content :global(h5),
-  .article-content :global(h6) {
-    color: #1a1a1a;
-    font-weight: 700;
-    margin: 2.5rem 0 1.2rem 0;
-    line-height: 1.3;
+  .article-content :global(h4) {
+    color: #111111;
+    font-family: var(--font-heading);
+    line-height: 1.12;
+    margin-top: 2rem;
+    margin-bottom: 0.85rem;
   }
 
   .article-content :global(h2) {
-    font-size: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #0066cc;
+    font-size: clamp(2rem, 3.1vw, 2.6rem);
   }
 
   .article-content :global(h3) {
-    font-size: 1.6rem;
+    font-size: clamp(1.55rem, 2.4vw, 2rem);
   }
 
-  .article-content :global(h4) {
-    font-size: 1.35rem;
-  }
-
-  .article-content :global(h5) {
-    font-size: 1.15rem;
-  }
-
-  .article-content :global(ul),
-  .article-content :global(ol) {
-    margin: 1.5rem 0;
-    padding-left: 2.5rem;
-  }
-
-  .article-content :global(li) {
-    margin-bottom: 0.8rem;
-    line-height: 1.8;
-  }
-
-  .article-content :global(a) {
-    color: #0066cc;
-    text-decoration: none;
-    transition: all 0.3s;
-    font-weight: 500;
-  }
-
-  .article-content :global(a:hover) {
-    color: #0052a3;
-    text-decoration: underline;
+  .article-content :global(p) {
+    margin: 0 0 1rem;
   }
 
   .article-content :global(img) {
+    margin: 1.4rem 0;
     max-width: 100%;
     height: auto;
-    margin: 2.5rem 0;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid #ddd;
+    border-radius: 10px;
+    border: 1px solid #d8d2c2;
+  }
+
+  .article-content :global(a) {
+    color: #54b6b1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .article-content :global(blockquote) {
-    border-left: 4px solid #0066cc;
-    padding: 1.5rem 2rem;
-    margin: 2rem 0;
-    background: #f9f9f9;
-    border-radius: 4px;
+    margin: 1.5rem 0;
+    border-left: 3px solid #54b6b1;
+    padding-left: 14px;
+    color: #4d5562;
     font-style: italic;
-    color: #666;
   }
 
-  .article-content :global(code) {
-    background: #f5f5f5;
-    color: #d63384;
-    padding: 0.3rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-family: "Monaco", "Courier New", monospace;
-  }
-
-  .article-content :global(pre) {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1.5rem;
-    overflow-x: auto;
-    margin: 2rem 0;
-  }
-
-  .article-content :global(pre code) {
-    background: none;
-    color: #d63384;
-    padding: 0;
-  }
-
-  .article-content :global(table) {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 2rem 0;
-  }
-
-  .article-content :global(th),
-  .article-content :global(td) {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .article-content :global(th) {
-    background: #f5f5f5;
-    color: #1a1a1a;
-    font-weight: 700;
-  }
-
-  /* Hide WordPress/Recipe plugin sections */
   .article-content :global(.wprm-icon-shortcode),
   .article-content :global(.wprm-icon-shortcode-separate),
   .article-content :global(.wprm-align-center),
@@ -964,180 +407,22 @@ const pageLang = normalizePageLanguage(
   .article-content :global(.wprm-recipe-details-container),
   .article-content :global(#comments),
   .article-content :global(.comments-area),
-  .reviews-section {
+  .article-content :global(.reviews-section) {
     display: none !important;
   }
 
-  /* ===== FOOTER ===== */
-  .article-footer {
-    display: flex;
-    justify-content: center;
-    padding: 2rem;
-    border-top: 1px solid #ddd;
-    width: 100%;
-  }
-
-  .back-button {
-    color: #0066cc;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    padding: 0.75rem 1.5rem;
-    border: 2px solid #0066cc;
-    border-radius: 6px;
-    transition: all 0.3s;
-  }
-
-  .back-button:hover {
-    background: #0066cc;
-    color: white;
-  }
-
-  /* ===== RESPONSIVE DESIGN ===== */
-  @media (max-width: 768px) {
-    .article-title {
-      font-size: 2.2rem !important;
-      padding: 2rem 1rem !important;
-    }
-
-    .article-header {
-      padding: 2rem 1rem !important;
-    }
-
-    .featured-banner {
-      height: 350px;
-    }
-
-    .breadcrumb-nav {
-      padding: 1rem;
-    }
-
-    .breadcrumb-content {
-      font-size: 0.9rem;
-      padding: 0 1rem;
-    }
-
-    .content-section {
-      padding: 2rem 1.5rem;
-    }
-
-    .article-content {
-      font-size: 1rem;
-    }
-
-    .article-content :global(h2) {
-      font-size: 1.6rem;
-    }
-
-    .article-content :global(h3) {
-      font-size: 1.3rem;
-    }
-
-    .article-content :global(.wprm-recipe-ingredients-container) {
-      padding: 1.5rem;
-      margin: 1.5rem 0;
-    }
-
-    .article-content :global(.wprm-recipe-ingredients-header) {
-      font-size: 1.5rem !important;
-    }
-
-    .article-content :global(.wprm-recipe-adjustable-servings-container) {
-      gap: 0.75rem !important;
-      flex-wrap: wrap !important;
-    }
-
-    .article-content :global(.wprm-recipe-adjustable-servings) {
-      padding: 0.65rem 1.2rem !important;
-      font-size: 0.9rem !important;
+  @media (min-width: 1024px) {
+    .article-layout {
+      grid-template-columns: minmax(0, 1fr) 412px;
+      align-items: start;
+      gap: 26px;
     }
   }
 
-  @media (max-width: 480px) {
-    .article-title {
-      font-size: 1.8rem !important;
-      padding: 1.5rem 1rem !important;
+  @media (max-width: 767px) {
+    .article-content-card,
+    .comments-card {
+      padding: 18px;
     }
-
-    .article-header {
-      padding: 1.5rem 1rem !important;
-    }
-
-    .featured-banner {
-      height: 250px;
-    }
-
-    .article-meta {
-      flex-direction: column;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    .breadcrumb-nav {
-      padding: 0.75rem;
-    }
-
-    .breadcrumb-content {
-      font-size: 0.8rem;
-      padding: 0 0.75rem;
-    }
-
-    .content-section {
-      padding: 1.5rem 1rem;
-    }
-
-    .article-content {
-      font-size: 0.95rem;
-    }
-
-    .article-content :global(h2) {
-      font-size: 1.4rem;
-    }
-
-    .article-content :global(h3) {
-      font-size: 1.15rem;
-    }
-
-    .article-content :global(ul),
-    .article-content :global(ol) {
-      padding-left: 1.5rem;
-    }
-
-    .article-content :global(.wprm-recipe-ingredients-container) {
-      padding: 1rem;
-      margin: 1rem 0;
-    }
-
-    .article-content :global(.wprm-recipe-ingredients-header) {
-      font-size: 1.3rem !important;
-    }
-
-    .article-content :global(.wprm-recipe-ingredient-amount) {
-      display: block !important;
-      margin-bottom: 0.3rem !important;
-    }
-
-    .article-footer {
-      padding: 1.5rem 1rem;
-    }
-
-    .back-button {
-      padding: 0.65rem 1.2rem;
-      font-size: 0.9rem;
-    }
-
-    .comments-wrapper {
-      padding: 1rem;
-    }
-  }
-
-  /* Comments Wrapper Styling */
-  .comments-wrapper {
-    background: linear-gradient(135deg, #f8f9fa 0%, #f0f4f8 100%);
-    padding: 0;
-    margin: 3rem 0;
-    border-radius: 0.75rem;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 </style>

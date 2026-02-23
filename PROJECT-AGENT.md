@@ -4,7 +4,19 @@
 
 Use this file as the default operating contract for this project so work stays consistent, fast, and on-track.
 
-## Latest Session Context (2026-02-20)
+## Latest Session Context (2026-02-23)
+
+- Homepage remains unchanged by request; non-home routes were aligned to landing visual language.
+- Shared non-home page design utilities were added in `src/styles/global.css`:
+- `lcdb-page-hero`, `lcdb-page-shell`, `lcdb-page-section`, `lcdb-surface-card`, `lcdb-article-card`, shared chips/pagination/empty-state.
+- `src/components/StaticPage.astro` was refreshed to landing-style structure (hero + surface content panel), affecting static informational pages globally.
+- Direct article detail route `src/pages/[slug].astro` was redesigned:
+- keeps existing SEO JSON-LD generation and Disqus identifier logic,
+- uses landing-style hero/content cards and sidebar presentation.
+- Search/archive/list pages were visually unified:
+- `search`, `articles/index`, `articles/[page]`, `categories/*`, `tags/*`, and `articles/[slug]`.
+- Fast compile smoke test passed with low-count article-only settings:
+- `MAX_SSG_ARTICLES=20 BUILD_ONLY_ARTICLE_PAGES=1 BUILD_DISABLE_SEARCH=1 USE_LOCAL_JSON=1 npx astro build`.
 
 - Article page related section (`You might like`) is intentionally disabled for now in `src/pages/[slug].astro`.
 - Home article build limits were normalized to avoid accidental 50-item fallback:

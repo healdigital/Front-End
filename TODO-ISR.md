@@ -1,4 +1,41 @@
-# LCDB Tracker + Chat Summary (Updated: 2026-02-20)
+# LCDB Tracker + Chat Summary (Updated: 2026-02-23)
+
+## In Progress Now (2026-02-23)
+
+- [x] Client provided go-ahead + access path for Cloudflare Worker setup for workshops cache flow.
+- [ ] Create Cloudflare Worker endpoint for public cache route:
+- [ ] Route: `/api/workshops-cache` on `www.lacuisinedebernard.com`
+- [ ] Upstream fetch: `https://atelier-lacuisinedebernard.com/api/upcoming-workshops`
+- [ ] Edge cache config: `cacheEverything=true`, `cacheTtl=300`
+- [ ] Error fallback contract: return cached response if available, else `{ "items": [], "error": "upstream_unavailable" }` with status `200`.
+- [ ] Configure Worker route binding in Cloudflare dashboard for production domain.
+- [ ] Update Astro homepage workshops integration to fetch Worker route server-side (no client-side hydration dependency).
+- [ ] Homepage rendering rules:
+- [ ] Max 3 workshops
+- [ ] Badge mapping: `SOLD_OUT -> Fully booked`, `LIMITED -> Last spots`
+- [ ] CTA uses `bookingUrl`
+- [ ] Preserve portrait-safe image presentation (no aggressive crop)
+- [ ] QA evidence to collect for handoff:
+- [ ] curl output for cache endpoint
+- [ ] homepage screenshot with workshops
+- [ ] cache behavior proof (~300s window)
+
+## Completed Today (2026-02-23)
+
+- [x] Introduced reusable non-home page design system classes in `src/styles/global.css` (`lcdb-page-*`, `lcdb-surface-card`, `lcdb-article-card`, shared pagination/empty-state utilities).
+- [x] Redesigned shared static page wrapper in `src/components/StaticPage.astro` to match landing page visual language (hero strip + panel content surface + typography updates).
+- [x] Refreshed direct article detail route `src/pages/[slug].astro` with landing-style layout while preserving SEO JSON-LD, translation lang handling, Disqus identifier logic, and ad slots.
+- [x] Aligned archive/search/list routes to landing style:
+- [x] `src/pages/search.astro`
+- [x] `src/pages/articles/index.astro`
+- [x] `src/pages/articles/[page].astro`
+- [x] `src/pages/categories/index.astro`
+- [x] `src/pages/categories/[slug].astro`
+- [x] `src/pages/tags/index.astro`
+- [x] `src/pages/tags/[slug].astro`
+- [x] Updated `src/pages/articles/[slug].astro` visual shell for consistency with non-home page theme.
+- [x] Validation run completed with fast static build smoke test:
+- [x] `MAX_SSG_ARTICLES=20 BUILD_ONLY_ARTICLE_PAGES=1 BUILD_DISABLE_SEARCH=1 USE_LOCAL_JSON=1 npx astro build` (successful).
 
 ## Completed Today (2026-02-20)
 

@@ -149,28 +149,23 @@ const pageLang = normalizePageLanguage(
 ---
 
 <BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl} lang={pageLang} loadAds={true}>
-  <section class="relative bg-[#F5F1E8] border-b border-[#E2DAC8] overflow-hidden">
-    <div
-      class="absolute inset-0 pointer-events-none opacity-30"
-      aria-hidden="true"
-      style="background-image: url('/images/noise.webp'); background-size: 180px 180px;"
-    ></div>
-    <div class="max-w-[1140px] mx-auto px-5 md:px-10 py-10 relative z-10">
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
       <nav class="flex items-center gap-2 text-[#6B7280] mb-5 typ-caption">
         <a href="/" class="hover:text-[#1A2335]">Accueil</a>
         <span>/</span>
         <a href="/articles" class="hover:text-[#1A2335]">Articles</a>
       </nav>
-      <h1 class="text-[#1A2335] typ-h2">{title}</h1>
-      {publishedDate && <p class="text-[#4B5563] mt-3 typ-body">{publishedDate}</p>}
+      <h1 class="lcdb-page-title typ-h2">{title}</h1>
+      {publishedDate && <p class="lcdb-page-description typ-body">{publishedDate}</p>}
     </div>
   </section>
 
-  <section class="bg-secondary-cream py-10 md:py-14">
-    <div class="max-w-[1140px] mx-auto px-5 md:px-10">
-      <article class="bg-[#F7F5EF] border border-[#DDD8CA] rounded-lg overflow-hidden">
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <article class="lcdb-surface-card overflow-hidden">
         {imageUrl && (
-          <img src={imageUrl} alt={imageAlt} class="w-full h-auto max-h-[560px] object-cover" loading="eager" />
+          <img src={imageUrl} alt={imageAlt} class="w-full h-auto max-h-[560px] object-contain bg-[#ECE9DD]" loading="eager" />
         )}
 
         <div class="p-6 md:p-8">
@@ -181,7 +176,7 @@ const pageLang = normalizePageLanguage(
           {categoryItems.length > 0 && (
             <div class="flex flex-wrap gap-2 mb-5">
               {categoryItems.map((category: any) => (
-                <a href={category.slug ? `/categories/${category.slug}` : '/categories'} class="rounded-full bg-[#EBE6D8] text-[#4B5563] px-3 py-1 typ-caption">
+                <a href={category.slug ? `/categories/${category.slug}` : '/categories'} class="lcdb-chip">
                   {category.title}
                 </a>
               ))}
@@ -191,7 +186,7 @@ const pageLang = normalizePageLanguage(
           {tagItems.length > 0 && (
             <div class="flex flex-wrap gap-2 mb-8">
               {tagItems.map((tag: any) => (
-                <a href={tag.slug ? `/tags/${tag.slug}` : '/tags'} class="rounded-full bg-white text-[#4B5563] border border-[#D8D2C2] px-3 py-1 typ-caption">
+                <a href={tag.slug ? `/tags/${tag.slug}` : '/tags'} class="lcdb-chip">
                   #{tag.title}
                 </a>
               ))}
