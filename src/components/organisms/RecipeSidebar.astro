@@ -386,7 +386,19 @@ const popularArticles = [
           }
 
           if (capacityEl instanceof HTMLElement) {
-            capacityEl.textContent = firstWorkshop.maxParticipants > 0 ? `${firstWorkshop.maxParticipants} personnes maximum` : '--';
+            const directSpotsLeft = toPositiveNumber(firstWorkshop.spotsLeft, Number.NaN);
+            const spotsLeft = Number.isFinite(directSpotsLeft)
+              ? directSpotsLeft
+              : firstWorkshop.maxParticipants > 0
+              ? Math.max(firstWorkshop.maxParticipants - firstWorkshop.currentParticipants, 0)
+              : Number.NaN;
+
+            if (Number.isFinite(spotsLeft)) {
+              const plural = spotsLeft === 1 ? '' : 's';
+              capacityEl.textContent = `${spotsLeft} place${plural} disponible${plural}`;
+            } else {
+              capacityEl.textContent = firstWorkshop.status === 'SOLD_OUT' ? 'Complet' : '--';
+            }
           }
 
           if (durationEl instanceof HTMLElement) {

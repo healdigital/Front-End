@@ -32,7 +32,9 @@ const safeMaxParticipants = Number.isFinite(maxParticipants) && maxParticipants 
 const safeCurrentParticipants = Number.isFinite(currentParticipants) && currentParticipants >= 0 ? currentParticipants : 0;
 const normalizedStatus = String(status || 'OPEN').toUpperCase();
 const derivedSpotsLeft = safeMaxParticipants > 0 ? Math.max(safeMaxParticipants - safeCurrentParticipants, 0) : null;
-const safeSpotsLeft = Number.isFinite(spotsLeftProp) && spotsLeftProp >= 0 ? spotsLeftProp : derivedSpotsLeft;
+const safeSpotsLeftValue = Number(spotsLeftProp);
+const safeSpotsLeft =
+  Number.isFinite(safeSpotsLeftValue) && safeSpotsLeftValue >= 0 ? safeSpotsLeftValue : derivedSpotsLeft;
 const hasSpotsInfo = Number.isFinite(safeSpotsLeft);
 const isFull = normalizedStatus === 'SOLD_OUT' || ((safeMaxParticipants > 0 || hasSpotsInfo) && (safeSpotsLeft ?? 0) <= 0);
 
@@ -54,6 +56,15 @@ if (normalizedStatus === 'SOLD_OUT' || isFull) {
     statusClass = 'text-status-error';
   }
 }
+
+const spotsLabel = (() => {
+  if (hasSpotsInfo) {
+    const plural = safeSpotsLeft === 1 ? '' : 's';
+    return `${safeSpotsLeft} place${plural} disponible${plural}`;
+  }
+  if (isFull) return 'Complet';
+  return '--';
+})();
 
 const formatter = new Intl.DateTimeFormat('fr-FR', {
   day: 'numeric',
@@ -78,7 +89,7 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
     <h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">{title}</h3>
 
     <div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4">
-      <span class="flex items-center gap-2"><Icon name="users" size="sm" /> {safeMaxParticipants || '--'} personnes maximum</span>
+      <span class="flex items-center gap-2"><Icon name="users" size="sm" /> {spotsLabel}</span>
       <span class="flex items-center gap-2"><Icon name="clock" size="sm" /> {duration}</span>
     </div>
 

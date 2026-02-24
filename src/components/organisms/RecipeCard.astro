@@ -80,9 +80,9 @@ const truncatedDescription = description.length > MAX_LENGTH
 
     <div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-b border-[#D8D2C2] pb-4">
       <div class="flex items-center gap-2">
-        <span>{difficulty}</span>
+        <span data-recipe-meta-tag>{difficulty}</span>
         <span aria-hidden="true">&bull;</span>
-        <span>{prepTime}</span>
+        <span data-recipe-meta-time>{prepTime}</span>
       </div>
       <SocialShare url={`${Astro.url.origin}${slug}`} title={title} class="gap-3 text-[14px]" />
     </div>
