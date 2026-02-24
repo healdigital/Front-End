@@ -65,12 +65,9 @@ try {
     rmSync('dist/author', { recursive: true, force: true });
     rmSync('dist/test-golden-recipe', { recursive: true, force: true });
     rmSync('dist/test-translation', { recursive: true, force: true });
-    if (disableSearch) {
-      rmSync('dist/search', { recursive: true, force: true });
-      console.log('Removed category/tag/author/search/test routes for article-only deploy.');
-    } else {
-      console.log('Removed category/tag/author/test routes for article-only deploy.');
-    }
+    // Keep /search route available even when search-index generation is disabled.
+    // Search page relies on Algolia and should not become a 404.
+    console.log('Removed category/tag/author/test routes for article-only deploy.');
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
