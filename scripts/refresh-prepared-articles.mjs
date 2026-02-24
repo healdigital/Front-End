@@ -46,6 +46,13 @@ const buildApiBaseCandidates = (value) => {
       return candidates;
     }
 
+    if (lowerPath.endsWith('/api')) {
+      const withoutApiPath = path.slice(0, -4) || '/';
+      parsed.pathname = withoutApiPath;
+      add(parsed.toString());
+      return candidates;
+    }
+
     if (!lowerPath.endsWith('/api')) {
       if (lowerPath.includes('/api/')) {
         parsed.pathname = path.slice(0, lowerPath.indexOf('/api/') + 4);
