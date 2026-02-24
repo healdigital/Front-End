@@ -1,4 +1,4 @@
-name: Payload Update Snapshot + Coolify Deploy
+name: Payload Update Snapshot
 
 on:
   repository_dispatch:
@@ -26,9 +26,6 @@ permissions:
 jobs:
   update-snapshot:
     runs-on: ubuntu-latest
-    env:
-      COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
-      COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
     steps:
       - name: Checkout repository (with LFS)
         uses: actions/checkout@v4
@@ -88,12 +85,3 @@ jobs:
             gh release create "$TAG" --title "Prepared Articles Snapshot" --notes "Automated snapshot"
           fi
           gh release upload "$TAG" prepared-articles.json --clobber
-
-      - name: Trigger Coolify deploy (optional)
-        if: ${{ env.COOLIFY_DEPLOY_WEBHOOK != '' }}
-        run: |
-          if [ -n "$COOLIFY_API_TOKEN" ]; then
-            curl -H "Authorization: Bearer $COOLIFY_API_TOKEN" -X POST "$COOLIFY_DEPLOY_WEBHOOK"
-          else
-            curl -X POST "$COOLIFY_DEPLOY_WEBHOOK"
-          fi
