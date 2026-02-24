@@ -17,6 +17,7 @@ let appliedLanguage: string | null = null;
 let languageChangeQueue: Promise<void> = Promise.resolve();
 let languageSwitcherBound = false;
 let storageWatcherBound = false;
+let languageCustomEventBound = false;
 let hasTranslatedContent = false;
 let deeplFailureCount = 0;
 let dynamicTranslationObserver: MutationObserver | null = null;
@@ -26,10 +27,14 @@ const pendingDynamicRoots = new Set<HTMLElement>();
 
 const DEEPL_FAILURE_THRESHOLD = 3;
 
-const rawDeeplEndpoint =
-  import.meta.env.PUBLIC_TRANSLATE_API_URL ||
-  import.meta.env.PUBLIC_PAYLOAD_API_URL ||
-  (import.meta.env.DEV ? '/api' : '');
+const DEFAULT_TRANSLATE_ENDPOINT = 'https://admin.lacuisinedebernard.com/api';
+
+const rawDeeplEndpoints = [
+  import.meta.env.PUBLIC_TRANSLATE_API_URL,
+  import.meta.env.PUBLIC_PAYLOAD_API_URL,
+  import.meta.env.DEV ? '/api' : '',
+  DEFAULT_TRANSLATE_ENDPOINT,
+];
 
 const normalizeDeeplEndpoint = (endpoint: string): string => {
   if (!endpoint) return '';
@@ -45,7 +50,29 @@ const normalizeDeeplEndpoint = (endpoint: string): string => {
   return trimmed;
 };
 
-const deeplEndpoint = normalizeDeeplEndpoint(rawDeeplEndpoint);
+const deeplEndpoints = Array.from(
+  new Set(
+    rawDeeplEndpoints
+      .map((endpoint) => normalizeDeeplEndpoint(String(endpoint || '')))
+      .filter(Boolean),
+  ),
+);
+let activeDeeplEndpointIndex = 0;
+
+const hasDeeplEndpoint = (): boolean => deeplEndpoints.length > 0;
+
+const getEndpointTryOrder = (): string[] => {
+  if (!deeplEndpoints.length) return [];
+  return deeplEndpoints
+    .slice(activeDeeplEndpointIndex)
+    .concat(deeplEndpoints.slice(0, activeDeeplEndpointIndex));
+};
+
+const getTranslateRequestUrl = (endpoint: string): string => {
+  return endpoint.endsWith('/translate')
+    ? endpoint
+    : `${endpoint}/translate`;
+};
 
 const deeplLanguageMap: Record<string, string> = {
   en: 'EN',
@@ -250,7 +277,7 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
 };
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
-  if (!deeplEndpoint || deeplUnavailable) return texts;
+  if (!hasDeeplEndpoint() || deeplUnavailable) return texts;
   if (!texts.length) return texts;
 
   // Reduce API payload when batches contain repeated labels.
@@ -269,10 +296,6 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     indexMap.push(nextIndex);
   });
 
-  const requestUrl = deeplEndpoint.endsWith('/translate')
-    ? deeplEndpoint
-    : `${deeplEndpoint}/translate`;
-
   const params = new URLSearchParams();
   params.append('targetLang', targetLang);
   uniqueTexts.forEach((text) => params.append('text', text));
@@ -285,46 +308,82 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     body: params.toString(),
   };
 
-  let response: Response;
-  try {
-    response = await fetch(requestUrl, requestInit);
-  } catch (error) {
-    const message = String((error as any)?.message || error || '');
+  let lastNetworkError: unknown = null;
+  let lastStatus: { status: number; statusText: string } | null = null;
+
+  for (const endpoint of getEndpointTryOrder()) {
+    const requestUrl = getTranslateRequestUrl(endpoint);
+    let response: Response;
+
+    try {
+      response = await fetch(requestUrl, requestInit);
+    } catch (error) {
+      lastNetworkError = error;
+      continue;
+    }
+
+    if (!response.ok) {
+      lastStatus = { status: response.status, statusText: response.statusText };
+      continue;
+    }
+
+    let data: any;
+    try {
+      data = await response.json();
+    } catch (error) {
+      lastNetworkError = error;
+      continue;
+    }
+
+    const translations = Array.isArray(data?.translations) ? data.translations : [];
+    if (!translations.length) {
+      lastStatus = { status: 502, statusText: 'Empty translation payload' };
+      continue;
+    }
+
+    const successIndex = deeplEndpoints.indexOf(endpoint);
+    if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
+      activeDeeplEndpointIndex = successIndex;
+      console.info(`[translate] Switched to fallback endpoint: ${endpoint}`);
+    }
+
+    resetDeepLFailureState();
+    return indexMap.map((index, originalIndex) => {
+      const translated = translations[index];
+      return typeof translated === 'string' ? translated : texts[originalIndex];
+    });
+  }
+
+  if (lastStatus) {
+    if (lastStatus.status === 401 || lastStatus.status === 403 || lastStatus.status === 404) {
+      markDeepLUnavailable(
+        `Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`,
+      );
+    } else {
+      registerDeepLFailure(`Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`);
+    }
+    return texts;
+  }
+
+  if (lastNetworkError) {
+    const message = String((lastNetworkError as any)?.message || lastNetworkError || '');
     if (message.includes('ERR_CERT_AUTHORITY_INVALID')) {
       markDeepLUnavailable(
         'TLS certificate is invalid on translate API endpoint. Use a valid HTTPS cert.',
-        error,
+        lastNetworkError,
       );
     } else {
-      registerDeepLFailure('Network error while calling translate API.', error);
+      registerDeepLFailure('Network error while calling translate API.', lastNetworkError);
     }
     return texts;
   }
 
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403 || response.status === 404) {
-      markDeepLUnavailable(
-        `Translate API responded with ${response.status} ${response.statusText}.`,
-      );
-    } else {
-      registerDeepLFailure(`Translate API responded with ${response.status} ${response.statusText}.`);
-    }
-    return texts;
-  }
-
-  const data = await response.json();
-  const translations = Array.isArray(data?.translations) ? data.translations : [];
-  if (!translations.length) return texts;
-  resetDeepLFailureState();
-
-  return indexMap.map((index, originalIndex) => {
-    const translated = translations[index];
-    return typeof translated === 'string' ? translated : texts[originalIndex];
-  });
+  registerDeepLFailure('Translate API failed for all configured endpoints.');
+  return texts;
 };
 
 const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Promise<void> => {
-  if (!deeplEndpoint || deeplUnavailable) return;
+  if (!hasDeeplEndpoint() || deeplUnavailable) return;
   if (translationInProgress) return;
   translationInProgress = true;
 
@@ -408,7 +467,7 @@ const stopDynamicTranslationObserver = (): void => {
 
 const flushDynamicTranslation = async (): Promise<void> => {
   if (!pendingDynamicRoots.size) return;
-  if (!deeplEndpoint || deeplUnavailable) return;
+  if (!hasDeeplEndpoint() || deeplUnavailable) return;
   if (currentLanguage === sourceLanguage) return;
 
   const roots = Array.from(pendingDynamicRoots).filter((root) => root.isConnected);
@@ -432,12 +491,12 @@ const queueDynamicTranslation = (root: HTMLElement): void => {
 
 const startDynamicTranslationObserver = (): void => {
   if (typeof window === 'undefined') return;
-  if (!document.body || !deeplEndpoint || deeplUnavailable) return;
+  if (!document.body || !hasDeeplEndpoint() || deeplUnavailable) return;
   if (dynamicTranslationObserver) return;
 
   dynamicTranslationObserver = new MutationObserver((mutations) => {
     if (currentLanguage === sourceLanguage) return;
-    if (!deeplEndpoint || deeplUnavailable) return;
+    if (!hasDeeplEndpoint() || deeplUnavailable) return;
 
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -584,7 +643,7 @@ export async function changeLanguage(newLang: string): Promise<void> {
       document.documentElement.dir = normalizedLang === 'ar' ? 'rtl' : 'ltr';
 
       // Translate page content using DeepL when configured
-      if (deeplEndpoint) {
+      if (hasDeeplEndpoint()) {
         if (normalizedLang === sourceLanguage) {
           stopDynamicTranslationObserver();
           restoreOriginalText();
@@ -627,6 +686,21 @@ export function setupLanguageSwitcher(): void {
   if (languageSwitcherBound) return;
   languageSwitcherBound = true;
 
+  const syncLanguageButtonState = (lang: string): void => {
+    document.querySelectorAll('.lang-btn').forEach((btn) => {
+      const btnLang = btn.getAttribute('data-lang');
+      if (btnLang === lang) {
+        btn.classList.add('active');
+        btn.classList.remove('inactive');
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.classList.remove('active');
+        btn.classList.add('inactive');
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    });
+  };
+
   // Listen for language button clicks
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
@@ -642,22 +716,22 @@ export function setupLanguageSwitcher(): void {
 
       // Just change the language - let the appropriate handler take care of content
       changeLanguage(lang);
-
-      // Update button states
-      document.querySelectorAll('.lang-btn').forEach((btn) => {
-        const btnLang = btn.getAttribute('data-lang');
-        if (btnLang === lang) {
-          btn.classList.add('active');
-          btn.classList.remove('inactive');
-          btn.setAttribute('aria-pressed', 'true');
-        } else {
-          btn.classList.remove('active');
-          btn.classList.add('inactive');
-          btn.setAttribute('aria-pressed', 'false');
-        }
-      });
+      syncLanguageButtonState(lang);
     }
   });
+
+  if (!languageCustomEventBound) {
+    languageCustomEventBound = true;
+    window.addEventListener('lcdb:language-select', ((event: Event) => {
+      const customEvent = event as CustomEvent<{ lang?: string }>;
+      const lang = normalizeLanguageCode(customEvent?.detail?.lang || '');
+      if (!lang || !isSupportedLanguage(lang)) return;
+      changeLanguage(lang);
+      syncLanguageButtonState(lang);
+    }) as EventListener);
+  }
+
+  (window as any).__lcdbChangeLanguage = (lang: string) => changeLanguage(lang);
 }
 
 /**

@@ -406,7 +406,18 @@ const accountItems = [
   });
   languageOptions.forEach((button) => {
     button.addEventListener('click', () => {
+      const selectedLang = button.getAttribute('data-lang');
       toggleLanguageMenu(false);
+      if (!selectedLang) return;
+
+      const changeLanguage = window.__lcdbChangeLanguage;
+      if (typeof changeLanguage === 'function') {
+        changeLanguage(selectedLang).catch((error) => {
+          console.error('[header] Failed to change language:', error);
+        });
+      } else {
+        window.dispatchEvent(new CustomEvent('lcdb:language-select', { detail: { lang: selectedLang } }));
+      }
     });
   });
   window.addEventListener('page-translated', (event) => {
