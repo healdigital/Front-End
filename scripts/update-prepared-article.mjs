@@ -3,7 +3,7 @@ import path from 'path';
 
 const preparedPath = path.join(process.cwd(), 'prepared-articles.json');
 
-const apiBase =
+const rawApiBase =
   process.env.PAYLOAD_API_URL ||
   process.env.PUBLIC_PAYLOAD_API_URL ||
   process.env.PAYLOAD_URL;
@@ -15,6 +15,53 @@ const apiToken =
 
 const inputSlug = process.env.SLUG || process.argv[2] || '';
 const inputId = process.env.ID || process.argv[3] || '';
+
+const normalizeBase = (value) =>
+  typeof value === 'string' ? value.trim().replace(/\/+$/g, '') : '';
+
+const buildApiBaseCandidates = (value) => {
+  const normalized = normalizeBase(value);
+  if (!normalized) return [];
+
+  const candidates = [];
+  const seen = new Set();
+  const add = (candidate) => {
+    const clean = normalizeBase(candidate);
+    if (!clean || seen.has(clean)) return;
+    seen.add(clean);
+    candidates.push(clean);
+  };
+
+  add(normalized);
+
+  try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/g, '');
+    const lowerPath = path.toLowerCase();
+
+    if (!path || path === '/') {
+      parsed.pathname = '/api';
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (!lowerPath.endsWith('/api')) {
+      if (lowerPath.includes('/api/')) {
+        parsed.pathname = path.slice(0, lowerPath.indexOf('/api/') + 4);
+        add(parsed.toString());
+      }
+
+      parsed.pathname = `${path}/api`;
+      add(parsed.toString());
+    }
+  } catch {
+    // keep raw candidate for non-standard URL inputs
+  }
+
+  return candidates;
+};
+
+const apiBases = buildApiBaseCandidates(rawApiBase);
 
 const decodeSafe = (value) => {
   try {
@@ -72,28 +119,55 @@ const buildHeaders = () => {
   return headers;
 };
 
+const fetchPayloadJSON = async (endpointPath, queryParams) => {
+  let lastError = null;
+  const attemptedURLs = [];
+
+  for (const base of apiBases) {
+    const qs = queryParams ? `?${queryParams.toString()}` : '';
+    const url = `${base}${endpointPath}${qs}`;
+    attemptedURLs.push(url);
+
+    const res = await fetch(url, { headers: buildHeaders() });
+    if (res.ok) {
+      return res.json();
+    }
+
+    const details = await res.text().catch(() => '');
+    lastError = new Error(
+      `Payload API error (${res.status}) ${res.statusText} for ${url}${
+        details ? ` | ${details.slice(0, 200)}` : ''
+      }`,
+    );
+
+    if (res.status === 401 || res.status === 403) {
+      break;
+    }
+  }
+
+  if (lastError) {
+    throw new Error(
+      `${lastError.message}. Tried candidates: ${attemptedURLs.join(', ')}`,
+    );
+  }
+
+  throw new Error('Payload API request failed before receiving a response.');
+};
+
 const fetchArticleBySlug = async (slug) => {
   const qs = new URLSearchParams();
   qs.set('limit', '1');
   qs.set('depth', '2');
   qs.set('where[slug][equals]', slug);
-  const url = `${apiBase}/articles?${qs.toString()}`;
-  const res = await fetch(url, { headers: buildHeaders() });
-  if (!res.ok) {
-    throw new Error(`Payload API error (${res.status}) ${res.statusText}`);
-  }
-  const data = await res.json();
+  const data = await fetchPayloadJSON('/articles', qs);
   const docs = Array.isArray(data?.docs) ? data.docs : Array.isArray(data) ? data : [];
   return docs[0] || null;
 };
 
 const fetchArticleById = async (id) => {
-  const url = `${apiBase}/articles/${encodeURIComponent(id)}?depth=2`;
-  const res = await fetch(url, { headers: buildHeaders() });
-  if (!res.ok) {
-    throw new Error(`Payload API error (${res.status}) ${res.statusText}`);
-  }
-  return res.json();
+  const qs = new URLSearchParams();
+  qs.set('depth', '2');
+  return fetchPayloadJSON(`/articles/${encodeURIComponent(id)}`, qs);
 };
 
 const loadPreparedArticles = () => {
@@ -110,10 +184,12 @@ const writePreparedArticles = (items) => {
 };
 
 const main = async () => {
-  if (!apiBase) {
+  if (!apiBases.length) {
     console.error('ERROR: PAYLOAD_API_URL not set.');
     process.exit(1);
   }
+
+  console.log(`Payload API candidates: ${apiBases.join(', ')}`);
 
   const slug = normalizeSlug(inputSlug);
   const id = String(inputId || '').trim();
