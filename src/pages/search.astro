@@ -263,11 +263,53 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     resultsGrid.innerHTML = hits.map(renderCard).join('');
   };
 
+  const runLocalSearch = async (query) => {
+    const currentLangKey = normalizeLang(getCurrentLanguage());
+    const normalizedQuery = String(query || '').trim().toLowerCase();
+    if (!normalizedQuery) {
+      updateUI('', []);
+      return;
+    }
+
+    try {
+      const response = await fetch('/search-index.json', { cache: 'force-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const records = await response.json();
+      if (!Array.isArray(records)) {
+        updateUI(query, []);
+        return;
+      }
+
+      const hits = records
+        .filter((hit) => resolveHitLanguage(hit) === currentLangKey)
+        .filter((hit) => {
+          const searchable = [
+            toText(hit?.title),
+            toText(hit?.excerpt),
+            toText(hit?.content),
+            toText(hit?.searchableText),
+            toText(hit?.category),
+            toText(hit?.tags),
+          ]
+            .join(' ')
+            .toLowerCase();
+          return searchable.includes(normalizedQuery);
+        })
+        .slice(0, 50);
+
+      updateUI(query, hits);
+    } catch (error) {
+      console.error('Local search fallback failed:', error);
+      if (subtitleEl) {
+        subtitleEl.textContent = 'Search is temporarily unavailable. Please try again later.';
+      }
+    }
+  };
+
   const runAlgoliaSearch = async (query) => {
     if (!algoliaAppId || !algoliaSearchKey) {
-      if (subtitleEl) {
-        subtitleEl.textContent = 'Search is unavailable. Algolia keys are missing.';
-      }
+      console.warn('Algolia keys missing at build-time; using local search-index fallback.');
+      await runLocalSearch(query);
       return;
     }
 
