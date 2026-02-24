@@ -181,7 +181,15 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     if (!path) return '';
     const clean = String(path).trim();
     if (!clean.startsWith('/')) return clean;
-    return clean.replace(/^\/articles\/+/i, '/');
+
+    const normalized = clean.replace(/^\/articles\/+/i, '/');
+    const match = normalized.match(/^([^?#]*)(.*)$/);
+    const pathname = match ? match[1] : normalized;
+    const suffix = match ? match[2] : '';
+
+    if (!pathname || pathname === '/' || pathname.endsWith('/')) return normalized;
+    if (/\.[a-z0-9]+$/i.test(pathname)) return normalized;
+    return `${pathname}/${suffix}`;
   };
 
   const resolveHref = (hit) => {
@@ -201,7 +209,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
 
     const slugRaw = typeof hit?.slug === 'string' ? hit.slug : '';
     const slug = slugRaw.trim().replace(/^\/+|\/+$/g, '').replace(/^articles\/+/i, '');
-    return slug ? `/${slug}` : '#';
+    return slug ? `/${slug}/` : '#';
   };
 
   const renderCard = (hit) => {

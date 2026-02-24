@@ -335,10 +335,10 @@ const accountItems = [
   function submitHeaderSearch(rawValue) {
     const query = String(rawValue || '').trim();
     if (!query) {
-      window.location.href = '/search';
+      window.location.href = '/search/';
       return;
     }
-    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+    window.location.href = `/search/?q=${encodeURIComponent(query)}`;
   }
 
   function toggleMenu(show) {

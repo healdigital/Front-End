@@ -138,7 +138,7 @@
   const handleSearch = () => {
     const query = globalSearchInput?.value.trim();
     if (query) {
-      window.location.href = `/search?q=${encodeURIComponent(query)}`;
+      window.location.href = `/search/?q=${encodeURIComponent(query)}`;
     }
   };
 

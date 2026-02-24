@@ -477,6 +477,19 @@ const getRecipeTagLabel = (categoryLabel: string): string => {
 };
 
 const getRecipeTimeLabel = (article: any): string => {
+  const prepTimeRaw =
+    article?.recipe?.prepTime ??
+    article?.prepTime ??
+    article?.preparationTimeMinutes ??
+    article?.preparationTime;
+  const prepTimeFormat = String(article?.recipe?.prepTimeFormat || '').trim();
+  const prepTimeLabel = String(prepTimeRaw ?? '').trim();
+  if (prepTimeLabel) {
+    if (/[0-9].*(min|h)/i.test(prepTimeLabel)) return prepTimeLabel;
+    if (prepTimeFormat) return `${prepTimeLabel} ${prepTimeFormat}`.trim();
+    if (/^\d+([.,]\d+)?$/.test(prepTimeLabel)) return `${prepTimeLabel} min`;
+  }
+
   const candidate =
     article?.date ||
     article?.publishedAt ||
@@ -487,7 +500,17 @@ const getRecipeTimeLabel = (article: any): string => {
   if (!candidate) return '--';
 
   const parsed = new Date(candidate);
-  if (Number.isNaN(parsed.getTime())) return '--';
+  if (Number.isNaN(parsed.getTime())) {
+    const contentText = stripHtml(toText(article?.content) || toText(article?.excerpt) || '');
+    const wordCount = contentText
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean).length;
+    if (wordCount > 0) {
+      return `${Math.max(1, Math.round(wordCount / 200))} min`;
+    }
+    return '--';
+  }
 
   return parsed.toLocaleTimeString('fr-FR', {
     hour: '2-digit',
@@ -995,14 +1018,19 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       return clean ? clean.toUpperCase() : 'RECETTE';
     };
     const formatRecipeTime = (value = '') => {
-      if (!value) return '--';
-      const parsed = new Date(value);
-      if (Number.isNaN(parsed.getTime())) return '--';
-      return parsed.toLocaleTimeString('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      });
+      const raw = String(value || '').trim();
+      if (!raw) return '--';
+      const parsed = new Date(raw);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+      }
+      if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
+      if (/[0-9].*(min|h)/i.test(raw)) return raw;
+      return '--';
     };
 
     const clipDescription = (value = '') => {
@@ -1109,6 +1137,20 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           if (!slug || !title || existingSlugs.has(slug)) return;
 
           existingSlugs.add(slug);
+          const categoryLabel = record?.category || record?.tags || '';
+          const timeLabel =
+            record?.prepTime ||
+            (Number.isFinite(Number(record?.readingTimeMin)) && Number(record?.readingTimeMin) > 0
+              ? `${Math.round(Number(record.readingTimeMin))} min`
+              : '') ||
+            record?.publishedAt ||
+            record?.date ||
+            record?.modified ||
+            record?.updated ||
+            record?.updatedAt ||
+            record?.createdAt ||
+            '';
+
           recipes.push({
             slug,
             title,
@@ -1123,9 +1165,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               record?.featuredImage?.url ||
               record?.image ||
               '',
-            filterKey: getFilterKey(record?.category || ''),
-            difficulty: toRecipeTagLabel(record?.category || ''),
-            prepTime: formatRecipeTime(record?.publishedAt || record?.date || record?.modified || ''),
+            filterKey: getFilterKey(categoryLabel),
+            difficulty: toRecipeTagLabel(categoryLabel),
+            prepTime: formatRecipeTime(timeLabel),
           });
         });
 

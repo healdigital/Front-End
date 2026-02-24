@@ -69,6 +69,11 @@ async function generateSearchIndex() {
     const total = articles.length;
 
     const stripHtml = (value) => String(value || '').replace(/<[^>]*>/g, ' ');
+    const countWords = (value) =>
+      stripHtml(value)
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter(Boolean).length;
 
     const richTextToPlain = (value) => {
       if (!value) return '';
@@ -110,6 +115,18 @@ async function generateSearchIndex() {
       return '';
     };
 
+    const resolvePublishedAt = (article) => {
+      const candidate =
+        article?.publishedAt ||
+        article?.date ||
+        article?.modified ||
+        article?.updated ||
+        article?.updatedAt ||
+        article?.createdAt ||
+        '';
+      return typeof candidate === 'string' ? candidate : '';
+    };
+
     for (let i = 0; i < total; i++) {
       const article = articles[i];
       const slug = typeof article.slug === 'string' ? article.slug : article.slug?.current || '';
@@ -122,9 +139,10 @@ async function generateSearchIndex() {
         ? article.tags.map(entityName).filter(Boolean).join(' ')
         : '';
       const authorText = entityName(article.author);
+      const readingTimeMin = Math.max(1, Math.round((countWords(article.content) || countWords(article.excerpt)) / 200));
 
       const processedArticle = {
-        id: article._id?.toString() || '',
+        id: article._id?.toString() || article.id?.toString() || '',
         title: article.title || '',
         content: contentText,
         excerpt: excerptText,
@@ -132,7 +150,8 @@ async function generateSearchIndex() {
         category: categoryText,
         tags: tagsText,
         author: authorText,
-        publishedAt: article.publishedAt || '',
+        publishedAt: resolvePublishedAt(article),
+        readingTimeMin,
         featured_image: {
           url: processArticleImageUrl(article),
           alt: article.featured_image?.alt || article.title || '',

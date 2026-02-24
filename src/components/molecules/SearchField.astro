@@ -96,7 +96,7 @@ const {
 
         if (result.success && result.data.query) {
           setSuccess();
-          window.location.href = `/search?q=${encodeURIComponent(result.data.query)}`;
+          window.location.href = `/search/?q=${encodeURIComponent(result.data.query)}`;
         }
       }
     });

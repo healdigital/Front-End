@@ -18,9 +18,13 @@ let languageChangeQueue: Promise<void> = Promise.resolve();
 let languageSwitcherBound = false;
 let storageWatcherBound = false;
 let hasTranslatedContent = false;
+let deeplFailureCount = 0;
+let dynamicTranslationObserver: MutationObserver | null = null;
+let dynamicTranslationTimer: number | null = null;
 const loadedTranslationLangs = new Set<string>();
+const pendingDynamicRoots = new Set<HTMLElement>();
 
-const deepLDisabledSessionKey = 'translate-api-disabled-endpoint';
+const DEEPL_FAILURE_THRESHOLD = 3;
 
 const rawDeeplEndpoint =
   import.meta.env.PUBLIC_TRANSLATE_API_URL ||
@@ -42,17 +46,6 @@ const normalizeDeeplEndpoint = (endpoint: string): string => {
 };
 
 const deeplEndpoint = normalizeDeeplEndpoint(rawDeeplEndpoint);
-
-if (typeof window !== 'undefined' && deeplEndpoint) {
-  try {
-    const disabledEndpoint = sessionStorage.getItem(deepLDisabledSessionKey);
-    if (disabledEndpoint && disabledEndpoint === deeplEndpoint) {
-      deeplUnavailable = true;
-    }
-  } catch {
-    // Ignore sessionStorage read failures
-  }
-}
 
 const deeplLanguageMap: Record<string, string> = {
   en: 'EN',
@@ -119,13 +112,7 @@ const translatableAttributes = ['placeholder', 'title', 'aria-label', 'alt'];
 
 const markDeepLUnavailable = (reason: string, error?: unknown): void => {
   deeplUnavailable = true;
-  if (typeof window !== 'undefined' && deeplEndpoint) {
-    try {
-      sessionStorage.setItem(deepLDisabledSessionKey, deeplEndpoint);
-    } catch {
-      // Ignore sessionStorage write failures
-    }
-  }
+  deeplFailureCount = DEEPL_FAILURE_THRESHOLD;
   if (deeplUnavailableLogged) return;
   deeplUnavailableLogged = true;
 
@@ -134,6 +121,24 @@ const markDeepLUnavailable = (reason: string, error?: unknown): void => {
   } else {
     console.error(`[translate] DeepL disabled for this session: ${reason}`);
   }
+};
+
+const registerDeepLFailure = (reason: string, error?: unknown): void => {
+  deeplFailureCount += 1;
+  if (deeplFailureCount >= DEEPL_FAILURE_THRESHOLD) {
+    markDeepLUnavailable(`${reason} (${deeplFailureCount} consecutive failures)`, error);
+    return;
+  }
+
+  if (error) {
+    console.warn(`[translate] DeepL temporary failure (${deeplFailureCount}/${DEEPL_FAILURE_THRESHOLD}): ${reason}`, error);
+  } else {
+    console.warn(`[translate] DeepL temporary failure (${deeplFailureCount}/${DEEPL_FAILURE_THRESHOLD}): ${reason}`);
+  }
+};
+
+const resetDeepLFailureState = (): void => {
+  deeplFailureCount = 0;
 };
 
 /**
@@ -291,21 +296,26 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
         error,
       );
     } else {
-      markDeepLUnavailable('Network error while calling translate API.', error);
+      registerDeepLFailure('Network error while calling translate API.', error);
     }
     return texts;
   }
 
   if (!response.ok) {
-    markDeepLUnavailable(
-      `Translate API responded with ${response.status} ${response.statusText}.`,
-    );
+    if (response.status === 401 || response.status === 403 || response.status === 404) {
+      markDeepLUnavailable(
+        `Translate API responded with ${response.status} ${response.statusText}.`,
+      );
+    } else {
+      registerDeepLFailure(`Translate API responded with ${response.status} ${response.statusText}.`);
+    }
     return texts;
   }
 
   const data = await response.json();
   const translations = Array.isArray(data?.translations) ? data.translations : [];
   if (!translations.length) return texts;
+  resetDeepLFailureState();
 
   return indexMap.map((index, originalIndex) => {
     const translated = translations[index];
@@ -313,59 +323,65 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
   });
 };
 
-const translateTextNodes = async (targetLang: string): Promise<void> => {
+const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Promise<void> => {
   if (!deeplEndpoint || deeplUnavailable) return;
   if (translationInProgress) return;
   translationInProgress = true;
 
   try {
-    const root = document.body;
-    const nodes = collectTextNodes(root);
-    const attributeTargets = collectAttributeTargets(root);
+    const targetRoots = (Array.isArray(roots) && roots.length ? roots : [document.body])
+      .filter((root): root is HTMLElement => root instanceof HTMLElement && root.isConnected);
+    if (!targetRoots.length) return;
+
     const batchSize = 120;
     const target = getDeepLTargetLang(targetLang);
     let anyChanges = false;
 
-    for (let i = 0; i < nodes.length; i += batchSize) {
-      const batch = nodes.slice(i, i + batchSize);
-      const texts = batch.map((node) => {
-        const existing = originalTextMap.get(node);
-        if (existing !== undefined) return existing;
-        const original = node.textContent || '';
-        originalTextMap.set(node, original);
-        return original;
-      });
+    for (const root of targetRoots) {
+      const nodes = collectTextNodes(root);
+      const attributeTargets = collectAttributeTargets(root);
 
-      const translations = await requestDeepLTranslation(texts, target);
-      if (deeplUnavailable) break;
-      translations.forEach((translated, idx) => {
-        if (
-          typeof translated === 'string' &&
-          batch[idx].textContent !== translated
-        ) {
-          batch[idx].textContent = translated;
-          anyChanges = true;
-        }
-      });
-    }
+      for (let i = 0; i < nodes.length; i += batchSize) {
+        const batch = nodes.slice(i, i + batchSize);
+        const texts = batch.map((node) => {
+          const existing = originalTextMap.get(node);
+          if (existing !== undefined) return existing;
+          const original = node.textContent || '';
+          originalTextMap.set(node, original);
+          return original;
+        });
 
-    if (deeplUnavailable) return;
+        const translations = await requestDeepLTranslation(texts, target);
+        if (deeplUnavailable) break;
+        translations.forEach((translated, idx) => {
+          if (
+            typeof translated === 'string' &&
+            batch[idx].textContent !== translated
+          ) {
+            batch[idx].textContent = translated;
+            anyChanges = true;
+          }
+        });
+      }
 
-    for (let i = 0; i < attributeTargets.length; i += batchSize) {
-      const batch = attributeTargets.slice(i, i + batchSize);
-      const texts = batch.map((item) => item.original);
-      const translations = await requestDeepLTranslation(texts, target);
       if (deeplUnavailable) break;
 
-      translations.forEach((translated, idx) => {
-        if (
-          typeof translated === 'string' &&
-          batch[idx].element.getAttribute(batch[idx].attr) !== translated
-        ) {
-          batch[idx].element.setAttribute(batch[idx].attr, translated);
-          anyChanges = true;
-        }
-      });
+      for (let i = 0; i < attributeTargets.length; i += batchSize) {
+        const batch = attributeTargets.slice(i, i + batchSize);
+        const texts = batch.map((item) => item.original);
+        const translations = await requestDeepLTranslation(texts, target);
+        if (deeplUnavailable) break;
+
+        translations.forEach((translated, idx) => {
+          if (
+            typeof translated === 'string' &&
+            batch[idx].element.getAttribute(batch[idx].attr) !== translated
+          ) {
+            batch[idx].element.setAttribute(batch[idx].attr, translated);
+            anyChanges = true;
+          }
+        });
+      }
     }
 
     if (anyChanges) {
@@ -376,6 +392,75 @@ const translateTextNodes = async (targetLang: string): Promise<void> => {
   } finally {
     translationInProgress = false;
   }
+};
+
+const stopDynamicTranslationObserver = (): void => {
+  if (dynamicTranslationObserver) {
+    dynamicTranslationObserver.disconnect();
+    dynamicTranslationObserver = null;
+  }
+  pendingDynamicRoots.clear();
+  if (dynamicTranslationTimer !== null && typeof window !== 'undefined') {
+    window.clearTimeout(dynamicTranslationTimer);
+    dynamicTranslationTimer = null;
+  }
+};
+
+const flushDynamicTranslation = async (): Promise<void> => {
+  if (!pendingDynamicRoots.size) return;
+  if (!deeplEndpoint || deeplUnavailable) return;
+  if (currentLanguage === sourceLanguage) return;
+
+  const roots = Array.from(pendingDynamicRoots).filter((root) => root.isConnected);
+  pendingDynamicRoots.clear();
+  if (!roots.length) return;
+
+  await translateTextNodes(currentLanguage, roots);
+};
+
+const queueDynamicTranslation = (root: HTMLElement): void => {
+  pendingDynamicRoots.add(root);
+  if (dynamicTranslationTimer !== null || typeof window === 'undefined') return;
+
+  dynamicTranslationTimer = window.setTimeout(() => {
+    dynamicTranslationTimer = null;
+    flushDynamicTranslation().catch((error) => {
+      console.error('[translate] Failed to translate dynamic content:', error);
+    });
+  }, 250);
+};
+
+const startDynamicTranslationObserver = (): void => {
+  if (typeof window === 'undefined') return;
+  if (!document.body || !deeplEndpoint || deeplUnavailable) return;
+  if (dynamicTranslationObserver) return;
+
+  dynamicTranslationObserver = new MutationObserver((mutations) => {
+    if (currentLanguage === sourceLanguage) return;
+    if (!deeplEndpoint || deeplUnavailable) return;
+
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const element = node as HTMLElement;
+          if (shouldIgnoreElement(element)) return;
+          queueDynamicTranslation(element);
+          return;
+        }
+
+        if (node.nodeType === Node.TEXT_NODE) {
+          const parent = node.parentElement;
+          if (!parent || shouldIgnoreElement(parent)) return;
+          queueDynamicTranslation(parent as HTMLElement);
+        }
+      });
+    });
+  });
+
+  dynamicTranslationObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 };
 
 const restoreOriginalText = (): void => {
@@ -501,10 +586,18 @@ export async function changeLanguage(newLang: string): Promise<void> {
       // Translate page content using DeepL when configured
       if (deeplEndpoint) {
         if (normalizedLang === sourceLanguage) {
+          stopDynamicTranslationObserver();
           restoreOriginalText();
         } else {
           await translateTextNodes(normalizedLang);
+          if (!deeplUnavailable) {
+            startDynamicTranslationObserver();
+          } else {
+            stopDynamicTranslationObserver();
+          }
         }
+      } else {
+        stopDynamicTranslationObserver();
       }
 
       // Update i18n labels/attributes
