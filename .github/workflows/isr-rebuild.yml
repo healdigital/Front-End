@@ -59,17 +59,21 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Update single article snapshot
-        if: ${{ (github.event.client_payload.collection || inputs.collection) == 'articles' && steps.snapshot.outputs.exists == 'true' && (github.event.client_payload.slug || inputs.slug || github.event.client_payload.id || inputs.id) }}
-        run: node scripts/update-prepared-article.mjs
+      - name: Update article snapshot (single/batch)
+        if: ${{ (github.event.client_payload.collection || inputs.collection) == 'articles' && steps.snapshot.outputs.exists == 'true' && github.event.client_payload.forceFullRefresh != true }}
+        run: node scripts/update-prepared-articles-batch.mjs
         env:
           PAYLOAD_API_URL: https://admin.lacuisinedebernard.com/api
           PAYLOAD_API_TOKEN: ${{ secrets.PAYLOAD_API_TOKEN }}
+          ARTICLE_IDS_JSON: ${{ toJson(github.event.client_payload.articleIds) }}
+          ARTICLE_SLUGS_JSON: ${{ toJson(github.event.client_payload.articleSlugs) }}
+          ARTICLE_DELETE_IDS_JSON: ${{ toJson(github.event.client_payload.articleDeleteIds) }}
+          ARTICLE_DELETE_SLUGS_JSON: ${{ toJson(github.event.client_payload.articleDeleteSlugs) }}
           SLUG: ${{ github.event.client_payload.slug || inputs.slug }}
           ID: ${{ github.event.client_payload.id || inputs.id }}
 
       - name: Refresh full snapshot for taxonomy/media updates
-        if: ${{ (github.event.client_payload.collection || inputs.collection) != 'articles' || steps.snapshot.outputs.exists == 'false' || !(github.event.client_payload.slug || inputs.slug || github.event.client_payload.id || inputs.id) }}
+        if: ${{ (github.event.client_payload.collection || inputs.collection) != 'articles' || steps.snapshot.outputs.exists == 'false' || github.event.client_payload.forceFullRefresh == true }}
         run: node scripts/refresh-prepared-articles.mjs
         env:
           PAYLOAD_API_URL: https://admin.lacuisinedebernard.com/api
