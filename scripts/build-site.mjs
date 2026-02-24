@@ -46,10 +46,9 @@ try {
   }
 
   if (disableSearch) {
-    console.log('BUILD_DISABLE_SEARCH enabled: skipping search index generation.');
-  } else {
-    run('npm run generate-search-index', env);
+    console.log('BUILD_DISABLE_SEARCH is enabled but ignored: generating search index to keep search fully working.');
   }
+  run('npm run generate-search-index', env);
 
   run('npx astro build', env);
 
@@ -65,8 +64,7 @@ try {
     rmSync('dist/author', { recursive: true, force: true });
     rmSync('dist/test-golden-recipe', { recursive: true, force: true });
     rmSync('dist/test-translation', { recursive: true, force: true });
-    // Keep /search route available even when search-index generation is disabled.
-    // Search page relies on Algolia and should not become a 404.
+    // Keep /search route available in article-only deploys.
     console.log('Removed category/tag/author/test routes for article-only deploy.');
   }
 } catch (error) {
