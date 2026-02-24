@@ -63,7 +63,7 @@ jobs:
         if: ${{ (github.event.client_payload.collection || inputs.collection) == 'articles' && steps.snapshot.outputs.exists == 'true' && (github.event.client_payload.slug || inputs.slug || github.event.client_payload.id || inputs.id) }}
         run: node scripts/update-prepared-article.mjs
         env:
-          PAYLOAD_API_URL: ${{ secrets.PAYLOAD_API_URL }}
+          PAYLOAD_API_URL: https://admin.lacuisinedebernard.com/api
           PAYLOAD_API_TOKEN: ${{ secrets.PAYLOAD_API_TOKEN }}
           SLUG: ${{ github.event.client_payload.slug || inputs.slug }}
           ID: ${{ github.event.client_payload.id || inputs.id }}
@@ -72,7 +72,7 @@ jobs:
         if: ${{ (github.event.client_payload.collection || inputs.collection) != 'articles' || steps.snapshot.outputs.exists == 'false' || !(github.event.client_payload.slug || inputs.slug || github.event.client_payload.id || inputs.id) }}
         run: node scripts/refresh-prepared-articles.mjs
         env:
-          PAYLOAD_API_URL: ${{ secrets.PAYLOAD_API_URL }}
+          PAYLOAD_API_URL: https://admin.lacuisinedebernard.com/api
           PAYLOAD_API_TOKEN: ${{ secrets.PAYLOAD_API_TOKEN }}
 
       - name: Upload snapshot to GitHub Release
