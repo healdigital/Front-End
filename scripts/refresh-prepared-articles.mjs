@@ -16,6 +16,7 @@ const apiToken =
 const pageSize = Number(process.env.PAYLOAD_PAGE_SIZE) || 100;
 const depth = Number(process.env.PAYLOAD_DEPTH) || 2;
 const limit = Number(process.env.PAYLOAD_LIMIT) || 0;
+const requestTimeoutMs = Number(process.env.PAYLOAD_FETCH_TIMEOUT_MS) || 15000;
 
 const normalizeBase = (value) =>
   typeof value === 'string' ? value.trim().replace(/\/+$/g, '') : '';
@@ -71,6 +72,20 @@ const buildApiBaseCandidates = (value) => {
 
 const apiBases = buildApiBaseCandidates(rawApiBase);
 
+const fetchWithTimeout = async (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 const buildHeaders = () => {
   const headers = { 'Content-Type': 'application/json' };
   if (apiToken) {
@@ -88,20 +103,31 @@ const fetchPayloadJSON = async (endpointPath, queryParams) => {
     const url = `${base}${endpointPath}${qs}`;
     attemptedURLs.push(url);
 
-    const res = await fetch(url, { headers: buildHeaders() });
-    if (res.ok) {
-      return res.json();
-    }
+    try {
+      const res = await fetchWithTimeout(url, { headers: buildHeaders() });
+      if (res.ok) {
+        return res.json();
+      }
 
-    const details = await res.text().catch(() => '');
-    lastError = new Error(
-      `Payload API error (${res.status}) ${res.statusText} for ${url}${
-        details ? ` | ${details.slice(0, 200)}` : ''
-      }`,
-    );
+      const details = await res.text().catch(() => '');
+      lastError = new Error(
+        `Payload API error (${res.status}) ${res.statusText} for ${url}${
+          details ? ` | ${details.slice(0, 200)}` : ''
+        }`,
+      );
 
-    if (res.status === 401 || res.status === 403) {
-      break;
+      if (res.status === 401 || res.status === 403) {
+        break;
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        lastError = new Error(
+          `Payload API request timed out after ${requestTimeoutMs}ms for ${url}`,
+        );
+      } else {
+        const message = error instanceof Error ? error.message : String(error);
+        lastError = new Error(`Payload API request failed for ${url} | ${message}`);
+      }
     }
   }
 
@@ -159,7 +185,7 @@ const main = async () => {
   }
 
   console.log(
-    `Refreshing prepared-articles.json from Payload API... [${apiBases.join(', ')}]`,
+    `Refreshing prepared-articles.json from Payload API... [${apiBases.join(', ')}], timeout=${requestTimeoutMs}ms`,
   );
 
   let page = 1;
@@ -174,6 +200,11 @@ const main = async () => {
     allDocs.push(...docs.map(ensureIds));
 
     totalPages = Number(data?.totalPages) || totalPages;
+    if (totalPages) {
+      console.log(`Fetched page ${page}/${totalPages} (${allDocs.length} articles so far)`);
+    } else {
+      console.log(`Fetched page ${page} (${allDocs.length} articles so far)`);
+    }
     if (totalPages && page >= totalPages) break;
     if (limit && allDocs.length >= limit) break;
     if (docs.length < pageSize) break;
