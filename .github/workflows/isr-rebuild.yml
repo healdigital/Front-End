@@ -18,7 +18,7 @@ on:
 
 concurrency:
   group: payload-snapshot-update
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
