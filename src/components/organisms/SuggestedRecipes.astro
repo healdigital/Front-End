@@ -158,6 +158,20 @@ const getFilterValue = (recipe: Recipe): string => {
       };
 
       const normalizeSlug = (value = '') => String(value).replace(/^\/+|\/+$/g, '');
+      const toRecipeTagLabel = (value = '') => {
+        const clean = String(value || '').trim();
+        return clean ? clean.toUpperCase() : 'RECETTE';
+      };
+      const formatRecipeTime = (value = '') => {
+        if (!value) return '--';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return '--';
+        return parsed.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+      };
 
       const clipDescription = (value = '') => {
         const cleaned = String(value || '').replace(/\s+/g, ' ').trim();
@@ -204,6 +218,16 @@ const getFilterValue = (recipe: Recipe): string => {
         const descriptionEl = card.querySelector('p.typ-body');
         if (descriptionEl instanceof HTMLElement) {
           descriptionEl.textContent = clipDescription(recipe.description);
+        }
+
+        const metaTagEl = card.querySelector('[data-recipe-meta-tag]');
+        if (metaTagEl instanceof HTMLElement) {
+          metaTagEl.textContent = toRecipeTagLabel(recipe.difficulty || recipe.category || '');
+        }
+
+        const metaTimeEl = card.querySelector('[data-recipe-meta-time]');
+        if (metaTimeEl instanceof HTMLElement) {
+          metaTimeEl.textContent = recipe.prepTime || '--';
         }
 
         card.querySelectorAll('a[href]').forEach((link) => {
@@ -302,6 +326,8 @@ const getFilterValue = (recipe: Recipe): string => {
                 record?.image ||
                 '',
               filterKey: getFilterKey(record?.category || ''),
+              difficulty: toRecipeTagLabel(record?.category || ''),
+              prepTime: formatRecipeTime(record?.publishedAt || record?.date || record?.modified || ''),
             });
           });
 
