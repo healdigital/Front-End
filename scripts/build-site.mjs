@@ -23,6 +23,10 @@ const articleOnlyBuild =
   isTruthy(env.BUILD_ONLY_ARTICLE_PAGES) || isTruthy(env.BUILD_ONLY_ARTICLES);
 const disableSearch = isTruthy(env.BUILD_DISABLE_SEARCH);
 const useLocalJson = isTruthy(env.USE_LOCAL_JSON);
+const refreshPreparedJson =
+  env.BUILD_REFRESH_PREPARED_JSON === undefined
+    ? true
+    : isTruthy(env.BUILD_REFRESH_PREPARED_JSON);
 const preparedUrl = env.PREPARED_JSON_URL || '';
 const autoAlgoliaIndex = isTruthy(env.ALGOLIA_AUTO_INDEX);
 
@@ -30,6 +34,11 @@ const downloadPreparedSnapshot = () => {
   if (!preparedUrl) return;
   console.log(`[BUILD] Downloading prepared-articles.json from ${preparedUrl}...`);
   run(`curl -fL "${preparedUrl}" -o prepared-articles.json`, env);
+};
+
+const refreshPreparedSnapshot = () => {
+  console.log('[BUILD] Refreshing prepared-articles.json from Payload API...');
+  run('npm run refresh:prepared', env);
 };
 
 try {
@@ -40,7 +49,19 @@ try {
   }
 
   if (articleOnlyBuild || useLocalJson) {
-    downloadPreparedSnapshot();
+    if (refreshPreparedJson) {
+      try {
+        refreshPreparedSnapshot();
+      } catch (error) {
+        if (!preparedUrl) {
+          throw error;
+        }
+        console.warn('[BUILD] Refresh failed, falling back to PREPARED_JSON_URL snapshot.');
+        downloadPreparedSnapshot();
+      }
+    } else {
+      downloadPreparedSnapshot();
+    }
   }
 
   if (disableSearch) {
