@@ -3,6 +3,7 @@ interface HeroCard {
   title: string;
   image: string;
   imageFallback?: string;
+  filterKey?: string;
   category: string;
   slug: string;
 }
@@ -12,6 +13,62 @@ interface Props {
 }
 
 const { cards } = Astro.props;
+
+const normalizeToken = (value: string): string =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const toHeroCategoryTag = (card: HeroCard): string => {
+  const filter = normalizeToken(card.filterKey || '');
+  if (filter === 'sucrees') return 'SWEET';
+  if (filter === 'salees') return 'SAVORY';
+
+  const source = normalizeToken(`${card.category} ${card.title}`);
+
+  const sweetKeywords = [
+    'sucre',
+    'sweet',
+    'dessert',
+    'gateau',
+    'cake',
+    'cookie',
+    'brioche',
+    'chocolat',
+    'chocolate',
+    'sable',
+    'entremet',
+    'galette',
+    'tarte',
+  ];
+
+  if (sweetKeywords.some((keyword) => source.includes(keyword))) {
+    return 'SWEET';
+  }
+
+  const savoryKeywords = [
+    'sale',
+    'savory',
+    'savoury',
+    'omelette',
+    'quiche',
+    'gratin',
+    'soupe',
+    'salade',
+    'foie gras',
+    'poulet',
+    'poisson',
+  ];
+
+  if (savoryKeywords.some((keyword) => source.includes(keyword))) {
+    return 'SAVORY';
+  }
+
+  const fallbackCategory = String(card.category || '').trim().toUpperCase();
+  return fallbackCategory || 'RECIPE';
+};
 ---
 
 <section class="relative bg-[#fff] pt-10 pb-8 md:pt-14 md:pb-10 lg:pt-12 lg:pb-9 overflow-hidden p-4">
@@ -62,7 +119,7 @@ const { cards } = Astro.props;
               <div class="absolute bottom-0 left-0 right-0 p-6">
                 <div class="mb-3">
                   <span class="inline-flex rounded-full bg-white/95 px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.1em] text-[#26323E]">
-                    {card.category}
+                    {toHeroCategoryTag(card)}
                   </span>
                 </div>
                 <h3 class="font-body text-[34px] md:text-[35px] text-white leading-[1.08] line-clamp-2">

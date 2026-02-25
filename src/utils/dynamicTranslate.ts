@@ -26,8 +26,6 @@ const loadedTranslationLangs = new Set<string>();
 const pendingDynamicRoots = new Set<HTMLElement>();
 
 const DEEPL_FAILURE_THRESHOLD = 3;
-// Keep request chunks small so homepage-sized content does not hit API limits.
-const TRANSLATE_BATCH_SIZE = 40;
 
 const DEFAULT_TRANSLATE_ENDPOINT = 'https://admin.lacuisinedebernard.com/api';
 
@@ -394,7 +392,7 @@ const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Pr
       .filter((root): root is HTMLElement => root instanceof HTMLElement && root.isConnected);
     if (!targetRoots.length) return;
 
-    const batchSize = TRANSLATE_BATCH_SIZE;
+    const batchSize = 120;
     const target = getDeepLTargetLang(targetLang);
     let anyChanges = false;
 
@@ -467,7 +465,20 @@ const stopDynamicTranslationObserver = (): void => {
   }
 };
 
-const scheduleDynamicTranslationFlush = (): void => {
+const flushDynamicTranslation = async (): Promise<void> => {
+  if (!pendingDynamicRoots.size) return;
+  if (!hasDeeplEndpoint() || deeplUnavailable) return;
+  if (currentLanguage === sourceLanguage) return;
+
+  const roots = Array.from(pendingDynamicRoots).filter((root) => root.isConnected);
+  pendingDynamicRoots.clear();
+  if (!roots.length) return;
+
+  await translateTextNodes(currentLanguage, roots);
+};
+
+const queueDynamicTranslation = (root: HTMLElement): void => {
+  pendingDynamicRoots.add(root);
   if (dynamicTranslationTimer !== null || typeof window === 'undefined') return;
 
   dynamicTranslationTimer = window.setTimeout(() => {
@@ -476,30 +487,6 @@ const scheduleDynamicTranslationFlush = (): void => {
       console.error('[translate] Failed to translate dynamic content:', error);
     });
   }, 250);
-};
-
-const flushDynamicTranslation = async (): Promise<void> => {
-  if (!pendingDynamicRoots.size) return;
-  if (!hasDeeplEndpoint() || deeplUnavailable) return;
-  if (currentLanguage === sourceLanguage) return;
-  if (translationInProgress) {
-    scheduleDynamicTranslationFlush();
-    return;
-  }
-
-  const roots = Array.from(pendingDynamicRoots).filter((root) => root.isConnected);
-  pendingDynamicRoots.clear();
-  if (!roots.length) return;
-
-  await translateTextNodes(currentLanguage, roots);
-  if (pendingDynamicRoots.size) {
-    scheduleDynamicTranslationFlush();
-  }
-};
-
-const queueDynamicTranslation = (root: HTMLElement): void => {
-  pendingDynamicRoots.add(root);
-  scheduleDynamicTranslationFlush();
 };
 
 const startDynamicTranslationObserver = (): void => {
@@ -661,10 +648,10 @@ export async function changeLanguage(newLang: string): Promise<void> {
           stopDynamicTranslationObserver();
           restoreOriginalText();
         } else {
-          // Observe first so async homepage DOM updates are translated too.
-          startDynamicTranslationObserver();
           await translateTextNodes(normalizedLang);
-          if (deeplUnavailable) {
+          if (!deeplUnavailable) {
+            startDynamicTranslationObserver();
+          } else {
             stopDynamicTranslationObserver();
           }
         }
