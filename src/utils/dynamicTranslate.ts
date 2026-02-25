@@ -152,7 +152,8 @@ const originalAttributeMap = new WeakMap<Element, Map<string, string>>();
 const translatableAttributes = ['placeholder', 'title', 'aria-label', 'alt'];
 let letterRegex: RegExp | null = null;
 try {
-  letterRegex = /\p{L}/u;
+  // Use constructor so older engines don't fail at parse time.
+  letterRegex = new RegExp('\\p{L}', 'u');
 } catch {
   letterRegex = null;
 }
@@ -160,7 +161,9 @@ try {
 const hasTranslatableLetters = (value: string): boolean => {
   const text = String(value || '').trim();
   if (!text) return false;
-  return letterRegex ? letterRegex.test(text) : /[A-Za-z]/.test(text);
+  return letterRegex
+    ? letterRegex.test(text)
+    : /[A-Za-z\u00C0-\u024F\u0400-\u04FF\u0600-\u06FF]/.test(text);
 };
 
 const markDeepLUnavailable = (reason: string, error?: unknown): void => {
@@ -178,15 +181,15 @@ const markDeepLUnavailable = (reason: string, error?: unknown): void => {
 
 const registerDeepLFailure = (reason: string, error?: unknown): void => {
   deeplFailureCount += 1;
-  if (deeplFailureCount >= DEEPL_FAILURE_THRESHOLD) {
-    markDeepLUnavailable(`${reason} (${deeplFailureCount} consecutive failures)`, error);
-    return;
-  }
-
   if (error) {
     console.warn(`[translate] DeepL temporary failure (${deeplFailureCount}/${DEEPL_FAILURE_THRESHOLD}): ${reason}`, error);
   } else {
     console.warn(`[translate] DeepL temporary failure (${deeplFailureCount}/${DEEPL_FAILURE_THRESHOLD}): ${reason}`);
+  }
+
+  // Network instability should not permanently disable translation attempts.
+  if (deeplFailureCount >= DEEPL_FAILURE_THRESHOLD) {
+    deeplFailureCount = 0;
   }
 };
 
