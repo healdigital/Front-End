@@ -20,11 +20,7 @@ let storageWatcherBound = false;
 let languageCustomEventBound = false;
 let hasTranslatedContent = false;
 let deeplFailureCount = 0;
-let dynamicTranslationObserver: MutationObserver | null = null;
-let dynamicTranslationTimer: number | null = null;
-const deferredTranslationTimers: number[] = [];
 const loadedTranslationLangs = new Set<string>();
-const pendingDynamicRoots = new Set<HTMLElement>();
 const unavailableDeeplEndpoints = new Set<string>();
 const deeplTranslationCache = new Map<string, Map<string, string>>();
 
@@ -196,41 +192,6 @@ const registerDeepLFailure = (reason: string, error?: unknown): void => {
 
 const resetDeepLFailureState = (): void => {
   deeplFailureCount = 0;
-};
-
-const clearDeferredTranslationPasses = (): void => {
-  if (typeof window === 'undefined' || deferredTranslationTimers.length === 0) return;
-  deferredTranslationTimers.forEach((timerId) => window.clearTimeout(timerId));
-  deferredTranslationTimers.length = 0;
-};
-
-const runDeferredTranslationPass = (lang: string, retries = 8): void => {
-  if (typeof window === 'undefined') return;
-  if (!lang || currentLanguage !== lang || lang === sourceLanguage) return;
-  if (!hasDeeplEndpoint() || deeplUnavailable) return;
-
-  if (translationInProgress) {
-    if (retries <= 0) return;
-    const retryId = window.setTimeout(() => runDeferredTranslationPass(lang, retries - 1), 280);
-    deferredTranslationTimers.push(retryId);
-    return;
-  }
-
-  translateTextNodes(lang).catch((error) => {
-    console.error('[translate] Deferred translation pass failed:', error);
-  });
-};
-
-const scheduleDeferredTranslationPasses = (lang: string): void => {
-  clearDeferredTranslationPasses();
-  if (typeof window === 'undefined') return;
-  if (!lang || lang === sourceLanguage) return;
-  if (!hasDeeplEndpoint() || deeplUnavailable) return;
-
-  [650, 1700].forEach((delay) => {
-    const timerId = window.setTimeout(() => runDeferredTranslationPass(lang), delay);
-    deferredTranslationTimers.push(timerId);
-  });
 };
 
 /**
@@ -506,56 +467,62 @@ const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Pr
       .filter((root): root is HTMLElement => root instanceof HTMLElement && root.isConnected);
     if (!targetRoots.length) return;
 
-    const batchSize = 120;
     const target = getDeepLTargetLang(targetLang);
+    const allTextTargets: Array<{ node: Text; original: string }> = [];
+    const allAttributeTargets: Array<{ element: Element; attr: string; original: string }> = [];
+    const seenNodes = new Set<Text>();
+    const seenAttributes = new WeakMap<Element, Set<string>>();
     let anyChanges = false;
 
     for (const root of targetRoots) {
       const nodes = collectTextNodes(root);
-      const attributeTargets = collectAttributeTargets(root);
-
-      for (let i = 0; i < nodes.length; i += batchSize) {
-        const batch = nodes.slice(i, i + batchSize);
-        const texts = batch.map((node) => {
-          const existing = originalTextMap.get(node);
-          if (existing !== undefined) return existing;
-          const original = node.textContent || '';
+      const rootAttributeTargets = collectAttributeTargets(root);
+      for (const node of nodes) {
+        if (seenNodes.has(node)) continue;
+        seenNodes.add(node);
+        const existing = originalTextMap.get(node);
+        const original = existing !== undefined ? existing : (node.textContent || '');
+        if (existing === undefined) {
           originalTextMap.set(node, original);
-          return original;
-        });
-
-        const translations = await requestDeepLTranslation(texts, target);
-        if (deeplUnavailable) break;
-        translations.forEach((translated, idx) => {
-          if (
-            typeof translated === 'string' &&
-            batch[idx].textContent !== translated
-          ) {
-            batch[idx].textContent = translated;
-            anyChanges = true;
-          }
-        });
+        }
+        allTextTargets.push({ node, original });
       }
 
-      if (deeplUnavailable) break;
-
-      for (let i = 0; i < attributeTargets.length; i += batchSize) {
-        const batch = attributeTargets.slice(i, i + batchSize);
-        const texts = batch.map((item) => item.original);
-        const translations = await requestDeepLTranslation(texts, target);
-        if (deeplUnavailable) break;
-
-        translations.forEach((translated, idx) => {
-          if (
-            typeof translated === 'string' &&
-            batch[idx].element.getAttribute(batch[idx].attr) !== translated
-          ) {
-            batch[idx].element.setAttribute(batch[idx].attr, translated);
-            anyChanges = true;
-          }
-        });
+      for (const attrTarget of rootAttributeTargets) {
+        let attrs = seenAttributes.get(attrTarget.element);
+        if (!attrs) {
+          attrs = new Set<string>();
+          seenAttributes.set(attrTarget.element, attrs);
+        }
+        if (attrs.has(attrTarget.attr)) continue;
+        attrs.add(attrTarget.attr);
+        allAttributeTargets.push(attrTarget);
       }
     }
+
+    if (!allTextTargets.length && !allAttributeTargets.length) return;
+
+    const allTexts = allTextTargets.map((item) => item.original)
+      .concat(allAttributeTargets.map((item) => item.original));
+    const translations = await requestDeepLTranslation(allTexts, target);
+    if (deeplUnavailable) return;
+
+    allTextTargets.forEach((item, index) => {
+      const translated = translations[index];
+      if (typeof translated === 'string' && item.node.textContent !== translated) {
+        item.node.textContent = translated;
+        anyChanges = true;
+      }
+    });
+
+    const attributeOffset = allTextTargets.length;
+    allAttributeTargets.forEach((item, index) => {
+      const translated = translations[attributeOffset + index];
+      if (typeof translated === 'string' && item.element.getAttribute(item.attr) !== translated) {
+        item.element.setAttribute(item.attr, translated);
+        anyChanges = true;
+      }
+    });
 
     if (anyChanges) {
       hasTranslatedContent = true;
@@ -568,73 +535,7 @@ const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Pr
 };
 
 const stopDynamicTranslationObserver = (): void => {
-  if (dynamicTranslationObserver) {
-    dynamicTranslationObserver.disconnect();
-    dynamicTranslationObserver = null;
-  }
-  clearDeferredTranslationPasses();
-  pendingDynamicRoots.clear();
-  if (dynamicTranslationTimer !== null && typeof window !== 'undefined') {
-    window.clearTimeout(dynamicTranslationTimer);
-    dynamicTranslationTimer = null;
-  }
-};
-
-const flushDynamicTranslation = async (): Promise<void> => {
-  if (!pendingDynamicRoots.size) return;
-  if (!hasDeeplEndpoint() || deeplUnavailable) return;
-  if (currentLanguage === sourceLanguage) return;
-
-  const roots = Array.from(pendingDynamicRoots).filter((root) => root.isConnected);
-  pendingDynamicRoots.clear();
-  if (!roots.length) return;
-
-  await translateTextNodes(currentLanguage, roots);
-};
-
-const queueDynamicTranslation = (root: HTMLElement): void => {
-  pendingDynamicRoots.add(root);
-  if (dynamicTranslationTimer !== null || typeof window === 'undefined') return;
-
-  dynamicTranslationTimer = window.setTimeout(() => {
-    dynamicTranslationTimer = null;
-    flushDynamicTranslation().catch((error) => {
-      console.error('[translate] Failed to translate dynamic content:', error);
-    });
-  }, 250);
-};
-
-const startDynamicTranslationObserver = (): void => {
-  if (typeof window === 'undefined') return;
-  if (!document.body || !hasDeeplEndpoint() || deeplUnavailable) return;
-  if (dynamicTranslationObserver) return;
-
-  dynamicTranslationObserver = new MutationObserver((mutations) => {
-    if (currentLanguage === sourceLanguage) return;
-    if (!hasDeeplEndpoint() || deeplUnavailable) return;
-
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const element = node as HTMLElement;
-          if (shouldIgnoreElement(element)) return;
-          queueDynamicTranslation(element);
-          return;
-        }
-
-        if (node.nodeType === Node.TEXT_NODE) {
-          const parent = node.parentElement;
-          if (!parent || shouldIgnoreElement(parent)) return;
-          queueDynamicTranslation(parent as HTMLElement);
-        }
-      });
-    });
-  });
-
-  dynamicTranslationObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
+  // Observer-based dynamic polling intentionally disabled.
 };
 
 const restoreOriginalText = (): void => {
@@ -764,7 +665,6 @@ export async function changeLanguage(newLang: string): Promise<void> {
           restoreOriginalText();
         } else {
           await translateTextNodes(normalizedLang);
-          scheduleDeferredTranslationPasses(normalizedLang);
         }
       }
 
