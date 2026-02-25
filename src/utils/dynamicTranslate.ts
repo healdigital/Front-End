@@ -25,6 +25,8 @@ const unavailableDeeplEndpoints = new Set<string>();
 const deeplTranslationCache = new Map<string, Map<string, string>>();
 
 const DEEPL_FAILURE_THRESHOLD = 3;
+const TRANSLATE_API_CHUNK_SIZE = Math.max(20, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_SIZE) || 180);
+const TRANSLATE_API_MAX_ENCODED_CHARS = Math.max(5000, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_MAX_CHARS) || 45000);
 
 const DEFAULT_TRANSLATE_ENDPOINT = 'https://admin.lacuisinedebernard.com/api';
 
@@ -86,6 +88,50 @@ const getTranslateRequestUrl = (endpoint: string): string => {
   return endpoint.endsWith('/translate')
     ? endpoint
     : `${endpoint}/translate`;
+};
+
+interface TranslationChunk {
+  uniqueIndexes: number[];
+  texts: string[];
+}
+
+const estimateEncodedTextLength = (text: string): number => {
+  // Account for "text=" + value + "&" in urlencoded payload.
+  return encodeURIComponent(text).length + 6;
+};
+
+const buildTranslationChunks = (uniqueTexts: string[]): TranslationChunk[] => {
+  if (!uniqueTexts.length) return [];
+
+  const chunks: TranslationChunk[] = [];
+  let currentTexts: string[] = [];
+  let currentIndexes: number[] = [];
+  let currentEncodedChars = 0;
+
+  uniqueTexts.forEach((text, uniqueIndex) => {
+    const encodedLength = estimateEncodedTextLength(text);
+    const exceedBySize = currentTexts.length >= TRANSLATE_API_CHUNK_SIZE;
+    const exceedByChars =
+      currentTexts.length > 0 &&
+      currentEncodedChars + encodedLength > TRANSLATE_API_MAX_ENCODED_CHARS;
+
+    if (exceedBySize || exceedByChars) {
+      chunks.push({ texts: currentTexts, uniqueIndexes: currentIndexes });
+      currentTexts = [];
+      currentIndexes = [];
+      currentEncodedChars = 0;
+    }
+
+    currentTexts.push(text);
+    currentIndexes.push(uniqueIndex);
+    currentEncodedChars += encodedLength;
+  });
+
+  if (currentTexts.length) {
+    chunks.push({ texts: currentTexts, uniqueIndexes: currentIndexes });
+  }
+
+  return chunks;
 };
 
 const deeplLanguageMap: Record<string, string> = {
@@ -325,16 +371,13 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
       return;
     }
 
-    const existing = uncachedTextToIndex.get(text);
-    if (existing !== undefined) {
-      uncachedIndexMap.push(existing);
-      return;
+    let uniqueIndex = uncachedTextToIndex.get(text);
+    if (uniqueIndex === undefined) {
+      uniqueIndex = uncachedUniqueTexts.length;
+      uncachedUniqueTexts.push(text);
+      uncachedTextToIndex.set(text, uniqueIndex);
     }
-
-    const nextIndex = uncachedUniqueTexts.length;
-    uncachedUniqueTexts.push(text);
-    uncachedTextToIndex.set(text, nextIndex);
-    uncachedIndexMap.push(nextIndex);
+    uncachedIndexMap.push(uniqueIndex);
   });
 
   if (!uncachedUniqueTexts.length) {
@@ -344,19 +387,6 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
   if (!hasDeeplEndpoint() || deeplUnavailable) {
     return resolved.map((item, idx) => item ?? texts[idx]);
   }
-
-  // Reduce API payload when batches contain repeated labels.
-  const params = new URLSearchParams();
-  params.append('targetLang', targetLang);
-  uncachedUniqueTexts.forEach((text) => params.append('text', text));
-
-  const requestInit = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    },
-    body: params.toString(),
-  };
 
   let lastNetworkError: unknown = null;
   let lastStatus: { status: number; statusText: string } | null = null;
@@ -369,90 +399,119 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 
   const endpoint = endpointOrder[0];
   const requestUrl = getTranslateRequestUrl(endpoint);
-  let response: Response;
+  const translatedUniqueTexts: Array<string | undefined> = new Array(uncachedUniqueTexts.length);
+  const chunks = buildTranslationChunks(uncachedUniqueTexts);
+  let hadChunkSuccess = false;
+  let hadChunkFailure = false;
 
-  try {
-    response = await fetch(requestUrl, requestInit);
-  } catch (error) {
-    lastNetworkError = error;
-    const message = String((error as any)?.message || error || '');
-    if (
-      message.includes('ERR_CERT_AUTHORITY_INVALID') ||
-      message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
-      message.includes('ERR_SSL') ||
-      message.includes('certificate')
-    ) {
-      unavailableDeeplEndpoints.add(endpoint);
-    }
-  }
+  for (const chunk of chunks) {
+    const params = new URLSearchParams();
+    params.append('targetLang', targetLang);
+    chunk.texts.forEach((text) => params.append('text', text));
 
-  if (!lastNetworkError) {
-    if (!response!.ok) {
-      lastStatus = { status: response!.status, statusText: response!.statusText };
-      if (response!.status === 404 || response!.status === 405) {
+    let response: Response | null = null;
+    try {
+      response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        body: params.toString(),
+      });
+    } catch (error) {
+      hadChunkFailure = true;
+      lastNetworkError = error;
+      const message = String((error as any)?.message || error || '');
+      if (
+        message.includes('ERR_CERT_AUTHORITY_INVALID') ||
+        message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
+        message.includes('ERR_SSL') ||
+        message.includes('certificate')
+      ) {
         unavailableDeeplEndpoints.add(endpoint);
       }
-    } else {
-      try {
-        const data: any = await response!.json();
-        const translations = Array.isArray(data?.translations) ? data.translations : [];
-        if (!translations.length) {
-          lastStatus = { status: 502, statusText: 'Empty translation payload' };
-        } else {
-          const successIndex = deeplEndpoints.indexOf(endpoint);
-          if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
-            activeDeeplEndpointIndex = successIndex;
-            console.info(`[translate] Switched to active endpoint: ${endpoint}`);
-          }
+      continue;
+    }
 
-          uncachedUniqueTexts.forEach((sourceText, idx) => {
-            const translated = translations[idx];
-            if (typeof translated === 'string') {
-              languageCache.set(sourceText, translated);
-            }
-          });
-
-          resetDeepLFailureState();
-          return uncachedIndexMap.map((index, originalIndex) => {
-            if (index < 0) {
-              return resolved[originalIndex] ?? texts[originalIndex];
-            }
-            const translated = translations[index];
-            return typeof translated === 'string' ? translated : texts[originalIndex];
-          });
-        }
-      } catch (error) {
-        lastNetworkError = error;
+    if (!response.ok) {
+      hadChunkFailure = true;
+      lastStatus = { status: response.status, statusText: response.statusText };
+      if (response.status === 404 || response.status === 405) {
+        unavailableDeeplEndpoints.add(endpoint);
       }
+      continue;
+    }
+
+    try {
+      const data: any = await response.json();
+      const translations = Array.isArray(data?.translations) ? data.translations : [];
+      if (translations.length !== chunk.texts.length) {
+        hadChunkFailure = true;
+        lastStatus = { status: 502, statusText: 'Mismatched translation payload size' };
+        continue;
+      }
+
+      hadChunkSuccess = true;
+      chunk.uniqueIndexes.forEach((uniqueIndex, localIndex) => {
+        const source = chunk.texts[localIndex];
+        const translated = translations[localIndex];
+        if (typeof translated === 'string') {
+          translatedUniqueTexts[uniqueIndex] = translated;
+          languageCache.set(source, translated);
+        } else {
+          translatedUniqueTexts[uniqueIndex] = source;
+        }
+      });
+    } catch (error) {
+      hadChunkFailure = true;
+      lastNetworkError = error;
     }
   }
 
-  if (lastStatus) {
-    if (lastStatus.status === 401 || lastStatus.status === 403 || lastStatus.status === 404) {
-      markDeepLUnavailable(
-        `Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`,
-      );
-    } else {
-      registerDeepLFailure(`Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`);
+  if (hadChunkSuccess) {
+    const successIndex = deeplEndpoints.indexOf(endpoint);
+    if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
+      activeDeeplEndpointIndex = successIndex;
+      console.info(`[translate] Switched to active endpoint: ${endpoint}`);
     }
-    return resolved.map((item, idx) => item ?? texts[idx]);
+    resetDeepLFailureState();
   }
 
-  if (lastNetworkError) {
-    const message = String((lastNetworkError as any)?.message || lastNetworkError || '');
-    if (message.includes('ERR_CERT_AUTHORITY_INVALID')) {
-      markDeepLUnavailable(
-        'TLS certificate is invalid on translate API endpoint. Use a valid HTTPS cert.',
-        lastNetworkError,
-      );
-    } else {
-      registerDeepLFailure('Network error while calling translate API.', lastNetworkError);
+  if (hadChunkFailure) {
+    if (lastStatus && !hadChunkSuccess) {
+      if (lastStatus.status === 401 || lastStatus.status === 403 || lastStatus.status === 404) {
+        markDeepLUnavailable(
+          `Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`,
+        );
+      } else {
+        registerDeepLFailure(`Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`);
+      }
+    } else if (lastNetworkError && !hadChunkSuccess) {
+      const message = String((lastNetworkError as any)?.message || lastNetworkError || '');
+      if (message.includes('ERR_CERT_AUTHORITY_INVALID')) {
+        markDeepLUnavailable(
+          'TLS certificate is invalid on translate API endpoint. Use a valid HTTPS cert.',
+          lastNetworkError,
+        );
+      } else {
+        registerDeepLFailure('Network error while calling translate API.', lastNetworkError);
+      }
+    } else if (hadChunkSuccess) {
+      registerDeepLFailure('Translate API partially failed for some chunks.');
     }
-    return resolved.map((item, idx) => item ?? texts[idx]);
   }
 
-  registerDeepLFailure('Translate API failed for all configured endpoints.');
-  return resolved.map((item, idx) => item ?? texts[idx]);
+  return uncachedIndexMap.map((uniqueIndex, originalIndex) => {
+    if (uniqueIndex < 0) {
+      return resolved[originalIndex] ?? texts[originalIndex];
+    }
+
+    const translated = translatedUniqueTexts[uniqueIndex];
+    if (typeof translated === 'string') {
+      return translated;
+    }
+    return texts[originalIndex];
+  });
 };
 
 const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Promise<void> => {
