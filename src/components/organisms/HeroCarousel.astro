@@ -108,7 +108,7 @@ const toHeroCategoryTag = (card: HeroCard): string => {
               <img
                 src={card.image}
                 alt={card.title}
-                class="w-full h-full object-fill transition-transform duration-500 group-hover:scale-105"
+                class="w-full h-full object-contain bg-[#131924] transition-transform duration-500 group-hover:scale-105"
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchpriority={index === 0 ? 'high' : 'low'}
                 decoding="async"

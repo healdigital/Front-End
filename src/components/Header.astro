@@ -409,6 +409,13 @@ const accountItems = [
       const selectedLang = button.getAttribute('data-lang');
       toggleLanguageMenu(false);
       if (!selectedLang) return;
+      syncLanguageMenu(selectedLang);
+
+      // Keep language intent even if translation runtime is still booting.
+      window.__lcdbPendingLanguage = selectedLang;
+      try {
+        localStorage.setItem('preferred-language', selectedLang);
+      } catch {}
 
       const changeLanguage = window.__lcdbChangeLanguage;
       if (typeof changeLanguage === 'function') {
@@ -444,11 +451,16 @@ const accountItems = [
   mobileSearchForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const query = mobileSearchInput instanceof HTMLInputElement ? mobileSearchInput.value : '';
-    submitHeaderSearch(query);
+      submitHeaderSearch(query);
   });
   mobileSearchClose?.addEventListener('click', () => toggleMobileSearch(false));
 
-  syncLanguageMenu(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr');
+  const initialMenuLang =
+    localStorage.getItem('preferred-language') ||
+    document.documentElement.getAttribute('data-lang') ||
+    document.documentElement.lang ||
+    'fr';
+  syncLanguageMenu(initialMenuLang);
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {

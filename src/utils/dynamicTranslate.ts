@@ -685,6 +685,7 @@ export function getCurrentLanguage(): string {
 export function setupLanguageSwitcher(): void {
   if (languageSwitcherBound) return;
   languageSwitcherBound = true;
+  const globalWindow = window as any;
 
   const syncLanguageButtonState = (lang: string): void => {
     document.querySelectorAll('.lang-btn').forEach((btn) => {
@@ -726,12 +727,40 @@ export function setupLanguageSwitcher(): void {
       const customEvent = event as CustomEvent<{ lang?: string }>;
       const lang = normalizeLanguageCode(customEvent?.detail?.lang || '');
       if (!lang || !isSupportedLanguage(lang)) return;
+      globalWindow.__lcdbPendingLanguage = lang;
       changeLanguage(lang);
       syncLanguageButtonState(lang);
     }) as EventListener);
   }
 
-  (window as any).__lcdbChangeLanguage = (lang: string) => changeLanguage(lang);
+  (window as any).__lcdbChangeLanguage = async (lang: string) => {
+    const normalizedLang = normalizeLanguageCode(lang || '');
+    if (normalizedLang) {
+      globalWindow.__lcdbPendingLanguage = normalizedLang;
+    }
+
+    try {
+      await changeLanguage(lang);
+      const appliedLang = normalizeLanguageCode(getCurrentLanguage());
+      if (appliedLang) {
+        syncLanguageButtonState(appliedLang);
+      }
+    } finally {
+      if (globalWindow.__lcdbPendingLanguage === normalizedLang) {
+        delete globalWindow.__lcdbPendingLanguage;
+      }
+    }
+  };
+
+  const pendingLang = normalizeLanguageCode(
+    String(globalWindow.__lcdbPendingLanguage || localStorage.getItem('preferred-language') || ''),
+  );
+  if (pendingLang && isSupportedLanguage(pendingLang) && pendingLang !== getCurrentLanguage()) {
+    changeLanguage(pendingLang);
+    syncLanguageButtonState(pendingLang);
+  } else {
+    syncLanguageButtonState(getCurrentLanguage());
+  }
 }
 
 /**
