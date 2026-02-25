@@ -364,69 +364,64 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     return resolved.map((item, idx) => item ?? texts[idx]);
   }
 
-  for (const endpoint of endpointOrder) {
-    const requestUrl = getTranslateRequestUrl(endpoint);
-    let response: Response;
+  const endpoint = endpointOrder[0];
+  const requestUrl = getTranslateRequestUrl(endpoint);
+  let response: Response;
 
-    try {
-      response = await fetch(requestUrl, requestInit);
-    } catch (error) {
-      lastNetworkError = error;
-      const message = String((error as any)?.message || error || '');
-      if (
-        message.includes('ERR_CERT_AUTHORITY_INVALID') ||
-        message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
-        message.includes('ERR_SSL') ||
-        message.includes('certificate')
-      ) {
+  try {
+    response = await fetch(requestUrl, requestInit);
+  } catch (error) {
+    lastNetworkError = error;
+    const message = String((error as any)?.message || error || '');
+    if (
+      message.includes('ERR_CERT_AUTHORITY_INVALID') ||
+      message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
+      message.includes('ERR_SSL') ||
+      message.includes('certificate')
+    ) {
+      unavailableDeeplEndpoints.add(endpoint);
+    }
+  }
+
+  if (!lastNetworkError) {
+    if (!response!.ok) {
+      lastStatus = { status: response!.status, statusText: response!.statusText };
+      if (response!.status === 404 || response!.status === 405) {
         unavailableDeeplEndpoints.add(endpoint);
       }
-      continue;
-    }
+    } else {
+      try {
+        const data: any = await response!.json();
+        const translations = Array.isArray(data?.translations) ? data.translations : [];
+        if (!translations.length) {
+          lastStatus = { status: 502, statusText: 'Empty translation payload' };
+        } else {
+          const successIndex = deeplEndpoints.indexOf(endpoint);
+          if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
+            activeDeeplEndpointIndex = successIndex;
+            console.info(`[translate] Switched to active endpoint: ${endpoint}`);
+          }
 
-    if (!response.ok) {
-      lastStatus = { status: response.status, statusText: response.statusText };
-      if (response.status === 404 || response.status === 405) {
-        unavailableDeeplEndpoints.add(endpoint);
+          uncachedUniqueTexts.forEach((sourceText, idx) => {
+            const translated = translations[idx];
+            if (typeof translated === 'string') {
+              languageCache.set(sourceText, translated);
+            }
+          });
+
+          resetDeepLFailureState();
+          return uncachedIndexMap.map((index, originalIndex) => {
+            if (index < 0) {
+              return resolved[originalIndex] ?? texts[originalIndex];
+            }
+            const translated = translations[index];
+            return typeof translated === 'string' ? translated : texts[originalIndex];
+          });
+        }
+      } catch (error) {
+        lastNetworkError = error;
       }
-      continue;
     }
-
-    let data: any;
-    try {
-      data = await response.json();
-    } catch (error) {
-      lastNetworkError = error;
-      continue;
-    }
-
-    const translations = Array.isArray(data?.translations) ? data.translations : [];
-    if (!translations.length) {
-      lastStatus = { status: 502, statusText: 'Empty translation payload' };
-      continue;
-    }
-
-    const successIndex = deeplEndpoints.indexOf(endpoint);
-    if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
-      activeDeeplEndpointIndex = successIndex;
-      console.info(`[translate] Switched to fallback endpoint: ${endpoint}`);
-    }
-
-    uncachedUniqueTexts.forEach((sourceText, idx) => {
-      const translated = translations[idx];
-      if (typeof translated === 'string') {
-        languageCache.set(sourceText, translated);
-      }
-    });
-
-    resetDeepLFailureState();
-    return uncachedIndexMap.map((index, originalIndex) => {
-      if (index < 0) {
-        return resolved[originalIndex] ?? texts[originalIndex];
-      }
-      const translated = translations[index];
-      return typeof translated === 'string' ? translated : texts[originalIndex];
-    });
   }
 
   if (lastStatus) {
