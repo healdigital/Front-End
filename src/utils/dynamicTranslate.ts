@@ -24,6 +24,8 @@ let dynamicTranslationObserver: MutationObserver | null = null;
 let dynamicTranslationTimer: number | null = null;
 const loadedTranslationLangs = new Set<string>();
 const pendingDynamicRoots = new Set<HTMLElement>();
+const unavailableDeeplEndpoints = new Set<string>();
+const deeplTranslationCache = new Map<string, Map<string, string>>();
 
 const DEEPL_FAILURE_THRESHOLD = 3;
 
@@ -61,11 +63,26 @@ let activeDeeplEndpointIndex = 0;
 
 const hasDeeplEndpoint = (): boolean => deeplEndpoints.length > 0;
 
+const getLanguageCache = (targetLang: string): Map<string, string> => {
+  const normalized = String(targetLang || '').trim().toUpperCase();
+  let cache = deeplTranslationCache.get(normalized);
+  if (!cache) {
+    cache = new Map<string, string>();
+    deeplTranslationCache.set(normalized, cache);
+  }
+  return cache;
+};
+
 const getEndpointTryOrder = (): string[] => {
   if (!deeplEndpoints.length) return [];
   return deeplEndpoints
+    .filter((endpoint) => !unavailableDeeplEndpoints.has(endpoint))
     .slice(activeDeeplEndpointIndex)
-    .concat(deeplEndpoints.slice(0, activeDeeplEndpointIndex));
+    .concat(
+      deeplEndpoints
+        .filter((endpoint) => !unavailableDeeplEndpoints.has(endpoint))
+        .slice(0, activeDeeplEndpointIndex),
+    );
 };
 
 const getTranslateRequestUrl = (endpoint: string): string => {
@@ -136,6 +153,18 @@ const ignoreTags = new Set([
 const originalTextMap = new WeakMap<Node, string>();
 const originalAttributeMap = new WeakMap<Element, Map<string, string>>();
 const translatableAttributes = ['placeholder', 'title', 'aria-label', 'alt'];
+let letterRegex: RegExp | null = null;
+try {
+  letterRegex = /\p{L}/u;
+} catch {
+  letterRegex = null;
+}
+
+const hasTranslatableLetters = (value: string): boolean => {
+  const text = String(value || '').trim();
+  if (!text) return false;
+  return letterRegex ? letterRegex.test(text) : /[A-Za-z]/.test(text);
+};
 
 const markDeepLUnavailable = (reason: string, error?: unknown): void => {
   deeplUnavailable = true;
@@ -230,6 +259,9 @@ const collectTextNodes = (root: HTMLElement): Text[] => {
       if (!node || !node.textContent || !node.textContent.trim()) {
         return NodeFilter.FILTER_REJECT;
       }
+      if (!hasTranslatableLetters(node.textContent)) {
+        return NodeFilter.FILTER_REJECT;
+      }
       const parent = node.parentElement;
       if (shouldIgnoreElement(parent)) {
         return NodeFilter.FILTER_REJECT;
@@ -268,6 +300,7 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
     translatableAttributes.forEach((attr) => {
       const value = element.getAttribute(attr);
       if (!value || !value.trim()) return;
+      if (!hasTranslatableLetters(value)) return;
       const original = getOriginalAttributeValue(element, attr, value);
       targets.push({ element, attr, original });
     });
@@ -277,28 +310,45 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
 };
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
-  if (!hasDeeplEndpoint() || deeplUnavailable) return texts;
   if (!texts.length) return texts;
+  const languageCache = getLanguageCache(targetLang);
+  const resolved: string[] = new Array(texts.length);
+  const uncachedUniqueTexts: string[] = [];
+  const uncachedTextToIndex = new Map<string, number>();
+  const uncachedIndexMap: number[] = [];
 
-  // Reduce API payload when batches contain repeated labels.
-  const uniqueTexts: string[] = [];
-  const textToIndex = new Map<string, number>();
-  const indexMap: number[] = [];
-  texts.forEach((text) => {
-    const existing = textToIndex.get(text);
-    if (existing !== undefined) {
-      indexMap.push(existing);
+  texts.forEach((text, idx) => {
+    const cached = languageCache.get(text);
+    if (cached !== undefined) {
+      resolved[idx] = cached;
+      uncachedIndexMap.push(-1);
       return;
     }
-    const nextIndex = uniqueTexts.length;
-    uniqueTexts.push(text);
-    textToIndex.set(text, nextIndex);
-    indexMap.push(nextIndex);
+
+    const existing = uncachedTextToIndex.get(text);
+    if (existing !== undefined) {
+      uncachedIndexMap.push(existing);
+      return;
+    }
+
+    const nextIndex = uncachedUniqueTexts.length;
+    uncachedUniqueTexts.push(text);
+    uncachedTextToIndex.set(text, nextIndex);
+    uncachedIndexMap.push(nextIndex);
   });
 
+  if (!uncachedUniqueTexts.length) {
+    return resolved.map((item, idx) => item ?? texts[idx]);
+  }
+
+  if (!hasDeeplEndpoint() || deeplUnavailable) {
+    return resolved.map((item, idx) => item ?? texts[idx]);
+  }
+
+  // Reduce API payload when batches contain repeated labels.
   const params = new URLSearchParams();
   params.append('targetLang', targetLang);
-  uniqueTexts.forEach((text) => params.append('text', text));
+  uncachedUniqueTexts.forEach((text) => params.append('text', text));
 
   const requestInit = {
     method: 'POST',
@@ -310,8 +360,14 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 
   let lastNetworkError: unknown = null;
   let lastStatus: { status: number; statusText: string } | null = null;
+  const endpointOrder = getEndpointTryOrder();
 
-  for (const endpoint of getEndpointTryOrder()) {
+  if (!endpointOrder.length) {
+    markDeepLUnavailable('No healthy translate API endpoints are available.');
+    return resolved.map((item, idx) => item ?? texts[idx]);
+  }
+
+  for (const endpoint of endpointOrder) {
     const requestUrl = getTranslateRequestUrl(endpoint);
     let response: Response;
 
@@ -319,11 +375,23 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
       response = await fetch(requestUrl, requestInit);
     } catch (error) {
       lastNetworkError = error;
+      const message = String((error as any)?.message || error || '');
+      if (
+        message.includes('ERR_CERT_AUTHORITY_INVALID') ||
+        message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
+        message.includes('ERR_SSL') ||
+        message.includes('certificate')
+      ) {
+        unavailableDeeplEndpoints.add(endpoint);
+      }
       continue;
     }
 
     if (!response.ok) {
       lastStatus = { status: response.status, statusText: response.statusText };
+      if (response.status === 404 || response.status === 405) {
+        unavailableDeeplEndpoints.add(endpoint);
+      }
       continue;
     }
 
@@ -347,8 +415,18 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
       console.info(`[translate] Switched to fallback endpoint: ${endpoint}`);
     }
 
+    uncachedUniqueTexts.forEach((sourceText, idx) => {
+      const translated = translations[idx];
+      if (typeof translated === 'string') {
+        languageCache.set(sourceText, translated);
+      }
+    });
+
     resetDeepLFailureState();
-    return indexMap.map((index, originalIndex) => {
+    return uncachedIndexMap.map((index, originalIndex) => {
+      if (index < 0) {
+        return resolved[originalIndex] ?? texts[originalIndex];
+      }
       const translated = translations[index];
       return typeof translated === 'string' ? translated : texts[originalIndex];
     });
@@ -362,7 +440,7 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     } else {
       registerDeepLFailure(`Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`);
     }
-    return texts;
+    return resolved.map((item, idx) => item ?? texts[idx]);
   }
 
   if (lastNetworkError) {
@@ -375,11 +453,11 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     } else {
       registerDeepLFailure('Network error while calling translate API.', lastNetworkError);
     }
-    return texts;
+    return resolved.map((item, idx) => item ?? texts[idx]);
   }
 
   registerDeepLFailure('Translate API failed for all configured endpoints.');
-  return texts;
+  return resolved.map((item, idx) => item ?? texts[idx]);
 };
 
 const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Promise<void> => {
