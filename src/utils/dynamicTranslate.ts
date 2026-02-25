@@ -22,6 +22,7 @@ let hasTranslatedContent = false;
 let deeplFailureCount = 0;
 let dynamicTranslationObserver: MutationObserver | null = null;
 let dynamicTranslationTimer: number | null = null;
+const deferredTranslationTimers: number[] = [];
 const loadedTranslationLangs = new Set<string>();
 const pendingDynamicRoots = new Set<HTMLElement>();
 const unavailableDeeplEndpoints = new Set<string>();
@@ -195,6 +196,41 @@ const registerDeepLFailure = (reason: string, error?: unknown): void => {
 
 const resetDeepLFailureState = (): void => {
   deeplFailureCount = 0;
+};
+
+const clearDeferredTranslationPasses = (): void => {
+  if (typeof window === 'undefined' || deferredTranslationTimers.length === 0) return;
+  deferredTranslationTimers.forEach((timerId) => window.clearTimeout(timerId));
+  deferredTranslationTimers.length = 0;
+};
+
+const runDeferredTranslationPass = (lang: string, retries = 8): void => {
+  if (typeof window === 'undefined') return;
+  if (!lang || currentLanguage !== lang || lang === sourceLanguage) return;
+  if (!hasDeeplEndpoint() || deeplUnavailable) return;
+
+  if (translationInProgress) {
+    if (retries <= 0) return;
+    const retryId = window.setTimeout(() => runDeferredTranslationPass(lang, retries - 1), 280);
+    deferredTranslationTimers.push(retryId);
+    return;
+  }
+
+  translateTextNodes(lang).catch((error) => {
+    console.error('[translate] Deferred translation pass failed:', error);
+  });
+};
+
+const scheduleDeferredTranslationPasses = (lang: string): void => {
+  clearDeferredTranslationPasses();
+  if (typeof window === 'undefined') return;
+  if (!lang || lang === sourceLanguage) return;
+  if (!hasDeeplEndpoint() || deeplUnavailable) return;
+
+  [650, 1700].forEach((delay) => {
+    const timerId = window.setTimeout(() => runDeferredTranslationPass(lang), delay);
+    deferredTranslationTimers.push(timerId);
+  });
 };
 
 /**
@@ -536,6 +572,7 @@ const stopDynamicTranslationObserver = (): void => {
     dynamicTranslationObserver.disconnect();
     dynamicTranslationObserver = null;
   }
+  clearDeferredTranslationPasses();
   pendingDynamicRoots.clear();
   if (dynamicTranslationTimer !== null && typeof window !== 'undefined') {
     window.clearTimeout(dynamicTranslationTimer);
@@ -721,20 +758,14 @@ export async function changeLanguage(newLang: string): Promise<void> {
       document.documentElement.dir = normalizedLang === 'ar' ? 'rtl' : 'ltr';
 
       // Translate page content using DeepL when configured
+      stopDynamicTranslationObserver();
       if (hasDeeplEndpoint()) {
         if (normalizedLang === sourceLanguage) {
-          stopDynamicTranslationObserver();
           restoreOriginalText();
         } else {
           await translateTextNodes(normalizedLang);
-          if (!deeplUnavailable) {
-            startDynamicTranslationObserver();
-          } else {
-            stopDynamicTranslationObserver();
-          }
+          scheduleDeferredTranslationPasses(normalizedLang);
         }
-      } else {
-        stopDynamicTranslationObserver();
       }
 
       // Update i18n labels/attributes
