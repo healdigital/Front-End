@@ -127,13 +127,45 @@ async function generateSearchIndex() {
       return typeof candidate === 'string' ? candidate : '';
     };
 
+    const getPrimaryRecipeBlock = (article) => {
+      const blocks = Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : [];
+      if (!blocks.length) return null;
+      return blocks.find((block) => block?.blockType === 'recipeCard') || blocks[0];
+    };
+
+    const resolvePrepTimeLabel = (article) => {
+      const recipeBlock = getPrimaryRecipeBlock(article);
+      const candidate =
+        recipeBlock?.preparationTimeMinutes ??
+        article?.recipe?.prepTime ??
+        article?.prepTime ??
+        article?.preparationTimeMinutes ??
+        article?.preparationTime;
+
+      if (candidate === null || candidate === undefined || candidate === '') return '';
+      const asNumber = Number(candidate);
+      if (Number.isFinite(asNumber) && asNumber >= 0) {
+        return `${Math.round(asNumber)} min`;
+      }
+
+      const text = String(candidate).trim();
+      if (!text) return '';
+      if (/[0-9].*(min|h)/i.test(text)) return text;
+      if (/^\d+([.,]\d+)?$/.test(text)) return `${text} min`;
+      return '';
+    };
+
     for (let i = 0; i < total; i++) {
       const article = articles[i];
+      const recipeBlock = getPrimaryRecipeBlock(article);
       const slug = typeof article.slug === 'string' ? article.slug : article.slug?.current || '';
       const contentText = richTextToPlain(article.content).substring(0, 1000);
       const excerptText = richTextToPlain(article.excerpt);
+      const recipeCategoryText = [entityName(recipeBlock?.recipeType), entityName(recipeBlock?.dishType)]
+        .filter(Boolean)
+        .join(' ');
       const categoryText = Array.isArray(article.categories)
-        ? article.categories.map(entityName).filter(Boolean).join(' ')
+        ? [recipeCategoryText, article.categories.map(entityName).filter(Boolean).join(' ')].filter(Boolean).join(' ')
         : entityName(article.category);
       const tagsText = Array.isArray(article.tags)
         ? article.tags.map(entityName).filter(Boolean).join(' ')
@@ -151,6 +183,7 @@ async function generateSearchIndex() {
         tags: tagsText,
         author: authorText,
         publishedAt: resolvePublishedAt(article),
+        prepTime: resolvePrepTimeLabel(article),
         readingTimeMin,
         featured_image: {
           url: processArticleImageUrl(article),

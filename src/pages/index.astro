@@ -453,8 +453,17 @@ const extractLabels = (value: any): string[] => {
   return [];
 };
 
+const getPrimaryRecipeBlock = (article: any) => {
+  const blocks = Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : [];
+  if (blocks.length === 0) return null;
+  return blocks.find((block: any) => block?.blockType === 'recipeCard') || blocks[0];
+};
+
 const getCategoryLabel = (article: any): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
   const labels = [
+    ...extractLabels(recipeBlock?.recipeType),
+    ...extractLabels(recipeBlock?.dishType),
     ...extractLabels(article?.categories),
     ...extractLabels(article?.category),
     ...extractLabels(article?.tags),
@@ -471,13 +480,17 @@ const getFilterKey = (categoryLabel: string): string => {
   return 'toutes';
 };
 
-const getRecipeTagLabel = (categoryLabel: string): string => {
-  const clean = String(categoryLabel || '').trim();
-  return clean ? clean.toUpperCase() : 'RECETTE';
+const getRecipeTagLabel = (categoryLabel: string, filterKeyHint = ''): string => {
+  const filterKey = filterKeyHint || getFilterKey(categoryLabel);
+  if (filterKey === 'sucrees') return 'SWEET';
+  if (filterKey === 'salees') return 'SAVORY';
+  return 'RECIPE';
 };
 
 const getRecipeTimeLabel = (article: any): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
   const prepTimeRaw =
+    recipeBlock?.preparationTimeMinutes ??
     article?.recipe?.prepTime ??
     article?.prepTime ??
     article?.preparationTimeMinutes ??
@@ -528,7 +541,7 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   const filterKey = getFilterKey(categoryLabel);
   const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
   const image = fallbackImage;
-  const tagLabel = getRecipeTagLabel(categoryLabel);
+  const tagLabel = getRecipeTagLabel(categoryLabel, filterKey);
   const timeLabel = getRecipeTimeLabel(article);
 
   return {
@@ -1014,9 +1027,11 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     };
 
     const normalizeSlug = (value = '') => String(value).replace(/^\/+|\/+$/g, '');
-    const toRecipeTagLabel = (value = '') => {
-      const clean = String(value || '').trim();
-      return clean ? clean.toUpperCase() : 'RECETTE';
+    const toRecipeTagLabel = (value = '', filterKey = '') => {
+      const resolvedFilterKey = filterKey || getFilterKey(value);
+      if (resolvedFilterKey === 'sucrees') return 'SWEET';
+      if (resolvedFilterKey === 'salees') return 'SAVORY';
+      return 'RECIPE';
     };
     const formatRecipeTime = (value = '') => {
       const raw = String(value || '').trim();
@@ -1083,7 +1098,10 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
       const metaTagEl = card.querySelector('[data-recipe-meta-tag]');
       if (metaTagEl instanceof HTMLElement) {
-        metaTagEl.textContent = toRecipeTagLabel(recipe.difficulty || recipe.category || '');
+        metaTagEl.textContent = toRecipeTagLabel(
+          recipe.difficulty || recipe.category || '',
+          recipe.filterKey || '',
+        );
       }
 
       const metaTimeEl = card.querySelector('[data-recipe-meta-time]');
@@ -1152,6 +1170,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             record?.createdAt ||
             '';
 
+          const filterKey = getFilterKey(categoryLabel);
           recipes.push({
             slug,
             title,
@@ -1166,8 +1185,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               record?.featuredImage?.url ||
               record?.image ||
               '',
-            filterKey: getFilterKey(categoryLabel),
-            difficulty: toRecipeTagLabel(categoryLabel),
+            filterKey,
+            difficulty: toRecipeTagLabel(categoryLabel, filterKey),
             prepTime: formatRecipeTime(timeLabel),
           });
         });

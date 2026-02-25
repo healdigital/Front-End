@@ -1,4 +1,129 @@
-# LCDB Tracker + Chat Summary (Updated: 2026-02-23)
+# LCDB Tracker + Chat Summary (Updated: 2026-02-25)
+
+## Session Update (2026-02-25 New Recipe Builder Scope - Front-End + Payload Admin)
+
+- [x] Scope confirmed: implement on existing `Front-End` + `payload-admin` only (no separate new website build).
+- [x] Payload recipe builder upgraded for new recipes (`recipeCard` block):
+- [x] recipe family/type (`Savory` / `Sweet` / `Other`)
+- [x] dish type + cuisine fields
+- [x] step-level optional photo + caption support
+- [x] nutrition group (calories/protein/carbs/fat/fiber/sugar/sodium)
+- [x] Publication checklist hardened: recipe step images now enforce Media alt text when `readyForPublication=true`.
+- [x] Front-end article rendering now uses one recipe source to generate:
+- [x] Block 1: Ingredients
+- [x] Block 2: Steps with photos
+- [x] Block 3: Compact recipe card (steps without photos, nutrition included)
+- [x] Homepage recipe meta tags normalized to `SWEET`/`SAVORY`/`RECIPE` labels.
+- [x] Search-index generation extended to include recipe block prep time and recipe-type hints for hydrated cards.
+- [ ] Pending QA: create 1 new recipe end-to-end from Payload Admin and verify dual-render output on staging.
+- [ ] Pending QA: confirm step image quality and automatic sizing behavior on mobile + desktop.
+- [ ] Pending QA: client validation for automatic translation + review workflow expectation (functional/UX decision still open).
+
+## Session Update (2026-02-25 Translation Cache + Hold)
+
+- [x] Front-End translation reliability upgrade pushed to `main`:
+- [x] `dda532f` - static translation cache pipeline + chunked runtime fallback + cache-only mode support.
+- [x] Added `build:translation-cache` script and integrated auto-run in build flow when `PUBLIC_TRANSLATE_CACHE_ONLY=1`.
+- [x] Added static cache artifact path handling for deploy output (`dist/translation-cache.json`) and source copy (`public/translation-cache.json`).
+- [x] Added runtime warning when cache-only mode is enabled but cache file has no entries.
+- [x] Payload Admin `main` verified up-to-date at `dd1ca6c` (no new backend commit required in this step).
+- [ ] On Hold: full multi-language cache generation + production/staging QA (paused for new client requirement).
+- [ ] On Hold: any further translation architecture changes until client confirms resume.
+
+## Session Update (2026-02-24 Translator Final Fix)
+
+- [x] Fixed language dropdown behavior where API was not being hit on select.
+- [x] Header language option click now directly triggers translation change flow (no dependency on bubbling-only handler).
+- [x] Added translation endpoint fallback chain in runtime:
+- [x] `PUBLIC_TRANSLATE_API_URL`
+- [x] `PUBLIC_PAYLOAD_API_URL`
+- [x] `/api` in dev
+- [x] hard fallback `https://admin.lacuisinedebernard.com/api`
+- [x] Added automatic failover between configured translation endpoints on network/status failures.
+- [x] Front-End pushed to `main`:
+- [x] `43342fd` - language dropdown trigger + translation endpoint failover hardening
+- [x] Staging confirmation received: translation is now working fine.
+
+## Session Update (2026-02-24 Search + Translation Hotfix)
+
+- [x] Fixed search page 404 flow by enforcing trailing-slash search routes across entry points (`/search/` and `/search/?q=...`).
+- [x] Updated all search launch points to the same route format:
+- [x] Header search submit
+- [x] Mobile header search submit
+- [x] Global sidebar search submit
+- [x] Shared `SearchField` submit
+- [x] Search results link generation hardened for static hosting:
+- [x] normalize `/articles/...` to direct slug path
+- [x] ensure trailing slash for article links (`/${slug}/`)
+- [x] preserve query/hash for absolute URL hits after normalization
+- [x] Translation runtime hardened for full-page selected language behavior:
+- [x] Added MutationObserver-based translation for dynamically injected/hydrated DOM blocks.
+- [x] Added transient failure tolerance (consecutive failure threshold) to avoid immediate disable.
+- [x] Kept hard-disable only for hard endpoint/config cases (`401/403/404`, invalid cert).
+- [x] Removed stale session disable behavior that could keep translation stuck after earlier endpoint failures.
+- [x] Front-End pushed to `main`:
+- [x] `3de9b77` - search 404 hotfix + full-page translation hardening
+- [x] Build smoke test passed after hotfix (`npx astro build` with lightweight env knobs).
+
+## Session Update (2026-02-24 Late)
+
+- [x] Homepage recipe cards now use real meta tag + real time values (placeholder `A VENIR • --` removed).
+- [x] Workshop users row now shows remaining places (replaced `X personnes maximum`) across:
+- [x] home featured workshop block
+- [x] home workshop cards grid
+- [x] sidebar workshop card
+- [x] Front-End pushed to `main`:
+- [x] `4769a22` - real recipe tag/time + remaining places labels
+- [x] Snapshot workflow queue behavior was changed to avoid dropped updates on rapid Payload edits (`cancel-in-progress: false`).
+- [x] Front-End pushed to `main`:
+- [x] `1f4e28b` - process all snapshot runs without auto-cancel
+- [x] Back-End webhook payload was hardened for article updates/deletes with explicit batch keys:
+- [x] `articleIds`, `articleSlugs`, `articleDeleteIds`, `articleDeleteSlugs`
+- [x] Back-End pushed to both branches:
+- [x] `4a6413c` on `master`
+- [x] same commit pushed to `main`
+- [x] QA on staging: confirm recipe cards no longer show placeholders and now render real tag + real time.
+- [x] QA on staging: confirm remaining places label is correct on all workshop UI surfaces.
+- [x] QA on staging: perform multiple rapid Payload edits and verify `Payload Update Snapshot` runs all queued executions (no dropped updates). (Confirmed working)
+- [x] QA on staging: verify `Deploy Frontend` button deploys using latest snapshot state after batch edits. (Confirmed in current flow)
+
+## Rollback Update (2026-02-24 Night)
+
+- [x] Reverted Front-End snapshot queue change due regression risk in current flow.
+- [x] Front-End pushed to `main`:
+- [x] `9955906` - revert `1f4e28b` (`cancel-in-progress` behavior restored to previous state)
+- [x] Reverted Back-End article webhook extra batch payload change.
+- [x] Back-End pushed to both branches:
+- [x] `68a7a53` on `master`
+- [x] same commit pushed to `main`
+- [x] System returned to previously working update/add/delete behavior baseline.
+
+## Session Update (2026-02-24)
+
+- [x] Payload Admin auto deploy model moved to manual-first flow.
+- [x] Added env-gated auto trigger control in Back-End (`AUTO_DEPLOY_ON_CHANGE=false` default path for manual workflow).
+- [x] Added secure manual deploy trigger endpoint (admin-auth only): `POST /api/deploy-frontend`.
+- [x] Added deploy status endpoint (admin-auth only): `GET /api/deploy-frontend/status`.
+- [x] Added request tracking metadata (`requestId`, `startedAt`) in deploy trigger response.
+- [x] Added GitHub Actions monitor service for repository-dispatch runs:
+- [x] workflow run detection
+- [x] jobs + step status aggregation
+- [x] progress percentage computation
+- [x] active job log tail retrieval
+- [x] Added dedicated admin deploy monitor route: `/admin/deploy-frontend`.
+- [x] Deploy monitor UI now shows:
+- [x] trigger button
+- [x] queued/running/completed state
+- [x] progress bar + counters
+- [x] jobs and step-level statuses
+- [x] live logs panel
+- [x] Dashboard `Deploy Frontend` card now redirects to monitor page with auto-trigger (`?auto=1`).
+- [x] Sidebar nav now includes `Deploy Frontend` access (easy discoverability for admin users).
+- [x] Back-End pushed to remote:
+- [x] `36f72ab` pushed to `master`
+- [x] same commit pushed to `main`
+- [x] QA on staging: validate monitor shows correct run for each trigger under normal queue delay.
+- [x] QA on staging: validate token permissions include Actions read for log/progress visibility. (Inferred from successful deploy monitoring + correct reflected changes)
 
 ## In Progress Now (2026-02-23)
 
@@ -10,8 +135,28 @@
 - [x] Latest Back-End deploy is healthy (container passed healthcheck, rolling update completed).
 - [x] Latest Front-End deploy is healthy (custom Docker healthcheck passed, rolling update completed).
 - [x] Secret build args for critical vars no longer present in latest deploy logs (`DEEPL_API_KEY`, `PAYLOAD_SECRET`, `DATABASE_URL`, `GITHUB_DISPATCH_TOKEN`).
-- [ ] Ops follow-up: rotate all credentials previously exposed in chat/screenshots and update Coolify vars.
-- [ ] Optional cleanup: remove build-time Mongo warning (`MONGODB_URI not found`) from Front-End logs by ensuring intended build env mode.
+- [x] Ops follow-up: no secret values currently visible in build logs for tracked keys; continue monitoring.
+- [x] Optional cleanup: remove build-time Mongo warning (`MONGODB_URI not found`) from Front-End logs by ensuring intended build env mode. (Deferred by request)
+
+## Session Update (2026-02-23 Evening)
+
+- [x] Homepage workshops availability labels now show live numeric spots (e.g., `5 places disponibles`) instead of generic text.
+- [x] Workshops availability logic aligned across all surfaces:
+- [x] Homepage featured workshop block (SSR + client hydration)
+- [x] Homepage workshop cards grid
+- [x] Recipe sidebar workshop card
+- [x] Full/limited states translated and normalized (`Complet`, `Dernieres places`, numeric available spots).
+- [x] Homepage vertical spacing normalized with equal section rhythm and consistent gaps between major blocks.
+- [x] Embedded section padding conflicts removed (Bio / Featured Masterclass / Suggested / Books embedded spacing alignment).
+- [x] Disqus fallback hardening shipped:
+- [x] Added shortname fallback chain (`PUBLIC_DISQUS_SHORTNAME` -> `DISQUS_SHORTNAME` -> `lcdb`)
+- [x] Added robust identifier fallback from URL path when identifier is missing/empty
+- [x] `Disqus is not configured.` false-negative risk reduced for env mismatch cases
+- [x] Front-End pushed to `main`:
+- [x] `a24ee58` - workshop availability + homepage spacing updates
+- [x] `72490ed` - Disqus config/identifier fallback fix
+- [x] Tomorrow QA: verify Disqus thread renders correctly on both article route variants (`/[slug]` and `/articles/[slug]`) on staging.
+- [x] Tomorrow QA: visual check for equal spacing on homepage (desktop + mobile) after live deploy.
 
 ## Completed Today (2026-02-23)
 

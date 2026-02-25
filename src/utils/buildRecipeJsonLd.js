@@ -22,6 +22,13 @@ const asPositiveInt = (value) => {
   return Math.round(parsed);
 };
 
+const asPositiveNumber = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  if (parsed < 0) return null;
+  return parsed;
+};
+
 const asSlug = (value) => {
   if (typeof value === 'string') return value;
   if (value && typeof value === 'object' && typeof value.current === 'string') return value.current;
@@ -92,6 +99,36 @@ const normalizeFromRecipeBlockArticle = (source) => {
     source.recipeBlocks.find((block) => block?.blockType === 'recipeCard') || source.recipeBlocks[0];
   if (!recipeBlock) return null;
 
+  const blockNutrition = recipeBlock?.nutrition && typeof recipeBlock.nutrition === 'object'
+    ? recipeBlock.nutrition
+    : null;
+
+  const normalizedNutrition = blockNutrition
+    ? {
+        calories: asPositiveNumber(blockNutrition.caloriesKcal) !== null
+          ? `${asPositiveNumber(blockNutrition.caloriesKcal)} kcal`
+          : undefined,
+        protein: asPositiveNumber(blockNutrition.proteinGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.proteinGrams)} g`
+          : undefined,
+        carbohydrates: asPositiveNumber(blockNutrition.carbohydratesGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.carbohydratesGrams)} g`
+          : undefined,
+        fat: asPositiveNumber(blockNutrition.fatGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.fatGrams)} g`
+          : undefined,
+        fiber: asPositiveNumber(blockNutrition.fiberGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.fiberGrams)} g`
+          : undefined,
+        sugar: asPositiveNumber(blockNutrition.sugarGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.sugarGrams)} g`
+          : undefined,
+        sodium: asPositiveNumber(blockNutrition.sodiumMg) !== null
+          ? `${asPositiveNumber(blockNutrition.sodiumMg)} mg`
+          : undefined,
+      }
+    : null;
+
   const ingredients = Array.isArray(recipeBlock.ingredients)
     ? recipeBlock.ingredients
         .map((ingredient) => {
@@ -127,11 +164,12 @@ const normalizeFromRecipeBlockArticle = (source) => {
     recipeYield: asText(recipeBlock.servings),
     prepMinutes: asPositiveInt(recipeBlock.preparationTimeMinutes),
     cookMinutes: asPositiveInt(recipeBlock.cookingTimeMinutes),
-    recipeCategory: extractCategory(source),
-    recipeCuisine: asText(source?.cuisine),
+    recipeCategory: asText(recipeBlock.dishType) || asText(recipeBlock.recipeType) || extractCategory(source),
+    recipeCuisine: asText(recipeBlock.cuisine) || asText(source?.cuisine),
     keywords: extractKeywordString(source),
     ingredients,
     instructions,
+    nutrition: normalizedNutrition,
   };
 };
 

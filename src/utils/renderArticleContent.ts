@@ -147,23 +147,84 @@ const renderEditorialNoteBlock = (block: AnyRecord): string => {
     .join('\n');
 };
 
+const toPositiveNumber = (value: unknown): number | null => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return parsed;
+};
+
+const formatMinutes = (value: unknown): string => {
+  const numeric = toPositiveNumber(value);
+  if (numeric !== null) return `${Math.round(numeric)} min`;
+  const text = asText(value);
+  return text || '';
+};
+
+const normalizeRecipeType = (value: unknown, fallbackSource: string): string => {
+  const raw = asText(value).toLowerCase();
+  if (raw === 'sweet' || raw === 'sucre' || raw === 'sucree') return 'SWEET';
+  if (raw === 'savory' || raw === 'savoury' || raw === 'sale' || raw === 'salee') return 'SAVORY';
+
+  const source = fallbackSource.toLowerCase();
+  if (
+    source.includes('sucre') ||
+    source.includes('sweet') ||
+    source.includes('dessert') ||
+    source.includes('cake') ||
+    source.includes('brioche') ||
+    source.includes('chocolate')
+  ) {
+    return 'SWEET';
+  }
+
+  if (
+    source.includes('sale') ||
+    source.includes('savory') ||
+    source.includes('savoury') ||
+    source.includes('omelette') ||
+    source.includes('gratin') ||
+    source.includes('soupe') ||
+    source.includes('salade')
+  ) {
+    return 'SAVORY';
+  }
+
+  return 'RECIPE';
+};
+
 const renderRecipeCardBlock = (block: AnyRecord): string => {
   const title = asText(block.title) || 'Recipe card';
-  const prep = asText(block.preparationTimeMinutes);
-  const cook = asText(block.cookingTimeMinutes);
+  const prepMinutes = toPositiveNumber(block.preparationTimeMinutes);
+  const cookMinutes = toPositiveNumber(block.cookingTimeMinutes);
+  const prep = formatMinutes(block.preparationTimeMinutes);
+  const cook = formatMinutes(block.cookingTimeMinutes);
+  const total = prepMinutes !== null || cookMinutes !== null
+    ? `${Math.round((prepMinutes || 0) + (cookMinutes || 0))} min`
+    : '';
   const difficulty = asText(block.difficulty);
   const servings = asText(block.servings);
+  const dishType = asText(block.dishType);
+  const cuisine = asText(block.cuisine);
+  const recipeType = normalizeRecipeType(
+    block.recipeType,
+    [title, dishType, cuisine, difficulty].filter(Boolean).join(' '),
+  );
+  const nutrition = isRecord(block.nutrition) ? block.nutrition : {};
 
   const metaItems = [
-    prep ? `<li><strong>Prep:</strong> ${escapeHtml(prep)} min</li>` : '',
-    cook ? `<li><strong>Cook:</strong> ${escapeHtml(cook)} min</li>` : '',
+    recipeType ? `<li><strong>Type:</strong> ${escapeHtml(recipeType)}</li>` : '',
+    prep ? `<li><strong>Prep:</strong> ${escapeHtml(prep)}</li>` : '',
+    cook ? `<li><strong>Cook:</strong> ${escapeHtml(cook)}</li>` : '',
+    total ? `<li><strong>Total:</strong> ${escapeHtml(total)}</li>` : '',
     difficulty ? `<li><strong>Difficulty:</strong> ${escapeHtml(difficulty)}</li>` : '',
     servings ? `<li><strong>Servings:</strong> ${escapeHtml(servings)}</li>` : '',
+    dishType ? `<li><strong>Dish:</strong> ${escapeHtml(dishType)}</li>` : '',
+    cuisine ? `<li><strong>Cuisine:</strong> ${escapeHtml(cuisine)}</li>` : '',
   ]
     .filter(Boolean)
     .join('');
 
-  const ingredients = Array.isArray(block.ingredients)
+  const ingredientsList = Array.isArray(block.ingredients)
     ? block.ingredients
         .map((ingredient: unknown) => {
           if (!isRecord(ingredient)) return '';
@@ -180,38 +241,131 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
         .join('')
     : '';
 
-  const steps = Array.isArray(block.steps)
+  const stepRows = Array.isArray(block.steps)
     ? block.steps
-        .map((step: unknown) => {
+        .map((step: unknown, index: number) => {
           if (!isRecord(step)) return '';
           const instruction = asText(step.instruction);
           if (!instruction) return '';
-          return `<li>${escapeHtml(instruction)}</li>`;
+
+          const media = resolveMedia(step.image);
+          const caption = asText(step.imageCaption);
+
+          return [
+            '<li class="content-v2-recipe-visual-step">',
+            `  <p class="content-v2-recipe-step-instruction"><span class="content-v2-recipe-step-index">${index + 1}.</span> ${escapeHtml(instruction)}</p>`,
+            media?.url
+              ? [
+                  '  <figure class="content-v2-recipe-step-media">',
+                  `    <img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.alt || instruction)}" loading="lazy" />`,
+                  caption ? `    <figcaption>${escapeHtml(caption)}</figcaption>` : '',
+                  '  </figure>',
+                ]
+                  .filter(Boolean)
+                  .join('\n')
+              : '',
+            '</li>',
+          ]
+            .filter(Boolean)
+            .join('\n');
         })
         .filter(Boolean)
         .join('')
     : '';
 
+  const compactSteps = Array.isArray(block.steps)
+    ? block.steps
+        .map((step: unknown) => {
+          if (!isRecord(step)) return '';
+          const instruction = asText(step.instruction);
+          return instruction ? `<li>${escapeHtml(instruction)}</li>` : '';
+        })
+        .filter(Boolean)
+        .join('')
+    : '';
+
+  const nutritionRows = [
+    {
+      label: 'Calories',
+      value: toPositiveNumber(nutrition.caloriesKcal),
+      suffix: 'kcal',
+    },
+    {
+      label: 'Protein',
+      value: toPositiveNumber(nutrition.proteinGrams),
+      suffix: 'g',
+    },
+    {
+      label: 'Carbs',
+      value: toPositiveNumber(nutrition.carbohydratesGrams),
+      suffix: 'g',
+    },
+    {
+      label: 'Fat',
+      value: toPositiveNumber(nutrition.fatGrams),
+      suffix: 'g',
+    },
+    {
+      label: 'Fiber',
+      value: toPositiveNumber(nutrition.fiberGrams),
+      suffix: 'g',
+    },
+    {
+      label: 'Sugar',
+      value: toPositiveNumber(nutrition.sugarGrams),
+      suffix: 'g',
+    },
+    {
+      label: 'Sodium',
+      value: toPositiveNumber(nutrition.sodiumMg),
+      suffix: 'mg',
+    },
+  ]
+    .filter((item) => item.value !== null)
+    .map(
+      (item) =>
+        `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(String(item.value))} ${escapeHtml(item.suffix)}</li>`,
+    )
+    .join('');
+
   const tips = renderLexicalRichText(block.tips);
   const personalNotes = renderLexicalRichText(block.personalNotes);
 
-  return [
+  const ingredientSection = ingredientsList
+    ? [
+        '<section class="content-v2-block content-v2-recipe-ingredients">',
+        '  <h2>Ingredients</h2>',
+        `  <ul class="content-v2-recipe-ingredients-list">${ingredientsList}</ul>`,
+        '</section>',
+      ].join('\n')
+    : '';
+
+  const visualStepsSection = stepRows
+    ? [
+        '<section class="content-v2-block content-v2-recipe-steps-visual">',
+        '  <h2>Steps with photos</h2>',
+        `  <ol class="content-v2-recipe-visual-list">${stepRows}</ol>`,
+        '</section>',
+      ].join('\n')
+    : '';
+
+  const compactRecipeCardSection = [
     '<section class="content-v2-block content-v2-recipe-card">',
     `  <h2>${escapeHtml(title)}</h2>`,
     metaItems ? `  <ul class="content-v2-recipe-meta">${metaItems}</ul>` : '',
-    ingredients
+    compactSteps
       ? [
           '  <div class="content-v2-recipe-section">',
-          '    <h3>Ingredients</h3>',
-          `    <ul>${ingredients}</ul>`,
+          '    <h3>Recipe steps</h3>',
+          `    <ol>${compactSteps}</ol>`,
           '  </div>',
         ].join('\n')
       : '',
-    steps
+    nutritionRows
       ? [
           '  <div class="content-v2-recipe-section">',
-          '    <h3>Steps</h3>',
-          `    <ol>${steps}</ol>`,
+          '    <h3>Nutrition (per serving)</h3>',
+          `    <ul class="content-v2-recipe-nutrition-list">${nutritionRows}</ul>`,
           '  </div>',
         ].join('\n')
       : '',
@@ -235,6 +389,8 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
   ]
     .filter(Boolean)
     .join('\n');
+
+  return [ingredientSection, visualStepsSection, compactRecipeCardSection].filter(Boolean).join('\n');
 };
 
 const resolveMedia = (value: unknown): { alt: string; url: string } | null => {
