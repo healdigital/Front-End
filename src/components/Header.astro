@@ -114,11 +114,20 @@ const accountItems = [
             data-lang-trigger
             aria-haspopup="true"
             aria-expanded="false"
+            aria-busy="false"
             aria-controls="header-language-dropdown"
           >
             <Icon name="globe" size="sm" />
             <span data-lang-current-label set:html={languageLabel} />
-            <Icon name="chevron-down" size="sm" class="w-4 h-4" />
+            <span
+              class="hidden items-center gap-1 text-[11px] text-white/75"
+              data-lang-loading
+              aria-live="polite"
+            >
+              <span class="inline-block w-3 h-3 rounded-full border border-white/35 border-t-white animate-spin"></span>
+              <span>Translating...</span>
+            </span>
+            <Icon name="chevron-down" size="sm" class="w-4 h-4" data-lang-chevron />
           </button>
           <div
             id="header-language-dropdown"
@@ -330,7 +339,10 @@ const accountItems = [
   const languageDropdown = languageMenu?.querySelector('[data-lang-dropdown]');
   const currentLangLabel = languageMenu?.querySelector('[data-lang-current-label]');
   const languageOptions = Array.from(languageMenu?.querySelectorAll('[data-lang-option]') || []);
+  const languageLoading = languageMenu?.querySelector('[data-lang-loading]');
+  const languageChevron = languageMenu?.querySelector('[data-lang-chevron]');
   const body = document.body;
+  let languageLoadingTimeout = null;
 
   function submitHeaderSearch(rawValue) {
     const query = String(rawValue || '').trim();
@@ -395,6 +407,39 @@ const accountItems = [
     });
   }
 
+  function setLanguageLoading(isLoading) {
+    if (!languageTrigger || !languageLoading) return;
+    languageTrigger.setAttribute('aria-busy', String(Boolean(isLoading)));
+    languageLoading.classList.toggle('hidden', !isLoading);
+    languageLoading.classList.toggle('inline-flex', Boolean(isLoading));
+    languageChevron?.classList.toggle('hidden', Boolean(isLoading));
+
+    languageOptions.forEach((button) => {
+      button.disabled = Boolean(isLoading);
+      button.classList.toggle('opacity-60', Boolean(isLoading));
+      button.classList.toggle('cursor-not-allowed', Boolean(isLoading));
+    });
+  }
+
+  function startLanguageLoading() {
+    if (languageLoadingTimeout) {
+      clearTimeout(languageLoadingTimeout);
+    }
+    setLanguageLoading(true);
+    languageLoadingTimeout = setTimeout(() => {
+      setLanguageLoading(false);
+      languageLoadingTimeout = null;
+    }, 15000);
+  }
+
+  function stopLanguageLoading() {
+    if (languageLoadingTimeout) {
+      clearTimeout(languageLoadingTimeout);
+      languageLoadingTimeout = null;
+    }
+    setLanguageLoading(false);
+  }
+
   menuTrigger?.addEventListener('click', () => toggleMenu(true));
   menuClose?.addEventListener('click', () => toggleMenu(false));
   menuOverlay?.addEventListener('click', () => toggleMenu(false));
@@ -410,6 +455,7 @@ const accountItems = [
       toggleLanguageMenu(false);
       if (!selectedLang) return;
       syncLanguageMenu(selectedLang);
+      startLanguageLoading();
 
       // Keep language intent even if translation runtime is still booting.
       window.__lcdbPendingLanguage = selectedLang;
@@ -420,6 +466,7 @@ const accountItems = [
       const changeLanguage = window.__lcdbChangeLanguage;
       if (typeof changeLanguage === 'function') {
         changeLanguage(selectedLang).catch((error) => {
+          stopLanguageLoading();
           console.error('[header] Failed to change language:', error);
         });
       } else {
@@ -431,6 +478,7 @@ const accountItems = [
     const selectedLang = event?.detail?.lang;
     if (!selectedLang) return;
     syncLanguageMenu(selectedLang);
+    stopLanguageLoading();
   });
   document.addEventListener('click', (event) => {
     if (!languageMenu || !event.target || languageMenu.contains(event.target)) return;
@@ -461,6 +509,7 @@ const accountItems = [
     document.documentElement.lang ||
     'fr';
   syncLanguageMenu(initialMenuLang);
+  stopLanguageLoading();
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
