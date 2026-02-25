@@ -25,6 +25,9 @@ const disableSearch = isTruthy(env.BUILD_DISABLE_SEARCH);
 const useLocalJson = isTruthy(env.USE_LOCAL_JSON);
 const preparedUrl = env.PREPARED_JSON_URL || '';
 const autoAlgoliaIndex = isTruthy(env.ALGOLIA_AUTO_INDEX);
+const shouldBuildTranslationCache =
+  isTruthy(env.BUILD_TRANSLATION_CACHE) || isTruthy(env.PUBLIC_TRANSLATE_CACHE_ONLY);
+const strictTranslationCache = isTruthy(env.PUBLIC_TRANSLATE_CACHE_ONLY);
 
 const downloadPreparedSnapshot = () => {
   if (!preparedUrl) {
@@ -51,6 +54,18 @@ try {
   run('npm run generate-search-index', env);
 
   run('npx astro build', env);
+
+  if (shouldBuildTranslationCache) {
+    try {
+      console.log('Building static translation cache...');
+      run('npm run build:translation-cache', env);
+    } catch (error) {
+      if (strictTranslationCache) {
+        throw error;
+      }
+      console.warn('Translation cache build failed, continuing without cache-only mode.');
+    }
+  }
 
   if (autoAlgoliaIndex) {
     console.log('ALGOLIA_AUTO_INDEX enabled: indexing articles...');

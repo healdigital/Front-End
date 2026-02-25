@@ -11,6 +11,7 @@
     "build:prepared": "node scripts/build-prepared-articles.mjs",
     "update:prepared": "node scripts/update-prepared-article.mjs",
     "refresh:prepared": "node scripts/refresh-prepared-articles.mjs",
+    "build:translation-cache": "node scripts/build-translation-cache.mjs",
     "generate-search-index": "tsx scripts/generate-search-index.mjs",
     "index:algolia": "node -r dotenv/config scripts/index-algolia.js",
     "reindex:articles": "node scripts/reindex-articles.mjs",

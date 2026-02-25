@@ -23,8 +23,13 @@ let deeplFailureCount = 0;
 const loadedTranslationLangs = new Set<string>();
 const unavailableDeeplEndpoints = new Set<string>();
 const deeplTranslationCache = new Map<string, Map<string, string>>();
+const staticTranslationCache: Record<string, Record<string, string>> = {};
+let staticTranslationCacheLoaded = false;
 
 const DEEPL_FAILURE_THRESHOLD = 3;
+const TRANSLATE_API_CHUNK_SIZE = 80;
+const STATIC_TRANSLATION_CACHE_URL = '/translation-cache.json';
+const cacheOnlyTranslationMode = String(import.meta.env.PUBLIC_TRANSLATE_CACHE_ONLY || '').trim() === '1';
 
 const DEFAULT_TRANSLATE_ENDPOINT = 'https://admin.lacuisinedebernard.com/api';
 
@@ -105,8 +110,72 @@ const normalizeLanguageCode = (lang: string): string => {
   return raw;
 };
 
+const normalizeTargetLanguageKey = (value: string): string => {
+  const normalized = normalizeLanguageCode(value);
+  if (supportedLanguageSet.has(normalized)) return normalized;
+
+  const upperValue = String(value || '').trim().toUpperCase();
+  for (const [langCode, deeplCode] of Object.entries(deeplLanguageMap)) {
+    if (deeplCode.toUpperCase() === upperValue) {
+      return langCode;
+    }
+  }
+
+  return normalized;
+};
+
 const isSupportedLanguage = (lang: string): boolean => {
   return supportedLanguageSet.has(normalizeLanguageCode(lang));
+};
+
+const hasStaticTranslationCache = (): boolean =>
+  Object.keys(staticTranslationCache).some((lang) => {
+    const entries = staticTranslationCache[lang];
+    return entries && typeof entries === 'object' && Object.keys(entries).length > 0;
+  });
+
+const loadStaticTranslationCache = async (): Promise<void> => {
+  if (staticTranslationCacheLoaded || typeof window === 'undefined') return;
+  staticTranslationCacheLoaded = true;
+
+  try {
+    const response = await fetch(STATIC_TRANSLATION_CACHE_URL, { cache: 'force-cache' });
+    if (!response.ok) {
+      return;
+    }
+
+    const payload = await response.json();
+    const languagesPayload =
+      payload && typeof payload === 'object' && payload.languages && typeof payload.languages === 'object'
+        ? payload.languages
+        : payload;
+
+    if (!languagesPayload || typeof languagesPayload !== 'object') {
+      return;
+    }
+
+    Object.entries(languagesPayload as Record<string, any>).forEach(([langKey, entries]) => {
+      const normalizedLang = normalizeLanguageCode(langKey);
+      if (!supportedLanguageSet.has(normalizedLang)) return;
+      if (!entries || typeof entries !== 'object') return;
+
+      const normalizedEntries: Record<string, string> = {};
+      Object.entries(entries as Record<string, any>).forEach(([sourceText, translatedText]) => {
+        if (!sourceText || typeof sourceText !== 'string') return;
+        if (typeof translatedText !== 'string') return;
+        normalizedEntries[sourceText] = translatedText;
+      });
+
+      if (Object.keys(normalizedEntries).length > 0) {
+        staticTranslationCache[normalizedLang] = {
+          ...(staticTranslationCache[normalizedLang] || {}),
+          ...normalizedEntries,
+        };
+      }
+    });
+  } catch (error) {
+    console.warn('[translate] Failed to load translation cache file:', error);
+  }
 };
 
 const loadTranslationData = async (lang: string): Promise<boolean> => {
@@ -202,6 +271,10 @@ const resetDeepLFailureState = (): void => {
  */
 export async function initializeTranslations(): Promise<void> {
   try {
+    await loadStaticTranslationCache();
+    if (cacheOnlyTranslationMode && !hasStaticTranslationCache()) {
+      console.warn('[translate] PUBLIC_TRANSLATE_CACHE_ONLY=1 but translation-cache.json is empty.');
+    }
     sourceLanguage = resolvePageLanguage();
     currentLanguage = sourceLanguage;
     appliedLanguage = null;
@@ -309,8 +382,20 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
   return targets;
 };
 
+const chunkTexts = (texts: string[], size: number): string[][] => {
+  if (!texts.length) return [];
+  const chunkSize = Math.max(1, size);
+  const chunks: string[][] = [];
+  for (let index = 0; index < texts.length; index += chunkSize) {
+    chunks.push(texts.slice(index, index + chunkSize));
+  }
+  return chunks;
+};
+
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
   if (!texts.length) return texts;
+  const normalizedTargetLanguage = normalizeTargetLanguageKey(targetLang);
+  const staticLanguageCache = staticTranslationCache[normalizedTargetLanguage] || null;
   const languageCache = getLanguageCache(targetLang);
   const resolved: string[] = new Array(texts.length);
   const uncachedUniqueTexts: string[] = [];
@@ -321,6 +406,14 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     const cached = languageCache.get(text);
     if (cached !== undefined) {
       resolved[idx] = cached;
+      uncachedIndexMap.push(-1);
+      return;
+    }
+
+    const staticCached = staticLanguageCache?.[text];
+    if (typeof staticCached === 'string') {
+      languageCache.set(text, staticCached);
+      resolved[idx] = staticCached;
       uncachedIndexMap.push(-1);
       return;
     }
@@ -341,22 +434,13 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     return resolved.map((item, idx) => item ?? texts[idx]);
   }
 
-  if (!hasDeeplEndpoint() || deeplUnavailable) {
+  if (cacheOnlyTranslationMode) {
     return resolved.map((item, idx) => item ?? texts[idx]);
   }
 
-  // Reduce API payload when batches contain repeated labels.
-  const params = new URLSearchParams();
-  params.append('targetLang', targetLang);
-  uncachedUniqueTexts.forEach((text) => params.append('text', text));
-
-  const requestInit = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    },
-    body: params.toString(),
-  };
+  if (!hasDeeplEndpoint() || deeplUnavailable) {
+    return resolved.map((item, idx) => item ?? texts[idx]);
+  }
 
   let lastNetworkError: unknown = null;
   let lastStatus: { status: number; statusText: string } | null = null;
@@ -369,62 +453,99 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 
   const endpoint = endpointOrder[0];
   const requestUrl = getTranslateRequestUrl(endpoint);
-  let response: Response;
+  const translatedUniqueTexts: Array<string | undefined> = new Array(uncachedUniqueTexts.length);
+  let encounteredError = false;
+  let chunkCursor = 0;
+  const textChunks = chunkTexts(uncachedUniqueTexts, TRANSLATE_API_CHUNK_SIZE);
 
-  try {
-    response = await fetch(requestUrl, requestInit);
-  } catch (error) {
-    lastNetworkError = error;
-    const message = String((error as any)?.message || error || '');
-    if (
-      message.includes('ERR_CERT_AUTHORITY_INVALID') ||
-      message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
-      message.includes('ERR_SSL') ||
-      message.includes('certificate')
-    ) {
-      unavailableDeeplEndpoints.add(endpoint);
+  for (const chunk of textChunks) {
+    const params = new URLSearchParams();
+    params.append('targetLang', targetLang);
+    chunk.forEach((text) => params.append('text', text));
+
+    let response: Response | null = null;
+    let networkError: unknown = null;
+
+    try {
+      response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        body: params.toString(),
+      });
+    } catch (error) {
+      networkError = error;
+    }
+
+    if (networkError) {
+      lastNetworkError = networkError;
+      encounteredError = true;
+      const message = String((networkError as any)?.message || networkError || '');
+      if (
+        message.includes('ERR_CERT_AUTHORITY_INVALID') ||
+        message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
+        message.includes('ERR_SSL') ||
+        message.includes('certificate')
+      ) {
+        unavailableDeeplEndpoints.add(endpoint);
+      }
+      break;
+    }
+
+    if (!response) {
+      encounteredError = true;
+      lastStatus = { status: 502, statusText: 'Empty translate response' };
+      break;
+    }
+
+    if (!response.ok) {
+      encounteredError = true;
+      lastStatus = { status: response.status, statusText: response.statusText };
+      if (response.status === 404 || response.status === 405) {
+        unavailableDeeplEndpoints.add(endpoint);
+      }
+      break;
+    }
+
+    try {
+      const data: any = await response.json();
+      const translations = Array.isArray(data?.translations) ? data.translations : [];
+      if (!translations.length) {
+        encounteredError = true;
+        lastStatus = { status: 502, statusText: 'Empty translation payload' };
+        break;
+      }
+
+      chunk.forEach((sourceText, idx) => {
+        const translated = translations[idx];
+        const result = typeof translated === 'string' && translated.trim() ? translated : sourceText;
+        languageCache.set(sourceText, result);
+        translatedUniqueTexts[chunkCursor + idx] = result;
+      });
+      chunkCursor += chunk.length;
+    } catch (error) {
+      encounteredError = true;
+      lastNetworkError = error;
+      break;
     }
   }
 
-  if (!lastNetworkError) {
-    if (!response!.ok) {
-      lastStatus = { status: response!.status, statusText: response!.statusText };
-      if (response!.status === 404 || response!.status === 405) {
-        unavailableDeeplEndpoints.add(endpoint);
-      }
-    } else {
-      try {
-        const data: any = await response!.json();
-        const translations = Array.isArray(data?.translations) ? data.translations : [];
-        if (!translations.length) {
-          lastStatus = { status: 502, statusText: 'Empty translation payload' };
-        } else {
-          const successIndex = deeplEndpoints.indexOf(endpoint);
-          if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
-            activeDeeplEndpointIndex = successIndex;
-            console.info(`[translate] Switched to active endpoint: ${endpoint}`);
-          }
-
-          uncachedUniqueTexts.forEach((sourceText, idx) => {
-            const translated = translations[idx];
-            if (typeof translated === 'string') {
-              languageCache.set(sourceText, translated);
-            }
-          });
-
-          resetDeepLFailureState();
-          return uncachedIndexMap.map((index, originalIndex) => {
-            if (index < 0) {
-              return resolved[originalIndex] ?? texts[originalIndex];
-            }
-            const translated = translations[index];
-            return typeof translated === 'string' ? translated : texts[originalIndex];
-          });
-        }
-      } catch (error) {
-        lastNetworkError = error;
-      }
+  if (!encounteredError) {
+    const successIndex = deeplEndpoints.indexOf(endpoint);
+    if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
+      activeDeeplEndpointIndex = successIndex;
+      console.info(`[translate] Switched to active endpoint: ${endpoint}`);
     }
+
+    resetDeepLFailureState();
+    return uncachedIndexMap.map((index, originalIndex) => {
+      if (index < 0) {
+        return resolved[originalIndex] ?? texts[originalIndex];
+      }
+      const translated = translatedUniqueTexts[index];
+      return typeof translated === 'string' ? translated : texts[originalIndex];
+    });
   }
 
   if (lastStatus) {
@@ -456,7 +577,9 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 };
 
 const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Promise<void> => {
-  if (!hasDeeplEndpoint() || deeplUnavailable) return;
+  if ((!hasDeeplEndpoint() || deeplUnavailable || cacheOnlyTranslationMode) && !hasStaticTranslationCache()) {
+    return;
+  }
   if (translationInProgress) return;
   translationInProgress = true;
 
