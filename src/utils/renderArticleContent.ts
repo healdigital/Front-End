@@ -153,6 +153,12 @@ const toPositiveNumber = (value: unknown): number | null => {
   return parsed;
 };
 
+const toPositiveInt = (value: unknown): number | null => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.round(parsed);
+};
+
 const formatMinutes = (value: unknown): string => {
   const numeric = toPositiveNumber(value);
   if (numeric !== null) return `${Math.round(numeric)} min`;
@@ -202,7 +208,9 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     ? `${Math.round((prepMinutes || 0) + (cookMinutes || 0))} min`
     : '';
   const difficulty = asText(block.difficulty);
-  const servings = asText(block.servings);
+  const servingsCount = toPositiveInt(block.servingsCount);
+  const servingsLabel = asText(block.servings);
+  const servings = servingsLabel || (servingsCount !== null ? String(servingsCount) : '');
   const dishType = asText(block.dishType);
   const cuisine = asText(block.cuisine);
   const recipeType = normalizeRecipeType(
@@ -248,8 +256,12 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
           const instruction = asText(step.instruction);
           if (!instruction) return '';
 
-          const media = resolveMedia(step.image);
+          const media = resolveMedia(step.image, ['articleStep', 'articleHero', 'gallery']);
           const caption = asText(step.imageCaption);
+          const imageDimensions =
+            media?.width && media?.height
+              ? ` width="${media.width}" height="${media.height}"`
+              : '';
 
           return [
             '<li class="content-v2-recipe-visual-step">',
@@ -257,7 +269,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
             media?.url
               ? [
                   '  <figure class="content-v2-recipe-step-media">',
-                  `    <img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.alt || instruction)}" loading="lazy" />`,
+                  `    <img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.alt || instruction)}" loading="lazy" decoding="async"${imageDimensions} />`,
                   caption ? `    <figcaption>${escapeHtml(caption)}</figcaption>` : '',
                   '  </figure>',
                 ]
@@ -393,26 +405,57 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
   return [ingredientSection, visualStepsSection, compactRecipeCardSection].filter(Boolean).join('\n');
 };
 
-const resolveMedia = (value: unknown): { alt: string; url: string } | null => {
+const resolveMedia = (
+  value: unknown,
+  preferredSizes: string[] = [],
+): { alt: string; height: null | number; url: string; width: null | number } | null => {
   if (!value) return null;
 
   if (typeof value === 'string') {
     return value.trim()
       ? {
           alt: '',
+          height: null,
           url: replaceCdnUrl(value),
+          width: null,
         }
       : null;
   }
 
   if (!isRecord(value)) return null;
 
-  const url = asText(value.url);
+  let selectedURL = '';
+  let selectedWidth = toPositiveInt(value.width);
+  let selectedHeight = toPositiveInt(value.height);
+
+  const sizes = isRecord(value.sizes) ? value.sizes : null;
+  if (sizes && preferredSizes.length > 0) {
+    for (const sizeName of preferredSizes) {
+      const sizeCandidate = sizes[sizeName];
+      if (!isRecord(sizeCandidate)) continue;
+
+      const sizedURL = asText(sizeCandidate.url);
+      if (!sizedURL) continue;
+
+      selectedURL = sizedURL;
+      selectedWidth = toPositiveInt(sizeCandidate.width) ?? selectedWidth;
+      selectedHeight = toPositiveInt(sizeCandidate.height) ?? selectedHeight;
+      break;
+    }
+  }
+
+  if (!selectedURL) {
+    selectedURL = asText(value.url);
+  }
+
+  const url = selectedURL;
   if (!url) return null;
 
   return {
     alt: asText(value.alt),
+    height: selectedHeight,
     url: replaceCdnUrl(url),
+    width: selectedWidth,
   };
 };
 
@@ -422,13 +465,15 @@ const renderImageGalleryBlock = (block: AnyRecord): string => {
     ? block.images
         .map((entry: unknown) => {
           if (!isRecord(entry)) return '';
-          const media = resolveMedia(entry.image);
+          const media = resolveMedia(entry.image, ['gallery', 'articleStep', 'articleHero']);
           if (!media?.url) return '';
 
           const caption = asText(entry.caption);
+          const imageDimensions =
+            media.width && media.height ? ` width="${media.width}" height="${media.height}"` : '';
           return [
             '  <figure class="content-v2-gallery-item">',
-            `    <img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.alt)}" loading="lazy" />`,
+            `    <img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.alt || caption || title)}" loading="lazy" decoding="async"${imageDimensions} />`,
             caption ? `    <figcaption>${escapeHtml(caption)}</figcaption>` : '',
             '  </figure>',
           ]

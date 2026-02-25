@@ -29,6 +29,23 @@ const asPositiveNumber = (value) => {
   return parsed;
 };
 
+const toPositiveServings = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.max(1, Math.round(parsed));
+};
+
+const extractServingsCount = (servingsCount, servingsLabel) => {
+  const direct = toPositiveServings(servingsCount);
+  if (direct !== null) return direct;
+
+  if (typeof servingsLabel !== 'string') return null;
+  const normalized = servingsLabel.replace(',', '.');
+  const match = normalized.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  return toPositiveServings(match[1]);
+};
+
 const asSlug = (value) => {
   if (typeof value === 'string') return value;
   if (value && typeof value === 'object' && typeof value.current === 'string') return value.current;
@@ -102,11 +119,19 @@ const normalizeFromRecipeBlockArticle = (source) => {
   const blockNutrition = recipeBlock?.nutrition && typeof recipeBlock.nutrition === 'object'
     ? recipeBlock.nutrition
     : null;
+  const servingsCount = extractServingsCount(recipeBlock.servingsCount, recipeBlock.servings);
+  const totalCalories = asPositiveNumber(blockNutrition?.totalCaloriesKcal);
+  const perServingCalories =
+    asPositiveNumber(blockNutrition?.caloriesKcal) !== null
+      ? asPositiveNumber(blockNutrition?.caloriesKcal)
+      : totalCalories !== null && servingsCount !== null
+        ? Math.round((totalCalories / servingsCount) * 10) / 10
+        : null;
 
   const normalizedNutrition = blockNutrition
     ? {
-        calories: asPositiveNumber(blockNutrition.caloriesKcal) !== null
-          ? `${asPositiveNumber(blockNutrition.caloriesKcal)} kcal`
+        calories: perServingCalories !== null
+          ? `${perServingCalories} kcal`
           : undefined,
         protein: asPositiveNumber(blockNutrition.proteinGrams) !== null
           ? `${asPositiveNumber(blockNutrition.proteinGrams)} g`
@@ -161,7 +186,7 @@ const normalizeFromRecipeBlockArticle = (source) => {
     authorName: asText(source?.author?.name) || 'Bernard',
     datePublished: asText(source?.date),
     dateModified: asText(source?.modified || source?.updated || source?.date),
-    recipeYield: asText(recipeBlock.servings),
+    recipeYield: asText(recipeBlock.servings) || (servingsCount ? String(servingsCount) : ''),
     prepMinutes: asPositiveInt(recipeBlock.preparationTimeMinutes),
     cookMinutes: asPositiveInt(recipeBlock.cookingTimeMinutes),
     recipeCategory: asText(recipeBlock.dishType) || asText(recipeBlock.recipeType) || extractCategory(source),

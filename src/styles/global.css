@@ -342,6 +342,8 @@ body {
 
 .content-v2-recipe-visual-step {
   margin: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 540px;
 }
 
 .content-v2-recipe-step-instruction {
@@ -390,6 +392,40 @@ body {
   gap: 0.4rem;
 }
 
+.content-v2-gallery {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.content-v2-gallery-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.content-v2-gallery-item {
+  margin: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 520px;
+}
+
+.content-v2-gallery-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid #d8d2c2;
+  background: #f7f5ef;
+  object-fit: contain;
+}
+
+.content-v2-gallery-item figcaption {
+  margin-top: 0.45rem;
+  color: #646464;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
 @media (min-width: 768px) {
   .lcdb-page-shell {
     padding-left: 28px;
@@ -404,6 +440,10 @@ body {
   .lcdb-page-section-inner {
     padding-top: 56px;
     padding-bottom: 72px;
+  }
+
+  .content-v2-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
