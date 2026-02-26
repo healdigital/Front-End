@@ -555,6 +555,12 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
   </head>
   <body>
     <main class="print-root">
+      <style>
+        section.print-content p > img {
+        width: 100% !important; 
+        height: fit-content !important;
+      }
+      </style>
       <nav class="print-toolbar" data-no-print>
         <a class="print-toolbar-link" href={`/${slug}/`}>Retour a l'article</a>
         <button type="button" class="print-toolbar-button" onclick="window.print()">Imprimer</button>
