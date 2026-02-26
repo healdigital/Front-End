@@ -156,18 +156,20 @@ const accountItems = [
           <Icon name="heart" size="md" />
           <span class="text-[18px] leading-none font-body">3</span>
         </a>
-        <a href="/panier" class="inline-flex items-center gap-2 text-white/85 hover:text-white" aria-label="Panier">
-          <Icon name="shopping-bag" size="md" />
-          <span class="text-[18px] leading-none font-body">1</span>
-        </a>
       </div>
 
       <!-- Mobile actions -->
       <div class="flex lg:hidden items-center gap-4 ml-auto text-white/80">
-        <a href="/panier" class="relative" aria-label="Panier">
-          <Icon name="shopping-bag" size="md" />
-          <span class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-primary-turquoise text-[10px] font-bold text-primary-black flex items-center justify-center">1</span>
-        </a>
+        <button
+          type="button"
+          class="text-white/80"
+          aria-label="Langues"
+          aria-controls="mobile-language-dropdown"
+          aria-expanded="false"
+          data-mobile-lang-quick
+        >
+          <Icon name="globe" size="md" />
+        </button>
         <button
           type="button"
           class="text-white/80"
@@ -300,7 +302,7 @@ const accountItems = [
             </a>
           </li>
         ))}
-        <li class="border-b border-white/10 last:border-b-0" data-mobile-lang-menu data-no-translate="true">
+        <li class="border-b border-white/10 last:border-b-0 relative" data-mobile-lang-menu data-no-translate="true">
           <button
             type="button"
             class="w-full flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
@@ -322,7 +324,7 @@ const accountItems = [
           </button>
           <div
             id="mobile-language-dropdown"
-            class="hidden mb-3 rounded-xl border border-white/15 bg-[#111927] p-2"
+            class="hidden absolute left-0 right-0 bottom-full mb-2 rounded-xl border border-white/15 bg-[#111927] p-2 z-20"
             data-mobile-lang-dropdown
             role="menu"
             aria-label="Mobile language selection"
@@ -388,6 +390,7 @@ const accountItems = [
   const mobileCurrentLangLabel = mobileLangMenu?.querySelector('[data-mobile-lang-current-label]');
   const mobileLanguageOptions = Array.from(mobileLangMenu?.querySelectorAll('[data-mobile-lang-option]') || []);
   const mobileLangChevron = mobileLangMenu?.querySelector('[data-mobile-lang-chevron]');
+  const mobileQuickLangButton = document.querySelector('[data-mobile-lang-quick]');
   const body = document.body;
   let languageLoadingTimeout = null;
 
@@ -445,6 +448,7 @@ const accountItems = [
     if (!mobileLangDropdown || !mobileLangTrigger) return;
     mobileLangDropdown.classList.toggle('hidden', !show);
     mobileLangTrigger.setAttribute('aria-expanded', String(show));
+    mobileQuickLangButton?.setAttribute('aria-expanded', String(show));
     mobileLangChevron?.classList.toggle('rotate-180', Boolean(show));
   }
 
@@ -575,6 +579,13 @@ const accountItems = [
     toggleLanguageMenu(false);
   });
   document.addEventListener('click', (event) => {
+    if (
+      mobileQuickLangButton &&
+      event.target &&
+      (mobileQuickLangButton === event.target || mobileQuickLangButton.contains(event.target))
+    ) {
+      return;
+    }
     if (!mobileLangMenu || !event.target || mobileLangMenu.contains(event.target)) return;
     toggleMobileLanguageMenu(false);
   });
@@ -589,6 +600,23 @@ const accountItems = [
     event.preventDefault();
     const isOpen = mobileSearchButton.getAttribute('aria-expanded') === 'true';
     toggleMobileSearch(!isOpen);
+  });
+  mobileQuickLangButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    const menuIsOpen = menuDrawer?.getAttribute('aria-hidden') === 'false';
+    if (!menuIsOpen) {
+      toggleMenu(true);
+    }
+
+    const isLangOpen = mobileLangTrigger?.getAttribute('aria-expanded') === 'true';
+    toggleMobileLanguageMenu(!menuIsOpen || !isLangOpen);
+
+    if (!menuIsOpen && mobileLangMenu instanceof HTMLElement) {
+      requestAnimationFrame(() => {
+        mobileLangMenu.scrollIntoView({ block: 'nearest' });
+      });
+    }
   });
   mobileSearchForm?.addEventListener('submit', (event) => {
     event.preventDefault();
