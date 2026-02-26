@@ -267,12 +267,11 @@ export async function initializeTranslations(): Promise<void> {
     if (
       savedLang &&
       isSupportedLanguage(savedLang) &&
-      Object.keys(translationsData).includes(savedLang) &&
-      savedLang !== sourceLanguage
+      Object.keys(translationsData).includes(savedLang)
     ) {
       currentLanguage = savedLang;
     } else {
-      currentLanguage = 'en';
+      currentLanguage = sourceLanguage;
     }
 
     if (!Object.keys(translationsData).includes(currentLanguage)) {

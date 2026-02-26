@@ -1,5 +1,47 @@
 # LCDB Tracker + Chat Summary (Updated: 2026-02-25)
 
+## Hold For Tomorrow (2026-02-26 Homepage Performance)
+
+- [ ] Reduce homepage initial render payload:
+- [ ] lower `HOME_INITIAL_RENDER_COUNT` (current default 48 -> target 12)
+- [ ] lower `SUGGESTED_INITIAL_RENDER_COUNT` (current default 30 -> target 8)
+- [ ] Defer workshops live API hydration with viewport trigger (IntersectionObserver) instead of immediate first-load execution.
+- [ ] Reduce translation overhead on first paint:
+- [ ] skip initial full-page `changeLanguage(...)` run when saved language equals source/default language.
+- [ ] Improve homepage image delivery without crop regression:
+- [ ] add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority.
+- [ ] Add below-the-fold render deferral (`content-visibility: auto` with intrinsic size hints) on heavy homepage sections.
+- [ ] Validate post-change homepage UX on mobile + desktop:
+- [ ] no portrait crop regression
+- [ ] no filter/pagination regression
+- [ ] no workshop data regression
+- [ ] no translation dropdown regression
+
+## Client-Promised Pending (Must Track)
+
+- [x] Default site language must remain French (`fr`) on first load.
+- [x] Translation with review workflow (admin-side): automatic translation + human review/approve before publish.
+- [x] Per-language publish control: formal draft/publish workflow by language.
+- [x] Print-friendly recipe card finishing for new block-rendered recipes.
+- [ ] Final performance sign-off with Lighthouse + real-device metrics (LCP/CLS/FCP).
+
+## Session Update (2026-02-26 Translation Workflow Hardening)
+
+- [x] Payload Admin translation workflow finalized for non-French variants:
+- [x] added `autoTranslateNow` trigger in article metadata for one-click source-to-target translation.
+- [x] integrated DeepL-backed content copy hook (`autoTranslateFromSource`) into article save lifecycle.
+- [x] auto-translation now keeps target article in draft, resets review fields, and stamps `translationAutoTranslatedAt`.
+- [x] Per-language publish control enforced:
+- [x] non-French article cannot publish without selected source French article.
+- [x] non-French article cannot publish unless `translationReviewStatus=approved`.
+- [x] when approved translation content is edited, status auto-resets to `changes_requested` (unless reviewer explicitly overrides).
+- [x] Source language normalization:
+- [x] French article variants auto-normalize to `translationReviewStatus=not_required`.
+- [x] Translation-only metadata fields now show conditionally for non-French articles in admin.
+- [x] `lang` field moved to controlled select options (`fr`, `en`, `es`, `pt-br`, `ar`) for consistent workflow.
+- [x] Payload Admin type-check validation passed after changes (`pnpm exec tsc --noEmit`).
+- [ ] Pending staging QA: run full editor flow (create translation draft -> auto-translate -> review approve -> publish gate check).
+
 ## Session Update (2026-02-25 New Recipe Builder Scope - Front-End + Payload Admin)
 
 - [x] Scope confirmed: implement on existing `Front-End` + `payload-admin` only (no separate new website build).
@@ -322,6 +364,7 @@ Result:
 | On Hold | Ads/Analytics | Mediavine integration (global async script in layout) | Client requirement |
 | On Hold | Ads/Analytics | Staging validation (ads load, no console errors) | After Mediavine |
 | On Hold | Ads/Analytics | ads.txt / privacy / GDPR checks | Staging checks |
+| On Hold | Payload | Migrate/backfill existing legacy articles to new V2 editor schema | No data loss + frontend parity |
 | On Hold | ContentV2 | Build legacy migration tool | Dry-run + batch + rollback logs |
 | On Hold | ContentV2 | Add migration safety fields | `migrationStatus`, `migrationNotes`, `legacySnapshot` |
 | On Hold | ContentV2 | Migration QA workflow | Legacy vs V2 + JSON-LD parity |

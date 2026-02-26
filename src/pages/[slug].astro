@@ -179,6 +179,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       <p class="lcdb-page-eyebrow typ-caption">Recipe</p>
       <h1 class="lcdb-page-title typ-h2">{title}</h1>
       {date && <p class="lcdb-page-description typ-body">{date}</p>}
+      <button type="button" class="article-print-btn typ-button" onclick="window.print()">
+        Imprimer la recette
+      </button>
     </div>
   </section>
 
@@ -293,6 +296,20 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-breadcrumb-current {
     color: #111111;
+  }
+
+  .article-print-btn {
+    margin-top: 14px;
+    border: 1px solid #d8d2c2;
+    background: #f8f6ef;
+    color: #111111;
+    border-radius: 999px;
+    padding: 10px 16px;
+    transition: background-color 0.2s ease;
+  }
+
+  .article-print-btn:hover {
+    background: #ebe6d8;
   }
 
   .article-hero-image {
@@ -424,6 +441,12 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-content-card,
     .comments-card {
       padding: 18px;
+    }
+  }
+
+  @media print {
+    .article-print-btn {
+      display: none !important;
     }
   }
 </style>
