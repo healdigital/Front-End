@@ -689,7 +689,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             <div
               class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
               data-recipe-grid
-              data-recipes-source="/search-index.json"
+              data-recipes-source="/home-recipes-index.json"
             >
               {browseRecipes.map((recipe, index) => (
                 <div
@@ -928,7 +928,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           <SuggestedRecipes
             recipes={suggestedRecipes}
             embedded
-            source="/search-index.json"
+            source="/home-recipes-index.json"
             offset={10}
           />
         </div>
@@ -1124,123 +1124,162 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       return card;
     };
 
+    const loadCachedIndexRecords = async (sourceUrl) => {
+      const globalKey = '__lcdbIndexCachePromises';
+      const globalStore = window;
+      const cache = (globalStore[globalKey] ||= {});
+
+      if (!cache[sourceUrl]) {
+        cache[sourceUrl] = fetch(sourceUrl, { cache: 'force-cache' })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((records) => (Array.isArray(records) ? records : []))
+          .catch((error) => {
+            delete cache[sourceUrl];
+            throw error;
+          });
+      }
+
+      return cache[sourceUrl];
+    };
+
+    let hydrationPromise = null;
+
     const hydrateCardsFromSearchIndex = async () => {
       if (!(grid instanceof HTMLElement)) return;
-      if (grid.dataset.recipesHydrated === 'true' || grid.dataset.recipesHydrated === 'loading') return;
+      if (grid.dataset.recipesHydrated === 'true') return;
+      if (hydrationPromise) {
+        await hydrationPromise;
+        return;
+      }
 
-      const source = grid.getAttribute('data-recipes-source') || '/search-index.json';
+      const source = grid.getAttribute('data-recipes-source') || '/home-recipes-index.json';
       const templateCard = cards[0];
       if (!(templateCard instanceof HTMLElement)) return;
 
-      grid.dataset.recipesHydrated = 'loading';
+      hydrationPromise = (async () => {
+        grid.dataset.recipesHydrated = 'loading';
 
-      try {
-        const response = await fetch(source, { cache: 'force-cache' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const records = await response.json();
-        if (!Array.isArray(records) || records.length === 0) {
-          grid.dataset.recipesHydrated = 'true';
-          return;
-        }
-
-        const existingSlugs = new Set(
-          cards
-            .map((card) => normalizeSlug(card.getAttribute('data-slug') || ''))
-            .filter(Boolean),
-        );
-
-        const recipes = [];
-        records.forEach((record) => {
-          const slug = normalizeSlug(record?.slug || record?.url || '');
-          const title = String(record?.title || '').trim();
-          if (!slug || !title || existingSlugs.has(slug)) return;
-
-          existingSlugs.add(slug);
-          const categoryLabel = record?.category || record?.tags || '';
-          const timeLabel =
-            record?.prepTime ||
-            (Number.isFinite(Number(record?.readingTimeMin)) && Number(record?.readingTimeMin) > 0
-              ? `${Math.round(Number(record.readingTimeMin))} min`
-              : '') ||
-            record?.publishedAt ||
-            record?.date ||
-            record?.modified ||
-            record?.updated ||
-            record?.updatedAt ||
-            record?.createdAt ||
-            '';
-
-          const filterKey = getFilterKey(categoryLabel);
-          recipes.push({
-            slug,
-            title,
-            description: record?.excerpt || record?.content || '',
-            image:
-              record?.featured_image?.url ||
-              record?.featuredImage?.url ||
-              record?.image ||
-              '',
-            imageFallback:
-              record?.featured_image?.url ||
-              record?.featuredImage?.url ||
-              record?.image ||
-              '',
-            filterKey,
-            difficulty: toRecipeTagLabel(categoryLabel, filterKey),
-            prepTime: formatRecipeTime(timeLabel),
-          });
-        });
-
-        if (recipes.length === 0) {
-          grid.dataset.recipesHydrated = 'true';
-          return;
-        }
-
-        let pointer = 0;
-        const chunkSize = 60;
-
-        const pump = () => {
-          const fragment = document.createDocumentFragment();
-          let appended = 0;
-
-          while (pointer < recipes.length && appended < chunkSize) {
-            const card = buildCardElement(templateCard, recipes[pointer], cards.length);
-            pointer += 1;
-            if (!card) continue;
-            cards.push(card);
-            fragment.appendChild(card);
-            appended += 1;
-          }
-
-          if (fragment.childNodes.length > 0) {
-            grid.appendChild(fragment);
-          }
-
-          if (pointer < recipes.length) {
-            if (typeof window.requestIdleCallback === 'function') {
-              window.requestIdleCallback(pump, { timeout: 250 });
-            } else {
-              window.requestAnimationFrame(pump);
-            }
+        try {
+          const records = await loadCachedIndexRecords(source);
+          if (!Array.isArray(records) || records.length === 0) {
+            grid.dataset.recipesHydrated = 'true';
             return;
           }
 
+          const existingSlugs = new Set(
+            cards
+              .map((card) => normalizeSlug(card.getAttribute('data-slug') || ''))
+              .filter(Boolean),
+          );
+
+          const recipes = [];
+          records.forEach((record) => {
+            const slug = normalizeSlug(record?.slug || record?.url || '');
+            const title = String(record?.title || '').trim();
+            if (!slug || !title || existingSlugs.has(slug)) return;
+
+            existingSlugs.add(slug);
+            const categoryLabel = record?.category || record?.tags || '';
+            const timeLabel =
+              record?.prepTime ||
+              (Number.isFinite(Number(record?.readingTimeMin)) && Number(record?.readingTimeMin) > 0
+                ? `${Math.round(Number(record.readingTimeMin))} min`
+                : '') ||
+              record?.publishedAt ||
+              record?.date ||
+              record?.modified ||
+              record?.updated ||
+              record?.updatedAt ||
+              record?.createdAt ||
+              '';
+
+            const filterKey = getFilterKey(categoryLabel);
+            recipes.push({
+              slug,
+              title,
+              description: record?.excerpt || record?.content || '',
+              image:
+                record?.featured_image?.url ||
+                record?.featuredImage?.url ||
+                record?.image ||
+                '',
+              imageFallback:
+                record?.featured_image?.url ||
+                record?.featuredImage?.url ||
+                record?.image ||
+                '',
+              filterKey,
+              difficulty: toRecipeTagLabel(categoryLabel, filterKey),
+              prepTime: formatRecipeTime(timeLabel),
+            });
+          });
+
+          if (recipes.length === 0) {
+            grid.dataset.recipesHydrated = 'true';
+            return;
+          }
+
+          let pointer = 0;
+          const chunkSize = 24;
+
+          await new Promise((resolve) => {
+            const pump = () => {
+              const fragment = document.createDocumentFragment();
+              let appended = 0;
+
+              while (pointer < recipes.length && appended < chunkSize) {
+                const card = buildCardElement(templateCard, recipes[pointer], cards.length);
+                pointer += 1;
+                if (!card) continue;
+                cards.push(card);
+                fragment.appendChild(card);
+                appended += 1;
+              }
+
+              if (fragment.childNodes.length > 0) {
+                grid.appendChild(fragment);
+              }
+
+              if (pointer < recipes.length) {
+                if (typeof window.requestIdleCallback === 'function') {
+                  window.requestIdleCallback(pump, { timeout: 350 });
+                } else {
+                  window.setTimeout(pump, 16);
+                }
+                return;
+              }
+
+              resolve(null);
+            };
+
+            pump();
+          });
+
           grid.dataset.recipesHydrated = 'true';
           applyFilters();
-        };
+        } catch (error) {
+          console.warn('[HOME] Failed to hydrate additional recipe cards:', error);
+          grid.dataset.recipesHydrated = 'error';
+        }
+      })();
 
-        pump();
-      } catch (error) {
-        console.warn('[HOME] Failed to hydrate additional recipe cards:', error);
-        grid.dataset.recipesHydrated = 'error';
-      }
+      await hydrationPromise;
+      hydrationPromise = null;
     };
 
-    const applyFilters = (resetPage = false) => {
-      const filteredCards = cards.filter((card) => {
+    const getFilteredCards = () =>
+      cards.filter((card) => {
         const category = (card.dataset.category || 'toutes').toLowerCase();
         return activeFilter === 'toutes' || category === activeFilter;
       });
+
+    const applyFilters = (resetPage = false) => {
+      const filteredCards = getFilteredCards();
 
       const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
       if (resetPage) {
@@ -1280,10 +1319,13 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     };
 
     filterItems.forEach((item) => {
-      item.addEventListener('click', (event) => {
+      item.addEventListener('click', async (event) => {
         event.preventDefault();
         const nextFilter = (item.getAttribute('data-filter-value') || '').toLowerCase();
         if (!filterLabels[nextFilter]) return;
+        if (nextFilter !== 'toutes' && grid?.dataset.recipesHydrated !== 'true') {
+          await hydrateCardsFromSearchIndex();
+        }
         activeFilter = nextFilter;
         applyFilters(true);
       });
@@ -1295,7 +1337,13 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       applyFilters();
     });
 
-    paginationNext?.addEventListener('click', () => {
+    paginationNext?.addEventListener('click', async () => {
+      const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+      if (activePage >= totalPagesBeforeHydration && grid?.dataset.recipesHydrated !== 'true') {
+        await hydrateCardsFromSearchIndex();
+      }
+      const totalPages = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+      if (activePage >= totalPages) return;
       activePage += 1;
       applyFilters();
     });
@@ -1311,39 +1359,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     applyFilters(true);
 
-    const scheduleHydration = () => {
-      if (grid instanceof HTMLElement && grid.dataset.recipesHydrationScheduled === 'true') return;
-      if (grid instanceof HTMLElement) {
-        grid.dataset.recipesHydrationScheduled = 'true';
-      }
-
-      const triggerHydration = () => {
-        if (typeof window.requestIdleCallback === 'function') {
-          window.requestIdleCallback(() => {
-            hydrateCardsFromSearchIndex();
-          }, { timeout: 1200 });
-        } else {
-          window.setTimeout(() => {
-            hydrateCardsFromSearchIndex();
-          }, 350);
-        }
-      };
-
-      if (!(grid instanceof HTMLElement) || !('IntersectionObserver' in window)) {
-        triggerHydration();
-        return;
-      }
-
-      const observer = new IntersectionObserver((entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        observer.disconnect();
-        triggerHydration();
-      }, { rootMargin: '360px 0px' });
-
-      observer.observe(grid);
-    };
-
-    scheduleHydration();
+    // Keep first paint fast by loading the full recipe index only on user interaction.
   }
 
   function setupViewToggle() {

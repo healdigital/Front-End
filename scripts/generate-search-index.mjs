@@ -66,6 +66,7 @@ async function generateSearchIndex() {
 
     console.log('[SEARCH] Processing articles...');
     const searchIndex = [];
+    const homeRecipesIndex = [];
     const total = articles.length;
 
     const stripHtml = (value) => String(value || '').replace(/<[^>]*>/g, ' ');
@@ -200,6 +201,17 @@ async function generateSearchIndex() {
       };
 
       searchIndex.push(processedArticle);
+      homeRecipesIndex.push({
+        id: processedArticle.id,
+        title: processedArticle.title,
+        slug: processedArticle.slug,
+        excerpt: processedArticle.excerpt,
+        category: processedArticle.category,
+        tags: processedArticle.tags,
+        prepTime: processedArticle.prepTime,
+        publishedAt: processedArticle.publishedAt,
+        featured_image: processedArticle.featured_image,
+      });
 
       if ((i + 1) % 10 === 0 || i === total - 1) {
         const progress = ((i + 1) / total * 100).toFixed(1);
@@ -213,10 +225,13 @@ async function generateSearchIndex() {
     console.log('\n[SEARCH] Processing complete.');
 
     const outputPath = path.join(__dirname, '..', 'public', 'search-index.json');
-    console.log('[SEARCH] Writing search index to file...');
-    fs.writeFileSync(outputPath, JSON.stringify(searchIndex, null, 2));
+    const homeOutputPath = path.join(__dirname, '..', 'public', 'home-recipes-index.json');
+    console.log('[SEARCH] Writing search indexes to files...');
+    fs.writeFileSync(outputPath, JSON.stringify(searchIndex));
+    fs.writeFileSync(homeOutputPath, JSON.stringify(homeRecipesIndex));
 
     console.log(`[SEARCH] Search index generated with ${searchIndex.length} articles at ${outputPath}`);
+    console.log(`[SEARCH] Home recipes index generated with ${homeRecipesIndex.length} articles at ${homeOutputPath}`);
   } catch (error) {
     console.error('[SEARCH] Error generating search index:', error);
     process.exit(1);

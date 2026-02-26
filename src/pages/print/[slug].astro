@@ -547,9 +547,9 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
           grid-template-columns: minmax(0, 1fr);
         }
       }
-      section.print-content p img {
-          width: 100%;
-          height: fit-content;
+      section.print-content p > img {
+        width: 100% !important; 
+        height: fit-content !important;
       }
     </style>
   </head>
