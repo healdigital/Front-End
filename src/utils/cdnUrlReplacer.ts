@@ -42,6 +42,33 @@ export function buildWpSquareVariantUrl(url: string, size = 500): string {
 }
 
 /**
+ * Build a portrait-friendly WordPress derivative URL (non-cropped).
+ * For "-scaled" originals this prefers the common 797x1024 variant.
+ */
+export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): string {
+  if (!url || typeof url !== 'string') return '';
+
+  const normalized = replaceCdnUrl(url);
+  if (!/\/wp-content\/uploads\//i.test(normalized)) return normalized;
+
+  const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+  if (!match) return normalized;
+
+  const base = match[1];
+  const ext = match[2];
+  const query = match[3] ? `?${match[3]}` : '';
+  const hash = match[4] ? `#${match[4]}` : '';
+
+  // Keep explicit size variants as-is.
+  if (/-\d+x\d+$/i.test(base)) {
+    return `${base}${ext}${query}${hash}`;
+  }
+
+  const withoutScaled = base.replace(/-scaled$/i, '');
+  return `${withoutScaled}-${variant}${ext}${query}${hash}`;
+}
+
+/**
  * Process article image URLs to use the new CDN
  */
 export function processArticleImageUrl(article: any): string {

@@ -178,6 +178,26 @@ const getFilterValue = (recipe: Recipe): string => {
         return '--';
       };
 
+      const toOptimizedCardImage = (value = '') => {
+        const raw = String(value || '').trim();
+        if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
+
+        const match = raw.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+        if (!match) return raw;
+
+        const base = match[1];
+        const ext = match[2];
+        const query = match[3] ? `?${match[3]}` : '';
+        const hash = match[4] ? `#${match[4]}` : '';
+
+        if (/-\d+x\d+$/i.test(base)) {
+          return `${base}${ext}${query}${hash}`;
+        }
+
+        const withoutScaled = base.replace(/-scaled$/i, '');
+        return `${withoutScaled}-797x1024${ext}${query}${hash}`;
+      };
+
       const clipDescription = (value = '') => {
         const cleaned = String(value || '').replace(/\s+/g, ' ').trim();
         if (!cleaned) return 'Recette a decouvrir.';
@@ -358,20 +378,18 @@ const getFilterValue = (recipe: Recipe): string => {
                 record?.createdAt ||
                 '';
 
+              const originalImage =
+                record?.featured_image?.url ||
+                record?.featuredImage?.url ||
+                record?.image ||
+                '';
+
               recipes.push({
                 slug,
                 title,
                 description: record?.excerpt || record?.content || '',
-                image:
-                  record?.featured_image?.url ||
-                  record?.featuredImage?.url ||
-                  record?.image ||
-                  '',
-                imageFallback:
-                  record?.featured_image?.url ||
-                  record?.featuredImage?.url ||
-                  record?.image ||
-                  '',
+                image: toOptimizedCardImage(originalImage),
+                imageFallback: originalImage,
                 filterKey: getFilterKey(categoryLabel),
                 difficulty: toRecipeTagLabel(categoryLabel),
                 prepTime: formatRecipeTime(timeLabel),
