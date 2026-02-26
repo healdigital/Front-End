@@ -8,8 +8,8 @@ export interface TranslationsData {
 }
 
 let translationsData: TranslationsData = {};
-let currentLanguage: string = 'en';
-let sourceLanguage: string = 'en';
+let currentLanguage: string = 'fr';
+let sourceLanguage: string = 'fr';
 let translationInProgress = false;
 let deeplUnavailable = false;
 let deeplUnavailableLogged = false;
@@ -144,6 +144,7 @@ const deeplLanguageMap: Record<string, string> = {
 
 const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
 const supportedLanguageSet = new Set(supportedLanguages);
+const LANGUAGE_STORAGE_KEY = 'preferred-language';
 
 const normalizeLanguageCode = (lang: string): string => {
   const raw = String(lang || '').trim().toLowerCase();
@@ -177,11 +178,11 @@ const resolvePageLanguage = (): string => {
   const raw = normalizeLanguageCode(
     document.documentElement.getAttribute('data-lang') ||
     document.documentElement.lang ||
-    'en'
+    'fr'
   );
 
   if (supportedLanguageSet.has(raw)) return raw;
-  return 'en';
+  return 'fr';
 };
 
 const ignoreTags = new Set([
@@ -253,11 +254,10 @@ export async function initializeTranslations(): Promise<void> {
     appliedLanguage = null;
     hasTranslatedContent = false;
 
-    // Load saved language preference
-    const savedLang = normalizeLanguageCode(localStorage.getItem('preferred-language') || '');
+    const pendingLang = normalizeLanguageCode(String((window as any).__lcdbPendingLanguage || ''));
     const requiredLanguages = new Set<string>(['en', sourceLanguage]);
-    if (isSupportedLanguage(savedLang)) {
-      requiredLanguages.add(savedLang);
+    if (isSupportedLanguage(pendingLang)) {
+      requiredLanguages.add(pendingLang);
     }
 
     for (const lang of requiredLanguages) {
@@ -265,17 +265,24 @@ export async function initializeTranslations(): Promise<void> {
     }
 
     if (
-      savedLang &&
-      isSupportedLanguage(savedLang) &&
-      Object.keys(translationsData).includes(savedLang)
+      pendingLang &&
+      isSupportedLanguage(pendingLang) &&
+      Object.keys(translationsData).includes(pendingLang)
     ) {
-      currentLanguage = savedLang;
+      currentLanguage = pendingLang;
     } else {
       currentLanguage = sourceLanguage;
     }
 
     if (!Object.keys(translationsData).includes(currentLanguage)) {
       currentLanguage = sourceLanguage;
+    }
+
+    // Keep default startup language aligned with page language.
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+    } catch {
+      // Ignore storage write failures (private mode / blocked storage).
     }
 
     console.log('Translations initialized for languages:', Object.keys(translationsData).join(', '));
@@ -707,7 +714,7 @@ export async function changeLanguage(newLang: string): Promise<void> {
       }
 
       currentLanguage = normalizedLang;
-      localStorage.setItem('preferred-language', normalizedLang);
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizedLang);
 
       // Update HTML lang attribute
       document.documentElement.lang = normalizedLang;
@@ -818,7 +825,7 @@ export function setupLanguageSwitcher(): void {
   };
 
   const pendingLang = normalizeLanguageCode(
-    String(globalWindow.__lcdbPendingLanguage || localStorage.getItem('preferred-language') || ''),
+    String(globalWindow.__lcdbPendingLanguage || ''),
   );
   if (pendingLang && isSupportedLanguage(pendingLang) && pendingLang !== getCurrentLanguage()) {
     changeLanguage(pendingLang);
@@ -838,7 +845,7 @@ export function watchLanguageChanges(): void {
   window.addEventListener('storage', (e) => {
     const nextLang = normalizeLanguageCode(e.newValue || '');
     if (
-      e.key === 'preferred-language' &&
+      e.key === LANGUAGE_STORAGE_KEY &&
       nextLang &&
       isSupportedLanguage(nextLang) &&
       nextLang !== currentLanguage

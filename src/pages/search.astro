@@ -4,7 +4,7 @@ import { t as translate } from "../i18n";
 
 export const prerender = true;
 
-const lang = 'en';
+const lang = 'fr';
 const title = translate('nav.search', lang);
 ---
 
@@ -49,15 +49,15 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
   const searchQuery = urlParams.get('q') || '';
 
   const normalizeLang = (value) =>
-    String(value || 'en')
+    String(value || 'fr')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '') || 'en';
+      .replace(/^_+|_+$/g, '') || 'fr';
 
   const getCurrentLanguage = () => {
-    const stored = localStorage.getItem('preferred-language');
     const htmlLang = document.documentElement.getAttribute('data-lang') || document.documentElement.lang;
-    return stored || htmlLang || 'en';
+    const stored = localStorage.getItem('preferred-language');
+    return htmlLang || stored || 'fr';
   };
 
   const getCurrentIndexName = () => {

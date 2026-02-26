@@ -9,7 +9,7 @@ interface Props {
 }
 
 const {
-  currentLang = 'en',
+  currentLang = 'fr',
   showLabel = true,
   className = ''
 } = Astro.props;
@@ -98,7 +98,8 @@ const languageNames: Record<string, string> = {
   
   // On page load, check for saved language preference and highlight the button
   document.addEventListener('DOMContentLoaded', () => {
-    const savedLang = localStorage.getItem('preferred-language');
+    const htmlLang = document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr';
+    const savedLang = htmlLang || localStorage.getItem('preferred-language');
     if (savedLang) {
       document.querySelectorAll('.lang-btn').forEach((btn) => {
         const btnLang = btn.getAttribute('data-lang');

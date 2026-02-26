@@ -308,6 +308,7 @@ const accountItems = [
 
 <script>
   // @ts-nocheck
+  const LANGUAGE_STORAGE_KEY = 'preferred-language';
   const promoBar = document.querySelector('[data-promo-bar]');
   const promoClose = document.querySelector('[data-promo-close]');
 
@@ -460,7 +461,7 @@ const accountItems = [
       // Keep language intent even if translation runtime is still booting.
       window.__lcdbPendingLanguage = selectedLang;
       try {
-        localStorage.setItem('preferred-language', selectedLang);
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, selectedLang);
       } catch {}
 
       const changeLanguage = window.__lcdbChangeLanguage;
@@ -504,7 +505,6 @@ const accountItems = [
   mobileSearchClose?.addEventListener('click', () => toggleMobileSearch(false));
 
   const initialMenuLang =
-    localStorage.getItem('preferred-language') ||
     document.documentElement.getAttribute('data-lang') ||
     document.documentElement.lang ||
     'fr';

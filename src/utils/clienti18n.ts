@@ -4,13 +4,13 @@ export interface Translations {
   [key: string]: any;
 }
 
-let currentLanguage = 'en';
+let currentLanguage = 'fr';
 let translations: Record<string, Translations> = {};
 
 /**
  * Initialize client-side i18n with translations
  */
-export async function initI18n(lang: string = 'en'): Promise<void> {
+export async function initI18n(lang: string = 'fr'): Promise<void> {
   // Load translations
   const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
   
@@ -25,7 +25,7 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
 
   // Set current language from localStorage or parameter
   const savedLang = localStorage.getItem('preferred-language');
-  currentLanguage = savedLang || lang || 'en';
+  currentLanguage = savedLang || lang || 'fr';
 }
 
 /**

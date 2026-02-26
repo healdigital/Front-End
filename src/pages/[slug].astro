@@ -448,5 +448,172 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-print-btn {
       display: none !important;
     }
+
+    .article-breadcrumb,
+    .article-sidebar-column,
+    .comments-card,
+    .article-chip-groups {
+      display: none !important;
+    }
+
+    .article-layout,
+    .article-main-column {
+      display: block !important;
+      gap: 0 !important;
+    }
+
+    .article-content-card {
+      border: 0 !important;
+      box-shadow: none !important;
+      background: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .article-content {
+      color: #1d1d1d !important;
+      font-size: 11pt;
+      line-height: 1.55;
+    }
+
+    .article-content :global(.wprm-recipe-container) {
+      max-width: 860px;
+      margin: 0 auto 18pt !important;
+      padding: 18pt 20pt !important;
+      border: 1px solid #d9d9d4 !important;
+      background: #fff !important;
+      box-shadow: none !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .article-content :global(.wprm-recipe-name) {
+      display: block !important;
+      margin: 0 0 8pt !important;
+      color: #111 !important;
+      font-family: var(--font-heading), serif !important;
+      font-size: 26pt !important;
+      line-height: 1.08 !important;
+      letter-spacing: 0.01em;
+    }
+
+    .article-content :global(.wprm-recipe-summary) {
+      display: block !important;
+      margin: 0 0 12pt !important;
+      color: #2f2f2f !important;
+      font-size: 10.8pt !important;
+    }
+
+    .article-content :global(.wprm-recipe-meta-container),
+    .article-content :global(.wprm-recipe-details-container) {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10pt 14pt;
+      border-top: 1px solid #d8d8d2 !important;
+      border-bottom: 1px solid #d8d8d2 !important;
+      padding: 10pt 0 !important;
+      margin: 0 0 12pt !important;
+    }
+
+    .article-content :global(.wprm-recipe-details-unit) {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 2pt;
+      min-height: 0;
+    }
+
+    .article-content :global(.wprm-recipe-details-label) {
+      font-size: 8.8pt !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em;
+      color: #6a6a62 !important;
+      margin: 0 !important;
+      font-weight: 600 !important;
+    }
+
+    .article-content :global(.wprm-recipe-details-value),
+    .article-content :global(.wprm-recipe-details-unit p) {
+      font-size: 11pt !important;
+      color: #171717 !important;
+      margin: 0 !important;
+      line-height: 1.35 !important;
+    }
+
+    .article-content :global(.wprm-recipe-ingredients-container),
+    .article-content :global(.wprm-recipe-instructions-container),
+    .article-content :global(.wprm-nutrition-label-container),
+    .article-content :global(.wprm-recipe-nutrition-container) {
+      margin-top: 12pt !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .article-content :global(.wprm-recipe-ingredients-container h4),
+    .article-content :global(.wprm-recipe-instructions-container h4),
+    .article-content :global(.wprm-recipe-nutrition-container h4),
+    .article-content :global(.wprm-nutrition-label-container h4),
+    .article-content :global(.wprm-recipe-ingredient-group-name),
+    .article-content :global(.wprm-recipe-instruction-group-name) {
+      margin: 0 0 6pt !important;
+      padding-top: 8pt;
+      border-top: 1px solid #deded8;
+      color: #111 !important;
+      font-family: var(--font-mono), sans-serif !important;
+      font-size: 10pt !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.12em;
+      font-weight: 700 !important;
+    }
+
+    .article-content :global(.wprm-recipe-ingredients),
+    .article-content :global(.wprm-recipe-instructions) {
+      margin: 0 !important;
+      padding: 0 0 0 16pt !important;
+      color: #1f1f1f !important;
+      font-size: 10.8pt !important;
+      line-height: 1.56 !important;
+    }
+
+    .article-content :global(.wprm-recipe-ingredient),
+    .article-content :global(.wprm-recipe-instruction) {
+      margin-bottom: 4pt !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .article-content :global(.wprm-recipe-instruction-text),
+    .article-content :global(.wprm-recipe-instruction p) {
+      margin: 0 !important;
+      color: #1f1f1f !important;
+    }
+
+    .article-content :global(.wprm-recipe-image img),
+    .article-content :global(.wprm-recipe-instruction-image img),
+    .article-content :global(.wprm-recipe-instruction-media img) {
+      max-width: 100% !important;
+      height: auto !important;
+      border: 1px solid #d9d9d2 !important;
+      border-radius: 0 !important;
+      margin: 8pt 0 !important;
+      box-shadow: none !important;
+    }
+
+    .article-content :global(.wprm-recipe-nutrition-container table),
+    .article-content :global(.wprm-nutrition-label-container table) {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      font-size: 9.4pt !important;
+      line-height: 1.45 !important;
+    }
+
+    .article-content :global(.wprm-recipe-nutrition-container th),
+    .article-content :global(.wprm-recipe-nutrition-container td),
+    .article-content :global(.wprm-nutrition-label-container th),
+    .article-content :global(.wprm-nutrition-label-container td) {
+      border: 1px solid #e3e3de !important;
+      padding: 4pt 6pt !important;
+      text-align: left !important;
+      color: #1f1f1f !important;
+    }
   }
 </style>

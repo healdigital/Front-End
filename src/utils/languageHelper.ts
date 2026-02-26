@@ -16,9 +16,9 @@ export type LanguageCode = keyof typeof SUPPORTED_LANGUAGES;
  * Get stored language preference from localStorage
  */
 export function getStoredLanguage(): LanguageCode {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'fr';
   const stored = localStorage.getItem('preferred-language');
-  return (stored as LanguageCode) || 'en';
+  return (stored as LanguageCode) || 'fr';
 }
 
 /**
