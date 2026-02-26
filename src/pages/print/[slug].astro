@@ -287,13 +287,23 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
 
       .print-hero {
         margin: 16px 0 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #d9d3c5;
+        background: #f7f5ef;
+        padding: 8px;
       }
 
       .print-hero img {
         width: 100%;
+        max-width: 760px;
+        max-height: 360px;
         height: auto;
         display: block;
-        border: 1px solid #d9d3c5;
+        object-fit: contain;
+        object-position: center;
+        border: 0;
       }
 
       .print-content {
@@ -320,9 +330,15 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
       }
 
       .print-content img {
-        max-width: 100%;
+        width: 100%;
+        max-width: 680px;
+        max-height: 320px;
         height: auto;
+        object-fit: contain;
+        object-position: center;
         border: 1px solid #d9d3c5;
+        margin: 8pt auto;
+        display: block;
         page-break-inside: avoid;
       }
 
@@ -345,7 +361,10 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
       .print-content .wprm-recipe-instruction-image img,
       .print-content .wprm-recipe-instruction-media img {
         max-width: 100% !important;
+        max-height: 280px !important;
         height: auto !important;
+        object-fit: contain !important;
+        object-position: center !important;
         border: 1px solid #d7d2c4 !important;
       }
 
@@ -500,6 +519,14 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
       }
 
       @media (max-width: 640px) {
+        .print-hero img {
+          max-height: 220px;
+        }
+
+        .print-content img {
+          max-height: 210px;
+        }
+
         .print-meta-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
