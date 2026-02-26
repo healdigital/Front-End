@@ -473,15 +473,38 @@ const getFilterValue = (recipe: Recipe): string => {
 
       applyFilters(true);
 
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => {
-          hydrateSuggestedFromSearchIndex();
-        }, { timeout: 1200 });
-      } else {
-        window.setTimeout(() => {
-          hydrateSuggestedFromSearchIndex();
-        }, 300);
-      }
+      const scheduleSuggestedHydration = () => {
+        if (!(grid instanceof HTMLElement)) return;
+        if (grid.dataset.suggestedHydrationScheduled === 'true') return;
+        grid.dataset.suggestedHydrationScheduled = 'true';
+
+        const triggerHydration = () => {
+          if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(() => {
+              hydrateSuggestedFromSearchIndex();
+            }, { timeout: 1200 });
+          } else {
+            window.setTimeout(() => {
+              hydrateSuggestedFromSearchIndex();
+            }, 350);
+          }
+        };
+
+        if (!('IntersectionObserver' in window)) {
+          triggerHydration();
+          return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          triggerHydration();
+        }, { rootMargin: '360px 0px' });
+
+        observer.observe(section);
+      };
+
+      scheduleSuggestedHydration();
     });
   }
 

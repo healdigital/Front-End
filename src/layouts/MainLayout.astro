@@ -48,7 +48,18 @@ const { title, description, image, lang = 'fr' } = Astro.props;
     await initializeTranslations();
     setupLanguageSwitcher();
     watchLanguageChanges();
-    await changeLanguage(getCurrentLanguage());
+
+    const currentLang = String(getCurrentLanguage() || '').toLowerCase();
+    const htmlLang = String(
+      document.documentElement.getAttribute('data-lang') ||
+      document.documentElement.lang ||
+      'fr',
+    ).toLowerCase();
+    const pendingLang = String(window['__lcdbPendingLanguage'] || '').toLowerCase();
+
+    if (pendingLang || (currentLang && currentLang !== htmlLang)) {
+      await changeLanguage(currentLang);
+    }
   }
 
   init().catch(error => console.error('Failed to initialize translations:', error));
