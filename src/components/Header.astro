@@ -37,7 +37,6 @@ const navItems = [
 const accountItems = [
   { label: 'VOTRE PANIER', href: '/panier', icon: 'shopping-bag' },
   { label: 'VOTRE COMPTE', href: '/compte', icon: 'user' },
-  { label: 'LANGUES', href: '#langues', icon: 'globe' },
 ];
 
 ---
@@ -301,6 +300,47 @@ const accountItems = [
             </a>
           </li>
         ))}
+        <li class="border-b border-white/10 last:border-b-0" data-mobile-lang-menu data-no-translate="true">
+          <button
+            type="button"
+            class="w-full flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+            data-mobile-lang-trigger
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="mobile-language-dropdown"
+          >
+            <span class="flex items-center gap-3">
+              <span class="text-primary-turquoise">
+                <Icon name="globe" size="sm" />
+              </span>
+              <span>LANGUES</span>
+            </span>
+            <span class="flex items-center gap-2">
+              <span data-mobile-lang-current-label set:html={languageLabel} />
+              <Icon name="chevron-down" size="sm" class="w-4 h-4" data-mobile-lang-chevron />
+            </span>
+          </button>
+          <div
+            id="mobile-language-dropdown"
+            class="hidden mb-3 rounded-xl border border-white/15 bg-[#111927] p-2"
+            data-mobile-lang-dropdown
+            role="menu"
+            aria-label="Mobile language selection"
+          >
+            {languageOptions.map((option) => (
+              <button
+                type="button"
+                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] typ-nav text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
+                data-lang={option.code}
+                data-mobile-lang-option
+                role="menuitemradio"
+                aria-checked={option.code === currentLang}
+              >
+                <span set:html={option.label} />
+              </button>
+            ))}
+          </div>
+        </li>
       </ul>
     </div>
   </aside>
@@ -342,6 +382,12 @@ const accountItems = [
   const languageOptions = Array.from(languageMenu?.querySelectorAll('[data-lang-option]') || []);
   const languageLoading = languageMenu?.querySelector('[data-lang-loading]');
   const languageChevron = languageMenu?.querySelector('[data-lang-chevron]');
+  const mobileLangMenu = menuDrawer?.querySelector('[data-mobile-lang-menu]');
+  const mobileLangTrigger = mobileLangMenu?.querySelector('[data-mobile-lang-trigger]');
+  const mobileLangDropdown = mobileLangMenu?.querySelector('[data-mobile-lang-dropdown]');
+  const mobileCurrentLangLabel = mobileLangMenu?.querySelector('[data-mobile-lang-current-label]');
+  const mobileLanguageOptions = Array.from(mobileLangMenu?.querySelectorAll('[data-mobile-lang-option]') || []);
+  const mobileLangChevron = mobileLangMenu?.querySelector('[data-mobile-lang-chevron]');
   const body = document.body;
   let languageLoadingTimeout = null;
 
@@ -362,11 +408,13 @@ const accountItems = [
 
     if (show) {
       toggleMobileSearch(false);
+      toggleMobileLanguageMenu(false);
       menuDrawer.removeAttribute('inert');
       menuDrawer.classList.remove('-translate-x-full');
       menuOverlay.classList.remove('opacity-0', 'pointer-events-none');
       body.classList.add('overflow-hidden');
     } else {
+      toggleMobileLanguageMenu(false);
       menuDrawer.setAttribute('inert', '');
       menuDrawer.classList.add('-translate-x-full');
       menuOverlay.classList.add('opacity-0', 'pointer-events-none');
@@ -393,6 +441,13 @@ const accountItems = [
     languageTrigger.setAttribute('aria-expanded', String(show));
   }
 
+  function toggleMobileLanguageMenu(show) {
+    if (!mobileLangDropdown || !mobileLangTrigger) return;
+    mobileLangDropdown.classList.toggle('hidden', !show);
+    mobileLangTrigger.setAttribute('aria-expanded', String(show));
+    mobileLangChevron?.classList.toggle('rotate-180', Boolean(show));
+  }
+
   function syncLanguageMenu(selectedLang) {
     if (!languageOptions.length) return;
 
@@ -404,6 +459,21 @@ const accountItems = [
 
       if (isSelected && currentLangLabel) {
         currentLangLabel.innerHTML = button.innerHTML;
+      }
+    });
+  }
+
+  function syncMobileLanguageMenu(selectedLang) {
+    if (!mobileLanguageOptions.length) return;
+
+    mobileLanguageOptions.forEach((button) => {
+      const buttonLang = button.getAttribute('data-lang');
+      const isSelected = buttonLang === selectedLang;
+      button.classList.toggle('hidden', isSelected);
+      button.setAttribute('aria-checked', String(isSelected));
+
+      if (isSelected && mobileCurrentLangLabel) {
+        mobileCurrentLangLabel.innerHTML = button.innerHTML;
       }
     });
   }
@@ -441,6 +511,29 @@ const accountItems = [
     setLanguageLoading(false);
   }
 
+  function applyLanguageSelection(selectedLang) {
+    if (!selectedLang) return;
+    syncLanguageMenu(selectedLang);
+    syncMobileLanguageMenu(selectedLang);
+    startLanguageLoading();
+
+    // Keep language intent even if translation runtime is still booting.
+    window.__lcdbPendingLanguage = selectedLang;
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, selectedLang);
+    } catch {}
+
+    const changeLanguage = window.__lcdbChangeLanguage;
+    if (typeof changeLanguage === 'function') {
+      changeLanguage(selectedLang).catch((error) => {
+        stopLanguageLoading();
+        console.error('[header] Failed to change language:', error);
+      });
+    } else {
+      window.dispatchEvent(new CustomEvent('lcdb:language-select', { detail: { lang: selectedLang } }));
+    }
+  }
+
   menuTrigger?.addEventListener('click', () => toggleMenu(true));
   menuClose?.addEventListener('click', () => toggleMenu(false));
   menuOverlay?.addEventListener('click', () => toggleMenu(false));
@@ -450,40 +543,40 @@ const accountItems = [
     const isOpen = languageTrigger.getAttribute('aria-expanded') === 'true';
     toggleLanguageMenu(!isOpen);
   });
+  mobileLangTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const isOpen = mobileLangTrigger.getAttribute('aria-expanded') === 'true';
+    toggleMobileLanguageMenu(!isOpen);
+  });
   languageOptions.forEach((button) => {
     button.addEventListener('click', () => {
       const selectedLang = button.getAttribute('data-lang');
       toggleLanguageMenu(false);
-      if (!selectedLang) return;
-      syncLanguageMenu(selectedLang);
-      startLanguageLoading();
-
-      // Keep language intent even if translation runtime is still booting.
-      window.__lcdbPendingLanguage = selectedLang;
-      try {
-        localStorage.setItem(LANGUAGE_STORAGE_KEY, selectedLang);
-      } catch {}
-
-      const changeLanguage = window.__lcdbChangeLanguage;
-      if (typeof changeLanguage === 'function') {
-        changeLanguage(selectedLang).catch((error) => {
-          stopLanguageLoading();
-          console.error('[header] Failed to change language:', error);
-        });
-      } else {
-        window.dispatchEvent(new CustomEvent('lcdb:language-select', { detail: { lang: selectedLang } }));
-      }
+      applyLanguageSelection(selectedLang);
+    });
+  });
+  mobileLanguageOptions.forEach((button) => {
+    button.addEventListener('click', () => {
+      const selectedLang = button.getAttribute('data-lang');
+      toggleMobileLanguageMenu(false);
+      applyLanguageSelection(selectedLang);
     });
   });
   window.addEventListener('page-translated', (event) => {
     const selectedLang = event?.detail?.lang;
     if (!selectedLang) return;
     syncLanguageMenu(selectedLang);
+    syncMobileLanguageMenu(selectedLang);
     stopLanguageLoading();
   });
   document.addEventListener('click', (event) => {
     if (!languageMenu || !event.target || languageMenu.contains(event.target)) return;
     toggleLanguageMenu(false);
+  });
+  document.addEventListener('click', (event) => {
+    if (!mobileLangMenu || !event.target || mobileLangMenu.contains(event.target)) return;
+    toggleMobileLanguageMenu(false);
   });
   headerSearchInputs.forEach((input) => {
     input.addEventListener('keydown', (event) => {
@@ -509,12 +602,14 @@ const accountItems = [
     document.documentElement.lang ||
     'fr';
   syncLanguageMenu(initialMenuLang);
+  syncMobileLanguageMenu(initialMenuLang);
   stopLanguageLoading();
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       toggleMenu(false);
       toggleLanguageMenu(false);
+      toggleMobileLanguageMenu(false);
       toggleMobileSearch(false);
     }
   });
