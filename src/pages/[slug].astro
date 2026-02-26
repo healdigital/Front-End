@@ -179,9 +179,14 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       <p class="lcdb-page-eyebrow typ-caption">Recipe</p>
       <h1 class="lcdb-page-title typ-h2">{title}</h1>
       {date && <p class="lcdb-page-description typ-body">{date}</p>}
-      <button type="button" class="article-print-btn typ-button" onclick="window.print()">
+      <a
+        href={`/print/${slug}/?auto=1`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="article-print-btn typ-button"
+      >
         Imprimer la recette
-      </button>
+      </a>
     </div>
   </section>
 
@@ -305,6 +310,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     color: #111111;
     border-radius: 999px;
     padding: 10px 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: background-color 0.2s ease;
   }
 

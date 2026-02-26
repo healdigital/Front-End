@@ -1,0 +1,622 @@
+---
+import { payloadFetch } from "../../lib/payload.client";
+import { getAllArticlesFromMongo } from "../../lib/mongo.server";
+import { processArticleImageUrl } from "../../utils/cdnUrlReplacer";
+import { renderArticleContent } from "../../utils/renderArticleContent";
+
+export const prerender = true;
+
+const getBuildLimit = () => {
+  const envLimit = Number(process.env.MAX_SSG_ARTICLES);
+  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+};
+
+const stripHtml = (value: string) =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return "";
+  if (typeof value === "string") return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(value.children)) {
+      return value.children.map((child: any) => toText(child)).filter(Boolean).join(" ");
+    }
+    if (value.content) return toText(value.content);
+  }
+  return "";
+};
+
+const isRecord = (value: any): value is Record<string, any> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const toPositiveNumber = (value: any): number | null => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+};
+
+const formatMinutes = (value: any): string => {
+  const numeric = toPositiveNumber(value);
+  return numeric === null ? "" : `${Math.round(numeric)} min`;
+};
+
+const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
+
+export async function getStaticPaths() {
+  let articles: any[] = [];
+
+  const decodeSafe = (value: string) => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  };
+
+  try {
+    articles = await getAllArticlesFromMongo();
+  } catch (error) {
+    console.error("print:getAllArticlesFromMongo failed, falling back to Payload:", error);
+  }
+
+  if (!articles || articles.length === 0) {
+    try {
+      const payloadResponse: any = await payloadFetch({
+        collection: "articles",
+        query: { depth: 2, limit: getBuildLimit() },
+      });
+      articles = payloadResponse?.docs || payloadResponse || [];
+    } catch (error) {
+      console.error("print:payloadFetch fallback failed:", error);
+    }
+  }
+
+  if (!Array.isArray(articles)) return [];
+
+  return articles
+    .filter((item: any) => item?.slug)
+    .map((item: any) => {
+      const rawSlug = typeof item.slug === "string" ? item.slug : item.slug?.current || "";
+      const slugValue = decodeSafe(rawSlug);
+      return {
+        params: { slug: slugValue },
+        props: { article: { ...item, slug: slugValue } },
+      };
+    });
+}
+
+interface Props {
+  article: any;
+}
+
+const { article } = Astro.props as Props;
+
+if (!article) {
+  throw new Error("Article data missing at build time");
+}
+
+const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
+const title = toText(article.title) || "Recipe";
+const content = renderArticleContent(article);
+const image = processArticleImageUrl(article);
+const imageAlt =
+  toText(article.featuredMedia?.alt || article.featuredImage?.alt || article.featured_image?.alt) ||
+  "Recipe featured image";
+const excerpt = toText(article.excerpt).slice(0, 280);
+const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
+const printDate = article.date
+  ? new Date(article.date).toLocaleDateString("fr-FR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : "";
+
+const collectRecipeBlocks = (source: any): Record<string, any>[] => {
+  if (!Array.isArray(source)) return [];
+  return source.filter((block) => isRecord(block) && block.blockType === "recipeCard") as Record<string, any>[];
+};
+
+const primaryRecipe =
+  collectRecipeBlocks(article.recipeBlocks)[0] ||
+  collectRecipeBlocks(article.contentBlocks)[0] ||
+  null;
+
+const recipeCardTitle = toText(primaryRecipe?.title) || "Fiche recette";
+const recipeType = toText(primaryRecipe?.recipeType).toUpperCase();
+const dishType = toText(primaryRecipe?.dishType);
+const cuisine = toText(primaryRecipe?.cuisine);
+const difficulty = toText(primaryRecipe?.difficulty);
+const prepTime = formatMinutes(primaryRecipe?.preparationTimeMinutes);
+const cookTime = formatMinutes(primaryRecipe?.cookingTimeMinutes);
+const prepNumeric = toPositiveNumber(primaryRecipe?.preparationTimeMinutes) || 0;
+const cookNumeric = toPositiveNumber(primaryRecipe?.cookingTimeMinutes) || 0;
+const totalTime = prepNumeric + cookNumeric > 0 ? `${Math.round(prepNumeric + cookNumeric)} min` : "";
+const servings =
+  toText(primaryRecipe?.servings) ||
+  (toPositiveNumber(primaryRecipe?.servingsCount) ? String(Math.round(Number(primaryRecipe.servingsCount))) : "");
+
+const caloriesKcal = toPositiveNumber(primaryRecipe?.nutrition?.caloriesKcal);
+
+const recipeMetaItems = [
+  { label: "Type", value: recipeType },
+  { label: "Preparation", value: prepTime },
+  { label: "Cuisson", value: cookTime },
+  { label: "Total", value: totalTime },
+  { label: "Portions", value: servings },
+  { label: "Calories", value: caloriesKcal ? `${Math.round(caloriesKcal)} kcal` : "" },
+  { label: "Plat", value: dishType },
+  { label: "Cuisine", value: cuisine },
+  { label: "Difficulte", value: difficulty },
+].filter((item) => Boolean(item.value));
+
+const recipeIngredients = Array.isArray(primaryRecipe?.ingredients)
+  ? primaryRecipe.ingredients
+      .map((ingredient: any) => {
+        if (!isRecord(ingredient)) return "";
+        const quantity = toText(ingredient.quantity);
+        const item = toText(ingredient.item);
+        const notes = toText(ingredient.notes);
+        const line = [quantity, item].filter(Boolean).join(" ").trim();
+        if (!line && !notes) return "";
+        return notes ? `${line} (${notes})`.trim() : line;
+      })
+      .filter(Boolean)
+  : [];
+
+const recipeSteps = Array.isArray(primaryRecipe?.steps)
+  ? primaryRecipe.steps
+      .map((step: any) => {
+        if (!isRecord(step)) return "";
+        return toText(step.instruction);
+      })
+      .filter(Boolean)
+  : [];
+
+const nutritionRows = [
+  { label: "Calories", value: toPositiveNumber(primaryRecipe?.nutrition?.caloriesKcal), suffix: "kcal" },
+  { label: "Proteines", value: toPositiveNumber(primaryRecipe?.nutrition?.proteinGrams), suffix: "g" },
+  { label: "Glucides", value: toPositiveNumber(primaryRecipe?.nutrition?.carbohydratesGrams), suffix: "g" },
+  { label: "Lipides", value: toPositiveNumber(primaryRecipe?.nutrition?.fatGrams), suffix: "g" },
+  { label: "Fibres", value: toPositiveNumber(primaryRecipe?.nutrition?.fiberGrams), suffix: "g" },
+  { label: "Sucres", value: toPositiveNumber(primaryRecipe?.nutrition?.sugarGrams), suffix: "g" },
+  { label: "Sodium", value: toPositiveNumber(primaryRecipe?.nutrition?.sodiumMg), suffix: "mg" },
+].filter((item) => item.value !== null);
+
+const recipeTips = toText(primaryRecipe?.tips);
+const recipeNotes = toText(primaryRecipe?.personalNotes);
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={articleUrl} />
+    <title>{title} | Impression recette</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: #101010;
+        background: #ece9df;
+      }
+
+      .print-root {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .print-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .print-toolbar-link,
+      .print-toolbar-button {
+        border: 1px solid #c8c2b4;
+        border-radius: 999px;
+        background: #f6f4ee;
+        color: #111111;
+        padding: 8px 14px;
+        font-size: 14px;
+        line-height: 1;
+        text-decoration: none;
+      }
+
+      .print-toolbar-button {
+        cursor: pointer;
+      }
+
+      .print-sheet {
+        background: #ffffff;
+        border: 1px solid #ddd8ca;
+        box-shadow: 0 14px 36px rgba(16, 16, 16, 0.08);
+        border-radius: 12px;
+        padding: 16mm 14mm;
+      }
+
+      .print-header {
+        margin-bottom: 8mm;
+      }
+
+      .print-title {
+        margin: 0;
+        font-size: clamp(30px, 4.5vw, 46px);
+        line-height: 1.06;
+        color: #0f0f0f;
+      }
+
+      .print-date {
+        margin: 8px 0 0;
+        font-family: "Courier New", monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: #515151;
+      }
+
+      .print-excerpt {
+        margin: 14px 0 0;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #232323;
+      }
+
+      .print-hero {
+        margin: 16px 0 0;
+      }
+
+      .print-hero img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border: 1px solid #d9d3c5;
+      }
+
+      .print-content {
+        color: #1f1f1f;
+      }
+
+      .print-content h2,
+      .print-content h3,
+      .print-content h4 {
+        margin: 18px 0 10px;
+        color: #101010;
+        line-height: 1.15;
+      }
+
+      .print-content p,
+      .print-content li {
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .print-content a {
+        color: #101010;
+        text-decoration: none;
+      }
+
+      .print-content img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #d9d3c5;
+        page-break-inside: avoid;
+      }
+
+      .print-content .content-v2-recipe-ingredients,
+      .print-content .content-v2-recipe-steps-visual,
+      .print-content .content-v2-recipe-card,
+      .print-content .wprm-recipe-container {
+        background: #fff !important;
+        border: 1px solid #cecabd !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 0 12pt !important;
+        padding: 10pt !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .print-content .content-v2-recipe-step-media img,
+      .print-content .wprm-recipe-image img,
+      .print-content .wprm-recipe-instruction-image img,
+      .print-content .wprm-recipe-instruction-media img {
+        max-width: 100% !important;
+        height: auto !important;
+        border: 1px solid #d7d2c4 !important;
+      }
+
+      .print-content .xs_social_share_widget,
+      .print-content .xs_share_url,
+      .print-content .wslu-share-box,
+      .print-content #comments,
+      .print-content .comments-area,
+      .print-content .reviews-section {
+        display: none !important;
+      }
+
+      .print-recipe-title {
+        margin: 0 0 14px;
+        font-size: 28px;
+        line-height: 1.12;
+        color: #0f0f0f;
+      }
+
+      .print-meta-grid {
+        list-style: none;
+        margin: 0 0 12pt;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8pt;
+      }
+
+      .print-meta-grid li {
+        border: 1px solid #d8d2c5;
+        padding: 8pt;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .print-meta-grid span {
+        display: block;
+        margin-bottom: 4px;
+        font-family: "Courier New", monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #5c5c5c;
+      }
+
+      .print-meta-grid strong {
+        display: block;
+        font-size: 13px;
+        line-height: 1.35;
+        color: #131313;
+      }
+
+      .print-section {
+        margin-top: 12pt;
+        padding-top: 10pt;
+        border-top: 1px solid #d8d3c7;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .print-section h3 {
+        margin: 0 0 8pt;
+        font-size: 15px;
+        font-family: "Courier New", monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .print-list {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .print-list li {
+        margin-bottom: 5pt;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .print-nutrition-grid {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6pt 10pt;
+      }
+
+      .print-nutrition-grid li {
+        border: 1px solid #ddd8cc;
+        padding: 7pt;
+        font-size: 13px;
+      }
+
+      .print-nutrition-grid strong {
+        display: inline-block;
+        min-width: 86px;
+      }
+
+      .print-footer {
+        margin-top: 10mm;
+        padding-top: 4mm;
+        border-top: 1px solid #d8d3c7;
+        font-family: "Courier New", monospace;
+        font-size: 11px;
+        color: #4e4e4e;
+      }
+
+      .print-footer p {
+        margin: 0;
+      }
+
+      .print-footer a {
+        color: #1a1a1a;
+        text-decoration: none;
+      }
+
+      @page {
+        size: A4;
+        margin: 12mm;
+      }
+
+      @media print {
+        body {
+          background: #ffffff !important;
+        }
+
+        .print-root {
+          max-width: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        .print-toolbar {
+          display: none !important;
+        }
+
+        .print-sheet {
+          border: 0 !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        .print-meta-grid li,
+        .print-section,
+        .print-list li {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .print-meta-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .print-nutrition-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="print-root">
+      <nav class="print-toolbar" data-no-print>
+        <a class="print-toolbar-link" href={`/${slug}/`}>Retour a l'article</a>
+        <button type="button" class="print-toolbar-button" onclick="window.print()">Imprimer</button>
+      </nav>
+
+      <article class="print-sheet">
+        <header class="print-header">
+          <h1 class="print-title">{title}</h1>
+          {printDate && <p class="print-date">{printDate}</p>}
+          {excerpt && <p class="print-excerpt">{excerpt}</p>}
+          {image && (
+            <figure class="print-hero">
+              <img src={image} alt={imageAlt} loading="eager" decoding="async" />
+            </figure>
+          )}
+        </header>
+
+        {primaryRecipe ? (
+          <section class="print-content">
+            <h2 class="print-recipe-title">{recipeCardTitle}</h2>
+
+            {recipeMetaItems.length > 0 && (
+              <ul class="print-meta-grid">
+                {recipeMetaItems.map((item) => (
+                  <li>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {recipeIngredients.length > 0 && (
+              <section class="print-section">
+                <h3>Ingredients</h3>
+                <ul class="print-list">
+                  {recipeIngredients.map((ingredient) => (
+                    <li>{ingredient}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {recipeSteps.length > 0 && (
+              <section class="print-section">
+                <h3>Etapes</h3>
+                <ol class="print-list">
+                  {recipeSteps.map((step) => (
+                    <li>{step}</li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            {nutritionRows.length > 0 && (
+              <section class="print-section">
+                <h3>Nutrition (par portion)</h3>
+                <ul class="print-nutrition-grid">
+                  {nutritionRows.map((item) => (
+                    <li>
+                      <strong>{item.label}:</strong> {Math.round(item.value || 0)} {item.suffix}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {recipeTips && (
+              <section class="print-section">
+                <h3>Astuces</h3>
+                <p>{recipeTips}</p>
+              </section>
+            )}
+
+            {recipeNotes && (
+              <section class="print-section">
+                <h3>Notes</h3>
+                <p>{recipeNotes}</p>
+              </section>
+            )}
+          </section>
+        ) : (
+          <section class="print-content" set:html={content} />
+        )}
+
+        <footer class="print-footer">
+          <p>
+            Source:
+            <a href={articleUrl}>{articleUrl}</a>
+          </p>
+        </footer>
+      </article>
+    </main>
+
+    <script is:inline>
+      window.addEventListener('load', () => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const auto = params.get('auto');
+          if (auto === '0') return;
+          window.setTimeout(() => window.print(), 160);
+        } catch {
+          // Ignore print auto-launch errors.
+        }
+      });
+    </script>
+  </body>
+</html>
