@@ -160,16 +160,38 @@ const accountItems = [
 
       <!-- Mobile actions -->
       <div class="flex lg:hidden items-center gap-4 ml-auto text-white/80">
-        <button
-          type="button"
-          class="text-white/80"
-          aria-label="Langues"
-          aria-controls="mobile-language-dropdown"
-          aria-expanded="false"
-          data-mobile-lang-quick
-        >
-          <Icon name="globe" size="md" />
-        </button>
+        <div class="relative" data-mobile-header-lang-menu data-no-translate="true">
+          <button
+            type="button"
+            class="text-white/80 hover:text-white transition-colors"
+            aria-label="Langues"
+            aria-controls="mobile-header-language-dropdown"
+            aria-expanded="false"
+            data-mobile-lang-trigger
+          >
+            <Icon name="globe" size="md" />
+          </button>
+          <div
+            id="mobile-header-language-dropdown"
+            class="hidden absolute right-0 top-full mt-2 w-[172px] rounded-2xl border border-white/15 bg-[#111927] p-2 shadow-2xl z-30"
+            data-mobile-lang-dropdown
+            role="menu"
+            aria-label="Mobile language selection"
+          >
+            {languageOptions.map((option) => (
+              <button
+                type="button"
+                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] typ-nav text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
+                data-lang={option.code}
+                data-mobile-lang-option
+                role="menuitemradio"
+                aria-checked={option.code === currentLang}
+              >
+                <span set:html={option.label} />
+              </button>
+            ))}
+          </div>
+        </div>
         <button
           type="button"
           class="text-white/80"
@@ -302,47 +324,6 @@ const accountItems = [
             </a>
           </li>
         ))}
-        <li class="border-b border-white/10 last:border-b-0 relative" data-mobile-lang-menu data-no-translate="true">
-          <button
-            type="button"
-            class="w-full flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
-            data-mobile-lang-trigger
-            aria-haspopup="true"
-            aria-expanded="false"
-            aria-controls="mobile-language-dropdown"
-          >
-            <span class="flex items-center gap-3">
-              <span class="text-primary-turquoise">
-                <Icon name="globe" size="sm" />
-              </span>
-              <span>LANGUES</span>
-            </span>
-            <span class="flex items-center gap-2">
-              <span data-mobile-lang-current-label set:html={languageLabel} />
-              <Icon name="chevron-down" size="sm" class="w-4 h-4" data-mobile-lang-chevron />
-            </span>
-          </button>
-          <div
-            id="mobile-language-dropdown"
-            class="hidden absolute left-0 right-0 bottom-full mb-2 rounded-xl border border-white/15 bg-[#111927] p-2 z-20"
-            data-mobile-lang-dropdown
-            role="menu"
-            aria-label="Mobile language selection"
-          >
-            {languageOptions.map((option) => (
-              <button
-                type="button"
-                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] typ-nav text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
-                data-lang={option.code}
-                data-mobile-lang-option
-                role="menuitemradio"
-                aria-checked={option.code === currentLang}
-              >
-                <span set:html={option.label} />
-              </button>
-            ))}
-          </div>
-        </li>
       </ul>
     </div>
   </aside>
@@ -384,13 +365,12 @@ const accountItems = [
   const languageOptions = Array.from(languageMenu?.querySelectorAll('[data-lang-option]') || []);
   const languageLoading = languageMenu?.querySelector('[data-lang-loading]');
   const languageChevron = languageMenu?.querySelector('[data-lang-chevron]');
-  const mobileLangMenu = menuDrawer?.querySelector('[data-mobile-lang-menu]');
+  const mobileLangMenu = document.querySelector('[data-mobile-header-lang-menu]');
   const mobileLangTrigger = mobileLangMenu?.querySelector('[data-mobile-lang-trigger]');
   const mobileLangDropdown = mobileLangMenu?.querySelector('[data-mobile-lang-dropdown]');
   const mobileCurrentLangLabel = mobileLangMenu?.querySelector('[data-mobile-lang-current-label]');
   const mobileLanguageOptions = Array.from(mobileLangMenu?.querySelectorAll('[data-mobile-lang-option]') || []);
   const mobileLangChevron = mobileLangMenu?.querySelector('[data-mobile-lang-chevron]');
-  const mobileQuickLangButton = document.querySelector('[data-mobile-lang-quick]');
   const body = document.body;
   let languageLoadingTimeout = null;
 
@@ -448,7 +428,6 @@ const accountItems = [
     if (!mobileLangDropdown || !mobileLangTrigger) return;
     mobileLangDropdown.classList.toggle('hidden', !show);
     mobileLangTrigger.setAttribute('aria-expanded', String(show));
-    mobileQuickLangButton?.setAttribute('aria-expanded', String(show));
     mobileLangChevron?.classList.toggle('rotate-180', Boolean(show));
   }
 
@@ -579,13 +558,6 @@ const accountItems = [
     toggleLanguageMenu(false);
   });
   document.addEventListener('click', (event) => {
-    if (
-      mobileQuickLangButton &&
-      event.target &&
-      (mobileQuickLangButton === event.target || mobileQuickLangButton.contains(event.target))
-    ) {
-      return;
-    }
     if (!mobileLangMenu || !event.target || mobileLangMenu.contains(event.target)) return;
     toggleMobileLanguageMenu(false);
   });
@@ -600,23 +572,6 @@ const accountItems = [
     event.preventDefault();
     const isOpen = mobileSearchButton.getAttribute('aria-expanded') === 'true';
     toggleMobileSearch(!isOpen);
-  });
-  mobileQuickLangButton?.addEventListener('click', (event) => {
-    event.preventDefault();
-
-    const menuIsOpen = menuDrawer?.getAttribute('aria-hidden') === 'false';
-    if (!menuIsOpen) {
-      toggleMenu(true);
-    }
-
-    const isLangOpen = mobileLangTrigger?.getAttribute('aria-expanded') === 'true';
-    toggleMobileLanguageMenu(!menuIsOpen || !isLangOpen);
-
-    if (!menuIsOpen && mobileLangMenu instanceof HTMLElement) {
-      requestAnimationFrame(() => {
-        mobileLangMenu.scrollIntoView({ block: 'nearest' });
-      });
-    }
   });
   mobileSearchForm?.addEventListener('submit', (event) => {
     event.preventDefault();
