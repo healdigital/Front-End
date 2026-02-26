@@ -204,7 +204,7 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
     <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href={articleUrl} />
     <title>{title} | Impression recette</title>
-    <style>
+    <style is:global>
       :root {
         color-scheme: light;
       }
@@ -548,19 +548,13 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
         }
       }
       section.print-content p > img {
-        width: 100% !important; 
-        height: fit-content !important;
+        width: 100% !important;
+        height: auto !important;
       }
     </style>
   </head>
   <body>
     <main class="print-root">
-      <style>
-        section.print-content p > img {
-        width: 100% !important; 
-        height: fit-content !important;
-      }
-      </style>
       <nav class="print-toolbar" data-no-print>
         <a class="print-toolbar-link" href={`/${slug}/`}>Retour a l'article</a>
         <button type="button" class="print-toolbar-button" onclick="window.print()">Imprimer</button>
