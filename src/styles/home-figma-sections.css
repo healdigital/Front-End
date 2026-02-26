@@ -1384,9 +1384,10 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 
 }
 
-#header-language-dropdown span {
-
-    color: #fff !important;
-
+#header-language-dropdown span,
+#header-language-dropdown button,
+#mobile-header-language-dropdown span,
+#mobile-header-language-dropdown button {
+  color: #fff !important;
 }
  
