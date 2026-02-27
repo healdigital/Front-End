@@ -1,4 +1,30 @@
-# LCDB Tracker + Chat Summary (Updated: 2026-02-25)
+# LCDB Tracker + Chat Summary (Updated: 2026-02-27)
+
+## Recipe Builder Current Status
+
+- Current phase state:
+- Phase 1 = `DONE`
+- Phase 2 = `DONE`
+- Phase 3 = `DONE`
+
+- Already done:
+- one-page recipe-first article editor flow
+- top header metadata moved forward
+- inline slug editor under title
+- visual progress/completion strip
+- recipe builder visible in one continuous page flow
+- quick info improved
+- ingredient paste/import helper added
+- steps improved
+- ingredient/step row labels improved
+- nutrition improved
+- collapsible secondary sections added
+- slug/SEO auto-generation added
+- default single recipe card now auto-prepared for new articles
+- recipe-builder nested validation merge fix applied for partial edit payloads
+
+- Next pending in order (validation/review only):
+- client review pass on editor UX
 
 ## Hold For Tomorrow (2026-02-26 Homepage Performance)
 
@@ -16,6 +42,27 @@
 - [ ] no filter/pagination regression
 - [ ] no workshop data regression
 - [ ] no translation dropdown regression
+
+## Hold For Tomorrow (Recipe Builder UX Audit - Payload Admin)
+
+- [x] Phase 1 work completed for current safe rollout:
+- [x] one-page recipe-first editor
+- [x] move essential metadata/image to header
+- [x] inline slug editing under title
+- [x] remove remaining recipe-block friction fully for the current storage-compatible model
+- [x] Phase 2 work completed so far:
+- [x] compact quick-info
+- [x] improved steps editor
+- [x] nutrition grid/layout improvement
+- [x] ingredient paste/import helper.
+- [x] step completion/progress polish and editor guidance.
+- [x] Phase 3 work completed so far:
+- [x] auto-generated slug
+- [x] auto-generated SEO title/description
+- [x] calories-per-serving / servings fallback already active
+- [x] inline slug UX + progress guidance.
+- [x] Deeper block-friction reduction while keeping frontend-compatible storage.
+- [ ] QA pass on staging for new recipe creation flow end-to-end.
 
 ## Client-Promised Pending (Must Track)
 
