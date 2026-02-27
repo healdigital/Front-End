@@ -113,8 +113,12 @@ export function processArticleImageUrl(article: any): string {
 
   // Check various possible image URL fields
   const possibleUrls = [
+    article.featuredMedia?.sizes?.articleHero?.url,
+    article.featuredMedia?.sizes?.gallery?.url,
     article.featuredMedia?.url,
     article.featuredMedia?.value?.url,
+    article.featuredImage?.sizes?.articleHero?.url,
+    article.featuredImage?.sizes?.gallery?.url,
     article.featured_image?.asset?.url,
     article.featured_image?.url,
     article.featured_image_url,

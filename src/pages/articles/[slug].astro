@@ -101,7 +101,9 @@ const title = toText(article?.title) || 'Untitled article';
 const excerptRaw = toText(article?.excerpt) || toText(article?.content);
 const excerpt = excerptRaw.length > 180 ? `${excerptRaw.slice(0, 180).trim()}...` : excerptRaw;
 const imageUrl = processArticleImageUrl(article);
-const imageAlt = toText(article?.featured_image?.alt) || title;
+const imageAlt =
+  toText(article?.featuredMedia?.alt || article?.featuredImage?.alt || article?.featured_image?.alt) ||
+  title;
 const content = renderArticleContent(article);
 
 const formatDate = (value: any) => {

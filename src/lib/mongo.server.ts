@@ -43,6 +43,137 @@ const getPreparedArticles = () => {
   return cachedPreparedArticles;
 };
 
+const normalizeId = (value: unknown): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'object') {
+    if (value instanceof ObjectId) {
+      return value.toHexString();
+    }
+    const record = value as Record<string, unknown>;
+    if (typeof record.toHexString === 'function') {
+      try {
+        const hex = record.toHexString();
+        if (typeof hex === 'string') return hex.trim();
+      } catch {
+        // ignore and continue with nested fields
+      }
+    }
+    const nested =
+      record.id ??
+      record._id ??
+      (typeof record.value === 'object' && record.value
+        ? ((record.value as Record<string, unknown>).id ??
+          (record.value as Record<string, unknown>)._id)
+        : record.value);
+    return typeof nested === 'string' ? nested.trim() : '';
+  }
+  return '';
+};
+
+const isObjectIdString = (value: string): boolean => /^[0-9a-fA-F]{24}$/.test(value);
+
+const extractMediaRelationId = (value: unknown): string => {
+  if (!value || typeof value === 'number' || typeof value === 'boolean') return '';
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.url === 'string' && record.url.trim()) return '';
+    if (
+      record.sizes &&
+      typeof record.sizes === 'object' &&
+      Object.keys(record.sizes as Record<string, unknown>).length > 0
+    ) {
+      return '';
+    }
+  }
+
+  const id = normalizeId(value);
+  return isObjectIdString(id) ? id : '';
+};
+
+const withStringIds = <T extends Record<string, unknown>>(doc: T): T & { _id?: string; id?: string } => ({
+  ...doc,
+  _id: normalizeId(doc._id) || undefined,
+  id: normalizeId(doc.id) || normalizeId(doc._id) || undefined,
+});
+
+const hydrateArticleMediaRelations = async (articles: any[]): Promise<any[]> => {
+  if (!Array.isArray(articles) || articles.length === 0) return articles;
+
+  const mediaIds = new Set<string>();
+
+  for (const article of articles) {
+    const featuredMediaId = extractMediaRelationId(article?.featuredMedia);
+    if (featuredMediaId) mediaIds.add(featuredMediaId);
+  }
+
+  if (mediaIds.size === 0) {
+    return articles.map((article) => ({
+      _id: normalizeId(article?._id) || undefined,
+      ...article,
+    }));
+  }
+
+  try {
+    const db = await getMongoConnection();
+    const mediaCollection = db.collection('media');
+    const mediaDocs = await mediaCollection
+      .find(
+        {
+          _id: {
+            $in: Array.from(mediaIds).map((id) => new ObjectId(id)),
+          },
+        },
+        {
+          projection: {
+            alt: 1,
+            filename: 1,
+            filesize: 1,
+            height: 1,
+            mimeType: 1,
+            sizes: 1,
+            updatedAt: 1,
+            url: 1,
+            width: 1,
+          },
+        },
+      )
+      .toArray();
+
+    const mediaMap = new Map(
+      mediaDocs.map((doc) => {
+        const normalizedDoc = withStringIds(doc as Record<string, unknown>);
+        return [normalizedDoc.id || normalizedDoc._id || '', normalizedDoc];
+      }),
+    );
+
+    return articles.map((article) => {
+      const normalizedArticleId = normalizeId(article?._id);
+      const featuredMediaId = extractMediaRelationId(article?.featuredMedia);
+      const hydratedFeaturedMedia = featuredMediaId ? mediaMap.get(featuredMediaId) : null;
+
+      return {
+        _id: normalizedArticleId || undefined,
+        ...article,
+        ...(hydratedFeaturedMedia
+          ? {
+              featuredMedia: {
+                ...(typeof article?.featuredMedia === 'object' && article?.featuredMedia ? article.featuredMedia : {}),
+                ...hydratedFeaturedMedia,
+              },
+            }
+          : {}),
+      };
+    });
+  } catch (error) {
+    console.error('[BUILD] Failed to hydrate article media relations:', error);
+    return articles.map((article) => ({
+      _id: normalizeId(article?._id) || undefined,
+      ...article,
+    }));
+  }
+};
+
 export async function getMongoConnection() {
   if (cachedClient && cachedDb) {
     return cachedDb;
@@ -239,9 +370,10 @@ export async function getAllArticlesFromMongo() {
         const items = getPreparedArticles();
         const cappedItems = items.slice(0, limit);
         console.log(`[BUILD] Using prepared-articles.json with ${cappedItems.length}/${items.length} articles (USE_LOCAL_JSON=1, MAX_SSG_ARTICLES=${limit})`);
-        cachedAllArticles = cappedItems;
+        const hydratedItems = await hydrateArticleMediaRelations(cappedItems);
+        cachedAllArticles = hydratedItems;
         cachedAllArticlesAt = Date.now();
-        return cappedItems;
+        return hydratedItems;
       } catch (err) {
         console.error('[BUILD] Failed to read prepared-articles.json, falling back to Mongo:', err);
       }
@@ -342,10 +474,12 @@ export async function getAllArticlesFromMongo() {
         console.log(`[BUILD] Added ${articles.length - baseArticles.length} priority slug articles (INCLUDE_SLUGS).`);
       }
 
-      const processedArticles = articles.map(doc => ({
-        _id: doc._id?.toString(),
-        ...doc,
-      }));
+      const processedArticles = await hydrateArticleMediaRelations(
+        articles.map(doc => ({
+          _id: doc._id?.toString(),
+          ...doc,
+        })),
+      );
 
       const endTime = Date.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -389,7 +523,8 @@ export async function getArticleBySlugFromMongo(slug: string) {
       for (const item of items) {
         const itemSlug = typeof item.slug === 'string' ? item.slug : item.slug?.current;
         if (itemSlug && variants.has(itemSlug)) {
-          return item;
+          const [hydratedItem] = await hydrateArticleMediaRelations([item]);
+          return hydratedItem || item;
         }
       }
     } catch (err) {
@@ -432,10 +567,14 @@ export async function getArticleBySlugFromMongo(slug: string) {
 
     if (!article) return null;
 
-    return {
-      _id: article._id?.toString(),
-      ...article,
-    };
+    const [hydratedArticle] = await hydrateArticleMediaRelations([
+      {
+        _id: article._id?.toString(),
+        ...article,
+      },
+    ]);
+
+    return hydratedArticle || null;
   } catch (error) {
     console.error('❌ Error fetching article by slug from MongoDB:', error);
     return null;
