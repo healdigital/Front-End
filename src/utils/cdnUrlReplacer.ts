@@ -3,8 +3,35 @@
  * Replaces old CDN with new DigitalOcean Spaces CDN
  */
 
+const DEFAULT_PAYLOAD_API_URL =
+  (typeof process !== 'undefined' &&
+    (process.env.PUBLIC_PAYLOAD_API_URL || process.env.PUBLIC_TRANSLATE_API_URL)) ||
+  'https://admin.lacuisinedebernard.com/api';
+
+const getPayloadOrigin = (): string => {
+  try {
+    return new URL(DEFAULT_PAYLOAD_API_URL).origin;
+  } catch {
+    return 'https://admin.lacuisinedebernard.com';
+  }
+};
+
 export function replaceCdnUrl(url: string): string {
   if (!url) return url;
+
+  if (typeof url === 'string') {
+    if (url.startsWith('/api/') || url.startsWith('/media/')) {
+      return `${getPayloadOrigin()}${url}`;
+    }
+
+    if (url.startsWith('api/')) {
+      return `${getPayloadOrigin()}/${url}`;
+    }
+
+    if (url.startsWith('media/')) {
+      return `${getPayloadOrigin()}/${url}`;
+    }
+  }
 
   // Replace the old CDN URL with the new DigitalOcean Spaces URL
   return url.replace(

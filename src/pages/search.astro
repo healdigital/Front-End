@@ -36,6 +36,13 @@ const title = translate('nav.search', lang);
   algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
   algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
   algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || 'lcdb_recipes',
+  payloadAssetOrigin: (() => {
+    try {
+      return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
+    } catch {
+      return 'https://admin.lacuisinedebernard.com';
+    }
+  })(),
 }}>
   // Inline module scripts in Astro pages are not bundled, so we must use a fully
 // resolved URL for the Algolia client to avoid runtime resolution errors.
@@ -125,6 +132,9 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     const normalized = value.trim();
     if (!normalized) return '';
     if (normalized.startsWith('//')) return `https:${normalized}`;
+    if (normalized.startsWith('/api/') || normalized.startsWith('/media/')) {
+      return `${payloadAssetOrigin}${normalized}`;
+    }
     if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('/')) {
       return normalized;
     }

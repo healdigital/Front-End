@@ -1,4 +1,5 @@
 import { stripHtml } from './stripHtml.js';
+import { replaceCdnUrl } from './cdnUrlReplacer';
 
 const getBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env.PUBLIC_SITE_URL) {
@@ -75,7 +76,7 @@ const extractImageUrls = (source) => {
       })
     : [];
 
-  return Array.from(new Set([...direct, ...gallery]));
+  return Array.from(new Set([...direct, ...gallery].map((url) => replaceCdnUrl(url))));
 };
 
 const extractKeywordString = (source) => {

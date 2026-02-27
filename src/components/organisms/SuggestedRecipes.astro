@@ -1,6 +1,13 @@
 ---
 import RecipeCard from './RecipeCard.astro';
 import FilterDropdown from '../molecules/FilterDropdown.astro';
+const payloadAssetOrigin = (() => {
+  try {
+    return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
+  } catch {
+    return 'https://admin.lacuisinedebernard.com';
+  }
+})();
 
 interface Recipe {
   title: string;
@@ -118,7 +125,7 @@ const getFilterValue = (recipe: Recipe): string => {
   </div>
 </section>
 
-<script>
+<script define:vars={{ payloadAssetOrigin }}>
   // @ts-nocheck
   function setupSuggestedRecipes() {
     const sections = Array.from(document.querySelectorAll('[data-suggested-recipes]'));
@@ -180,6 +187,7 @@ const getFilterValue = (recipe: Recipe): string => {
 
       const toOptimizedCardImage = (value = '') => {
         const raw = String(value || '').trim();
+        if (raw.startsWith('/api/') || raw.startsWith('/media/')) return `${payloadAssetOrigin}${raw}`;
         if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
 
         const match = raw.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);

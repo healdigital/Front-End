@@ -568,6 +568,14 @@ const getHomeRecipeLimit = () => {
   return 6000;
 };
 
+const payloadAssetOrigin = (() => {
+  try {
+    return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
+  } catch {
+    return 'https://admin.lacuisinedebernard.com';
+  }
+})();
+
 let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
 if (!Array.isArray(allArticles) || allArticles.length === 0) {
   allArticles = await getAllArticlesFromMongo();
@@ -944,7 +952,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   <NewsletterModal triggerId="open-newsletter-footer" />
 </MainLayout>
 
-<script>
+<script define:vars={{ payloadAssetOrigin }}>
   // @ts-nocheck
   function setupHomepageFilters() {
     const filterRoot = document.querySelector('[data-homepage-filters]');
@@ -1051,6 +1059,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     const toOptimizedCardImage = (value = '') => {
       const raw = String(value || '').trim();
+      if (raw.startsWith('/api/') || raw.startsWith('/media/')) return `${payloadAssetOrigin}${raw}`;
       if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
 
       const match = raw.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
