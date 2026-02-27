@@ -75,6 +75,7 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 
 <script>
   import { initializeTranslations, setupLanguageSwitcher, watchLanguageChanges, changeLanguage, getCurrentLanguage } from '../utils/dynamicTranslate';
+  const LANGUAGE_STORAGE_KEY = 'preferred-language';
 
   // Initialize translations on page load
   async function init() {
@@ -88,12 +89,37 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
       document.documentElement.lang ||
       'fr',
     ).toLowerCase();
-    const pendingLang = String(window['__lcdbPendingLanguage'] || '').toLowerCase();
+    const pendingLang = String((window as any).__lcdbPendingLanguage || '').toLowerCase();
 
     if (pendingLang || (currentLang && currentLang !== htmlLang)) {
       await changeLanguage(currentLang);
     }
   }
 
-  init().catch(error => console.error('Failed to initialize translations:', error));
+  const htmlLang = String(
+    document.documentElement.getAttribute('data-lang') ||
+    document.documentElement.lang ||
+    'fr',
+  ).toLowerCase();
+  const pendingLang = String((window as any).__lcdbPendingLanguage || '').toLowerCase();
+  let storedLang = '';
+  try {
+    storedLang = String(localStorage.getItem(LANGUAGE_STORAGE_KEY) || '').toLowerCase();
+  } catch {
+    storedLang = '';
+  }
+
+  const needsImmediateTranslationBoot =
+    Boolean(pendingLang) || (storedLang && storedLang !== htmlLang);
+
+  const startTranslationInit = () =>
+    init().catch(error => console.error('Failed to initialize translations:', error));
+
+  if (needsImmediateTranslationBoot) {
+    startTranslationInit();
+  } else if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(() => startTranslationInit(), { timeout: 1200 });
+  } else {
+    window.setTimeout(() => startTranslationInit(), 180);
+  }
 </script>

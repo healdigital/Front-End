@@ -113,23 +113,23 @@
 - [ ] Reduce homepage initial render payload.
 - [ ] Lower `HOME_INITIAL_RENDER_COUNT` (current default `48` -> target `12`).
 - [ ] Lower `SUGGESTED_INITIAL_RENDER_COUNT` (current default `30` -> target `8`).
-- [ ] Defer workshops live API hydration with viewport trigger (`IntersectionObserver`) instead of immediate first-load execution.
-- [ ] Reduce translation overhead on first paint.
-- [ ] Skip initial full-page `changeLanguage(...)` run when saved language equals source/default language.
-- [ ] Improve homepage image delivery without crop regression.
-- [ ] Add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority.
-- [ ] Add below-the-fold render deferral (`content-visibility: auto` with intrinsic size hints) on heavy homepage sections.
+- [x] Defer workshops live API hydration with viewport trigger (`IntersectionObserver`) instead of immediate first-load execution.
+- [x] Reduce translation overhead on first paint.
+- [x] Skip initial full-page `changeLanguage(...)` run when saved language equals source/default language.
+- [x] Improve homepage image delivery without crop regression.
+- [ ] Add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority. (`sizes` + priority cleanup done; no explicit `srcset` layer added yet)
+- [x] Add below-the-fold render deferral (`content-visibility: auto` with intrinsic size hints) on heavy homepage sections.
 
 ## QA Pending
 
-- [ ] Validate post-change homepage UX on mobile + desktop:
-- [ ] no portrait crop regression
-- [ ] no filter/pagination regression
-- [ ] no workshop data regression
-- [ ] no translation dropdown regression
-- [ ] Create 1 new recipe end-to-end from Payload Admin and verify dual-render output on staging.
-- [ ] Confirm step image quality and automatic sizing behavior on mobile + desktop.
-- [ ] Staging QA: translation flow (auto-translate -> review approve -> publish block/unblock) with one non-French article.
+- [x] Validate post-change homepage UX on mobile + desktop:
+- [x] no portrait crop regression
+- [x] no filter/pagination regression
+- [x] no workshop data regression
+- [x] no translation dropdown regression
+- [x] Create 1 new recipe end-to-end from Payload Admin and verify dual-render output on staging.
+- [x] Confirm step image quality and automatic sizing behavior on mobile + desktop.
+- [x] Staging QA: translation flow (auto-translate -> review approve -> publish block/unblock) with one non-French article.
 
 ## On Hold
 

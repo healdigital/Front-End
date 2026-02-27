@@ -19,7 +19,14 @@ const { embedded = false } = Astro.props as Props;
     <div class="books-section-card">
       <div class="books-section-grid">
         <div class="books-section-media">
-          <img src="/images/bernard-books.png" alt="Bernard Laurance" class="books-section-media-image" loading="lazy" />
+          <img
+            src="/images/bernard-books.png"
+            alt="Bernard Laurance"
+            class="books-section-media-image"
+            loading="lazy"
+            decoding="async"
+            sizes="(min-width: 1024px) 42vw, 92vw"
+          />
         </div>
 
         <div class="books-section-content">

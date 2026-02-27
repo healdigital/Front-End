@@ -641,9 +641,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                   src={featuredRecipe.image}
                   alt={featuredRecipe.title}
                   class="w-full md:h-full object-contain bg-[#f7f5ef]"
-                  loading="eager"
-                  fetchpriority="high"
+                  loading="lazy"
+                  fetchpriority="low"
                   decoding="async"
+                  width="1024"
+                  height="1365"
+                  sizes="(min-width: 1024px) 36vw, 92vw"
                   data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
                   onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
                 />
@@ -736,8 +739,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
           </div>
 
-          <BioSection embedded />
-          <FeaturedMasterclass embedded />
+          <div class="home-deferred-block">
+            <BioSection embedded />
+          </div>
+          <div class="home-deferred-block">
+            <FeaturedMasterclass embedded />
+          </div>
         </div>
 
         <div class="home-sidebar-column">
@@ -750,7 +757,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   </section>
 
   <!-- Dark Section -->
-  <section class="relative overflow-hidden home-page-section home-page-section--dark">
+  <section class="relative overflow-hidden home-page-section home-page-section--dark home-render-deferred">
     <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
     <img
       src="/images/dark-section-base.png"
@@ -820,6 +827,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               class="w-full h-full object-cover"
               loading="lazy"
               decoding="async"
+              sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
               data-workshops-feature-image
             />
             <div class="absolute bottom-4 left-4">
@@ -856,6 +864,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               class="w-full h-full object-cover"
               loading="lazy"
               decoding="async"
+              sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
             />
             <div class="absolute bottom-4 left-4 flex items-center gap-2">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
@@ -924,7 +933,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     </div>
   </section>
 
-  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light">
+  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light home-render-deferred">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"
@@ -1591,7 +1600,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
       const imageSrc = workshop.image || '/images/ateliers-physiques.jpg';
 
-      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
+      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async" sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
     };
 
     const updateFeatureCard = (workshopList) => {
@@ -1687,11 +1696,43 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       });
   }
 
-  setupWorkshopsLiveData();
+  function scheduleWorkshopsLiveData() {
+    const grid = document.querySelector('[data-workshops-grid]');
+    if (!(grid instanceof HTMLElement)) return;
+    if (grid.dataset.workshopsObserverBound === 'true') return;
+    grid.dataset.workshopsObserverBound = 'true';
+
+    const start = () => {
+      if (grid.dataset.workshopsHydrated === 'loading' || grid.dataset.workshopsHydrated === 'true') return;
+      setupWorkshopsLiveData();
+    };
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        start();
+      }, {
+        rootMargin: '320px 0px',
+        threshold: 0.01,
+      });
+
+      observer.observe(grid);
+      return;
+    }
+
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(() => start(), { timeout: 2000 });
+    } else {
+      window.setTimeout(() => start(), 600);
+    }
+  }
+
+  scheduleWorkshopsLiveData();
   setupHomepageFilters();
   setupViewToggle();
   document.addEventListener('astro:page-load', () => {
-    setupWorkshopsLiveData();
+    scheduleWorkshopsLiveData();
     setupHomepageFilters();
     setupViewToggle();
   });
@@ -1704,6 +1745,16 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
   .home-recipe-card-shell {
     contain-intrinsic-size: auto 780px;
+  }
+
+  .home-render-deferred {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1450px;
+  }
+
+  .home-deferred-block {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 960px;
   }
 
 </style>

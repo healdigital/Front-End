@@ -113,6 +113,9 @@ const toHeroCategoryTag = (card: HeroCard): string => {
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchpriority={index === 0 ? 'high' : 'low'}
                 decoding="async"
+                width="300"
+                height="495"
+                sizes="(min-width: 768px) 300px, 262px"
                 data-fallback-src={card.imageFallback || card.image}
                 onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
               />

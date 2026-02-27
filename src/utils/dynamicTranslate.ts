@@ -255,32 +255,44 @@ export async function initializeTranslations(): Promise<void> {
     hasTranslatedContent = false;
 
     const pendingLang = normalizeLanguageCode(String((window as any).__lcdbPendingLanguage || ''));
-    const requiredLanguages = new Set<string>(['en', sourceLanguage]);
-    if (isSupportedLanguage(pendingLang)) {
-      requiredLanguages.add(pendingLang);
+    let storedLang = '';
+    try {
+      storedLang = normalizeLanguageCode(localStorage.getItem(LANGUAGE_STORAGE_KEY) || '');
+    } catch {
+      storedLang = '';
+    }
+
+    const preferredLang = isSupportedLanguage(pendingLang)
+      ? pendingLang
+      : isSupportedLanguage(storedLang)
+      ? storedLang
+      : sourceLanguage;
+
+    const requiredLanguages = new Set<string>([sourceLanguage]);
+    if (preferredLang !== sourceLanguage) {
+      requiredLanguages.add(preferredLang);
     }
 
     for (const lang of requiredLanguages) {
       await loadTranslationData(lang);
     }
 
-    if (
-      pendingLang &&
-      isSupportedLanguage(pendingLang) &&
-      Object.keys(translationsData).includes(pendingLang)
-    ) {
-      currentLanguage = pendingLang;
-    } else {
-      currentLanguage = sourceLanguage;
-    }
+    currentLanguage =
+      preferredLang &&
+      isSupportedLanguage(preferredLang) &&
+      Object.keys(translationsData).includes(preferredLang)
+        ? preferredLang
+        : sourceLanguage;
 
     if (!Object.keys(translationsData).includes(currentLanguage)) {
       currentLanguage = sourceLanguage;
     }
 
-    // Keep default startup language aligned with page language.
+    // Keep stored preference valid without rewriting on every page load.
     try {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+      if (!storedLang || !isSupportedLanguage(storedLang)) {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+      }
     } catch {
       // Ignore storage write failures (private mode / blocked storage).
     }

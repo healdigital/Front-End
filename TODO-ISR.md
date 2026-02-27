@@ -26,17 +26,28 @@
 - Next pending in order (validation/review only):
 - client review pass on editor UX
 
+## QA Status
+
+- [x] Homepage UX QA completed on mobile + desktop
+- [x] no portrait crop regression
+- [x] no filter/pagination regression
+- [x] no workshop data regression
+- [x] no translation dropdown regression
+- [x] New recipe end-to-end QA completed from Payload Admin to frontend dual-render output
+- [x] Step image quality and automatic sizing behavior verified
+- [x] Translation flow QA completed (`auto-translate -> review approve -> publish block/unblock`)
+
 ## Hold For Tomorrow (2026-02-26 Homepage Performance)
 
 - [ ] Reduce homepage initial render payload:
 - [ ] lower `HOME_INITIAL_RENDER_COUNT` (current default 48 -> target 12)
 - [ ] lower `SUGGESTED_INITIAL_RENDER_COUNT` (current default 30 -> target 8)
-- [ ] Defer workshops live API hydration with viewport trigger (IntersectionObserver) instead of immediate first-load execution.
-- [ ] Reduce translation overhead on first paint:
-- [ ] skip initial full-page `changeLanguage(...)` run when saved language equals source/default language.
-- [ ] Improve homepage image delivery without crop regression:
-- [ ] add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority.
-- [ ] Add below-the-fold render deferral (`content-visibility: auto` with intrinsic size hints) on heavy homepage sections.
+- [x] Defer workshops live API hydration with viewport trigger (IntersectionObserver) instead of immediate first-load execution.
+- [x] Reduce translation overhead on first paint:
+- [x] skip initial full-page `changeLanguage(...)` run when saved language equals source/default language.
+- [x] Improve homepage image delivery without crop regression:
+- [ ] add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority. (`sizes` + priority cleanup done; explicit `srcset` not added yet)
+- [x] Add below-the-fold render deferral (`content-visibility: auto` with intrinsic size hints) on heavy homepage sections.
 - [ ] Validate post-change homepage UX on mobile + desktop:
 - [ ] no portrait crop regression
 - [ ] no filter/pagination regression
