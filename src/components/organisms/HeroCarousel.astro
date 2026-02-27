@@ -1,4 +1,6 @@
 ---
+import { buildWpPortraitSrcSet } from '../../utils/cdnUrlReplacer';
+
 interface HeroCard {
   title: string;
   image: string;
@@ -108,6 +110,8 @@ const toHeroCategoryTag = (card: HeroCard): string => {
             <a href={card.slug} class="hero-slide flex-shrink-0 rounded-[10px] overflow-hidden relative group block">
               <img
                 src={card.image}
+                srcset={buildWpPortraitSrcSet(card.imageFallback || card.image) || undefined}
+                sizes="(min-width: 768px) 300px, 262px"
                 alt={card.title}
                 class="w-full h-full object-fill bg-[#131924] transition-transform duration-500 group-hover:scale-105"
                 loading={index === 0 ? 'eager' : 'lazy'}

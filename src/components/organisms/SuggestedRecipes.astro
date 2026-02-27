@@ -18,6 +18,7 @@ interface Props {
   embedded?: boolean;
   source?: string;
   offset?: number;
+  initialVisibleCount?: number;
 }
 
 const {
@@ -25,6 +26,7 @@ const {
   embedded = false,
   source = '/home-recipes-index.json',
   offset = 0,
+  initialVisibleCount = 4,
 } = Astro.props as Props;
 
 const recipeFilters = [
@@ -79,16 +81,21 @@ const getFilterValue = (recipe: Recipe): string => {
       </div>
     </div>
 
-    <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
+    <div
+      class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`}
+      data-suggested-grid
+      data-suggested-cards-per-page={initialVisibleCount}
+    >
       {recipes.map((recipe, index) => (
         <div
-          class="suggested-card-shell"
+          class={`suggested-card-shell ${index >= initialVisibleCount ? 'hidden' : ''}`}
           data-suggested-card
           data-suggested-index={index}
           data-category={getFilterValue(recipe)}
           data-title={recipe.title.toLocaleLowerCase('fr')}
           data-description={recipe.description.toLocaleLowerCase('fr')}
           data-slug={recipe.slug}
+          aria-hidden={index >= initialVisibleCount ? 'true' : 'false'}
         >
           <RecipeCard
             title={recipe.title}
@@ -140,7 +147,7 @@ const getFilterValue = (recipe: Recipe): string => {
 
       let activeFilter = 'toutes';
       let activePage = 1;
-      const cardsPerPage = 4;
+      const cardsPerPage = Math.max(1, Number(grid?.getAttribute('data-suggested-cards-per-page') || '4'));
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
       const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
 
@@ -198,6 +205,30 @@ const getFilterValue = (recipe: Recipe): string => {
         return `${withoutScaled}-797x1024${ext}${query}${hash}`;
       };
 
+      const buildCardImageSrcSet = (primary = '', fallback = '') => {
+        const sourceUrl = String(fallback || primary || '').trim();
+        if (!sourceUrl || !/\/wp-content\/uploads\//i.test(sourceUrl)) return '';
+
+        const normalized = sourceUrl.replace(
+          'https://cdn.lacuisinedebernard.com/',
+          'https://lcdb.fra1.digitaloceanspaces.com/',
+        );
+        const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+        if (!match) return '';
+
+        const base = match[1];
+        const ext = match[2];
+        const query = match[3] ? `?${match[3]}` : '';
+        const hash = match[4] ? `#${match[4]}` : '';
+        const withoutSized = base.replace(/-\d+x\d+$/i, '').replace(/-scaled$/i, '');
+        const portraitUrl = `${withoutSized}-797x1024${ext}${query}${hash}`;
+        const originalUrl = `${withoutSized}${ext}${query}${hash}`;
+
+        return originalUrl !== portraitUrl
+          ? `${portraitUrl} 797w, ${originalUrl} 1600w`
+          : `${portraitUrl} 797w`;
+      };
+
       const clipDescription = (value = '') => {
         const cleaned = String(value || '').replace(/\s+/g, ' ').trim();
         if (!cleaned) return 'Recette a decouvrir.';
@@ -224,9 +255,17 @@ const getFilterValue = (recipe: Recipe): string => {
         const imageEl = card.querySelector('img');
         if (imageEl instanceof HTMLImageElement) {
           const imageSrc = recipe.image || imageEl.getAttribute('data-fallback-src') || '';
+          const fallbackSrc = recipe.imageFallback || imageSrc;
           imageEl.src = imageSrc;
           imageEl.alt = recipe.title || 'Recipe image';
-          imageEl.setAttribute('data-fallback-src', recipe.imageFallback || imageSrc);
+          imageEl.setAttribute('data-fallback-src', fallbackSrc);
+          imageEl.setAttribute('sizes', '(min-width: 1280px) 320px, (min-width: 768px) calc((100vw - 8rem) / 2), calc(100vw - 2.5rem)');
+          const srcSet = buildCardImageSrcSet(imageSrc, fallbackSrc);
+          if (srcSet) {
+            imageEl.setAttribute('srcset', srcSet);
+          } else {
+            imageEl.removeAttribute('srcset');
+          }
         }
 
         const titleLink = card.querySelector('h3 a');

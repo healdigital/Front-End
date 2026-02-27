@@ -1,5 +1,6 @@
 ---
 import SocialShare from '../molecules/SocialShare.astro';
+import { buildWpPortraitSrcSet } from '../../utils/cdnUrlReplacer';
 
 /**
  * Props for the `RecipeCard` organism.
@@ -41,6 +42,8 @@ const MAX_LENGTH = 200;
 const truncatedDescription = description.length > MAX_LENGTH
   ? description.slice(0, MAX_LENGTH).trim() + '...'
   : description;
+const imageSrcSet = buildWpPortraitSrcSet(imageFallback || image);
+const imageSizes = '(min-width: 1280px) 320px, (min-width: 768px) calc((100vw - 8rem) / 2), calc(100vw - 2.5rem)';
 ---
 
 <article class="group w-full rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
@@ -48,6 +51,8 @@ const truncatedDescription = description.length > MAX_LENGTH
   <div class="relative w-full overflow-hidden aspect-[3/4]">
     <img
       src={image}
+      srcset={imageSrcSet || undefined}
+      sizes={imageSizes}
       alt={title}
       class="w-full h-full object-contain object-center bg-[#f7f5ef] transition-transform duration-500 group-hover:scale-105"
       loading="lazy"
