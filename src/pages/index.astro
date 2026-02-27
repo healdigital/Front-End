@@ -593,12 +593,12 @@ const recipePool = normalizedArticles.length ? normalizedArticles : fallbackReci
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
 const getHomeInitialRenderCount = () => {
   const envCount = Number(process.env.HOME_INITIAL_RENDER_COUNT);
-  return Number.isFinite(envCount) && envCount > 0 ? envCount : 12;
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
-  return Number.isFinite(envCount) && envCount > 0 ? envCount : 8;
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 30;
 };
 const suggestedRecipesPool = normalizedArticles.length > 10
   ? normalizedArticles.slice(10)
@@ -742,7 +742,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   </section>
 
   <!-- Dark Section -->
-  <section class="relative overflow-hidden home-page-section home-page-section--dark" data-deferred-section>
+  <section class="relative overflow-hidden home-page-section home-page-section--dark">
     <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
     <img
       src="/images/dark-section-base.png"
@@ -916,7 +916,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     </div>
   </section>
 
-  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light" data-deferred-section>
+  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
       aria-hidden="true"
@@ -1376,8 +1376,15 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     });
 
     applyFilters(true);
-
-    // Keep first paint fast by loading the full recipe index only on user interaction.
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(() => {
+        hydrateCardsFromSearchIndex();
+      }, { timeout: 1200 });
+    } else {
+      window.setTimeout(() => {
+        hydrateCardsFromSearchIndex();
+      }, 300);
+    }
   }
 
   function setupViewToggle() {
@@ -1671,35 +1678,11 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       });
   }
 
-  function scheduleWorkshopsLiveData() {
-    const grid = document.querySelector('[data-workshops-grid]');
-    if (!(grid instanceof HTMLElement)) return;
-    if (grid.dataset.workshopsObserveBound === 'true') return;
-    grid.dataset.workshopsObserveBound = 'true';
-
-    const run = () => {
-      setupWorkshopsLiveData();
-    };
-
-    if (!('IntersectionObserver' in window)) {
-      window.setTimeout(run, 600);
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      observer.disconnect();
-      run();
-    }, { rootMargin: '360px 0px' });
-
-    observer.observe(grid);
-  }
-
-  scheduleWorkshopsLiveData();
+  setupWorkshopsLiveData();
   setupHomepageFilters();
   setupViewToggle();
   document.addEventListener('astro:page-load', () => {
-    scheduleWorkshopsLiveData();
+    setupWorkshopsLiveData();
     setupHomepageFilters();
     setupViewToggle();
   });
@@ -1714,8 +1697,4 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     contain-intrinsic-size: auto 780px;
   }
 
-  [data-deferred-section] {
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 1400px;
-  }
 </style>

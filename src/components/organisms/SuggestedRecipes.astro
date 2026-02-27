@@ -538,8 +538,15 @@ const getFilterValue = (recipe: Recipe): string => {
       });
 
       applyFilters(true);
-
-      // Keep first paint fast by loading full suggested recipe index only on user interaction.
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => {
+          hydrateSuggestedFromSearchIndex();
+        }, { timeout: 1200 });
+      } else {
+        window.setTimeout(() => {
+          hydrateSuggestedFromSearchIndex();
+        }, 300);
+      }
     });
   }
 
