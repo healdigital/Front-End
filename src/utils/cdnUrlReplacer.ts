@@ -69,56 +69,10 @@ export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): st
 }
 
 /**
- * Build a conservative responsive srcset for portrait cards.
- * Uses known-safe portrait derivative + original as fallback candidate.
- */
-export function buildWpPortraitSrcSet(url: string, variant = '797x1024', originalWidthHint = 1600): string {
-  if (!url || typeof url !== 'string') return '';
-
-  const normalized = replaceCdnUrl(url);
-  if (!/\/wp-content\/uploads\//i.test(normalized)) return '';
-
-  const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
-  if (!match) return '';
-
-  const base = match[1];
-  const ext = match[2];
-  const query = match[3] ? `?${match[3]}` : '';
-  const hash = match[4] ? `#${match[4]}` : '';
-  const variantWidth = Number(variant.split('x')[0]) || 797;
-
-  const withoutSized = base.replace(/-\d+x\d+$/i, '').replace(/-scaled$/i, '');
-  const portraitUrl = `${withoutSized}-${variant}${ext}${query}${hash}`;
-  const originalUrl = `${withoutSized}${ext}${query}${hash}`;
-
-  const candidates = [`${portraitUrl} ${variantWidth}w`];
-  if (originalUrl !== portraitUrl) {
-    candidates.push(`${originalUrl} ${Math.max(variantWidth + 1, originalWidthHint)}w`);
-  }
-
-  return candidates.join(', ');
-}
-
-/**
  * Process article image URLs to use the new CDN
  */
 export function processArticleImageUrl(article: any): string {
   if (!article) return '';
-
-  const extractMediaSizeUrls = (media: any): string[] => {
-    if (!media || typeof media !== 'object') return [];
-
-    const sizes = media.sizes && typeof media.sizes === 'object' ? media.sizes : {};
-    const preferredOrder = ['articleHero', 'gallery', 'cardPortrait', 'articleStep', 'thumb'];
-
-    const sizeUrls = preferredOrder
-      .map((key) => sizes?.[key]?.url)
-      .filter((value) => typeof value === 'string' && value.trim().length > 0) as string[];
-
-    return sizeUrls;
-  };
-
-  const featuredMedia = article.featuredMedia?.value || article.featuredMedia;
 
   const extractFromHtml = (html?: string): string => {
     if (!html || typeof html !== 'string') return '';
@@ -132,9 +86,6 @@ export function processArticleImageUrl(article: any): string {
 
   // Check various possible image URL fields
   const possibleUrls = [
-    ...extractMediaSizeUrls(featuredMedia),
-    ...extractMediaSizeUrls(article.featured_image),
-    ...extractMediaSizeUrls(article.featuredImage),
     article.featuredMedia?.url,
     article.featuredMedia?.value?.url,
     article.featured_image?.asset?.url,

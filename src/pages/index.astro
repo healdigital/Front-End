@@ -13,7 +13,7 @@ import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.ast
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
-import { buildWpPortraitSrcSet, buildWpPortraitVariantUrl, processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import { buildWpPortraitVariantUrl, processArticleImageUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
@@ -558,13 +558,6 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   };
 };
 
-const getRecipeImageFallback = (recipe: any): string => {
-  if (recipe && typeof recipe === 'object' && typeof recipe.imageFallback === 'string' && recipe.imageFallback.trim()) {
-    return recipe.imageFallback;
-  }
-  return String(recipe?.image || '').trim();
-};
-
 const getHomeRecipeLimit = () => {
   const homeLimit = Number(process.env.HOME_RECIPE_LIMIT);
   if (Number.isFinite(homeLimit) && homeLimit > 0) return homeLimit;
@@ -603,18 +596,14 @@ const getHomeInitialRenderCount = () => {
   return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
-const HOME_CARDS_PER_PAGE = 6;
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
   return Number.isFinite(envCount) && envCount > 0 ? envCount : 30;
 };
-const SUGGESTED_CARDS_PER_PAGE = 4;
 const suggestedRecipesPool = normalizedArticles.length > 10
   ? normalizedArticles.slice(10)
   : fallbackSuggestedRecipes;
 const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRenderCount());
-const featuredRecipeFallbackImage = getRecipeImageFallback(featuredRecipe);
-const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage || featuredRecipe.image);
 ---
 
 <MainLayout
@@ -642,14 +631,12 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
               <div class="relative md:w-[55%]">
                 <img
                   src={featuredRecipe.image}
-                  srcset={featuredRecipeSrcSet || undefined}
-                  sizes="(min-width: 1280px) 42vw, (min-width: 768px) 48vw, 100vw"
                   alt={featuredRecipe.title}
                   class="w-full md:h-full object-contain bg-[#f7f5ef]"
                   loading="eager"
                   fetchpriority="high"
                   decoding="async"
-                  data-fallback-src={featuredRecipeFallbackImage || featuredRecipe.image}
+                  data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
                   onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
                 />
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
@@ -703,24 +690,22 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
               class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
               data-recipe-grid
               data-recipes-source="/home-recipes-index.json"
-              data-cards-per-page={HOME_CARDS_PER_PAGE}
             >
               {browseRecipes.map((recipe, index) => (
                 <div
-                  class={`home-recipe-card-shell ${index >= HOME_CARDS_PER_PAGE ? 'hidden' : ''}`}
+                  class="home-recipe-card-shell"
                   data-recipe-card
                   data-recipe-index={index}
                   data-category={recipe.filterKey}
                   data-title={recipe.title.toLocaleLowerCase('fr')}
                   data-description={recipe.description.toLocaleLowerCase('fr')}
                   data-slug={recipe.slug}
-                  aria-hidden={index >= HOME_CARDS_PER_PAGE ? 'true' : 'false'}
                 >
                   <RecipeCard
                     title={recipe.title}
                     description={recipe.description}
                     image={recipe.image}
-                    imageFallback={getRecipeImageFallback(recipe)}
+                    imageFallback={recipe.imageFallback}
                     category={recipe.category}
                     prepTime={recipe.prepTime}
                     difficulty={recipe.difficulty}
@@ -945,7 +930,6 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
             embedded
             source="/home-recipes-index.json"
             offset={10}
-            initialVisibleCount={SUGGESTED_CARDS_PER_PAGE}
           />
         </div>
         <div class="home-sidebar-column">
@@ -983,7 +967,7 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
 
     let activeFilter = 'toutes';
     let activePage = 1;
-    const cardsPerPage = Math.max(1, Number(grid?.getAttribute('data-cards-per-page') || '6'));
+    const cardsPerPage = 6;
 
     const createPageItems = (totalPages) => {
       if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -1085,30 +1069,6 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
       return `${withoutScaled}-797x1024${ext}${query}${hash}`;
     };
 
-    const buildCardImageSrcSet = (primary = '', fallback = '') => {
-      const source = String(fallback || primary || '').trim();
-      if (!source || !/\/wp-content\/uploads\//i.test(source)) return '';
-
-      const normalized = source.replace(
-        'https://cdn.lacuisinedebernard.com/',
-        'https://lcdb.fra1.digitaloceanspaces.com/',
-      );
-      const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
-      if (!match) return '';
-
-      const base = match[1];
-      const ext = match[2];
-      const query = match[3] ? `?${match[3]}` : '';
-      const hash = match[4] ? `#${match[4]}` : '';
-      const withoutSized = base.replace(/-\d+x\d+$/i, '').replace(/-scaled$/i, '');
-      const portraitUrl = `${withoutSized}-797x1024${ext}${query}${hash}`;
-      const originalUrl = `${withoutSized}${ext}${query}${hash}`;
-
-      return originalUrl !== portraitUrl
-        ? `${portraitUrl} 797w, ${originalUrl} 1600w`
-        : `${portraitUrl} 797w`;
-    };
-
     const clipDescription = (value = '') => {
       const cleaned = String(value || '').replace(/\s+/g, ' ').trim();
       if (!cleaned) return 'Recette a decouvrir.';
@@ -1132,21 +1092,13 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
       card.classList.add('hidden');
       card.setAttribute('aria-hidden', 'true');
 
-        const imageEl = card.querySelector('img');
-        if (imageEl instanceof HTMLImageElement) {
-          const imageSrc = recipe.image || imageEl.getAttribute('data-fallback-src') || '';
-          const fallbackSrc = recipe.imageFallback || imageSrc;
-          imageEl.src = imageSrc;
-          imageEl.alt = recipe.title || 'Recipe image';
-          imageEl.setAttribute('data-fallback-src', fallbackSrc);
-          imageEl.setAttribute('sizes', '(min-width: 1280px) 320px, (min-width: 768px) calc((100vw - 8rem) / 2), calc(100vw - 2.5rem)');
-          const srcSet = buildCardImageSrcSet(imageSrc, fallbackSrc);
-          if (srcSet) {
-            imageEl.setAttribute('srcset', srcSet);
-          } else {
-            imageEl.removeAttribute('srcset');
-          }
-        }
+      const imageEl = card.querySelector('img');
+      if (imageEl instanceof HTMLImageElement) {
+        const imageSrc = recipe.image || imageEl.getAttribute('data-fallback-src') || '';
+        imageEl.src = imageSrc;
+        imageEl.alt = recipe.title || 'Recipe image';
+        imageEl.setAttribute('data-fallback-src', recipe.imageFallback || imageSrc);
+      }
 
       const titleLink = card.querySelector('h3 a');
       if (titleLink instanceof HTMLAnchorElement) {
@@ -1630,7 +1582,7 @@ const featuredRecipeSrcSet = buildWpPortraitSrcSet(featuredRecipeFallbackImage |
       const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
       const imageSrc = workshop.image || '/images/ateliers-physiques.jpg';
 
-      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
+      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98] max-h-[386px]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
     };
 
     const updateFeatureCard = (workshopList) => {
