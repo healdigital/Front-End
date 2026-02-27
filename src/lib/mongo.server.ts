@@ -97,6 +97,113 @@ const withStringIds = <T extends Record<string, unknown>>(doc: T): T & { _id?: s
   id: normalizeId(doc.id) || normalizeId(doc._id) || undefined,
 });
 
+const hasUsableArticleImage = (article: any): boolean =>
+  Boolean(
+    article?.featuredMedia?.url ||
+      article?.featuredMedia?.sizes?.articleHero?.url ||
+      article?.featuredMedia?.sizes?.gallery?.url ||
+      extractMediaRelationId(article?.featuredMedia) ||
+      article?.featuredImage?.url ||
+      article?.featuredImage?.sizes?.articleHero?.url ||
+      article?.featuredImage?.sizes?.gallery?.url ||
+      article?.featured_img_url ||
+      article?.featured_image?.url ||
+      article?.featuredImageUrl,
+  );
+
+const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[]> => {
+  if (!Array.isArray(articles) || articles.length === 0) return articles;
+
+  const articlesNeedingBackfill = articles.filter((article) => !hasUsableArticleImage(article));
+  if (articlesNeedingBackfill.length === 0) return articles;
+
+  const slugs = Array.from(
+    new Set(
+      articlesNeedingBackfill
+        .map((article) =>
+          typeof article?.slug === 'string' ? article.slug.trim() : article?.slug?.current?.trim(),
+        )
+        .filter(Boolean),
+    ),
+  );
+
+  const ids = Array.from(
+    new Set(
+      articlesNeedingBackfill
+        .map((article) => normalizeId(article?._id || article?.id))
+        .filter((value) => isObjectIdString(value)),
+    ),
+  );
+
+  if (slugs.length === 0 && ids.length === 0) return articles;
+
+  try {
+    const db = await getMongoConnection();
+    const articleDocs = await db
+      .collection('articles')
+      .find(
+        {
+          $or: [
+            ...(slugs.length ? [{ slug: { $in: slugs } }, { 'slug.current': { $in: slugs } }] : []),
+            ...(ids.length ? [{ _id: { $in: ids.map((id) => new ObjectId(id)) } }] : []),
+          ],
+        },
+        {
+          projection: {
+            _id: 1,
+            featuredMedia: 1,
+            featuredImage: 1,
+            featuredImageUrl: 1,
+            featured_img_url: 1,
+            featured_image: 1,
+            slug: 1,
+          },
+        },
+      )
+      .toArray();
+
+    const bySlug = new Map<string, any>();
+    const byId = new Map<string, any>();
+
+    for (const doc of articleDocs) {
+      const normalizedDoc = {
+        _id: normalizeId(doc._id) || undefined,
+        ...doc,
+      };
+      const docSlug =
+        typeof normalizedDoc.slug === 'string'
+          ? normalizedDoc.slug.trim()
+          : normalizedDoc.slug?.current?.trim();
+      if (docSlug) bySlug.set(docSlug, normalizedDoc);
+      const docId = normalizeId(normalizedDoc._id);
+      if (docId) byId.set(docId, normalizedDoc);
+    }
+
+    return articles.map((article) => {
+      if (hasUsableArticleImage(article)) return article;
+
+      const articleSlug =
+        typeof article?.slug === 'string' ? article.slug.trim() : article?.slug?.current?.trim();
+      const articleId = normalizeId(article?._id || article?.id);
+      const liveDoc = (articleSlug && bySlug.get(articleSlug)) || (articleId && byId.get(articleId));
+
+      if (!liveDoc) return article;
+
+      return {
+        ...article,
+        featuredMedia: liveDoc.featuredMedia ?? article.featuredMedia,
+        featuredImage: liveDoc.featuredImage ?? article.featuredImage,
+        featuredImageUrl: liveDoc.featuredImageUrl ?? article.featuredImageUrl,
+        featured_img_url: liveDoc.featured_img_url ?? article.featured_img_url,
+        featured_image: liveDoc.featured_image ?? article.featured_image,
+      };
+    });
+  } catch (error) {
+    console.error('[BUILD] Failed to backfill prepared article media fields:', error);
+    return articles;
+  }
+};
+
 const hydrateArticleMediaRelations = async (articles: any[]): Promise<any[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
 
@@ -370,7 +477,8 @@ export async function getAllArticlesFromMongo() {
         const items = getPreparedArticles();
         const cappedItems = items.slice(0, limit);
         console.log(`[BUILD] Using prepared-articles.json with ${cappedItems.length}/${items.length} articles (USE_LOCAL_JSON=1, MAX_SSG_ARTICLES=${limit})`);
-        const hydratedItems = await hydrateArticleMediaRelations(cappedItems);
+        const mergedItems = await backfillPreparedArticleMediaFields(cappedItems);
+        const hydratedItems = await hydrateArticleMediaRelations(mergedItems);
         cachedAllArticles = hydratedItems;
         cachedAllArticlesAt = Date.now();
         return hydratedItems;
@@ -523,7 +631,8 @@ export async function getArticleBySlugFromMongo(slug: string) {
       for (const item of items) {
         const itemSlug = typeof item.slug === 'string' ? item.slug : item.slug?.current;
         if (itemSlug && variants.has(itemSlug)) {
-          const [hydratedItem] = await hydrateArticleMediaRelations([item]);
+          const [mergedItem] = await backfillPreparedArticleMediaFields([item]);
+          const [hydratedItem] = await hydrateArticleMediaRelations([mergedItem]);
           return hydratedItem || item;
         }
       }

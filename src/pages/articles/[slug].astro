@@ -97,6 +97,15 @@ if (!article) {
 }
 
 const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+if (slug && !processArticleImageUrl(article)) {
+  const hydratedArticle = await getArticleBySlugFromMongo(slug);
+  if (hydratedArticle) {
+    article = {
+      ...article,
+      ...hydratedArticle,
+    };
+  }
+}
 const title = toText(article?.title) || 'Untitled article';
 const excerptRaw = toText(article?.excerpt) || toText(article?.content);
 const excerpt = excerptRaw.length > 180 ? `${excerptRaw.slice(0, 180).trim()}...` : excerptRaw;

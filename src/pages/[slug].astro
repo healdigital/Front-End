@@ -4,7 +4,7 @@ import DisqusComments from "../components/DisqusComments.astro";
 import RecipeSidebar from "../components/organisms/RecipeSidebar.astro";
 
 import { payloadFetch } from "../lib/payload.client";
-import { getAllArticlesFromMongo } from "../lib/mongo.server";
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from "../lib/mongo.server";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "../utils/buildArticleJsonLd";
 import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
 import { processArticleImageUrl } from "../utils/cdnUrlReplacer";
@@ -90,13 +90,23 @@ interface Props {
   article: any;
 }
 
-const { article } = Astro.props as Props;
+let { article } = Astro.props as Props;
 
 if (!article) {
   throw new Error("Article data missing at build time");
 }
 
 const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
+
+if (slug && !processArticleImageUrl(article)) {
+  const hydratedArticle = await getArticleBySlugFromMongo(slug);
+  if (hydratedArticle) {
+    article = {
+      ...article,
+      ...hydratedArticle,
+    };
+  }
+}
 
 const getExcerpt = () => {
   if (typeof article.excerpt === "string") return article.excerpt.substring(0, 160);
