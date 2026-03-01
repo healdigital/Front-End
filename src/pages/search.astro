@@ -135,6 +135,12 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     if (normalized.startsWith('/api/') || normalized.startsWith('/media/')) {
       return `${payloadAssetOrigin}${normalized}`;
     }
+    if (/^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i.test(normalized)) {
+      return normalized.replace(
+        /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+        'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+      );
+    }
     if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('/')) {
       return normalized;
     }

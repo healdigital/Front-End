@@ -1067,7 +1067,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     };
 
     const toOptimizedCardImage = (value = '') => {
-      const raw = String(value || '').trim();
+      const raw = String(value || '')
+        .trim()
+        .replace(
+          /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+          'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+        );
       if (raw.startsWith('/api/') || raw.startsWith('/media/')) return `${payloadAssetOrigin}${raw}`;
       if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
 
@@ -1113,7 +1118,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       const imageEl = card.querySelector('img');
       if (imageEl instanceof HTMLImageElement) {
         const imageSrc = recipe.image || imageEl.getAttribute('data-fallback-src') || '';
-        imageEl.src = imageSrc;
+        imageEl.removeAttribute('src');
+        imageEl.dataset.lazySrc = imageSrc;
         imageEl.alt = recipe.title || 'Recipe image';
         imageEl.setAttribute('data-fallback-src', recipe.imageFallback || imageSrc);
       }
@@ -1242,13 +1248,14 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               record?.featuredImage?.url ||
               record?.image ||
               '';
+            const optimizedImage = toOptimizedCardImage(originalImage);
 
             recipes.push({
               slug,
               title,
               description: record?.excerpt || record?.content || '',
-              image: toOptimizedCardImage(originalImage),
-              imageFallback: originalImage,
+              image: optimizedImage,
+              imageFallback: optimizedImage,
               filterKey,
               difficulty: toRecipeTagLabel(categoryLabel, filterKey),
               prepTime: formatRecipeTime(timeLabel),
@@ -1314,6 +1321,15 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         return activeFilter === 'toutes' || category === activeFilter;
       });
 
+    const hydrateCardImage = (card) => {
+      const imageEl = card.querySelector('img');
+      if (!(imageEl instanceof HTMLImageElement)) return;
+      if (imageEl.currentSrc || imageEl.getAttribute('src')) return;
+      const nextSrc = imageEl.dataset.lazySrc || imageEl.dataset.fallbackSrc || '';
+      if (!nextSrc) return;
+      imageEl.src = nextSrc;
+    };
+
     const applyFilters = (resetPage = false) => {
       const filteredCards = getFilteredCards();
 
@@ -1332,6 +1348,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         const isVisible = visibleCards.has(card);
         card.classList.toggle('hidden', !isVisible);
         card.setAttribute('aria-hidden', String(!isVisible));
+        if (isVisible) hydrateCardImage(card);
       });
 
       renderPagination(totalPages);
