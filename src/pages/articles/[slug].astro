@@ -9,14 +9,12 @@ const getBuildLimit = () => {
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
 
-function normalizeSlug(value: any) {
-  return String(value || '').replace(/^\/+|\/+$/g, '');
-}
-
 export async function getStaticPaths() {
   if (import.meta.env.DEV) {
     return [];
   }
+
+  const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
 
   let articles = await getAllArticlesFromMongo();
   if (!articles || articles.length === 0) {
@@ -50,6 +48,8 @@ interface Props {
   slug?: string;
   title?: string;
 }
+
+const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
 
 const { slug: propSlug = '', title = 'Article' } = Astro.props as Props;
 const slug = normalizeSlug(propSlug || Astro.params.slug);
