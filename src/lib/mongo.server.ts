@@ -13,9 +13,6 @@ let cachedAllArticles: any[] | null = null;
 let cachedAllArticlesAt = 0;
 let inFlightAllArticlesPromise: Promise<any[]> | null = null;
 let warnedMissingMongoEnv = false;
-let warnedMissingPayloadApiEnv = false;
-let cachedPreparedApiMediaMap: Map<string, any> | null = null;
-let inFlightPreparedApiMediaMapPromise: Promise<Map<string, any>> | null = null;
 
 const isDevMode = () => process.env.NODE_ENV !== 'production';
 
@@ -74,87 +71,6 @@ const warnMissingMongoEnvOnce = (context: string) => {
   console.warn(
     `[BUILD] Skipping ${context}: Mongo connection env not configured (expected MONGODB_URI or DATABASE_URL).`,
   );
-};
-
-const warnMissingPayloadApiEnvOnce = (context: string) => {
-  if (warnedMissingPayloadApiEnv) return;
-  warnedMissingPayloadApiEnv = true;
-  console.warn(
-    `[BUILD] Skipping ${context}: Payload API env not configured (expected PAYLOAD_API_URL, PUBLIC_PAYLOAD_API_URL, or PAYLOAD_URL).`,
-  );
-};
-
-const resolvePayloadApiBase = (): string => {
-  const importMetaEnv = getImportMetaEnv();
-  return (
-    process.env.PAYLOAD_API_URL ||
-    process.env.PUBLIC_PAYLOAD_API_URL ||
-    process.env.PAYLOAD_URL ||
-    importMetaEnv.PAYLOAD_API_URL ||
-    importMetaEnv.PUBLIC_PAYLOAD_API_URL ||
-    importMetaEnv.PAYLOAD_URL ||
-    ''
-  ).trim();
-};
-
-const resolvePayloadApiToken = (): string => {
-  const importMetaEnv = getImportMetaEnv();
-  return (
-    process.env.PAYLOAD_API_TOKEN ||
-    process.env.PAYLOAD_TOKEN ||
-    process.env.PAYLOAD_AUTH_TOKEN ||
-    importMetaEnv.PAYLOAD_API_TOKEN ||
-    importMetaEnv.PAYLOAD_TOKEN ||
-    importMetaEnv.PAYLOAD_AUTH_TOKEN ||
-    ''
-  ).trim();
-};
-
-const buildApiBaseCandidates = (value: string): string[] => {
-  const normalized = typeof value === 'string' ? value.trim().replace(/\/+$/g, '') : '';
-  if (!normalized) return [];
-
-  const candidates: string[] = [];
-  const seen = new Set<string>();
-  const add = (candidate: string) => {
-    const clean = typeof candidate === 'string' ? candidate.trim().replace(/\/+$/g, '') : '';
-    if (!clean || seen.has(clean)) return;
-    seen.add(clean);
-    candidates.push(clean);
-  };
-
-  add(normalized);
-
-  try {
-    const parsed = new URL(normalized);
-    const parsedPath = parsed.pathname.replace(/\/+$/g, '');
-    const lowerPath = parsedPath.toLowerCase();
-
-    if (!parsedPath || parsedPath === '/') {
-      parsed.pathname = '/api';
-      add(parsed.toString());
-      return candidates;
-    }
-
-    if (lowerPath.endsWith('/api')) {
-      const withoutApiPath = parsedPath.slice(0, -4) || '/';
-      parsed.pathname = withoutApiPath;
-      add(parsed.toString());
-      return candidates;
-    }
-
-    if (lowerPath.includes('/api/')) {
-      parsed.pathname = parsedPath.slice(0, lowerPath.indexOf('/api/') + 4);
-      add(parsed.toString());
-    }
-
-    parsed.pathname = `${parsedPath}/api`;
-    add(parsed.toString());
-  } catch {
-    // keep raw candidate
-  }
-
-  return candidates;
 };
 
 const normalizeId = (value: unknown): string => {
@@ -225,112 +141,11 @@ const hasUsableArticleImage = (article: any): boolean =>
       article?.featuredImageUrl,
   );
 
-const buildPreparedApiMediaMap = async (): Promise<Map<string, any>> => {
-  if (cachedPreparedApiMediaMap) return cachedPreparedApiMediaMap;
-  if (inFlightPreparedApiMediaMapPromise) return inFlightPreparedApiMediaMapPromise;
-
-  inFlightPreparedApiMediaMapPromise = (async () => {
-    const apiBase = resolvePayloadApiBase();
-    if (!apiBase) {
-      warnMissingPayloadApiEnvOnce('prepared article media API backfill');
-      return new Map<string, any>();
-    }
-
-    const apiBases = buildApiBaseCandidates(apiBase);
-    const token = resolvePayloadApiToken();
-    const pageSize = 100;
-    const collected: any[] = [];
-    let page = 1;
-
-    const headers: Record<string, string> = {};
-    if (token) headers.Authorization = `Bearer ${token}`;
-
-    while (true) {
-      let data: any = null;
-
-      for (const base of apiBases) {
-        const url = `${base}/articles?limit=${pageSize}&page=${page}&depth=2`;
-        try {
-          const res = await fetch(url, { headers });
-          if (!res.ok) continue;
-          data = await res.json();
-          break;
-        } catch {
-          // try next candidate
-        }
-      }
-
-      const docs = Array.isArray(data?.docs) ? data.docs : Array.isArray(data) ? data : [];
-      if (!docs.length) break;
-
-      collected.push(...docs);
-
-      const totalPages = Number(data?.totalPages) || 0;
-      if ((totalPages && page >= totalPages) || docs.length < pageSize) {
-        break;
-      }
-
-      page += 1;
-    }
-
-    const map = new Map<string, any>();
-    for (const doc of collected) {
-      const slug =
-        typeof doc?.slug === 'string' ? doc.slug.trim() : doc?.slug?.current?.trim();
-      const id = normalizeId(doc?._id || doc?.id);
-      const mediaDoc = {
-        featuredMedia: doc?.featuredMedia,
-        featuredImage: doc?.featuredImage,
-        featuredImageUrl: doc?.featuredImageUrl,
-        featured_img_url: doc?.featured_img_url,
-        featured_image: doc?.featured_image,
-      };
-
-      if (slug) map.set(`slug:${slug}`, mediaDoc);
-      if (id) map.set(`id:${id}`, mediaDoc);
-    }
-
-    cachedPreparedApiMediaMap = map;
-    return map;
-  })();
-
-  try {
-    return await inFlightPreparedApiMediaMapPromise;
-  } finally {
-    inFlightPreparedApiMediaMapPromise = null;
-  }
-};
-
 const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
   if (!hasMongoUri()) {
-    const apiMediaMap = await buildPreparedApiMediaMap();
-    if (apiMediaMap.size === 0) {
-      warnMissingMongoEnvOnce('prepared article media backfill');
-      return articles;
-    }
-
-    return articles.map((article) => {
-      if (hasUsableArticleImage(article)) return article;
-
-      const articleSlug =
-        typeof article?.slug === 'string' ? article.slug.trim() : article?.slug?.current?.trim();
-      const articleId = normalizeId(article?._id || article?.id);
-      const liveDoc =
-        (articleSlug && apiMediaMap.get(`slug:${articleSlug}`)) ||
-        (articleId && apiMediaMap.get(`id:${articleId}`));
-
-      if (!liveDoc) return article;
-
-      return {
-        ...article,
-        featuredMedia: liveDoc.featuredMedia ?? article.featuredMedia,
-        featuredImage: liveDoc.featuredImage ?? article.featuredImage,
-        featuredImageUrl: liveDoc.featuredImageUrl ?? article.featuredImageUrl,
-        featured_img_url: liveDoc.featured_img_url ?? article.featured_img_url,
-        featured_image: liveDoc.featured_image ?? article.featured_image,
-      };
-    });
+    warnMissingMongoEnvOnce('prepared article media backfill');
+    return articles;
   }
 
   const articlesNeedingBackfill = articles.filter((article) => !hasUsableArticleImage(article));
