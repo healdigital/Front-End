@@ -1,12 +1,41 @@
 ---
+import BaseLayout from '../../layouts/BaseLayout.astro';
 import { payloadFetch } from '../../lib/payload.client';
-import { getAllArticlesFromMongo } from '../../lib/mongo.server';
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from '../../lib/mongo.server';
+import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
+import { renderArticleContent } from '../../utils/renderArticleContent';
+import DisqusComments from '../../components/DisqusComments.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
 
 export const prerender = !import.meta.env.DEV;
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+};
+
+const stripHtml = (value: string) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(value.children)) {
+      return value.children.map((child: any) => toText(child)).filter(Boolean).join(' ');
+    }
+    if (value.content) return toText(value.content);
+  }
+  return '';
 };
 
 const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
@@ -16,11 +45,13 @@ export async function getStaticPaths() {
     return [];
   }
 
+  const normalize = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+
   let articles = await getAllArticlesFromMongo();
   if (!articles || articles.length === 0) {
     const response: any = await payloadFetch({
       collection: 'articles',
-      query: { depth: 0, limit: getBuildLimit() },
+      query: { depth: 2, limit: getBuildLimit() },
     });
     articles = response?.docs || response || [];
   }
@@ -31,48 +62,194 @@ export async function getStaticPaths() {
 
   return articles
     .map((article: any) => {
-      const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+      const slug = normalize(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
       if (!slug) return null;
       return {
         params: { slug },
-        props: {
-          slug,
-          title: typeof article?.title === 'string' ? article.title : 'Article',
-        },
+        props: { article: { ...article, slug } },
       };
     })
     .filter(Boolean);
 }
 
 interface Props {
-  slug?: string;
-  title?: string;
+  article: any;
 }
 
-const { slug: propSlug = '', title = 'Article' } = Astro.props as Props;
-const slug = normalizeSlug(propSlug || Astro.params.slug);
+let { article } = Astro.props as Props;
 
-if (!slug) {
+if (!article) {
+  const slugParam = Astro.params.slug;
+  if (slugParam) {
+    article = await getArticleBySlugFromMongo(slugParam);
+    if (!article) {
+      const fallback: any = await payloadFetch({
+        collection: 'articles',
+        query: { slug: slugParam, depth: 2, limit: 1 },
+      });
+      article = Array.isArray(fallback) ? fallback[0] : fallback?.docs?.[0];
+    }
+  }
+}
+
+if (!article) {
   return new Response('Article not found', { status: 404 });
 }
 
-const targetPath = `/${slug}/`;
-const targetUrl = `https://lacuisinedebernard.com${targetPath}`;
+const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+if (slug && !processArticleImageUrl(article)) {
+  const hydratedArticle = await getArticleBySlugFromMongo(slug);
+  if (hydratedArticle) {
+    article = {
+      ...article,
+      ...hydratedArticle,
+    };
+  }
+}
+const title = toText(article?.title) || 'Untitled article';
+const excerptRaw = toText(article?.excerpt) || toText(article?.content);
+const excerpt = excerptRaw.length > 180 ? `${excerptRaw.slice(0, 180).trim()}...` : excerptRaw;
+const imageUrl = processArticleImageUrl(article);
+const imageAlt =
+  toText(article?.featuredMedia?.alt || article?.featuredImage?.alt || article?.featured_image?.alt) ||
+  title;
+const content = renderArticleContent(article);
+
+const formatDate = (value: any) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
+  .map((item: any) => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter(Boolean);
+
+const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
+  .map((item: any) => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter(Boolean);
+
+const publishedDate = formatDate(article?.publishedAt || article?.date || article?.modified);
+const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
+const numericPostId = Number(article?.post_id);
+const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
+  ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
+  : slug;
+const normalizePageLanguage = (value: any) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+  if (['en', 'fr', 'es', 'pt-br', 'ar'].includes(raw)) return raw;
+  return 'fr';
+};
+const pageLang = normalizePageLanguage(
+  article?.lang || article?.language || article?.locale,
+);
 ---
 
-<!doctype html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <link rel="canonical" href={targetUrl} />
-    <meta http-equiv="refresh" content={`0;url=${targetPath}`} />
-    <script is:inline>
-      {`window.location.replace(${JSON.stringify(targetPath)});`}
-    </script>
-  </head>
-  <body>
-    <p>Redirecting to <a href={targetPath}>{title}</a>...</p>
-  </body>
-</html>
+<BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl} lang={pageLang} loadAds={true}>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <nav class="flex items-center gap-2 text-[#6B7280] mb-5 typ-caption">
+        <a href="/" class="hover:text-[#1A2335]">Accueil</a>
+        <span>/</span>
+        <a href="/articles" class="hover:text-[#1A2335]">Articles</a>
+      </nav>
+      <h1 class="lcdb-page-title typ-h2">{title}</h1>
+      {publishedDate && <p class="lcdb-page-description typ-body">{publishedDate}</p>}
+    </div>
+  </section>
+
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <article class="lcdb-surface-card overflow-hidden">
+        {imageUrl && (
+          <img src={imageUrl} alt={imageAlt} class="w-full h-auto max-h-[560px] object-contain bg-[#ECE9DD]" loading="eager" />
+        )}
+
+        <div class="p-6 md:p-8">
+          <div class="my-6">
+            <MediavineSlot slot="article-top" minHeight={280} />
+          </div>
+
+          {categoryItems.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-5">
+              {categoryItems.map((category: any) => (
+                <a href={category.slug ? `/categories/${category.slug}` : '/categories'} class="lcdb-chip">
+                  {category.title}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {tagItems.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-8">
+              {tagItems.map((tag: any) => (
+                <a href={tag.slug ? `/tags/${tag.slug}` : '/tags'} class="lcdb-chip">
+                  #{tag.title}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <div class="article-content text-[#2F3441] typ-body" set:html={content}></div>
+
+          <div class="my-8">
+            <MediavineSlot slot="article-bottom" minHeight={280} />
+          </div>
+
+          <div class="pt-8 border-t border-[#D8D2C2]">
+            <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .article-content :global(h2),
+  .article-content :global(h3),
+  .article-content :global(h4) {
+    color: #1a2335;
+    font-family: var(--font-heading);
+    line-height: 1.1;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-content :global(h2) {
+    font-size: 2rem;
+  }
+
+  .article-content :global(h3) {
+    font-size: 1.65rem;
+  }
+
+  .article-content :global(p) {
+    margin-bottom: 1rem;
+  }
+
+  .article-content :global(img) {
+    margin: 1.5rem 0;
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .article-content :global(a) {
+    color: #2ec4b6;
+    text-decoration: underline;
+  }
+</style>
