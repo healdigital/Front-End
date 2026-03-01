@@ -57,7 +57,7 @@ const truncatedDescription = description.length > MAX_LENGTH
       height="667"
       sizes="(min-width: 1280px) 28vw, (min-width: 1024px) 34vw, (min-width: 768px) 44vw, 92vw"
       data-fallback-src={imageFallback}
-      onerror="const fallback=this.dataset.fallbackSrc;if(!fallback||this.dataset.fallbackApplied==='true'){this.onerror=null;return;}this.dataset.fallbackApplied='true';this.onerror=null;this.src=fallback;"
+      onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
     />
 
     <!-- Bookmark Button -->

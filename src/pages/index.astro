@@ -648,7 +648,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                   height="1365"
                   sizes="(min-width: 1024px) 36vw, 92vw"
                   data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
-                  onerror="const fallback=this.dataset.fallbackSrc;if(!fallback||this.dataset.fallbackApplied==='true'){this.onerror=null;return;}this.dataset.fallbackApplied='true';this.onerror=null;this.src=fallback;"
+                  onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
                 />
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
