@@ -12,7 +12,6 @@ let cachedPreparedArticles: any[] | null = null;
 let cachedAllArticles: any[] | null = null;
 let cachedAllArticlesAt = 0;
 let inFlightAllArticlesPromise: Promise<any[]> | null = null;
-let warnedMissingMongoEnv = false;
 
 const isDevMode = () => process.env.NODE_ENV !== 'production';
 
@@ -42,35 +41,6 @@ const getPreparedArticles = () => {
   const items = JSON.parse(raw);
   cachedPreparedArticles = Array.isArray(items) ? items : [];
   return cachedPreparedArticles;
-};
-
-const getImportMetaEnv = (): Record<string, string | undefined> => {
-  try {
-    return ((import.meta as unknown as { env?: Record<string, string | undefined> }).env || {});
-  } catch {
-    return {};
-  }
-};
-
-const resolveMongoUri = (): string => {
-  const importMetaEnv = getImportMetaEnv();
-  return (
-    process.env.MONGODB_URI ||
-    process.env.DATABASE_URL ||
-    importMetaEnv.MONGODB_URI ||
-    importMetaEnv.DATABASE_URL ||
-    ''
-  ).trim();
-};
-
-const hasMongoUri = (): boolean => Boolean(resolveMongoUri());
-
-const warnMissingMongoEnvOnce = (context: string) => {
-  if (warnedMissingMongoEnv) return;
-  warnedMissingMongoEnv = true;
-  console.warn(
-    `[BUILD] Skipping ${context}: Mongo connection env not configured (expected MONGODB_URI or DATABASE_URL).`,
-  );
 };
 
 const normalizeId = (value: unknown): string => {
@@ -143,10 +113,6 @@ const hasUsableArticleImage = (article: any): boolean =>
 
 const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
-  if (!hasMongoUri()) {
-    warnMissingMongoEnvOnce('prepared article media backfill');
-    return articles;
-  }
 
   const articlesNeedingBackfill = articles.filter((article) => !hasUsableArticleImage(article));
   if (articlesNeedingBackfill.length === 0) return articles;
@@ -240,13 +206,6 @@ const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[
 
 const hydrateArticleMediaRelations = async (articles: any[]): Promise<any[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
-  if (!hasMongoUri()) {
-    warnMissingMongoEnvOnce('article media hydration');
-    return articles.map((article) => ({
-      _id: normalizeId(article?._id) || undefined,
-      ...article,
-    }));
-  }
 
   const mediaIds = new Set<string>();
 
@@ -328,9 +287,9 @@ export async function getMongoConnection() {
   }
 
   try {
-    const mongoUri = resolveMongoUri();
+    const mongoUri = process.env.MONGODB_URI || import.meta.env.MONGODB_URI;
     if (!mongoUri) {
-      throw new Error('Mongo connection env not found (expected MONGODB_URI or DATABASE_URL)');
+      throw new Error('MONGODB_URI not found in process.env or import.meta.env');
     }
 
     console.log('🔌 [BUILD] Establishing MongoDB connection...');
