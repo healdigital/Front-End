@@ -99,15 +99,10 @@ const entityName = (value) => {
 
 const replaceCdnUrl = (url) => {
   if (!url) return url;
-  return String(url)
-    .replace(
-      /^https?:\/\/cdn\.lacuisinedebernard\.com\//i,
-      'https://lcdb.fra1.digitaloceanspaces.com/'
-    )
-    .replace(
-      /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
-      'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
-    );
+  return url.replace(
+    'https://cdn.lacuisinedebernard.com/',
+    'https://lcdb.fra1.digitaloceanspaces.com/'
+  );
 };
 
 const processArticleImageUrl = (article) => {

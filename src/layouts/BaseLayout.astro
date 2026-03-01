@@ -43,7 +43,9 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://lcdb.fra1.digitaloceanspaces.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.lacuisinedebernard.com" crossorigin />
     <link rel="dns-prefetch" href="//lcdb.fra1.digitaloceanspaces.com" />
+    <link rel="dns-prefetch" href="//cdn.lacuisinedebernard.com" />
     
     {jsonLd && jsonLd.length > 0 && jsonLd.map(schema => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
