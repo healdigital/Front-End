@@ -42,7 +42,6 @@ const toText = (value: any): string => {
 };
 
 const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
-const hasMongoBuildEnv = Boolean(process.env.MONGODB_URI || process.env.DATABASE_URL);
 
 export async function getStaticPaths() {
   let articles: any[] = [];
@@ -99,7 +98,7 @@ if (!article) {
 
 const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
 
-if (slug && hasMongoBuildEnv && !processArticleImageUrl(article)) {
+if (slug && !processArticleImageUrl(article)) {
   const hydratedArticle = await getArticleBySlugFromMongo(slug);
   if (hydratedArticle) {
     article = {
