@@ -9,7 +9,9 @@ const getBuildLimit = () => {
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
 
-const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+function normalizeSlug(value: any) {
+  return String(value || '').replace(/^\/+|\/+$/g, '');
+}
 
 export async function getStaticPaths() {
   if (import.meta.env.DEV) {
