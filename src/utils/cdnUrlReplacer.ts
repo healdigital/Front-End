@@ -7,15 +7,6 @@ const DEFAULT_PAYLOAD_API_URL =
   (typeof process !== 'undefined' &&
     (process.env.PUBLIC_PAYLOAD_API_URL || process.env.PUBLIC_TRANSLATE_API_URL)) ||
   'https://admin.lacuisinedebernard.com/api';
-const DIGITALOCEAN_SPACES_ORIGIN = 'https://lcdb.fra1.digitaloceanspaces.com';
-const LEGACY_WP_UPLOADS_ORIGINS = [
-  'https://lacuisinedebernard.com',
-  'http://lacuisinedebernard.com',
-  'https://www.lacuisinedebernard.com',
-  'http://www.lacuisinedebernard.com',
-  'https://cdn.lacuisinedebernard.com',
-  'http://cdn.lacuisinedebernard.com',
-];
 
 const getPayloadOrigin = (): string => {
   try {
@@ -28,32 +19,24 @@ const getPayloadOrigin = (): string => {
 export function replaceCdnUrl(url: string): string {
   if (!url) return url;
 
-  if (typeof url !== 'string') return url;
+  if (typeof url === 'string') {
+    if (url.startsWith('/api/') || url.startsWith('/media/')) {
+      return `${getPayloadOrigin()}${url}`;
+    }
 
-  if (url.startsWith('/api/') || url.startsWith('/media/')) {
-    return `${getPayloadOrigin()}${url}`;
-  }
+    if (url.startsWith('api/')) {
+      return `${getPayloadOrigin()}/${url}`;
+    }
 
-  if (url.startsWith('api/')) {
-    return `${getPayloadOrigin()}/${url}`;
-  }
-
-  if (url.startsWith('media/')) {
-    return `${getPayloadOrigin()}/${url}`;
-  }
-
-  let normalized = url;
-
-  for (const legacyOrigin of LEGACY_WP_UPLOADS_ORIGINS) {
-    if (normalized.startsWith(`${legacyOrigin}/wp-content/uploads/`)) {
-      normalized = normalized.replace(`${legacyOrigin}/wp-content/uploads/`, `${DIGITALOCEAN_SPACES_ORIGIN}/wp-content/uploads/`);
-      break;
+    if (url.startsWith('media/')) {
+      return `${getPayloadOrigin()}/${url}`;
     }
   }
 
-  return normalized.replace(
+  // Replace the old CDN URL with the new DigitalOcean Spaces URL
+  return url.replace(
     'https://cdn.lacuisinedebernard.com/',
-    `${DIGITALOCEAN_SPACES_ORIGIN}/`
+    'https://lcdb.fra1.digitaloceanspaces.com/'
   );
 }
 
@@ -118,6 +101,16 @@ export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): st
 export function processArticleImageUrl(article: any): string {
   if (!article) return '';
 
+  const extractFromHtml = (html?: string): string => {
+    if (!html || typeof html !== 'string') return '';
+    // Try src or data-src first
+    const match =
+      html.match(/<img[^>]+src=["']([^"']+)["']/i) ||
+      html.match(/<img[^>]+data-src=["']([^"']+)["']/i);
+    if (!match) return '';
+    return match[1] || '';
+  };
+
   // Check various possible image URL fields
   const possibleUrls = [
     article.featuredMedia?.sizes?.articleHero?.url,
@@ -133,6 +126,8 @@ export function processArticleImageUrl(article: any): string {
     article.featureImage,
     article.featuredImage?.url,
     article.featuredImageUrl,
+    extractFromHtml(article.content),
+    extractFromHtml(article.contentV2)
   ];
 
   // Find the first valid URL
