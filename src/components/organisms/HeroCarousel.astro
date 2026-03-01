@@ -117,7 +117,7 @@ const toHeroCategoryTag = (card: HeroCard): string => {
                 height="495"
                 sizes="(min-width: 768px) 300px, 262px"
                 data-fallback-src={card.imageFallback || card.image}
-                onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
+                onerror="const fallback=this.dataset.fallbackSrc;if(!fallback||this.dataset.fallbackApplied==='true'){this.onerror=null;return;}this.dataset.fallbackApplied='true';this.onerror=null;this.src=fallback;"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-black/72 via-black/30 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6">
