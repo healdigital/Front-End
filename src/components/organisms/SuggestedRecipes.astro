@@ -154,6 +154,7 @@ const totalRecipeCount = recipes.length;
 
       let activeFilter = 'toutes';
       let activePage = 1;
+      let paginationReady = false;
       const cardsPerPage = Number(section.getAttribute('data-suggested-page-size') || '') || 4;
       const totalAvailableCount = Number(section.getAttribute('data-suggested-total-count') || '') || cards.length;
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
@@ -300,7 +301,7 @@ const totalRecipeCount = recipes.length;
 
       const renderPagination = (totalPages) => {
         if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
-        paginationRoot.classList.toggle('hidden', totalPages <= 1);
+        paginationRoot.classList.toggle('hidden', !paginationReady || totalPages <= 1);
         paginationPages.innerHTML = '';
         createPageItems(totalPages).forEach((item) => {
           if (typeof item === 'string') {
@@ -561,16 +562,36 @@ const totalRecipeCount = recipes.length;
         });
       });
 
+      const revealPaginationAfterLoad = async () => {
+        if (paginationReady) return;
+        await hydrateSuggestedFromSearchIndex();
+        paginationReady = true;
+        applyFilters();
+      };
+
+      const schedulePaginationReveal = () => {
+        const start = () => {
+          if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(() => {
+              revealPaginationAfterLoad();
+            }, { timeout: 1200 });
+          } else {
+            window.setTimeout(() => {
+              revealPaginationAfterLoad();
+            }, 300);
+          }
+        };
+
+        if (document.readyState === 'complete') {
+          start();
+          return;
+        }
+
+        window.addEventListener('load', start, { once: true });
+      };
+
       applyFilters(true);
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => {
-          hydrateSuggestedFromSearchIndex();
-        }, { timeout: 1200 });
-      } else {
-        window.setTimeout(() => {
-          hydrateSuggestedFromSearchIndex();
-        }, 300);
-      }
+      schedulePaginationReveal();
     });
   }
 

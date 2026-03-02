@@ -733,7 +733,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               ))}
             </div>
 
-            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
+            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta hidden" data-home-pagination>
               <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-prev>
                 Pr&eacute;c&eacute;dent
               </button>
@@ -992,6 +992,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     let activeFilter = 'toutes';
     let activePage = 1;
+    let paginationReady = false;
     const cardsPerPage = Number(grid.getAttribute('data-recipes-page-size') || '') || 6;
     const totalRecipeCount = Number(grid.getAttribute('data-recipes-total-count') || '') || cards.length;
 
@@ -1014,7 +1015,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     const renderPagination = (totalPages) => {
       if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
 
-      paginationRoot.classList.toggle('hidden', totalPages <= 1);
+      paginationRoot.classList.toggle('hidden', !paginationReady || totalPages <= 1);
 
       paginationPages.innerHTML = '';
       const pageItems = createPageItems(totalPages);
@@ -1410,16 +1411,36 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       handlePageClick();
     });
 
+    const revealPaginationAfterLoad = async () => {
+      if (paginationReady) return;
+      await hydrateCardsFromSearchIndex();
+      paginationReady = true;
+      applyFilters();
+    };
+
+    const schedulePaginationReveal = () => {
+      const start = () => {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(() => {
+            revealPaginationAfterLoad();
+          }, { timeout: 1200 });
+        } else {
+          window.setTimeout(() => {
+            revealPaginationAfterLoad();
+          }, 300);
+        }
+      };
+
+      if (document.readyState === 'complete') {
+        start();
+        return;
+      }
+
+      window.addEventListener('load', start, { once: true });
+    };
+
     applyFilters(true);
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(() => {
-        hydrateCardsFromSearchIndex();
-      }, { timeout: 1200 });
-    } else {
-      window.setTimeout(() => {
-        hydrateCardsFromSearchIndex();
-      }, 300);
-    }
+    schedulePaginationReveal();
   }
 
   function setupViewToggle() {
