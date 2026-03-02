@@ -25,6 +25,7 @@ interface Props {
   embedded?: boolean;
   source?: string;
   offset?: number;
+  visibleCount?: number;
 }
 
 const {
@@ -32,6 +33,7 @@ const {
   embedded = false,
   source = '/home-recipes-index.json',
   offset = 0,
+  visibleCount = 4,
 } = Astro.props as Props;
 
 const recipeFilters = [
@@ -89,13 +91,14 @@ const getFilterValue = (recipe: Recipe): string => {
     <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
       {recipes.map((recipe, index) => (
         <div
-          class="suggested-card-shell"
+          class:list={['suggested-card-shell', index >= visibleCount && 'hidden']}
           data-suggested-card
           data-suggested-index={index}
           data-category={getFilterValue(recipe)}
           data-title={recipe.title.toLocaleLowerCase('fr')}
           data-description={recipe.description.toLocaleLowerCase('fr')}
           data-slug={recipe.slug}
+          aria-hidden={index >= visibleCount ? 'true' : 'false'}
         >
           <RecipeCard
             title={recipe.title}
@@ -546,20 +549,42 @@ const getFilterValue = (recipe: Recipe): string => {
       });
 
       applyFilters(true);
+    });
+  }
+
+  function scheduleSuggestedRecipes() {
+    const sections = Array.from(document.querySelectorAll('[data-suggested-recipes]'));
+    sections.forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
+      if (section.dataset.suggestedObserverBound === 'true') return;
+      section.dataset.suggestedObserverBound = 'true';
+
+      const start = () => setupSuggestedRecipes();
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          start();
+        }, {
+          rootMargin: '240px 0px',
+          threshold: 0.01,
+        });
+
+        observer.observe(section);
+        return;
+      }
+
       if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => {
-          hydrateSuggestedFromSearchIndex();
-        }, { timeout: 1200 });
+        window.requestIdleCallback(() => start(), { timeout: 1500 });
       } else {
-        window.setTimeout(() => {
-          hydrateSuggestedFromSearchIndex();
-        }, 300);
+        window.setTimeout(() => start(), 400);
       }
     });
   }
 
-  setupSuggestedRecipes();
-  document.addEventListener('astro:page-load', setupSuggestedRecipes);
+  scheduleSuggestedRecipes();
+  document.addEventListener('astro:page-load', scheduleSuggestedRecipes);
 </script>
 
 <style>

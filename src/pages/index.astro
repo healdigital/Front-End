@@ -599,11 +599,13 @@ const heroCards = normalizedArticles.length
 
 const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
+const HOME_VISIBLE_PAGE_SIZE = 6;
 const getHomeInitialRenderCount = () => {
   const envCount = Number(process.env.HOME_INITIAL_RENDER_COUNT);
   return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
+const SUGGESTED_VISIBLE_PAGE_SIZE = 4;
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
   return Number.isFinite(envCount) && envCount > 0 ? envCount : 30;
@@ -704,13 +706,14 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             >
               {browseRecipes.map((recipe, index) => (
                 <div
-                  class="home-recipe-card-shell"
+                  class:list={['home-recipe-card-shell', index >= HOME_VISIBLE_PAGE_SIZE && 'hidden']}
                   data-recipe-card
                   data-recipe-index={index}
                   data-category={recipe.filterKey}
                   data-title={recipe.title.toLocaleLowerCase('fr')}
                   data-description={recipe.description.toLocaleLowerCase('fr')}
                   data-slug={recipe.slug}
+                  aria-hidden={index >= HOME_VISIBLE_PAGE_SIZE ? 'true' : 'false'}
                 >
                   <RecipeCard
                     title={recipe.title}
@@ -947,6 +950,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             embedded
             source="/home-recipes-index.json"
             offset={10}
+            visibleCount={SUGGESTED_VISIBLE_PAGE_SIZE}
           />
         </div>
         <div class="home-sidebar-column">
@@ -1394,15 +1398,6 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     });
 
     applyFilters(true);
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(() => {
-        hydrateCardsFromSearchIndex();
-      }, { timeout: 1200 });
-    } else {
-      window.setTimeout(() => {
-        hydrateCardsFromSearchIndex();
-      }, 300);
-    }
   }
 
   function setupViewToggle() {
