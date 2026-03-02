@@ -571,15 +571,9 @@ const totalRecipeCount = recipes.length;
 
       const schedulePaginationReveal = () => {
         const start = () => {
-          if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(() => {
-              revealPaginationAfterLoad();
-            }, { timeout: 1200 });
-          } else {
-            window.setTimeout(() => {
-              revealPaginationAfterLoad();
-            }, 300);
-          }
+          window.requestAnimationFrame(() => {
+            revealPaginationAfterLoad();
+          });
         };
 
         if (document.readyState === 'complete') {
