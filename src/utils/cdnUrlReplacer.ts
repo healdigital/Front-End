@@ -33,11 +33,15 @@ export function replaceCdnUrl(url: string): string {
     }
   }
 
-  // Replace the old CDN URL with the new DigitalOcean Spaces URL
-  return url.replace(
-    'https://cdn.lacuisinedebernard.com/',
-    'https://lcdb.fra1.digitaloceanspaces.com/'
-  );
+  return url
+    .replace(
+      /^https?:\/\/cdn\.lacuisinedebernard\.com\//i,
+      'https://lcdb.fra1.digitaloceanspaces.com/'
+    )
+    .replace(
+      /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+      'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+    );
 }
 
 /**
