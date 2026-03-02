@@ -306,7 +306,7 @@ const popularArticles = [
       };
     };
 
-    blocks.forEach((block) => {
+    const hydrateBlock = (block) => {
       if (!(block instanceof HTMLElement)) return;
       if (block.dataset.workshopLoaded === 'loading' || block.dataset.workshopLoaded === 'true') return;
 
@@ -429,6 +429,34 @@ const popularArticles = [
         .finally(() => {
           window.clearTimeout(timeout);
         });
+    };
+
+    blocks.forEach((block) => {
+      if (!(block instanceof HTMLElement)) return;
+      if (block.dataset.workshopObserverBound === 'true') return;
+      block.dataset.workshopObserverBound = 'true';
+
+      const start = () => hydrateBlock(block);
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          start();
+        }, {
+          rootMargin: '240px 0px',
+          threshold: 0.01,
+        });
+
+        observer.observe(block);
+        return;
+      }
+
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => start(), { timeout: 1800 });
+      } else {
+        window.setTimeout(() => start(), 400);
+      }
     });
   }
 
