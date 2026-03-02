@@ -23,10 +23,6 @@ interface Props {
   category?: string;
   /** Controls the visual state of the favorite icon. */
   isFavorite?: boolean;
-  /** Image loading hint for above-the-fold usage. */
-  imageLoading?: 'eager' | 'lazy';
-  /** Fetch priority hint for above-the-fold usage. */
-  imageFetchPriority?: 'high' | 'low' | 'auto';
 }
 
 const {
@@ -39,8 +35,6 @@ const {
   difficulty,
   category = 'RECETTE',
   isFavorite = false,
-  imageLoading = 'lazy',
-  imageFetchPriority = 'low',
 } = Astro.props;
 
 const MAX_LENGTH = 200;
@@ -56,8 +50,8 @@ const truncatedDescription = description.length > MAX_LENGTH
       src={image}
       alt={title}
       class="w-full h-full object-contain object-center bg-[#f7f5ef] transition-transform duration-500 group-hover:scale-105"
-      loading={imageLoading}
-      fetchpriority={imageFetchPriority}
+      loading="lazy"
+      fetchpriority="low"
       decoding="async"
       width="500"
       height="667"
