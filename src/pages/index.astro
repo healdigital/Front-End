@@ -602,13 +602,13 @@ const featuredRecipe = recipePool[0] || fallbackRecipes[0];
 const HOME_VISIBLE_PAGE_SIZE = 6;
 const getHomeInitialRenderCount = () => {
   const envCount = Number(process.env.HOME_INITIAL_RENDER_COUNT);
-  return Number.isFinite(envCount) && envCount > 0 ? envCount : HOME_VISIBLE_PAGE_SIZE;
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
 const SUGGESTED_VISIBLE_PAGE_SIZE = 4;
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
-  return Number.isFinite(envCount) && envCount > 0 ? envCount : SUGGESTED_VISIBLE_PAGE_SIZE;
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 30;
 };
 const suggestedRecipesPool = normalizedArticles.length > 10
   ? normalizedArticles.slice(10)
