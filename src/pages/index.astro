@@ -13,7 +13,7 @@ import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.ast
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
-import { buildWpPortraitVariantUrl, processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import { buildWpPortraitVariantUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
@@ -532,6 +532,38 @@ const getRecipeTimeLabel = (article: any): string => {
   });
 };
 
+const normalizeLegacyUploadsUrl = (value: any): string => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const normalized = replaceCdnUrl(raw);
+  return normalized.replace(
+    /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+    'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+  );
+};
+
+const getListingImageUrl = (article: any): string => {
+  const possibleUrls = [
+    article?.featuredMedia?.sizes?.articleHero?.url,
+    article?.featuredMedia?.sizes?.gallery?.url,
+    article?.featuredMedia?.url,
+    article?.featuredMedia?.value?.url,
+    article?.featuredImage?.sizes?.articleHero?.url,
+    article?.featuredImage?.sizes?.gallery?.url,
+    article?.featuredImage?.url,
+    article?.featured_image?.asset?.url,
+    article?.featured_image?.url,
+    article?.featured_image_url,
+    article?.featured_img_url,
+    article?.featureImage,
+    article?.featuredImageUrl,
+  ];
+
+  const imageUrl = possibleUrls.find((url) => url && typeof url === 'string');
+  return normalizeLegacyUploadsUrl(imageUrl);
+};
+
 const buildRecipeFromArticle = (article: any, index: number) => {
   const title = getTitle(article);
   const slug = getSlug(article);
@@ -539,7 +571,7 @@ const buildRecipeFromArticle = (article: any, index: number) => {
 
   const categoryLabel = getCategoryLabel(article);
   const filterKey = getFilterKey(categoryLabel);
-  const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
+  const fallbackImage = getListingImageUrl(article) || fallbackImages[index % fallbackImages.length];
   const image = buildWpPortraitVariantUrl(fallbackImage) || fallbackImage;
   const tagLabel = getRecipeTagLabel(categoryLabel, filterKey);
   const timeLabel = getRecipeTimeLabel(article);
@@ -1077,7 +1109,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     };
 
     const toOptimizedCardImage = (value = '') => {
-      const raw = String(value || '').trim();
+      const raw = normalizeLegacyUploadsUrl(value);
       if (raw.startsWith('/api/') || raw.startsWith('/media/')) return `${payloadAssetOrigin}${raw}`;
       if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
 
@@ -1247,11 +1279,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               '';
 
             const filterKey = getFilterKey(categoryLabel);
-            const originalImage =
+            const originalImage = normalizeLegacyUploadsUrl(
               record?.featured_image?.url ||
               record?.featuredImage?.url ||
               record?.image ||
-              '';
+              ''
+            );
 
             recipes.push({
               slug,

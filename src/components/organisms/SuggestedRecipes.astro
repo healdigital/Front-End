@@ -174,6 +174,13 @@ const totalRecipeCount = recipes.length;
       };
 
       const normalizeSlug = (value = '') => String(value).replace(/^\/+|\/+$/g, '');
+      const normalizeLegacyUploadsUrl = (value = '') =>
+        String(value || '')
+          .trim()
+          .replace(
+            /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+            'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+          );
       const toRecipeTagLabel = (value = '') => {
         const clean = String(value || '').trim();
         return clean ? clean.toUpperCase() : 'RECETTE';
@@ -195,7 +202,7 @@ const totalRecipeCount = recipes.length;
       };
 
       const toOptimizedCardImage = (value = '') => {
-        const raw = String(value || '').trim();
+        const raw = normalizeLegacyUploadsUrl(value);
         if (raw.startsWith('/api/') || raw.startsWith('/media/')) return `${payloadAssetOrigin}${raw}`;
         if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
 
@@ -395,11 +402,12 @@ const totalRecipeCount = recipes.length;
                 record?.createdAt ||
                 '';
 
-              const originalImage =
+              const originalImage = normalizeLegacyUploadsUrl(
                 record?.featured_image?.url ||
                 record?.featuredImage?.url ||
                 record?.image ||
-                '';
+                ''
+              );
 
               recipes.push({
                 slug,
