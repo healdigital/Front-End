@@ -605,8 +605,6 @@ const getHomeInitialRenderCount = () => {
   return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
-const initialBrowseRecipes = browseRecipes.slice(0, HOME_VISIBLE_PAGE_SIZE);
-const totalBrowseRecipeCount = Math.max(recipePool.length - 1, browseRecipes.length);
 const SUGGESTED_VISIBLE_PAGE_SIZE = 4;
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
@@ -701,24 +699,22 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               </div>
             </div>
 
-            <div
-              class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
-              data-recipe-grid
-              data-recipes-source="/home-recipes-index.json"
-              data-recipes-total-count={totalBrowseRecipeCount}
-              data-recipes-page-size={HOME_VISIBLE_PAGE_SIZE}
-            >
-              {initialBrowseRecipes.map((recipe, index) => (
-                <div
-                  class="home-recipe-card-shell"
-                  data-recipe-card
-                  data-recipe-index={index}
-                  data-category={recipe.filterKey}
-                  data-title={recipe.title.toLocaleLowerCase('fr')}
-                  data-description={recipe.description.toLocaleLowerCase('fr')}
-                  data-slug={recipe.slug}
-                  aria-hidden="false"
-                >
+              <div
+                class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
+                data-recipe-grid
+                data-recipes-source="/home-recipes-index.json"
+              >
+                {browseRecipes.map((recipe, index) => (
+                  <div
+                    class:list={['home-recipe-card-shell', index >= HOME_VISIBLE_PAGE_SIZE && 'hidden']}
+                    data-recipe-card
+                    data-recipe-index={index}
+                    data-category={recipe.filterKey}
+                    data-title={recipe.title.toLocaleLowerCase('fr')}
+                    data-description={recipe.description.toLocaleLowerCase('fr')}
+                    data-slug={recipe.slug}
+                    aria-hidden={index >= HOME_VISIBLE_PAGE_SIZE ? 'true' : 'false'}
+                  >
                   <RecipeCard
                     title={recipe.title}
                     description={recipe.description}
@@ -733,7 +729,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               ))}
             </div>
 
-            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta hidden" data-home-pagination>
+            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
               <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-prev>
                 Pr&eacute;c&eacute;dent
               </button>
@@ -992,9 +988,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     let activeFilter = 'toutes';
     let activePage = 1;
-    let paginationReady = true;
-    const cardsPerPage = Number(grid.getAttribute('data-recipes-page-size') || '') || 6;
-    const totalRecipeCount = Number(grid.getAttribute('data-recipes-total-count') || '') || cards.length;
+    const cardsPerPage = 6;
 
     const createPageItems = (totalPages) => {
       if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -1015,7 +1009,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     const renderPagination = (totalPages) => {
       if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
 
-      paginationRoot.classList.toggle('hidden', !paginationReady || totalPages <= 1);
+      paginationRoot.classList.toggle('hidden', totalPages <= 1);
 
       paginationPages.innerHTML = '';
       const pageItems = createPageItems(totalPages);
@@ -1327,11 +1321,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     const applyFilters = (resetPage = false) => {
       const filteredCards = getFilteredCards();
-      const knownTotalCount =
-        activeFilter === 'toutes' && grid?.dataset.recipesHydrated !== 'true'
-          ? Math.max(totalRecipeCount, filteredCards.length)
-          : filteredCards.length;
-      const totalPages = Math.max(1, Math.ceil(knownTotalCount / cardsPerPage));
+      const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
       if (resetPage) {
         activePage = 1;
       } else {
@@ -1388,7 +1378,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     });
 
     paginationNext?.addEventListener('click', async () => {
-      if (grid?.dataset.recipesHydrated !== 'true') {
+      const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+      if (activePage >= totalPagesBeforeHydration && grid?.dataset.recipesHydrated !== 'true') {
         await hydrateCardsFromSearchIndex();
       }
       const totalPages = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
@@ -1398,18 +1389,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     });
 
     paginationPages?.addEventListener('click', (event) => {
-      const handlePageClick = async () => {
-        const target = event.target;
-        if (!(target instanceof HTMLElement)) return;
-        const page = Number(target.getAttribute('data-page') || '');
-        if (!Number.isFinite(page) || page <= 0) return;
-        if (page > 1 && grid?.dataset.recipesHydrated !== 'true') {
-          await hydrateCardsFromSearchIndex();
-        }
-        activePage = page;
-        applyFilters();
-      };
-      handlePageClick();
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const page = Number(target.getAttribute('data-page') || '');
+      if (!Number.isFinite(page) || page <= 0) return;
+      activePage = page;
+      applyFilters();
     });
 
     applyFilters(true);

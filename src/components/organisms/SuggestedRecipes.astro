@@ -55,8 +55,6 @@ const getFilterValue = (recipe: Recipe): string => {
   if (normalized.includes('sale')) return 'salees';
   return 'toutes';
 };
-const initialRecipes = recipes.slice(0, visibleCount);
-const totalRecipeCount = recipes.length;
 ---
 
 <section
@@ -64,8 +62,6 @@ const totalRecipeCount = recipes.length;
   data-suggested-recipes
   data-suggested-source={source}
   data-suggested-offset={offset}
-  data-suggested-total-count={totalRecipeCount}
-  data-suggested-page-size={visibleCount}
 >
   {!embedded && (
     <div
@@ -93,16 +89,16 @@ const totalRecipeCount = recipes.length;
     </div>
 
     <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
-      {initialRecipes.map((recipe, index) => (
+      {recipes.map((recipe, index) => (
         <div
-          class="suggested-card-shell"
+          class:list={['suggested-card-shell', index >= visibleCount && 'hidden']}
           data-suggested-card
           data-suggested-index={index}
           data-category={getFilterValue(recipe)}
           data-title={recipe.title.toLocaleLowerCase('fr')}
           data-description={recipe.description.toLocaleLowerCase('fr')}
           data-slug={recipe.slug}
-          aria-hidden="false"
+          aria-hidden={index >= visibleCount ? 'true' : 'false'}
         >
           <RecipeCard
             title={recipe.title}
@@ -118,7 +114,7 @@ const totalRecipeCount = recipes.length;
       ))}
     </div>
 
-    <div class="mt-10 pt-6 border-t border-[#D8D2C2] flex items-center flex-wrap justify-between gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta hidden" data-suggested-pagination>
+    <div class="mt-10 pt-6 border-t border-[#D8D2C2] flex items-center flex-wrap justify-between gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-suggested-pagination>
       <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-suggested-prev>
         Pr&eacute;c&eacute;dent
       </button>
@@ -154,9 +150,7 @@ const totalRecipeCount = recipes.length;
 
       let activeFilter = 'toutes';
       let activePage = 1;
-      let paginationReady = true;
-      const cardsPerPage = Number(section.getAttribute('data-suggested-page-size') || '') || 4;
-      const totalAvailableCount = Number(section.getAttribute('data-suggested-total-count') || '') || cards.length;
+      const cardsPerPage = 4;
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
       const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
 
@@ -308,7 +302,7 @@ const totalRecipeCount = recipes.length;
 
       const renderPagination = (totalPages) => {
         if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
-        paginationRoot.classList.toggle('hidden', !paginationReady || totalPages <= 1);
+        paginationRoot.classList.toggle('hidden', totalPages <= 1);
         paginationPages.innerHTML = '';
         createPageItems(totalPages).forEach((item) => {
           if (typeof item === 'string') {
@@ -482,11 +476,7 @@ const totalRecipeCount = recipes.length;
 
       const applyFilters = (resetPage = false) => {
         const filteredCards = getFilteredCards();
-        const knownTotalCount =
-          activeFilter === 'toutes' && grid?.dataset.suggestedHydrated !== 'true'
-            ? Math.max(totalAvailableCount, filteredCards.length)
-            : filteredCards.length;
-        const totalPages = Math.max(1, Math.ceil(knownTotalCount / cardsPerPage));
+        const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
         if (resetPage) {
           activePage = 1;
         } else {
@@ -538,7 +528,8 @@ const totalRecipeCount = recipes.length;
       });
 
       paginationNext?.addEventListener('click', async () => {
-        if (grid?.dataset.suggestedHydrated !== 'true') {
+        const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+        if (activePage >= totalPagesBeforeHydration && grid?.dataset.suggestedHydrated !== 'true') {
           await hydrateSuggestedFromSearchIndex();
         }
         const totalPages = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
@@ -548,18 +539,12 @@ const totalRecipeCount = recipes.length;
       });
 
       paginationPages?.addEventListener('click', (event) => {
-        const handlePageClick = async () => {
-          const target = event.target;
-          if (!(target instanceof HTMLElement)) return;
-          const page = Number(target.getAttribute('data-page') || '');
-          if (!Number.isFinite(page) || page <= 0) return;
-          if (page > 1 && grid?.dataset.suggestedHydrated !== 'true') {
-            await hydrateSuggestedFromSearchIndex();
-          }
-          activePage = page;
-          applyFilters();
-        };
-        handlePageClick();
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const page = Number(target.getAttribute('data-page') || '');
+        if (!Number.isFinite(page) || page <= 0) return;
+        activePage = page;
+        applyFilters();
       });
 
       viewButtons.forEach((btn) => {
