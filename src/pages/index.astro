@@ -645,8 +645,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                   src={featuredRecipe.image}
                   alt={featuredRecipe.title}
                   class="w-full md:h-full object-contain bg-[#f7f5ef]"
-                  loading="lazy"
-                  fetchpriority="low"
+                  loading="eager"
+                  fetchpriority="auto"
                   decoding="async"
                   width="1024"
                   height="1365"
@@ -728,6 +728,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                     prepTime={recipe.prepTime}
                     difficulty={recipe.difficulty}
                     slug={recipe.slug}
+                    imageLoading={index < 4 ? 'eager' : 'lazy'}
+                    imageFetchPriority={index < 2 ? 'auto' : 'low'}
                   />
                 </div>
               ))}
