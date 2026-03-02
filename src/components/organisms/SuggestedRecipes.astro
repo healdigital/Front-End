@@ -26,6 +26,7 @@ interface Props {
   source?: string;
   offset?: number;
   visibleCount?: number;
+  totalCount?: number;
 }
 
 const {
@@ -34,6 +35,7 @@ const {
   source = '/home-recipes-index.json',
   offset = 0,
   visibleCount = 4,
+  totalCount = recipes.length,
 } = Astro.props as Props;
 
 const recipeFilters = [
@@ -55,7 +57,7 @@ const getFilterValue = (recipe: Recipe): string => {
   if (normalized.includes('sale')) return 'salees';
   return 'toutes';
 };
-const totalRecipeCount = recipes.length;
+const totalRecipeCount = totalCount;
 ---
 
 <section
