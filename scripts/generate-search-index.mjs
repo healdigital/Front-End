@@ -5,24 +5,41 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const preparedJsonPath = path.join(process.cwd(), 'prepared-articles.json');
 
 async function generateSearchIndex() {
   try {
     console.log('[SEARCH] Generating search index...');
 
     const searchLimitRaw = Number(process.env.SEARCH_INDEX_LIMIT);
-    if (Number.isFinite(searchLimitRaw) && searchLimitRaw > 0) {
-      process.env.MAX_SSG_ARTICLES = String(searchLimitRaw);
-      console.log(`[SEARCH] Using SEARCH_INDEX_LIMIT=${searchLimitRaw}`);
+    const hasSearchLimit = Number.isFinite(searchLimitRaw) && searchLimitRaw > 0;
+    if (hasSearchLimit) {
+      console.log(`[SEARCH] Using SEARCH_INDEX_LIMIT=${searchLimitRaw} for search-index output only`);
     }
 
-    // Dynamic import keeps this script compatible with tsx in CJS/ESM contexts.
-    const { getAllArticlesFromMongo: getArticles } = await import('../src/lib/mongo.server.ts');
-    let articles = await getArticles();
+    let articles = [];
+
+    if (fs.existsSync(preparedJsonPath)) {
+      try {
+        const prepared = JSON.parse(fs.readFileSync(preparedJsonPath, 'utf8'));
+        if (Array.isArray(prepared) && prepared.length > 0) {
+          articles = prepared;
+          console.log(`[SEARCH] Using prepared-articles.json (${prepared.length} articles).`);
+        }
+      } catch (error) {
+        console.warn('[SEARCH] Failed to read prepared-articles.json, falling back to mongo/API:', error?.message || error);
+      }
+    }
+
+    if (!Array.isArray(articles) || articles.length === 0) {
+      // Dynamic import keeps this script compatible with tsx in CJS/ESM contexts.
+      const { getAllArticlesFromMongo: getArticles } = await import('../src/lib/mongo.server.ts');
+      articles = await getArticles();
+    }
 
     if (!Array.isArray(articles) || articles.length === 0) {
       const payloadApiUrl = process.env.PUBLIC_PAYLOAD_API_URL || process.env.PAYLOAD_API_URL;
-      const targetLimit = Number.isFinite(searchLimitRaw) && searchLimitRaw > 0 ? searchLimitRaw : undefined;
+      const targetLimit = undefined;
       if (payloadApiUrl) {
         console.warn('[SEARCH] Mongo returned 0 articles. Falling back to Payload API.');
         const pageSize = 100;
@@ -52,11 +69,7 @@ async function generateSearchIndex() {
           page += 1;
         }
 
-        if (targetLimit) {
-          articles = fetched.slice(0, targetLimit);
-        } else {
-          articles = fetched;
-        }
+        articles = fetched;
       } else {
         console.warn('[SEARCH] PUBLIC_PAYLOAD_API_URL not set; cannot fallback to Payload API.');
       }
@@ -68,6 +81,7 @@ async function generateSearchIndex() {
     const searchIndex = [];
     const homeRecipesIndex = [];
     const total = articles.length;
+    const limitedArticles = hasSearchLimit ? articles.slice(0, searchLimitRaw) : articles;
 
     const stripHtml = (value) => String(value || '').replace(/<[^>]*>/g, ' ');
     const countWords = (value) =>
@@ -200,7 +214,9 @@ async function generateSearchIndex() {
         ].join(' ').toLowerCase(),
       };
 
-      searchIndex.push(processedArticle);
+      if (!hasSearchLimit || i < limitedArticles.length) {
+        searchIndex.push(processedArticle);
+      }
       homeRecipesIndex.push({
         id: processedArticle.id,
         title: processedArticle.title,
