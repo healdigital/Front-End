@@ -605,6 +605,7 @@ const getHomeInitialRenderCount = () => {
   return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
+const totalBrowseRecipeCount = Math.max(recipePool.length - 1, browseRecipes.length);
 const SUGGESTED_VISIBLE_PAGE_SIZE = 4;
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
@@ -703,6 +704,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
                 data-recipe-grid
                 data-recipes-source="/home-recipes-index.json"
+                data-recipes-total-count={totalBrowseRecipeCount}
               >
                 {browseRecipes.map((recipe, index) => (
                   <div
@@ -989,6 +991,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     let activeFilter = 'toutes';
     let activePage = 1;
     const cardsPerPage = 6;
+    const totalRecipeCount = Number(grid.getAttribute('data-recipes-total-count') || '') || cards.length;
 
     const createPageItems = (totalPages) => {
       if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -1321,7 +1324,11 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     const applyFilters = (resetPage = false) => {
       const filteredCards = getFilteredCards();
-      const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
+      const knownTotalCount =
+        activeFilter === 'toutes' && grid?.dataset.recipesHydrated !== 'true'
+          ? Math.max(totalRecipeCount, filteredCards.length)
+          : filteredCards.length;
+      const totalPages = Math.max(1, Math.ceil(knownTotalCount / cardsPerPage));
       if (resetPage) {
         activePage = 1;
       } else {
@@ -1393,8 +1400,15 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       if (!(target instanceof HTMLElement)) return;
       const page = Number(target.getAttribute('data-page') || '');
       if (!Number.isFinite(page) || page <= 0) return;
-      activePage = page;
-      applyFilters();
+      const handlePageClick = async () => {
+        const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+        if (page > totalPagesBeforeHydration && grid?.dataset.recipesHydrated !== 'true') {
+          await hydrateCardsFromSearchIndex();
+        }
+        activePage = page;
+        applyFilters();
+      };
+      handlePageClick();
     });
 
     applyFilters(true);

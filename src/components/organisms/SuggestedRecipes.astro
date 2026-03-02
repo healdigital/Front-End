@@ -55,6 +55,7 @@ const getFilterValue = (recipe: Recipe): string => {
   if (normalized.includes('sale')) return 'salees';
   return 'toutes';
 };
+const totalRecipeCount = recipes.length;
 ---
 
 <section
@@ -62,6 +63,7 @@ const getFilterValue = (recipe: Recipe): string => {
   data-suggested-recipes
   data-suggested-source={source}
   data-suggested-offset={offset}
+  data-suggested-total-count={totalRecipeCount}
 >
   {!embedded && (
     <div
@@ -151,6 +153,7 @@ const getFilterValue = (recipe: Recipe): string => {
       let activeFilter = 'toutes';
       let activePage = 1;
       const cardsPerPage = 4;
+      const totalAvailableCount = Number(section.getAttribute('data-suggested-total-count') || '') || cards.length;
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
       const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
 
@@ -476,7 +479,11 @@ const getFilterValue = (recipe: Recipe): string => {
 
       const applyFilters = (resetPage = false) => {
         const filteredCards = getFilteredCards();
-        const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
+        const knownTotalCount =
+          activeFilter === 'toutes' && grid?.dataset.suggestedHydrated !== 'true'
+            ? Math.max(totalAvailableCount, filteredCards.length)
+            : filteredCards.length;
+        const totalPages = Math.max(1, Math.ceil(knownTotalCount / cardsPerPage));
         if (resetPage) {
           activePage = 1;
         } else {
@@ -543,8 +550,15 @@ const getFilterValue = (recipe: Recipe): string => {
         if (!(target instanceof HTMLElement)) return;
         const page = Number(target.getAttribute('data-page') || '');
         if (!Number.isFinite(page) || page <= 0) return;
-        activePage = page;
-        applyFilters();
+        const handlePageClick = async () => {
+          const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+          if (page > totalPagesBeforeHydration && grid?.dataset.suggestedHydrated !== 'true') {
+            await hydrateSuggestedFromSearchIndex();
+          }
+          activePage = page;
+          applyFilters();
+        };
+        handlePageClick();
       });
 
       viewButtons.forEach((btn) => {
