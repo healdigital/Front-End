@@ -992,7 +992,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
     let activeFilter = 'toutes';
     let activePage = 1;
-    let paginationReady = false;
+    let paginationReady = true;
     const cardsPerPage = Number(grid.getAttribute('data-recipes-page-size') || '') || 6;
     const totalRecipeCount = Number(grid.getAttribute('data-recipes-total-count') || '') || cards.length;
 
@@ -1412,30 +1412,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       handlePageClick();
     });
 
-    const revealPaginationAfterLoad = async () => {
-      if (paginationReady) return;
-      await hydrateCardsFromSearchIndex();
-      paginationReady = true;
-      applyFilters();
-    };
-
-    const schedulePaginationReveal = () => {
-      const start = () => {
-        window.requestAnimationFrame(() => {
-          revealPaginationAfterLoad();
-        });
-      };
-
-      if (document.readyState === 'complete') {
-        start();
-        return;
-      }
-
-      window.addEventListener('load', start, { once: true });
-    };
-
     applyFilters(true);
-    schedulePaginationReveal();
   }
 
   function setupViewToggle() {
