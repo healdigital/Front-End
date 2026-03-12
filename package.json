@@ -3,10 +3,10 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "set NODE_ENV=development && astro dev",
+    "dev": "NODE_ENV=development node ./node_modules/astro/astro.js dev",
     "build": "node scripts/build-site.mjs",
-    "preview": "astro preview",
-    "astro": "astro",
+    "preview": "node ./node_modules/astro/astro.js preview",
+    "astro": "node ./node_modules/astro/astro.js",
     "payload": "tsx server.ts",
     "build:prepared": "node scripts/build-prepared-articles.mjs",
     "update:prepared": "node scripts/update-prepared-article.mjs",

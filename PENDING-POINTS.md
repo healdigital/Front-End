@@ -1,11 +1,11 @@
-# Pending Points (Updated: 2026-02-27)
+# Pending Points (Updated: 2026-03-02)
 ## Client-Promised Pending (Must Track)
 
 - [x] Default site language must remain French (`fr`) on first load.
 - [x] Translation with review workflow (admin-side): automatic translation + human review/approve before publish.
 - [x] Per-language publish control: formal draft/publish workflow by language.
 - [x] Print-friendly recipe card finishing for new block-rendered recipes.
-- [ ] Final performance sign-off with Lighthouse + real-device metrics (LCP/CLS/FCP).
+- [x] Final performance sign-off with Lighthouse + real-device metrics (LCP/CLS/FCP). (Captured results: Mobile Performance `71`, Desktop Performance `89`, Accessibility `89/90`, Best Practices `88/92`, SEO `92/92`.)
 
 ## Recipe Builder UX Audit (Client Notion/PDF) - Phase Plan
 
@@ -53,7 +53,7 @@
 
 - [x] Recipe builder nested validation merge fix applied for partial edit payloads (filled ingredients/steps/servings no longer fail incorrectly).
 - [x] Recipe builder QA on staging end-to-end
-- [ ] Client review pass on the new Payload article editor UX
+- [x] Client review pass on the new Payload article editor UX
 
 ### Phase Meaning
 
@@ -110,15 +110,19 @@
 
 ## Homepage Performance Pending
 
-- [ ] Reduce homepage initial render payload.
-- [ ] Lower `HOME_INITIAL_RENDER_COUNT` (current default `48` -> target `12`).
-- [ ] Lower `SUGGESTED_INITIAL_RENDER_COUNT` (current default `30` -> target `8`).
+- [x] Reduce homepage initial render payload.
+- [x] Lower `HOME_INITIAL_RENDER_COUNT` (kept unchanged intentionally because client wants full homepage article coverage with pagination).
+- [x] Lower `SUGGESTED_INITIAL_RENDER_COUNT` (kept unchanged intentionally because client does not want this reduction).
 - [x] Defer workshops live API hydration with viewport trigger (`IntersectionObserver`) instead of immediate first-load execution.
 - [x] Reduce translation overhead on first paint.
 - [x] Skip initial full-page `changeLanguage(...)` run when saved language equals source/default language.
 - [x] Improve homepage image delivery without crop regression.
-- [ ] Add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority. (`sizes` + priority cleanup done; no explicit `srcset` layer added yet)
+- [x] Add/validate `srcset + sizes`, keep portrait-safe rendering, keep only true LCP image as high priority. (`sizes` + priority cleanup done; explicit `srcset` skipped intentionally to avoid portrait/crop regressions)
 - [x] Add below-the-fold render deferral (`content-visibility: auto` with intrinsic size hints) on heavy homepage sections.
+- [x] Stop legacy WordPress image request storm on homepage/search hydration:
+- [x] rewrite old `lacuisinedebernard.com/wp-content/uploads/...` URLs to DigitalOcean Spaces
+- [x] stop using article-body image extraction as featured-image fallback for cards/search
+- [x] lazy-assign hydrated card image `src` only when the card becomes visible
 
 ## QA Pending
 
@@ -146,7 +150,7 @@
 - [ ] Ads/Analytics: Mediavine integration (global async script in layout).
 - [ ] Ads/Analytics: staging validation after Mediavine (ads load, no console errors).
 - [ ] Ads/Analytics: `ads.txt` / privacy / GDPR checks on staging.
-- [ ] Payload: migrate/backfill existing legacy articles to new V2 editor schema (no data loss, with frontend parity).
-- [ ] ContentV2: build legacy migration tool (dry-run + batch + rollback logs).
-- [ ] ContentV2: add migration safety fields (`migrationStatus`, `migrationNotes`, `legacySnapshot`).
-- [ ] ContentV2: migration QA workflow (legacy vs V2 + JSON-LD parity).
+- [ ] Payload: migrate/backfill existing legacy articles to new V2 editor schema (on hold by client;    migration tooling/code was reverted from repo).
+- [ ] ContentV2: build legacy migration tool (on hold by client; not active in current backend code).
+- [ ] ContentV2: add migration safety fields (`migrationStatus`, `migrationNotes`, `legacySnapshot`) (on hold by client; not active in current backend code).
+- [ ] ContentV2: migration QA workflow (legacy vs V2 + JSON-LD parity) (on hold by client).

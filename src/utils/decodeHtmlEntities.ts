@@ -22,7 +22,7 @@ export function decodeHtmlEntities(text: string): string {
       return String.fromCodePoint(code);
     } catch (e) {
       return match;
-    }
+    } 
   });
 
   // Decode numeric entities (hexadecimal) - &#xE9; &#xe9;

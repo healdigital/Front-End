@@ -50,7 +50,7 @@ try {
   }
   run('npm run generate-search-index', env);
 
-  run('npx astro build', env);
+  run('node ./node_modules/astro/astro.js build', env);
 
   if (autoAlgoliaIndex) {
     console.log('ALGOLIA_AUTO_INDEX enabled: indexing articles...');
