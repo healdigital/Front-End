@@ -1,32 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+import VideosPageContent from "../components/VideosPageContent.astro";
 ---
 
-<BaseLayout title="Videos">
+<BaseLayout title="Videos" loadAds={true}>
   <StaticPage title="Videos" subtitle="Cooking videos and tutorials">
-    <StaticPageContent
-      slug="videos"
-      sourceUrl="https://lacuisinedebernard.com/videos/"
-    >
-      <p>
-        The video library brings recipes to life with step-by-step demonstrations,
-        technique breakdowns, and seasonal ideas.
-      </p>
-
-      <h2>Video formats</h2>
-      <ul>
-        <li>Quick how-to recipes</li>
-        <li>Technique-focused mini lessons</li>
-        <li>Seasonal menus and favorites</li>
-        <li>Kitchen tips and shortcuts</li>
-      </ul>
-
-      <p>
-        New video collections will be added regularly. In the meantime, explore
-        the latest written recipes in <a href="/articles">Articles</a>.
-      </p>
-    </StaticPageContent>
+    <VideosPageContent />
   </StaticPage>
 </BaseLayout>

@@ -1,11 +1,29 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import StaticPageContent from "../components/StaticPageContent.astro";
+
+const navLinks = [
+  {
+    label: "Mes livres",
+    description: "Tous les ouvrages, extraits et aperçus.",
+    active: true,
+  },
+  {
+    label: "Chocolat maison",
+    description: "Le livre consacré au chocolat et ses vidéos.",
+    href: "/chocolat-maison/",
+  },
+];
 ---
 
-<BaseLayout title="Mes Livres">
-  <StaticPage title="Mes Livres" subtitle="My Books">
+<BaseLayout title="Mes livres">
+  <StaticPage
+    title="Mes livres"
+    subtitle="Sommaires, aperçus et extraits de mes ouvrages."
+    className="menu-page menu-page--books"
+    navLinks={navLinks}
+  >
     <StaticPageContent
       slug="mes-livres"
       sourceUrl="https://lacuisinedebernard.com/mes-livres/"

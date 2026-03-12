@@ -1,23 +1,32 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import StaticPageContent from "../components/StaticPageContent.astro";
+
+const navLinks = [
+  {
+    label: "Index des recettes sucrées avec photo",
+    description: "Version illustrée, idéale pour parcourir les desserts.",
+    href: "/recettes-sucrees/",
+  },
+  {
+    label: "Index des recettes sucrées sans photo",
+    description: "Version compacte, centrée sur les titres des recettes.",
+    active: true,
+  },
+];
 ---
 
-<BaseLayout title="Sweet Recipes (without photos)">
-  <StaticPage title="Sweet Recipes (without photos)" subtitle="Index of sweet recipes">
+<BaseLayout title="Le sucré">
+  <StaticPage
+    title="Le sucré"
+    subtitle="Index des recettes sucrées sans photo."
+    className="menu-page menu-page--recipe-list"
+    navLinks={navLinks}
+  >
     <StaticPageContent
       slug="le-sucre"
       sourceUrl="https://lacuisinedebernard.com/le-sucre/"
-    >
-      <p>This text-only sweet index is being rebuilt.</p>
-      <p>
-        Use the main sweet index or search to find the recipes you need.
-      </p>
-      <ul>
-        <li><a href="/recettes-sucrees">Sweet recipes with photos</a></li>
-        <li><a href="/search">Search the site</a></li>
-      </ul>
-    </StaticPageContent>
+    />
   </StaticPage>
 </BaseLayout>

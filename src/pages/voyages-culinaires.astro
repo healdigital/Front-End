@@ -1,23 +1,24 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import StaticPageContent from "../components/StaticPageContent.astro";
 ---
 
-<BaseLayout title="Culinary Travels">
-  <StaticPage title="Culinary Travels" subtitle="Voyages culinaires">
+<BaseLayout title="Voyages culinaires">
+  <StaticPage
+    title="Voyages culinaires"
+    subtitle="Carnets de route, marchés, adresses et inspirations gourmandes."
+    className="menu-page menu-page--travel-grid"
+  >
+    <p class="travel-page-intro">
+      Une collection de destinations gourmandes pour voyager à travers les marchés,
+      les spécialités locales et les découvertes qui inspirent ensuite les recettes
+      de la cuisine de Bernard.
+    </p>
+
     <StaticPageContent
       slug="voyages-culinaires"
       sourceUrl="https://lacuisinedebernard.com/voyages-culinaires/"
-    >
-      <p>Travel stories and culinary journeys are being migrated.</p>
-      <p>
-        Check back soon, or browse the latest articles for new inspiration.
-      </p>
-      <ul>
-        <li><a href="/articles">Browse latest articles</a></li>
-        <li><a href="/search">Search the site</a></li>
-      </ul>
-    </StaticPageContent>
+    />
   </StaticPage>
 </BaseLayout>
