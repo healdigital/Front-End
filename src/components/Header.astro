@@ -24,9 +24,47 @@ const languageOptions = supportedLanguages.map((code) => ({
 }));
 
 const navItems = [
-  { label: 'MES LIVRES', href: '/books', icon: 'book' },
-  { label: 'SAL&Eacute;', href: '/recettes-salees', icon: 'utensils' },
-  { label: 'SUCR&Eacute;', href: '/recettes-sucrees', icon: 'heart' },
+  {
+    label: 'MES LIVRES',
+    href: '/mes-livres/',
+    icon: 'book',
+    children: [
+      {
+        label: 'Chocolat maison',
+        href: '/chocolat-maison/',
+      },
+    ],
+  },
+  {
+    label: 'SAL&Eacute;',
+    href: '/recettes-salees/',
+    icon: 'utensils',
+    children: [
+      {
+        label: 'Index des recettes sal&eacute;es avec photo',
+        href: '/recettes-salees/',
+      },
+      {
+        label: 'Index des recettes sal&eacute;es sans photo',
+        href: '/le-sale/',
+      },
+    ],
+  },
+  {
+    label: 'SUCR&Eacute;',
+    href: '/recettes-sucrees/',
+    icon: 'heart',
+    children: [
+      {
+        label: 'Index des recettes sucr&eacute;es avec photo',
+        href: '/recettes-sucrees/',
+      },
+      {
+        label: 'Index des recettes sucr&eacute;es sans photo',
+        href: '/le-sucre/',
+      },
+    ],
+  },
   { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', icon: 'star', external: true },
   { label: 'VID&Eacute;OS', href: '/videos', icon: 'video' },
   { label: 'VOYAGES', href: '/voyages-culinaires', icon: 'map-pin' },
@@ -248,17 +286,48 @@ const accountItems = [
     <div class="home-shell w-full h-[70px] flex items-center">
       <nav class="flex items-center gap-8" aria-label="Navigation principale">
         {navItems.map((item) => (
-          <a
-            href={item.href}
-            class="flex items-center gap-2 text-[13px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
-            target={item.external ? '_blank' : undefined}
-            rel={item.external ? 'noopener noreferrer' : undefined}
-          >
-            <span class="text-primary-turquoise">
-              <Icon name={item.icon as any} size="sm" />
-            </span>
-            <span set:html={item.label} />
-          </a>
+          item.children?.length ? (
+            <div class="relative group">
+              <a
+                href={item.href}
+                class="flex items-center gap-2 text-[13px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener noreferrer' : undefined}
+                aria-haspopup="true"
+              >
+                <span class="text-primary-turquoise">
+                  <Icon name={item.icon as any} size="sm" />
+                </span>
+                <span set:html={item.label} />
+                <Icon name="chevron-down" size="sm" class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
+              </a>
+
+              <div class="absolute left-0 top-full pt-3 opacity-0 invisible pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:pointer-events-auto">
+                <div class="min-w-[340px] rounded-2xl border border-[#D8D2C2] bg-white p-2 shadow-[0_22px_50px_rgba(17,25,39,0.14)]">
+                  {item.children.map((child) => (
+                    <a
+                      href={child.href}
+                      class="flex items-start rounded-xl px-4 py-3 text-[13px] leading-5 text-[#2F3441] transition-colors hover:bg-[#F4F0E6] hover:text-[#1A2335]"
+                    >
+                      <span set:html={child.label} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <a
+              href={item.href}
+              class="flex items-center gap-2 text-[13px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener noreferrer' : undefined}
+            >
+              <span class="text-primary-turquoise">
+                <Icon name={item.icon as any} size="sm" />
+              </span>
+              <span set:html={item.label} />
+            </a>
+          )
         ))}
       </nav>
     </div>
@@ -289,20 +358,50 @@ const accountItems = [
       <ul class="space-y-3">
         {navItems.map((item) => (
           <li class="border-b border-white/10 last:border-b-0">
-            <a
-              href={item.href}
-              class="flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noopener noreferrer' : undefined}
-            >
-              <span class="flex items-center gap-3">
-                <span class="text-primary-turquoise">
-                  <Icon name={item.icon as any} size="sm" />
+            {item.children?.length ? (
+              <div class="py-3">
+                <a
+                  href={item.href}
+                  class="flex items-center justify-between text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                >
+                  <span class="flex items-center gap-3">
+                    <span class="text-primary-turquoise">
+                      <Icon name={item.icon as any} size="sm" />
+                    </span>
+                    <span set:html={item.label} />
+                  </span>
+                  <Icon name="chevron-down" size="sm" class="w-4 h-4" />
+                </a>
+
+                <div class="ml-9 mt-3 space-y-2 border-l border-white/10 pl-4">
+                  {item.children.map((child) => (
+                    <a
+                      href={child.href}
+                      class="block rounded-lg py-2 text-[13px] leading-5 text-white/70 transition-colors hover:text-white"
+                    >
+                      <span set:html={child.label} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <a
+                href={item.href}
+                class="flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener noreferrer' : undefined}
+              >
+                <span class="flex items-center gap-3">
+                  <span class="text-primary-turquoise">
+                    <Icon name={item.icon as any} size="sm" />
+                  </span>
+                  <span set:html={item.label} />
                 </span>
-                <span set:html={item.label} />
-              </span>
-              <span aria-hidden="true">&#8250;</span>
-            </a>
+                <span aria-hidden="true">&#8250;</span>
+              </a>
+            )}
           </li>
         ))}
       </ul>
