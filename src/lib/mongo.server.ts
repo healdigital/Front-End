@@ -390,7 +390,51 @@ export async function getArticlesCountFromMongo(): Promise<number> {
   }
 }
 
+const getArticleCategoryIds = (article: any): string[] => {
+  if (!Array.isArray(article?.categories)) return [];
+
+  return article.categories
+    .map((item: any) => normalizeId(item?.id || item?._id || item?.value || item))
+    .filter(Boolean);
+};
+
+const fallbackRelatedArticlesFromPrepared = async (categoryIds: any[], excludeArticleId: string, limit = 6) => {
+  const normalizedCategoryIds = Array.from(
+    new Set(
+      (Array.isArray(categoryIds) ? categoryIds : [])
+        .map((id) => normalizeId(id))
+        .filter(Boolean),
+    ),
+  );
+
+  if (normalizedCategoryIds.length === 0) return [];
+
+  const excludeId = normalizeId(excludeArticleId);
+  const allArticles = await getAllArticlesFromMongo();
+
+  const relatedArticles = allArticles
+    .filter((article) => {
+      const articleId = normalizeId(article?._id || article?.id);
+      if (!articleId || articleId === excludeId) return false;
+
+      const articleTitle = typeof article?.title === 'string' ? article.title.trim() : '';
+      if (!articleTitle) return false;
+
+      const articleCategoryIds = getArticleCategoryIds(article);
+      return articleCategoryIds.some((id) => normalizedCategoryIds.includes(id));
+    })
+    .slice(0, limit);
+
+  console.log('✅ [RELATED:FALLBACK] Found', relatedArticles.length, 'related articles from prepared/local data');
+
+  return relatedArticles;
+};
+
 export async function getRelatedArticlesFromMongo(categoryIds: any[], excludeArticleId: string, limit = 6) {
+  if (process.env.USE_LOCAL_JSON === '1') {
+    return fallbackRelatedArticlesFromPrepared(categoryIds, excludeArticleId, limit);
+  }
+
   try {
     // Convert excludeArticleId to ObjectId if it's a string
     let excludeId = excludeArticleId;
@@ -452,8 +496,8 @@ export async function getRelatedArticlesFromMongo(categoryIds: any[], excludeArt
     }));
   } catch (error) {
     console.error('❌ Error fetching related articles from MongoDB:', error);
-    return [];
-    }
+    return fallbackRelatedArticlesFromPrepared(categoryIds, excludeArticleId, limit);
+  }
 }
 
 export async function getAllArticlesFromMongo() {
