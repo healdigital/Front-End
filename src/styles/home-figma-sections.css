@@ -446,7 +446,7 @@ body {
 h3.font-body.text-\[28px\].leading-\[1\.05\].text-\[\#1A2335\].mt-6 {}
 
 .home-sidebar-sticky h3 {
-  color: #111111 !imn;
+  color: #111111 ;
   font-size: 26px !important;
 }
 

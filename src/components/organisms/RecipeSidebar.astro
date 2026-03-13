@@ -5,9 +5,10 @@ import Button from '../atoms/Button.astro';
 interface Props {
   variant?: 'full' | 'popular';
   className?: string;
+  stickyPopularRail?: boolean;
 }
 
-const { variant = 'full', className = '' } = Astro.props as Props;
+const { variant = 'full', className = '', stickyPopularRail = false } = Astro.props as Props;
 const isFull = variant === 'full';
 const workshopsApiUrl =
   process.env.WORKSHOPS_CACHE_URL ||
@@ -91,7 +92,7 @@ const popularArticles = [
   {isFull && (
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Apprendre en atelier</h4>
-      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 mt-5" data-sidebar-workshop data-workshops-api={workshopsApiUrl}>
+      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 mt-5 workshop-box" data-sidebar-workshop data-workshops-api={workshopsApiUrl}>
         <p class="sidebar-subtitle font-mono text-[13px] uppercase tracking-[0.14em] text-[#5F6671]" data-sidebar-workshop-status>Chargement...</p>
         <div class="mt-3 flex items-start justify-between gap-4">
           <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111]" data-sidebar-workshop-title>Atelier a venir</h5>
@@ -204,30 +205,32 @@ const popularArticles = [
     </div>
   )}
 
-  <div class="sidebar-block px-6 py-8">
-    <h4 class="sidebar-title">Articles populaires</h4>
-    <div class="space-y-4 mt-5">
-      {popularArticles.map((article) => (
-        <a href={article.slug} class="flex gap-3 items-start border-b border-[#D8D2C2] pb-4 last:border-b-0 last:pb-0">
-          <img
-            src={article.image}
-            alt=""
-            class="w-[166px] h-[93px] object-cover rounded-[8px]"
-            loading="lazy"
-            decoding="async"
-          />
-          <div>
-            <p class="text-[13px] uppercase tracking-[0.08em] text-[#2D3643] font-mono article-date">{article.date}</p>
-            <p class="text-[20px] leading-[1.1] text-[#111111] mt-2 font-heading article-title">{article.title}</p>
-          </div>
-        </a>
-      ))}
+  <div class:list={['recipe-sidebar-sticky-rail', stickyPopularRail && 'recipe-sidebar-sticky-rail--enabled']}>
+    <div class="sidebar-block px-6 py-8">
+      <h4 class="sidebar-title">Articles populaires</h4>
+      <div class="space-y-4 mt-5">
+        {popularArticles.map((article) => (
+          <a href={article.slug} class="flex gap-3 items-start border-b border-[#D8D2C2] pb-4 last:border-b-0 last:pb-0">
+            <img
+              src={article.image}
+              alt=""
+              class="w-[92px] h-[72px] shrink-0 object-cover rounded-[6px]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="text-[11px] uppercase tracking-[0.12em] text-[#2D3643] font-mono article-date">{article.date}</p>
+              <p class="text-[17px] leading-[1.18] text-[#111111] mt-2 font-heading article-title break-words">{article.title}</p>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
-  </div>
 
-  <div class="sidebar-block px-6 py-8">
-    <div class="bg-[#DCDCCF] rounded-[2px] border border-[#D8D2C2] h-[240px] flex items-start justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em] pt-8">
-      Espace publicite
+    <div class="sidebar-block px-6 py-8">
+      <div class="bg-[#DCDCCF] rounded-[2px] border border-[#D8D2C2] h-[240px] flex items-start justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em] pt-8">
+        Espace publicite
+      </div>
     </div>
   </div>
 </aside>
@@ -463,3 +466,17 @@ const popularArticles = [
   setupSidebarWorkshopData();
   document.addEventListener('astro:page-load', setupSidebarWorkshopData);
 </script>
+
+<style>
+  .recipe-sidebar-sticky-rail--enabled {
+    position: sticky;
+    top: 16px;
+    align-self: flex-start;
+  }
+
+  @media (max-width: 1023px) {
+    .recipe-sidebar-sticky-rail--enabled {
+      position: static;
+    }
+  }
+</style>

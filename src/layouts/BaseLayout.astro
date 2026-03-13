@@ -15,9 +15,20 @@ interface Props {
   image?: string;
   jsonLd?: any[];
   loadAds?: boolean;
+  showGlobalAbout?: boolean;
 }
 
-const { title, description, canonical, slug, lang = 'fr', image, jsonLd = [], loadAds = false } = Astro.props;
+const {
+  title,
+  description,
+  canonical,
+  slug,
+  lang = 'fr',
+  image,
+  jsonLd = [],
+  loadAds = false,
+  showGlobalAbout = true,
+} = Astro.props;
 const mediavineScriptSrc = import.meta.env.PUBLIC_MEDIAVINE_SCRIPT_SRC;
 const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 ---
@@ -66,7 +77,7 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
   <body>
     <Header lang={lang} />
     <slot />
-    <GlobalAbout />
+    {showGlobalAbout && <GlobalAbout />}
     <GlobalFooter currentLang={lang} />
   </body>
 </html>

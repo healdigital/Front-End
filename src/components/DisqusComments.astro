@@ -3,9 +3,11 @@ interface Props {
   identifier: string;
   url: string;
   title?: string;
+  showTitle?: boolean;
+  showComposerPreview?: boolean;
 }
 
-const { identifier, url, title } = Astro.props;
+const { identifier, url, title, showTitle = true, showComposerPreview = false } = Astro.props;
 const shortname = String(
   import.meta.env.PUBLIC_DISQUS_SHORTNAME ||
     import.meta.env.DISQUS_SHORTNAME ||
@@ -43,7 +45,19 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
 ---
 
 <div id="comments-section" class="mt-8" data-no-translate="true">
-  <h3 class="text-2xl font-bold mb-4">Comments</h3>
+  {showTitle && <h3 class="text-2xl font-bold mb-4">Comments</h3>}
+
+  {showComposerPreview && (
+    <div class="lcdb-comments-shell" data-disqus-compose-shell>
+      <div class="lcdb-comments-compose-author">
+        <span class="lcdb-comments-compose-avatar" aria-hidden="true">V</span>
+        <span class="lcdb-comments-compose-name">Votre avis</span>
+      </div>
+      <button type="button" class="lcdb-comments-compose-trigger" data-disqus-compose-trigger>
+        Écrivez votre message
+      </button>
+    </div>
+  )}
 
   {isConfigured ? (
     <>
@@ -69,6 +83,21 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
         }
 
         var commentsSection = document.getElementById('comments-section');
+        var composeTrigger = commentsSection ? commentsSection.querySelector('[data-disqus-compose-trigger]') : null;
+        if (composeTrigger) {
+          composeTrigger.addEventListener('click', function () {
+            loadDisqusEmbed();
+            window.setTimeout(function () {
+              var composeTarget = commentsSection.querySelector('textarea, iframe, [contenteditable=\"true\"]');
+              if (composeTarget && typeof composeTarget.focus === 'function') {
+                composeTarget.focus();
+              } else {
+                var thread = document.getElementById('disqus_thread');
+                if (thread) thread.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 650);
+          });
+        }
         var hash = window.location.hash || '';
         if (hash.indexOf('comment') !== -1 || hash === '#comments') {
           loadDisqusEmbed();
@@ -97,5 +126,100 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
 <style>
   #disqus_thread {
     margin-top: 1rem;
+  }
+
+  .lcdb-comments-shell {
+    margin-bottom: 1.75rem;
+  }
+
+  .lcdb-comments-compose-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    color: #111111;
+  }
+
+  .lcdb-comments-compose-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #e8ded1;
+    color: #111111;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .lcdb-comments-compose-name {
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .lcdb-comments-compose-trigger {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #ded8ca;
+    background: #f3f1e8;
+    color: #3f413d;
+    text-align: left;
+    padding: 0 14px;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .lcdb-comments-compose-trigger:hover {
+    background: #f6f3eb;
+    border-color: #cfc7b6;
+  }
+
+  #comments-section :global(#disqus_thread),
+  #comments-section :global(.dsq-brlink) {
+    color: #111111;
+  }
+
+  #comments-section :global(#disqus_thread iframe) {
+    max-width: 100%;
+  }
+
+  #comments-section :global(#disqus_thread textarea),
+  #comments-section :global(#disqus_thread input[type="text"]),
+  #comments-section :global(#disqus_thread input[type="email"]),
+  #comments-section :global(#disqus_thread [contenteditable="true"]) {
+    background: #f3f1e8 !important;
+    border: 1px solid #ded8ca !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #111111 !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-list .post-content),
+  #comments-section :global(#disqus_thread .post-content),
+  #comments-section :global(#disqus_thread .post-body),
+  #comments-section :global(#disqus_thread .post-block) {
+    border-color: #ded8ca !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-message),
+  #comments-section :global(#disqus_thread .post-body p),
+  #comments-section :global(#disqus_thread .post-content p) {
+    color: #222222 !important;
+    font-size: 0.98rem !important;
+    line-height: 1.7 !important;
+  }
+
+  #comments-section :global(#disqus_thread .author),
+  #comments-section :global(#disqus_thread .author-name),
+  #comments-section :global(#disqus_thread .post-meta) {
+    color: #111111 !important;
+  }
+
+  #comments-section :global(#disqus_thread a) {
+    color: #111111 !important;
   }
 </style>
