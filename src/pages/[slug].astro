@@ -147,6 +147,8 @@ const getExcerpt = () => {
 
 const title = article.title || "Untitled";
 const content = renderArticleContent(article);
+const firstContentParagraphHtml = content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
+const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(firstContentParagraphHtml);
 const excerpt = getExcerpt();
 const image = processArticleImageUrl(article);
 const imageAlt = toText(article.featuredMedia?.alt || article.featuredImage?.alt || article.featured_image?.alt) || "Article featured image";
@@ -154,14 +156,6 @@ const imageAlt = toText(article.featuredMedia?.alt || article.featuredImage?.alt
 const articleJsonLd = buildArticleJsonLd(article, "https://lacuisinedebernard.com");
 const breadcrumbJsonLd = buildBreadcrumbJsonLd(title, slug, "https://lacuisinedebernard.com");
 const recipeJsonLd = buildRecipeJsonLd(article);
-
-const date = article.date
-  ? new Date(article.date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  : "";
 
 const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
 const articleShareLinks = [
@@ -280,7 +274,6 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
           <p class="lcdb-page-eyebrow typ-caption">{categoryItems[0]?.title || "Recette"}</p>
           <h1 class="lcdb-page-title typ-h2">{title}</h1>
           <div class="article-hero-meta typ-body">
-            {date && <span>{date}</span>}
             <span>{authorName}</span>
             {categoryItems[1]?.title && <span>{categoryItems[1].title}</span>}
           </div>
@@ -376,16 +369,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                 <span class="article-intro-meta-label"><i class="far fa-user"></i> Auteur</span>
                 <span class="article-intro-meta-value">{displayAuthorName}</span>
               </div>
-              {date && (
-                <div class="article-intro-meta-item">
-                  <span class="article-intro-meta-label"><i class="far fa-calendar-alt"></i> Publié</span>
-                  <span class="article-intro-meta-value">{date}</span>
-                </div>
-              )}
             </div>
           </section>
 
-          {image && (
+          {image && !firstContentParagraphHasImage && (
             <figure class="lcdb-surface-card article-hero-image">
               <img src={image} alt={imageAlt} loading="eager" />
             </figure>
