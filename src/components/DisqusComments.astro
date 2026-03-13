@@ -124,78 +124,108 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
 </div>
 
 <style>
+  #comments-section {
+    color: #1b1f22;
+  }
+
   #disqus_thread {
-    margin-top: 1rem;
+    margin-top: 1.25rem;
   }
 
   .lcdb-comments-shell {
-    margin-bottom: 1.75rem;
+    margin-bottom: 2rem;
   }
 
   .lcdb-comments-compose-author {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    color: #111111;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: #161718;
   }
 
   .lcdb-comments-compose-avatar {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 999px;
-    background: #e8ded1;
-    color: #111111;
+    background: #eadfce;
+    color: #1a1b1e;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
   }
 
   .lcdb-comments-compose-name {
-    font-size: 1rem;
-    line-height: 1.3;
+    font-size: 1.02rem;
+    line-height: 1.25;
+    font-weight: 500;
   }
 
   .lcdb-comments-compose-trigger {
     width: 100%;
-    min-height: 44px;
+    min-height: 46px;
     border: 1px solid #ded8ca;
-    background: #f3f1e8;
-    color: #3f413d;
+    background: #f2efe5;
+    color: #66665f;
     text-align: left;
-    padding: 0 14px;
-    font-size: 0.98rem;
+    padding: 0 16px;
+    font-size: 0.97rem;
     line-height: 1.4;
     transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
   }
 
   .lcdb-comments-compose-trigger:hover {
-    background: #f6f3eb;
+    background: #f6f2e9;
     border-color: #cfc7b6;
   }
 
   #comments-section :global(#disqus_thread),
   #comments-section :global(.dsq-brlink) {
-    color: #111111;
+    color: #161718;
   }
 
   #comments-section :global(#disqus_thread iframe) {
+    display: block;
     max-width: 100%;
+    width: 100%;
+    border: 0;
+    background: transparent;
   }
 
   #comments-section :global(#disqus_thread textarea),
   #comments-section :global(#disqus_thread input[type="text"]),
   #comments-section :global(#disqus_thread input[type="email"]),
   #comments-section :global(#disqus_thread [contenteditable="true"]) {
-    background: #f3f1e8 !important;
+    background: #f2efe5 !important;
     border: 1px solid #ded8ca !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    color: #111111 !important;
+    color: #1a1b1e !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-list),
+  #comments-section :global(#disqus_thread ul.post-list) {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #comments-section :global(#disqus_thread .post),
+  #comments-section :global(#disqus_thread li.post),
+  #comments-section :global(#disqus_thread .post-wrapper) {
+    margin: 0 !important;
+    padding: 2rem 0 !important;
+    border-top: 1px solid #d9d3c3 !important;
+    background: transparent !important;
+  }
+
+  #comments-section :global(#disqus_thread .post:first-child),
+  #comments-section :global(#disqus_thread li.post:first-child),
+  #comments-section :global(#disqus_thread .post-wrapper:first-child) {
+    border-top: 0 !important;
+    padding-top: 0 !important;
   }
 
   #comments-section :global(#disqus_thread .post-list .post-content),
@@ -203,23 +233,120 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
   #comments-section :global(#disqus_thread .post-body),
   #comments-section :global(#disqus_thread .post-block) {
     border-color: #ded8ca !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   #comments-section :global(#disqus_thread .post-message),
   #comments-section :global(#disqus_thread .post-body p),
   #comments-section :global(#disqus_thread .post-content p) {
-    color: #222222 !important;
+    color: #2f3134 !important;
     font-size: 0.98rem !important;
-    line-height: 1.7 !important;
+    line-height: 1.78 !important;
   }
 
   #comments-section :global(#disqus_thread .author),
   #comments-section :global(#disqus_thread .author-name),
   #comments-section :global(#disqus_thread .post-meta) {
-    color: #111111 !important;
+    color: #161718 !important;
   }
 
   #comments-section :global(#disqus_thread a) {
-    color: #111111 !important;
+    color: #1a1b1e !important;
+  }
+
+  #comments-section :global(#disqus_thread .author),
+  #comments-section :global(#disqus_thread .author-name) {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-meta),
+  #comments-section :global(#disqus_thread .time-ago),
+  #comments-section :global(#disqus_thread .post-meta time) {
+    font-size: 0.92rem !important;
+    line-height: 1.3 !important;
+    color: #8c8a82 !important;
+  }
+
+  #comments-section :global(#disqus_thread .avatar),
+  #comments-section :global(#disqus_thread .avatar img),
+  #comments-section :global(#disqus_thread .author-avatar img) {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 999px !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-header),
+  #comments-section :global(#disqus_thread .post-meta),
+  #comments-section :global(#disqus_thread .author) {
+    margin-bottom: 12px !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-actions),
+  #comments-section :global(#disqus_thread .actions),
+  #comments-section :global(#disqus_thread .footer) {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 18px !important;
+    margin-top: 16px !important;
+  }
+
+  #comments-section :global(#disqus_thread .reply),
+  #comments-section :global(#disqus_thread .reply a),
+  #comments-section :global(#disqus_thread .post-actions a),
+  #comments-section :global(#disqus_thread .action-link) {
+    font-size: 0.96rem !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+  }
+
+  #comments-section :global(#disqus_thread .vote),
+  #comments-section :global(#disqus_thread .likes),
+  #comments-section :global(#disqus_thread .replies),
+  #comments-section :global(#disqus_thread .vote-up),
+  #comments-section :global(#disqus_thread .vote-down) {
+    color: #8c8a82 !important;
+  }
+
+  #comments-section :global(#disqus_thread .pagination),
+  #comments-section :global(#disqus_thread .load-more),
+  #comments-section :global(#disqus_thread .btn),
+  #comments-section :global(#disqus_thread button) {
+    border-radius: 2px !important;
+    box-shadow: none !important;
+  }
+
+  #comments-section :global(#disqus_thread .load-more),
+  #comments-section :global(#disqus_thread .pagination .btn),
+  #comments-section :global(#disqus_thread a.load-more),
+  #comments-section :global(#disqus_thread button.load-more) {
+    min-height: 46px !important;
+    padding: 0 28px !important;
+    border: 0 !important;
+    background: #58b9b3 !important;
+    color: #ffffff !important;
+    font-family: var(--font-button) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    text-decoration: none !important;
+  }
+
+  #comments-section :global(#disqus_thread .load-more:hover),
+  #comments-section :global(#disqus_thread .pagination .btn:hover),
+  #comments-section :global(#disqus_thread a.load-more:hover),
+  #comments-section :global(#disqus_thread button.load-more:hover) {
+    background: #4ea8a2 !important;
+  }
+
+  #comments-section :global(#disqus_thread .dropdown),
+  #comments-section :global(#disqus_thread .dropdown-menu),
+  #comments-section :global(#disqus_thread .media),
+  #comments-section :global(#disqus_thread .ad) {
+    box-shadow: none !important;
   }
 </style>
