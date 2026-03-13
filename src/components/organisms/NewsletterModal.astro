@@ -1,8 +1,4 @@
 ---
-import { Image } from 'astro:assets';
-import Input from '../atoms/Input.astro';
-import Checkbox from '../atoms/Checkbox.astro';
-import Button from '../atoms/Button.astro';
 import Icon from '../atoms/Icon.astro';
 
 /**
@@ -21,87 +17,83 @@ const {
 } = Astro.props;
 ---
 
-<dialog 
-  id={id} 
+<dialog
+  id={id}
   data-trigger-id={triggerId}
   data-motion="full"
-  class="group fixed inset-0 z-50 hidden items-center justify-center p-4 bg-transparent backdrop:bg-black/50 overflow-hidden" 
+  class="newsletter-modal-dialog fixed inset-0 z-50 hidden items-center justify-center bg-transparent overflow-hidden"
   aria-modal="true"
   aria-labelledby={`${id}-title`}
   aria-describedby={`${id}-desc`}
 >
-  <!-- Backdrop (handled by dialog::backdrop usually, but created explicitly for animation control if needed, 
-       here we rely on dialog native behavior + some Tailwind classes on the dialog itself for positioning) -->
-  
   <div
-    class="newsletter-modal-panel relative w-full max-w-[942px] h-auto md:h-[505px] bg-primary-cream rounded-lg shadow-xl overflow-hidden flex flex-col md:flex-row"
+    class="newsletter-modal-panel"
     data-modal-panel
   >
-    
-    <!-- Close Button -->
-    <button 
+    <button
       id={`${id}-close`}
-      class="newsletter-modal-close-btn absolute top-4 right-4 z-10 p-2 text-primary-black hover:text-text-secondary"
+      class="newsletter-modal-close-btn"
       aria-label="Fermer la modale"
     >
       <Icon name="close" size="lg" />
     </button>
 
-    <!-- Image Section -->
-    <div class="hidden md:block w-1/2 h-full bg-gray-200 relative">
-       <!-- Placeholder for image: replace with actual Image component when asset is available -->
-       <div class="absolute inset-0 flex items-center justify-center text-text-tertiary">
-         <span class="sr-only">Image de présentation</span>
-         <!-- Mockup image placeholder -->
-         <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://placehold.co/470x505/e2e8f0/475569?text=Newsletter');"></div>
-       </div>
+    <div class="newsletter-modal-media" aria-hidden="true">
+      <div class="newsletter-modal-media-image"></div>
     </div>
 
-    <!-- Content Section -->
-    <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-      <div class="mb-6">
-        <h2 id={`${id}-title`} class="text-5xl font-heading text-primary-black mb-4">
-          Restez inspiré
+    <div class="newsletter-modal-content">
+      <div class="newsletter-modal-copy">
+        <h2 id={`${id}-title`} class="newsletter-modal-title">
+          Abonnez-vous
+          <br />
+          à La Cuisine De Bernard!
         </h2>
-        <p id={`${id}-desc`} class="text-text-secondary font-body text-md mb-8">
-          Recevez nos meilleures recettes, astuces et actualités culinaires directement dans votre boîte mail.
+        <p id={`${id}-desc`} class="newsletter-modal-description">
+          Recevez toute l'actualité de La Cuisine De Bernard, ses dernières publications et plus encore, directement dans votre boîte de réception.
         </p>
       </div>
 
-      <form class="space-y-4" novalidate id={`${id}-form`}>
-        <div class="space-y-4">
-          <Input 
-            type="email" 
-            placeholder="votre@email.com" 
-            label="Adresse email"
-            labelClass="!text-[#111111]"
-            labelStyle="color: #111111; font-weight: 600;"
-            class="!text-[#111111] !bg-white !placeholder:text-[#4b5563]"
-            style="color: #111111; background-color: #ffffff;"
-            required
-            id={`${id}-email`}
-            name="email"
-          />
-          
-          <div class="flex items-start">
-            <Checkbox 
-              id={`${id}-consent`} 
+      <form class="newsletter-modal-form" novalidate id={`${id}-form`}>
+        <div class="newsletter-modal-field-row">
+          <div class="newsletter-modal-field">
+            <label class="sr-only" for={`${id}-email`}>Votre adresse email</label>
+            <input
+              type="email"
+              id={`${id}-email`}
+              name="email"
+              class="newsletter-modal-input"
+              placeholder="Votre adresse email"
               required
-              label="J'accepte de recevoir la newsletter et confirme avoir lu la politique de confidentialité."
-              name="consent"
             />
           </div>
+          <button class="newsletter-modal-submit typ-button" type="submit">
+            S'abonner
+          </button>
         </div>
 
-        <div class="pt-4">
-          <Button variant="primary" type="submit" class="w-full md:w-auto !text-white" style="background-color: #54B6B1; border-color: #54B6B1; color: #ffffff;">
-            S'inscrire
-          </Button>
-        </div>
+        <label class="newsletter-modal-consent">
+          <input
+            id={`${id}-consent`}
+            type="checkbox"
+            class="newsletter-modal-checkbox-input"
+            name="consent"
+            required
+          />
+          <span class="newsletter-modal-checkbox-box" aria-hidden="true">
+            <svg viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span class="newsletter-modal-consent-text">
+            J'accepte les <a href="/mentions-legales/" target="_blank" rel="noopener noreferrer">Conditions Générales d'Utilisation</a> du site
+            lacuisinedebernard.com ne partage ni ne vend les données personnelles.
+          </span>
+        </label>
 
         <p
           id={`${id}-feedback`}
-          class="hidden text-sm"
+          class="newsletter-modal-feedback hidden"
           aria-live="polite"
         ></p>
       </form>
@@ -130,14 +122,14 @@ const {
 
     if (!form || !emailInput || !consentCheckbox) return;
 
-    const defaultSubmitText = submitBtn?.innerText || "S'inscrire";
+    const defaultSubmitText = submitBtn?.innerText || "S'abonner";
 
-    const textInputErrorClasses = ['border-status-error', 'text-status-error', 'focus:border-status-error', 'focus:ring-status-error'];
-    const textInputSuccessClasses = ['border-status-success', 'focus:border-status-success', 'focus:ring-status-success'];
-    const textInputDefaultClasses = ['border-border-primary', 'focus:border-primary-turquoise', 'focus:ring-primary-turquoise'];
-    const checkboxErrorClasses = ['border-status-error', 'peer-focus-visible:ring-status-error'];
-    const checkboxSuccessClasses = ['border-status-success', 'peer-focus-visible:ring-status-success'];
-    const checkboxDefaultClasses = ['border-primary-turquoise', 'peer-focus-visible:ring-primary-turquoise'];
+    const textInputErrorClasses = ['newsletter-modal-input--error'];
+    const textInputSuccessClasses = ['newsletter-modal-input--success'];
+    const textInputDefaultClasses = ['newsletter-modal-input--default'];
+    const checkboxErrorClasses = ['newsletter-modal-checkbox-box--error'];
+    const checkboxSuccessClasses = ['newsletter-modal-checkbox-box--success'];
+    const checkboxDefaultClasses = ['newsletter-modal-checkbox-box--default'];
 
     const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
     let prefersReducedMotion = isReducedMotionPreferred();
@@ -157,18 +149,23 @@ const {
       if (!feedback) return;
 
       feedback.textContent = message;
-      feedback.classList.remove('hidden', 'text-status-error', 'text-status-success', 'text-text-secondary');
+      feedback.classList.remove(
+        'hidden',
+        'newsletter-modal-feedback--error',
+        'newsletter-modal-feedback--success',
+        'newsletter-modal-feedback--neutral'
+      );
       if (!message) {
         feedback.classList.add('hidden');
         return;
       }
 
       if (state === 'error') {
-        feedback.classList.add('text-status-error');
+        feedback.classList.add('newsletter-modal-feedback--error');
       } else if (state === 'success') {
-        feedback.classList.add('text-status-success');
+        feedback.classList.add('newsletter-modal-feedback--success');
       } else {
-        feedback.classList.add('text-text-secondary');
+        feedback.classList.add('newsletter-modal-feedback--neutral');
       }
     }
 
@@ -181,11 +178,11 @@ const {
       errorElement.setAttribute('role', 'alert');
 
       if (input.type === 'checkbox') {
-        errorElement.className = 'mt-1 text-xs text-status-error animate-pulse ml-7';
+        errorElement.className = 'newsletter-modal-error newsletter-modal-error--checkbox';
         const checkboxLabel = input.closest('label');
         checkboxLabel?.appendChild(errorElement);
       } else {
-        errorElement.className = 'text-xs text-status-error animate-pulse';
+        errorElement.className = 'newsletter-modal-error';
         input.parentElement?.appendChild(errorElement);
       }
 
@@ -292,7 +289,7 @@ const {
         submitBtn.disabled = false;
         submitBtn.removeAttribute('aria-disabled');
         submitBtn.innerText = defaultSubmitText;
-        submitBtn.classList.remove('bg-status-success', 'border-status-success');
+        submitBtn.classList.remove('newsletter-modal-submit--success');
       }
     }
 
@@ -381,7 +378,7 @@ const {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         submitBtn.innerText = 'Inscrit !';
-        submitBtn.classList.add('bg-status-success', 'border-status-success');
+        submitBtn.classList.add('newsletter-modal-submit--success');
         setFeedback('Inscription réussie. Merci pour votre confiance.', 'success');
         form.removeAttribute('aria-busy');
 
@@ -424,10 +421,21 @@ const {
 </script>
 
 <style is:global>
-  /* Custom backdrop styling */
+  dialog[id^="newsletter-modal"] {
+    border: 0;
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background: transparent;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
   dialog[id^="newsletter-modal"]::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(28, 30, 36, 0.84);
+    backdrop-filter: blur(2px);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
@@ -450,13 +458,287 @@ const {
     animation: newsletter-modal-fade-in 0.3s ease forwards;
   }
 
+  .newsletter-modal-panel {
+    position: relative;
+    width: min(100%, 756px);
+    min-height: 402px;
+    max-height: calc(100vh - 96px);
+    display: grid;
+    grid-template-columns: 317px minmax(0, 439px);
+    background: #f3f0ea;
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0 24px 56px rgba(10, 18, 28, 0.28);
+    overflow: hidden;
+  }
+
+  .newsletter-modal-media {
+    position: relative;
+    min-height: 402px;
+    background: #ece6da;
+  }
+
+  .newsletter-modal-media-image {
+    width: 100%;
+    height: 100%;
+    background: #ece6da url('/images/ateliers-physiques.jpg') 36% center / cover no-repeat;
+  }
+
+  .newsletter-modal-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 44px 42px 32px;
+    background: #f3f0ea;
+    overflow-y: auto;
+  }
+
+  .newsletter-modal-copy {
+    max-width: 322px;
+  }
+
+  .newsletter-modal-title {
+    margin: 0;
+    color: #162a32;
+    font-family: var(--font-heading);
+    font-size: clamp(3.35rem, 3.7vw, 4.3rem);
+    line-height: 0.94;
+    letter-spacing: -0.01em;
+  }
+
+  .newsletter-modal-description {
+    margin: 20px 0 0;
+    max-width: 320px;
+    color: #293840;
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.42;
+  }
+
+  .newsletter-modal-form {
+    width: 100%;
+    max-width: 366px;
+    margin-top: 24px;
+  }
+
+  .newsletter-modal-field-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 133px;
+    gap: 7px;
+    align-items: stretch;
+  }
+
+  .newsletter-modal-field {
+    min-width: 0;
+  }
+
+  .newsletter-modal-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 15px;
+    border: 1px solid #e7e1d5;
+    border-radius: 3px;
+    background: #ffffff;
+    color: #111111;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .newsletter-modal-input::placeholder {
+    color: #a59f95;
+    opacity: 1;
+  }
+
+  .newsletter-modal-input--default:focus,
+  .newsletter-modal-input:focus {
+    border-color: #54b6b1;
+    box-shadow: inset 0 0 0 1px #54b6b1;
+  }
+
+  .newsletter-modal-input--error {
+    border-color: #c64545 !important;
+    box-shadow: inset 0 0 0 1px #c64545;
+  }
+
+  .newsletter-modal-input--success {
+    border-color: #2f8f57 !important;
+    box-shadow: inset 0 0 0 1px #2f8f57;
+  }
+
+  .newsletter-modal-submit {
+    min-height: 44px;
+    border: 0;
+    border-radius: 2px;
+    background: #54b6b1;
+    color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0 18px;
+    font-family: var(--font-button);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 1;
+    box-shadow: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  .newsletter-modal-submit:hover {
+    background: #48aba6;
+  }
+
+  .newsletter-modal-submit:active {
+    transform: scale(0.98);
+  }
+
+  .newsletter-modal-submit--success {
+    background: #2f8f57 !important;
+  }
+
+  .newsletter-modal-consent {
+    position: relative;
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    align-items: start;
+    gap: 9px;
+    margin-top: 14px;
+    cursor: pointer;
+  }
+
+  .newsletter-modal-checkbox-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .newsletter-modal-checkbox-box {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    border: 1.5px solid #54b6b1;
+    border-radius: 2px;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .newsletter-modal-checkbox-box svg {
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .newsletter-modal-checkbox-input:checked + .newsletter-modal-checkbox-box {
+    background: #54b6b1;
+    border-color: #54b6b1;
+  }
+
+  .newsletter-modal-checkbox-input:checked + .newsletter-modal-checkbox-box svg {
+    opacity: 1;
+  }
+
+  .newsletter-modal-checkbox-input:focus-visible + .newsletter-modal-checkbox-box,
+  .newsletter-modal-checkbox-box--default {
+    box-shadow: none;
+  }
+
+  .newsletter-modal-checkbox-box--error {
+    border-color: #c64545 !important;
+    box-shadow: inset 0 0 0 1px #c64545;
+  }
+
+  .newsletter-modal-checkbox-box--success {
+    border-color: #2f8f57 !important;
+    box-shadow: inset 0 0 0 1px #2f8f57;
+  }
+
+  .newsletter-modal-consent-text {
+    max-width: 322px;
+    color: #3d4a51;
+    font-family: var(--font-body);
+    font-size: 0.73rem;
+    line-height: 1.22;
+  }
+
+  .newsletter-modal-consent-text a {
+    color: #54b6b1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .newsletter-modal-feedback {
+    margin-top: 14px;
+    font-family: var(--font-body);
+    font-size: 0.86rem;
+    line-height: 1.4;
+  }
+
+  .newsletter-modal-feedback--error {
+    color: #c64545;
+  }
+
+  .newsletter-modal-feedback--success {
+    color: #2f8f57;
+  }
+
+  .newsletter-modal-feedback--neutral {
+    color: #52606a;
+  }
+
+  .newsletter-modal-error {
+    display: block;
+    margin-top: 8px;
+    color: #c64545;
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .newsletter-modal-error--checkbox {
+    grid-column: 2;
+    margin-top: -4px;
+  }
+
   .newsletter-modal-close-btn {
-    transition: color 0.3s ease, transform 0.3s ease;
+    position: absolute;
+    top: 21px;
+    right: 22px;
+    z-index: 2;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #1b2b33;
+    transition: color 0.3s ease, transform 0.3s ease, opacity 0.2s ease;
   }
 
   .newsletter-modal-close-btn:active {
     transform: scale(0.96);
     transition-duration: 0.2s;
+  }
+
+  .newsletter-modal-close-btn:hover {
+    opacity: 0.68;
+  }
+
+  dialog[id^="newsletter-modal"].flex {
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
   }
 
   @keyframes newsletter-modal-fade-in {
@@ -480,30 +762,45 @@ const {
     transform: none;
   }
 
-  /* Ensure AA contrast inside newsletter modal regardless of utility token resolution */
-  dialog[id^="newsletter-modal"] form label {
-    color: #111111;
-  }
+  @media (max-width: 767px) {
+    .newsletter-modal-panel {
+      width: min(100%, 520px);
+      min-height: 0;
+      max-height: calc(100vh - 32px);
+      grid-template-columns: minmax(0, 1fr);
+    }
 
-  dialog[id^="newsletter-modal"] input[type="email"] {
-    color: #111111;
-    background-color: #ffffff;
-  }
+    .newsletter-modal-media {
+      min-height: 220px;
+    }
 
-  dialog[id^="newsletter-modal"] input[type="email"]::placeholder {
-    color: #4b5563;
-    opacity: 1;
-  }
+    .newsletter-modal-content {
+      padding: 34px 20px 22px;
+    }
 
-  dialog[id^="newsletter-modal"] form button[type="submit"] {
-    background-color: #54B6B1;
-    border-color: #54B6B1;
-    color: #ffffff;
-  }
+    .newsletter-modal-title {
+      font-size: clamp(2.4rem, 10vw, 3.2rem);
+    }
 
-  dialog[id^="newsletter-modal"] form button[type="submit"]:hover {
-    background-color: #449E99;
-    border-color: #449E99;
-  }
+    .newsletter-modal-field-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+    }
 
+    .newsletter-modal-consent {
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .newsletter-modal-close-btn {
+      top: 12px;
+      right: 12px;
+      width: 24px;
+      height: 24px;
+    }
+
+    dialog[id^="newsletter-modal"].flex {
+      padding: 16px;
+    }
+  }
 </style>
