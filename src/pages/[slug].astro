@@ -44,6 +44,38 @@ const toText = (value: any): string => {
 };
 
 const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
+const toTitleCase = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/(?:^|\s|[-/])\S/g, (char) => char.toUpperCase());
+
+const dedupeTextList = (items: string[]) => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = item.trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const deriveFlavorCategory = (article: any, categoryTitles: string[]) => {
+  const sourceText = [
+    ...categoryTitles,
+    toText(article?.category),
+    toText(article?.tags),
+    toText(article?.category_names),
+  ]
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/\b(sucre|sucree|sucrees|sweet)\b/.test(sourceText)) return "Sucré";
+  if (/\b(sale|sales|salees|savory|savoury)\b/.test(sourceText)) return "Salé";
+  return "";
+};
+
 const extractId = (value: any): string => {
   if (!value) return "";
   if (typeof value === "string" || typeof value === "number") return String(value);
@@ -190,8 +222,7 @@ const normalizePageLanguage = (value: any) => {
 
 const pageLang = normalizePageLanguage(article?.lang || article?.language || article?.locale);
 const excerptText = toText(article?.excerpt);
-const authorName = toText(article?.author?.name || article?.author?.title || article?.author) || "Bernard Laurance";
-const displayAuthorName = authorName.toLowerCase() === "bernard" ? "Bernard Laurance" : authorName;
+const displayAuthorName = "Bernard Laurance";
 
 const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
   .map((item: any) => {
@@ -200,6 +231,16 @@ const categoryItems = (Array.isArray(article?.categories) ? article.categories :
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
   .filter(Boolean);
+
+const categoryTitles = dedupeTextList(
+  categoryItems.map((item: any) => toTitleCase(item.title)),
+);
+const flavorCategoryLabel = deriveFlavorCategory(article, categoryTitles);
+const displayCategoryTitles = dedupeTextList([
+  ...(categoryTitles.length > 0 ? categoryTitles : ["Recette"]),
+  flavorCategoryLabel,
+]);
+const secondaryCategoryTitle = displayCategoryTitles.find((item) => item !== displayCategoryTitles[0]) || "";
 
 const categoryIds = (Array.isArray(article?.categories) ? article.categories : [])
   .map((item: any) => extractId(item))
@@ -271,11 +312,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       </nav>
       <div class="article-hero-topline">
         <div class="article-hero-copy">
-          <p class="lcdb-page-eyebrow typ-caption">{categoryItems[0]?.title || "Recette"}</p>
+          <p class="lcdb-page-eyebrow typ-caption">{displayCategoryTitles[0] || "Recette"}</p>
           <h1 class="lcdb-page-title typ-h2">{title}</h1>
           <div class="article-hero-meta typ-body">
-            <span>{authorName}</span>
-            {categoryItems[1]?.title && <span>{categoryItems[1].title}</span>}
+            <span>{displayAuthorName}</span>
+            {secondaryCategoryTitle && <span>{secondaryCategoryTitle}</span>}
           </div>
         </div>
 
@@ -362,7 +403,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               <div class="article-intro-meta-item">
                 <span class="article-intro-meta-label"><i class="far fa-folder-open"></i> Catégorie</span>
                 <span class="article-intro-meta-value">
-                  {categoryItems.map((item: any) => item.title).join(", ") || "Recette"}
+                  {displayCategoryTitles.join(", ") || "Recette"}
                 </span>
               </div>
               <div class="article-intro-meta-item">
