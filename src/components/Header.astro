@@ -1,5 +1,13 @@
 ---
 import Icon from './atoms/Icon.astro';
+import booksMenuIcon from '../../menu/la_cuisine_de_bernard_24_books 1.png';
+import savoryMenuIcon from '../../menu/sale 1.png';
+import sweetMenuIcon from '../../menu/la_cuisine_de_bernard_24_sweet-37 1.png';
+import workshopsMenuIcon from '../../menu/la_cuisine_de_bernard_24_savory 2.png';
+import videosMenuIcon from '../../menu/la_cuisine_de_bernard_24_video_course 1.png';
+import voyagesMenuIcon from '../../menu/voyage 1.png';
+import reportagesMenuIcon from '../../menu/Page-1.png';
+import selectionsMenuIcon from '../../menu/Frame-1 1.png';
 
 interface Props {
   lang?: string;
@@ -27,7 +35,7 @@ const navItems = [
   {
     label: 'MES LIVRES',
     href: '/mes-livres/',
-    icon: 'nav-books',
+    iconSrc: booksMenuIcon.src,
     children: [
       {
         label: 'Chocolat maison',
@@ -38,7 +46,7 @@ const navItems = [
   {
     label: 'SAL&Eacute;',
     href: '/recettes-salees/',
-    icon: 'nav-savory',
+    iconSrc: savoryMenuIcon.src,
     children: [
       {
         label: 'Index des recettes sal&eacute;es avec photo',
@@ -53,7 +61,7 @@ const navItems = [
   {
     label: 'SUCR&Eacute;',
     href: '/recettes-sucrees/',
-    icon: 'nav-sweet',
+    iconSrc: sweetMenuIcon.src,
     children: [
       {
         label: 'Index des recettes sucr&eacute;es avec photo',
@@ -65,11 +73,11 @@ const navItems = [
       },
     ],
   },
-  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', icon: 'nav-workshops', external: true },
-  { label: 'VID&Eacute;OS', href: '/videos', icon: 'nav-video-course' },
-  { label: 'VOYAGES', href: '/voyages-culinaires', icon: 'nav-travel' },
-  { label: 'REPORTAGES', href: '/reportages', icon: 'nav-reportage' },
-  { label: 'S&Eacute;LECTIONS', href: '/selection', icon: 'nav-featured' },
+  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', iconSrc: workshopsMenuIcon.src, external: true },
+  { label: 'VID&Eacute;OS', href: '/videos', iconSrc: videosMenuIcon.src },
+  { label: 'VOYAGES', href: '/voyages-culinaires', iconSrc: voyagesMenuIcon.src },
+  { label: 'REPORTAGES', href: '/reportages', iconSrc: reportagesMenuIcon.src },
+  { label: 'S&Eacute;LECTIONS', href: '/selection', iconSrc: selectionsMenuIcon.src },
 ];
 
 const accountItems = [
@@ -295,9 +303,7 @@ const accountItems = [
                 rel={item.external ? 'noopener noreferrer' : undefined}
                 aria-haspopup="true"
               >
-                <span class="text-primary-turquoise">
-                  <Icon name={item.icon as any} size="menu" />
-                </span>
+                <img src={item.iconSrc} alt="" class="h-6 w-auto shrink-0 object-contain" loading="lazy" decoding="async" aria-hidden="true" />
                 <span set:html={item.label} />
                 <Icon name="chevron-down" size="sm" class="w-[15px] h-[15px] text-[#6F7680] transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
               </a>
@@ -322,9 +328,7 @@ const accountItems = [
               target={item.external ? '_blank' : undefined}
               rel={item.external ? 'noopener noreferrer' : undefined}
             >
-              <span class="text-primary-turquoise">
-                <Icon name={item.icon as any} size="menu" />
-              </span>
+              <img src={item.iconSrc} alt="" class="h-6 w-auto shrink-0 object-contain" loading="lazy" decoding="async" aria-hidden="true" />
               <span set:html={item.label} />
             </a>
           )
@@ -367,9 +371,7 @@ const accountItems = [
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
                   >
-                    <span class="text-primary-turquoise">
-                      <Icon name={item.icon as any} size="menu" />
-                    </span>
+                    <img src={item.iconSrc} alt="" class="h-6 w-auto shrink-0 object-contain" loading="lazy" decoding="async" aria-hidden="true" />
                     <span set:html={item.label} />
                   </a>
                   <button
@@ -412,9 +414,7 @@ const accountItems = [
                 rel={item.external ? 'noopener noreferrer' : undefined}
               >
                 <span class="flex items-center gap-3">
-                  <span class="text-primary-turquoise">
-                    <Icon name={item.icon as any} size="menu" />
-                  </span>
+                  <img src={item.iconSrc} alt="" class="h-6 w-auto shrink-0 object-contain" loading="lazy" decoding="async" aria-hidden="true" />
                   <span set:html={item.label} />
                 </span>
                 <span aria-hidden="true">&#8250;</span>
