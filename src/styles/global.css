@@ -135,7 +135,9 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
-
+.home-shell .typ-meta {
+    border-bottom: 0px;
+}
 .typ-subtitle {
   font-family: var(--font-mono);
   font-size: 13px;

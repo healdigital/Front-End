@@ -356,26 +356,44 @@ const accountItems = [
 
     <nav class="px-6 py-4">
       <ul class="space-y-3">
-        {navItems.map((item) => (
+        {navItems.map((item, index) => (
           <li class="border-b border-white/10 last:border-b-0">
             {item.children?.length ? (
               <div class="py-3">
-                <a
-                  href={item.href}
-                  class="flex items-center justify-between text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
-                >
-                  <span class="flex items-center gap-3">
+                <div class="flex items-center gap-3">
+                  <a
+                    href={item.href}
+                    class="flex min-w-0 flex-1 items-center gap-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                  >
                     <span class="text-primary-turquoise">
                       <Icon name={item.icon as any} size="sm" />
                     </span>
                     <span set:html={item.label} />
-                  </span>
-                  <Icon name="chevron-down" size="sm" class="w-4 h-4" />
-                </a>
+                  </a>
+                  <button
+                    type="button"
+                    class="inline-flex h-8 w-8 items-center justify-center text-white/70 transition-colors hover:text-white"
+                    aria-label={`Afficher le sous-menu ${item.label.replace(/&[^;]+;/g, '').toLowerCase()}`}
+                    aria-expanded="false"
+                    aria-controls={`mobile-submenu-${index}`}
+                    data-mobile-submenu-trigger
+                  >
+                    <Icon
+                      name="chevron-down"
+                      size="sm"
+                      class="w-4 h-4 transition-transform duration-200"
+                      data-mobile-submenu-chevron
+                    />
+                  </button>
+                </div>
 
-                <div class="ml-9 mt-3 space-y-2 border-l border-white/10 pl-4">
+                <div
+                  id={`mobile-submenu-${index}`}
+                  class="ml-9 mt-3 hidden space-y-2 border-l border-white/10 pl-4"
+                  data-mobile-submenu
+                >
                   {item.children.map((child) => (
                     <a
                       href={child.href}
@@ -470,6 +488,7 @@ const accountItems = [
   const mobileCurrentLangLabel = mobileLangMenu?.querySelector('[data-mobile-lang-current-label]');
   const mobileLanguageOptions = Array.from(mobileLangMenu?.querySelectorAll('[data-mobile-lang-option]') || []);
   const mobileLangChevron = mobileLangMenu?.querySelector('[data-mobile-lang-chevron]');
+  const mobileSubmenuTriggers = Array.from(document.querySelectorAll('[data-mobile-submenu-trigger]'));
   const body = document.body;
   let languageLoadingTimeout = null;
 
@@ -497,6 +516,15 @@ const accountItems = [
       body.classList.add('overflow-hidden');
     } else {
       toggleMobileLanguageMenu(false);
+      mobileSubmenuTriggers.forEach((trigger) => {
+        const controls = trigger.getAttribute('aria-controls');
+        const panel = controls ? document.getElementById(controls) : null;
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger
+          .querySelector('[data-mobile-submenu-chevron]')
+          ?.classList.remove('rotate-180');
+        panel?.classList.add('hidden');
+      });
       menuDrawer.setAttribute('inert', '');
       menuDrawer.classList.add('-translate-x-full');
       menuOverlay.classList.add('opacity-0', 'pointer-events-none');
@@ -678,6 +706,21 @@ const accountItems = [
       submitHeaderSearch(query);
   });
   mobileSearchClose?.addEventListener('click', () => toggleMobileSearch(false));
+  mobileSubmenuTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      const controls = trigger.getAttribute('aria-controls');
+      const panel = controls ? document.getElementById(controls) : null;
+      if (!panel) return;
+
+      const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+      trigger.setAttribute('aria-expanded', String(!isOpen));
+      trigger
+        .querySelector('[data-mobile-submenu-chevron]')
+        ?.classList.toggle('rotate-180', !isOpen);
+      panel.classList.toggle('hidden', isOpen);
+    });
+  });
 
   const initialMenuLang =
     document.documentElement.getAttribute('data-lang') ||
