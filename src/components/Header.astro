@@ -1,13 +1,13 @@
 ---
 import Icon from './atoms/Icon.astro';
-import booksMenuIcon from '../../menu/la_cuisine_de_bernard_24_books 1.png';
-import savoryMenuIcon from '../../menu/sale 1.png';
-import sweetMenuIcon from '../../menu/la_cuisine_de_bernard_24_sweet-37 1.png';
-import workshopsMenuIcon from '../../menu/la_cuisine_de_bernard_24_savory 2.png';
-import videosMenuIcon from '../../menu/la_cuisine_de_bernard_24_video_course 1.png';
-import voyagesMenuIcon from '../../menu/voyage 1.png';
-import reportagesMenuIcon from '../../menu/Page-1.png';
-import selectionsMenuIcon from '../../menu/Frame-1 1.png';
+import booksMenuIcon from '../../menu/la_cuisine_de_bernard_24_books 1.svg?url';
+import savoryMenuIcon from '../../menu/sale 1.svg?url';
+import sweetMenuIcon from '../../menu/la_cuisine_de_bernard_24_sweet-37 1.svg?url';
+import workshopsMenuIcon from '../../menu/la_cuisine_de_bernard_24_savory 2.svg?url';
+import videosMenuIcon from '../../menu/la_cuisine_de_bernard_24_video_course 1.svg?url';
+import voyagesMenuIcon from '../../menu/voyage 1.svg?url';
+import reportagesMenuIcon from '../../menu/reportages 1.svg?url';
+import selectionsMenuIcon from '../../menu/Frame-1 1.svg?url';
 
 interface Props {
   lang?: string;
@@ -35,7 +35,7 @@ const navItems = [
   {
     label: 'MES LIVRES',
     href: '/mes-livres/',
-    iconSrc: booksMenuIcon.src,
+    iconSrc: booksMenuIcon,
     children: [
       {
         label: 'Chocolat maison',
@@ -46,7 +46,7 @@ const navItems = [
   {
     label: 'SAL&Eacute;',
     href: '/recettes-salees/',
-    iconSrc: savoryMenuIcon.src,
+    iconSrc: savoryMenuIcon,
     children: [
       {
         label: 'Index des recettes sal&eacute;es avec photo',
@@ -61,7 +61,7 @@ const navItems = [
   {
     label: 'SUCR&Eacute;',
     href: '/recettes-sucrees/',
-    iconSrc: sweetMenuIcon.src,
+    iconSrc: sweetMenuIcon,
     children: [
       {
         label: 'Index des recettes sucr&eacute;es avec photo',
@@ -73,11 +73,11 @@ const navItems = [
       },
     ],
   },
-  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', iconSrc: workshopsMenuIcon.src, external: true },
-  { label: 'VID&Eacute;OS', href: '/videos', iconSrc: videosMenuIcon.src },
-  { label: 'VOYAGES', href: '/voyages-culinaires', iconSrc: voyagesMenuIcon.src },
-  { label: 'REPORTAGES', href: '/reportages', iconSrc: reportagesMenuIcon.src },
-  { label: 'S&Eacute;LECTIONS', href: '/selection', iconSrc: selectionsMenuIcon.src },
+  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', iconSrc: workshopsMenuIcon, external: true },
+  { label: 'VID&Eacute;OS', href: '/videos', iconSrc: videosMenuIcon },
+  { label: 'VOYAGES', href: '/voyages-culinaires', iconSrc: voyagesMenuIcon },
+  { label: 'REPORTAGES', href: '/reportages', iconSrc: reportagesMenuIcon },
+  { label: 'S&Eacute;LECTIONS', href: '/selection', iconSrc: selectionsMenuIcon },
 ];
 
 const accountItems = [
