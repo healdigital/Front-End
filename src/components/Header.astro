@@ -27,7 +27,7 @@ const navItems = [
   {
     label: 'MES LIVRES',
     href: '/mes-livres/',
-    icon: 'book',
+    icon: 'nav-books',
     children: [
       {
         label: 'Chocolat maison',
@@ -38,7 +38,7 @@ const navItems = [
   {
     label: 'SAL&Eacute;',
     href: '/recettes-salees/',
-    icon: 'utensils',
+    icon: 'nav-savory',
     children: [
       {
         label: 'Index des recettes sal&eacute;es avec photo',
@@ -53,7 +53,7 @@ const navItems = [
   {
     label: 'SUCR&Eacute;',
     href: '/recettes-sucrees/',
-    icon: 'heart',
+    icon: 'nav-sweet',
     children: [
       {
         label: 'Index des recettes sucr&eacute;es avec photo',
@@ -65,11 +65,11 @@ const navItems = [
       },
     ],
   },
-  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', icon: 'star', external: true },
-  { label: 'VID&Eacute;OS', href: '/videos', icon: 'video' },
-  { label: 'VOYAGES', href: '/voyages-culinaires', icon: 'map-pin' },
-  { label: 'REPORTAGES', href: '/reportages', icon: 'book' },
-  { label: 'S&Eacute;LECTIONS', href: '/selection', icon: 'star' },
+  { label: 'LES ATELIERS', href: 'https://atelier-lacuisinedebernard.com/', icon: 'nav-workshops', external: true },
+  { label: 'VID&Eacute;OS', href: '/videos', icon: 'nav-video-course' },
+  { label: 'VOYAGES', href: '/voyages-culinaires', icon: 'nav-travel' },
+  { label: 'REPORTAGES', href: '/reportages', icon: 'nav-reportage' },
+  { label: 'S&Eacute;LECTIONS', href: '/selection', icon: 'nav-featured' },
 ];
 
 const accountItems = [
@@ -130,7 +130,7 @@ const accountItems = [
           <input
             type="search"
             placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
-            class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/50 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-body text-[14px]"
+            class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/52 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-maison text-[17px] tracking-[0.01em]"
             data-header-search
           />
         </div>
@@ -258,7 +258,7 @@ const accountItems = [
           <input
             type="search"
             placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
-            class="w-full h-[42px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/50 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-body text-[14px]"
+            class="w-full h-[42px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/52 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-maison text-[15px] tracking-[0.01em]"
             data-mobile-header-search
           />
         </div>
@@ -290,16 +290,16 @@ const accountItems = [
             <div class="relative group">
               <a
                 href={item.href}
-                class="flex items-center gap-2 text-[13px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+                class="flex items-center gap-[10px] text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
                 aria-haspopup="true"
               >
                 <span class="text-primary-turquoise">
-                  <Icon name={item.icon as any} size="sm" />
+                  <Icon name={item.icon as any} size="menu" />
                 </span>
                 <span set:html={item.label} />
-                <Icon name="chevron-down" size="sm" class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
+                <Icon name="chevron-down" size="sm" class="w-[15px] h-[15px] text-[#6F7680] transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
               </a>
 
               <div class="absolute left-0 top-full pt-3 opacity-0 invisible pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:pointer-events-auto">
@@ -318,12 +318,12 @@ const accountItems = [
           ) : (
             <a
               href={item.href}
-              class="flex items-center gap-2 text-[13px] uppercase tracking-wide text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+              class="flex items-center gap-[10px] text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
               target={item.external ? '_blank' : undefined}
               rel={item.external ? 'noopener noreferrer' : undefined}
             >
               <span class="text-primary-turquoise">
-                <Icon name={item.icon as any} size="sm" />
+                <Icon name={item.icon as any} size="menu" />
               </span>
               <span set:html={item.label} />
             </a>
@@ -363,12 +363,12 @@ const accountItems = [
                 <div class="flex items-center gap-3">
                   <a
                     href={item.href}
-                    class="flex min-w-0 flex-1 items-center gap-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+                    class="flex min-w-0 flex-1 items-center gap-3 text-white/80 hover:text-white typ-nav"
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
                   >
                     <span class="text-primary-turquoise">
-                      <Icon name={item.icon as any} size="sm" />
+                      <Icon name={item.icon as any} size="menu" />
                     </span>
                     <span set:html={item.label} />
                   </a>
@@ -407,13 +407,13 @@ const accountItems = [
             ) : (
               <a
                 href={item.href}
-                class="flex items-center justify-between py-3 text-[14px] uppercase tracking-wide text-white/80 hover:text-white"
+                class="flex items-center justify-between py-3 text-white/80 hover:text-white typ-nav"
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
               >
                 <span class="flex items-center gap-3">
                   <span class="text-primary-turquoise">
-                    <Icon name={item.icon as any} size="sm" />
+                    <Icon name={item.icon as any} size="menu" />
                   </span>
                   <span set:html={item.label} />
                 </span>

@@ -146,10 +146,12 @@ body {
 }
 
 .typ-nav {
-  font-family: var(--font-body);
+  font-family: var(--font-maison);
   font-size: 14px;
+  font-weight: 500;
+  line-height: 1.15;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
 }
 
 .typ-button {
