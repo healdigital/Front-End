@@ -1,15 +1,21 @@
-# LCDB Tracker + Chat Summary (Updated: 2026-03-02)
+# LCDB Tracker + Chat Summary (Updated: 2026-03-16)
 
 ## Current State
 
-- Front-end current delivery scope: `DONE`
+- Front-end current delivery scope: `IN PROGRESS`
+- Article detail page redesign scope: `IN PROGRESS`
+- Payload recipe data export / cleanup scope: `IN PROGRESS`
 - Payload recipe-builder / editor UX scope: `DONE`
 - Lighthouse sign-off captured: `DONE`
 - Legacy article migration to V2 schema: `ON HOLD BY CLIENT`
 
 ## Current Active Pending
 
-- None in the current delivery track.
+- Final article detail page polish against latest Figma once `.fig` / proper Figma access is available
+- Recipe card data cleanup/export from WPRM-style content into cleaner Payload-backed structure
+- Verify live related articles after deploy using prepared JSON fallback
+- Continue recipe card setup after clean export is ready
+- Review remaining mobile/header interactions after current submenu fix on staging/live
 
 ## Current On Hold
 
@@ -17,9 +23,38 @@
 - Further translation architecture changes until client confirms resume
 - Payload legacy articles migration to V2 schema
 - Legacy featured-media import / media-aware migration
+- Exact comments redesign parity with Figma inside Disqus embed
+
+## Current Constraints
+
+- Exact Figma parity is limited until proper Figma access or `.fig` source is available
+- Exact comments UI parity is limited because Disqus comments render inside an embedded iframe
+- Recipe card data is still mixed into broader content/JSON and needs cleaner export before final setup
 
 ## Latest Confirmed Completed
 
+- Header dropdowns added for `MES LIVRES`, `SALÉ`, and `SUCRÉ`
+- Mobile navigation refined so submenu items stay collapsed by default and open on tap
+- Menu-linked landing pages redesigned:
+- `mes-livres`
+- `chocolat-maison`
+- `recettes-salees`
+- `le-sale`
+- `recettes-sucrees`
+- `le-sucre`
+- `voyages-culinaires`
+- `videos`
+- Article detail page significantly refined toward Figma:
+- newsletter block and modal
+- related articles slider section
+- sidebar layout and sticky behavior
+- preparation / ingredients / nutrition presentation
+- featured image conditional behavior when the first content paragraph already contains an image
+- Article detail page metadata adjustments:
+- author forced to `Bernard Laurance`
+- sweet/savory label derived from article category/tag data
+- Related articles fallback added for deploys that build with `USE_LOCAL_JSON=1`
+- Comments shell styling refined without changing the current HTML structure
 - Homepage pagination restored and working for:
 - `Découvrez mes recettes`
 - `Ces recettes pourrez vous intéresser`
@@ -66,5 +101,18 @@
 - Stable rollback tags already exist:
 - Front-End: `stable-2026-03-02-fe`
 - Back-End: `stable-2026-03-02-be`
+
+- Recent front-end commits in current delivery track:
+- `72c25fd feat: refine mobile navigation`
+- `886f5a5 feat: refine article details page realted artciels`
+- `5d4b175 feat: refine article details page`
+- `7600d45 feat: refine comments`
+- `6181c8f fix: refine comments section styling`
+- `954ea42 fix: refine newsletter modal styling`
+
+- Live related-articles failure root cause was confirmed in deploy logs:
+- build was running with `USE_LOCAL_JSON=1`
+- Mongo was unavailable in deploy (`MONGODB_URI not found`)
+- fallback support has now been added in code for prepared/local article data
 
 - Backend migration code for `Payload legacy articles migration to V2 schema` has been removed from the repo after client pause.

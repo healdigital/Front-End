@@ -1051,14 +1051,14 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-layout {
     display: grid;
-    gap: 28px;
+    gap: 32px;
   }
 
   .article-main-column {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 30px;
   }
 
   .article-sidebar-column {
@@ -1067,7 +1067,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-intro-card {
-    padding: 24px 0 20px;
+    padding: 22px 0 24px;
     border-bottom: 1px solid #d8d2c2;
   }
 
@@ -1077,7 +1077,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     align-items: center;
     justify-content: space-between;
     gap: 16px 20px;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
   }
 
   .article-breadcrumb {
@@ -1106,11 +1106,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 18px;
+    gap: 20px;
   }
 
   .article-intro-copy {
-    max-width: 720px;
+    max-width: 760px;
     flex: 1 1 560px;
   }
 
@@ -1118,18 +1118,18 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin: 0;
     color: #111111;
     font-family: var(--font-heading);
-    font-size: clamp(3rem, 5vw, 5.2rem);
-    line-height: 0.92;
+    font-size: clamp(3.1rem, 5vw, 5.6rem);
+    line-height: 0.9;
     letter-spacing: 0.01em;
   }
 
   .article-intro-rating {
-    margin-top: 14px;
+    margin-top: 16px;
     display: inline-flex;
     align-items: center;
     gap: 12px;
     color: #5f6671;
-    font-size: 0.98rem;
+    font-size: 1.02rem;
   }
 
   .article-intro-stars {
@@ -1144,16 +1144,17 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-intro-meta {
-    margin-top: 26px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px 18px;
+    width: min(100%, 760px);
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px 28px;
   }
 
   .article-intro-meta-item {
-    min-width: 190px;
+    min-width: 0;
     display: grid;
-    gap: 6px;
+    gap: 8px;
   }
 
   .article-intro-meta-label {
@@ -1169,7 +1170,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-intro-meta-value {
     color: #111111;
-    font-size: 1rem;
+    font-size: 1.08rem;
     line-height: 1.5;
   }
 
@@ -1209,13 +1210,13 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
   }
 
   .article-toolbar-share-links {
     display: inline-flex;
     align-items: center;
-    gap: 14px;
+    gap: 15px;
   }
 
   .article-share-inline :global(a) {
@@ -1240,7 +1241,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     justify-content: center;
     color: #111111;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
@@ -1264,8 +1265,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-toolbar-link--print {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 999px;
     border: 1px solid #d8d2c2;
     background: rgba(255, 255, 255, 0.72);
@@ -1276,8 +1277,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-toolbar-link--favorite {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 999px;
     border: 1px solid #d8d2c2;
     background: rgba(255, 255, 255, 0.72);
@@ -1299,27 +1300,28 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-hero-image {
     overflow: hidden;
-    border-radius: 18px;
-    background: #0e1014;
+    border-radius: 20px;
+    background: #f4efe4;
+    border: 1px solid #ddd7ca;
   }
 
   .article-hero-image img {
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 1.35 / 1;
     object-fit: cover;
     object-position: center;
     display: block;
   }
 
   .article-content-card {
-    padding: 28px;
+    padding: 34px 36px 38px;
   }
 
   .article-chip-groups {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .article-chip-link {
@@ -1347,7 +1349,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content {
-    color: #5b5b5b;
+    color: #4e4d48;
+    font-size: 1.03rem;
+    line-height: 1.84;
   }
 
   .article-content :global(.wp-block-image),
@@ -1401,18 +1405,18 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content :global(.wprm-recipe-container) {
-    margin: 0 0 32px !important;
-    padding: 32px !important;
+    margin: 8px 0 36px !important;
+    padding: 34px 36px 38px !important;
     border: 1px solid #d8d2c2 !important;
-    border-radius: 20px !important;
+    border-radius: 22px !important;
     background: #fbfaf6 !important;
-    box-shadow: 0 18px 40px rgba(17, 17, 17, 0.05);
+    box-shadow: 0 16px 36px rgba(17, 17, 17, 0.04);
   }
 
   .article-content :global(.wprm-recipe) {
     display: grid !important;
-    grid-template-columns: minmax(0, 0.98fr) minmax(360px, 1.02fr);
-    gap: 28px 36px;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.98fr);
+    gap: 30px 40px;
     align-items: start;
   }
 
@@ -1434,12 +1438,12 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-content :global(.wprm-recipe-image img) {
     width: 100%;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     display: block;
     margin: 0 !important;
     border: 1px solid #d8d2c2 !important;
-    border-radius: 18px !important;
+    border-radius: 20px !important;
     background: #ece6d8;
   }
 
@@ -1448,8 +1452,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin: 0 !important;
     color: #111111 !important;
     font-family: var(--font-heading) !important;
-    font-size: clamp(2.5rem, 4vw, 3.8rem) !important;
-    line-height: 0.98 !important;
+    font-size: clamp(2.55rem, 4vw, 3.95rem) !important;
+    line-height: 0.96 !important;
     letter-spacing: 0.01em;
   }
 
@@ -1474,16 +1478,16 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-content :global(.wprm-recipe-summary) {
     margin: 0 !important;
     color: #444641 !important;
-    font-size: 1.08rem !important;
-    line-height: 1.9 !important;
-    max-width: 34ch;
+    font-size: 1.06rem !important;
+    line-height: 1.86 !important;
+    max-width: 38ch;
   }
 
   .article-content :global(.wprm-recipe-meta-container),
   .article-content :global(.wprm-recipe-details-container) {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px 16px;
     grid-column: 1 / -1;
     margin: 0 !important;
   }
@@ -1491,7 +1495,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-content :global(.wprm-recipe-block-container),
   .article-content :global(.wprm-recipe-block-container-table) {
     min-width: 0;
-    padding: 16px 18px;
+    padding: 18px 18px 17px;
     border: 1px solid #d8d2c2 !important;
     border-radius: 16px;
     background: #ffffff;
@@ -1519,24 +1523,24 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-content :global(.wprm-template-chic-buttons) {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 12px 14px;
     grid-column: 1 / -1;
-    margin: 8px 0 0 !important;
+    margin: 10px 0 4px !important;
   }
 
   .article-content :global(.wprm-template-chic-buttons a) {
-    min-height: 56px;
+    min-height: 54px;
     padding: 0 18px !important;
-    border-radius: 4px !important;
+    border-radius: 3px !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     gap: 8px;
     border: 1px solid #d8d2c2 !important;
     font-family: var(--font-mono) !important;
-    font-size: 11px !important;
+    font-size: 10px !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.12em !important;
+    letter-spacing: 0.16em !important;
     text-decoration: none !important;
     text-align: center;
     line-height: 1.3 !important;
@@ -1570,8 +1574,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-content :global(.wprm-container-columns-spaced) {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px 16px;
     grid-column: 1 / -1;
     margin: 0 !important;
   }
@@ -1586,10 +1590,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-content :global(.wprm-recipe-header) {
     display: block !important;
-    margin: 28px 0 18px !important;
+    margin: 34px 0 18px !important;
     color: #111111 !important;
     font-family: var(--font-heading) !important;
-    font-size: clamp(2.2rem, 4vw, 3.2rem) !important;
+    font-size: clamp(2.3rem, 4vw, 3.3rem) !important;
     line-height: 1.02 !important;
   }
 
@@ -1606,7 +1610,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-content :global(.wprm-recipe-instruction-group-name) {
     margin: 0 0 18px !important;
     font-family: var(--font-body) !important;
-    font-size: clamp(1.9rem, 2.3vw, 2.55rem) !important;
+    font-size: clamp(1.7rem, 2.1vw, 2.1rem) !important;
     font-weight: 600 !important;
     text-transform: none !important;
     letter-spacing: normal !important;
@@ -1619,7 +1623,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     padding: 0 !important;
     margin: 0 !important;
     display: grid !important;
-    gap: 18px;
+    gap: 16px;
   }
 
   .article-content :global(.wprm-recipe-ingredient) {
@@ -1657,7 +1661,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content :global(.wprm-recipe-ingredients-container) {
-    padding: 28px 30px 30px !important;
+    padding: 30px 30px 32px !important;
     border: 1px solid #e2ddd1 !important;
     border-radius: 18px !important;
     background: #ffffff !important;
@@ -1668,16 +1672,16 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     align-items: center;
     justify-content: space-between;
     gap: 18px;
-    margin: 0 0 20px !important;
+    margin: 0 0 22px !important;
   }
 
   .article-content :global(.article-ingredients-note) {
     margin: 0 0 28px;
-    padding: 18px 18px 18px 16px;
+    padding: 17px 18px 17px 16px;
     border-left: 3px solid #54b6b1;
     background: #eef9f8;
     color: #54b6b1;
-    font-size: 1.08rem;
+    font-size: 1rem;
     line-height: 1.5;
   }
 
@@ -1745,17 +1749,17 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     padding: 5px;
     border: 1px solid #ece7da;
     border-radius: 999px;
-    background: #f4f1eb;
+    background: #f7f4ed;
     vertical-align: middle;
   }
 
   .article-content :global(.wprm-recipe-adjustable-servings) {
-    min-width: 50px;
-    height: 38px;
-    padding: 0 14px;
+    min-width: 48px;
+    height: 36px;
+    padding: 0 13px;
     border-radius: 999px;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 0.08em;
     color: #9b988f;
     background: transparent;
@@ -1817,13 +1821,13 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content :global(.article-visual-journey) {
-    margin-top: 40px;
-    padding-top: 8px;
+    margin-top: 34px;
+    padding-top: 6px;
     border-top: 0;
   }
 
   .article-content :global(.article-visual-journey-header) {
-    margin-bottom: 22px;
+    margin-bottom: 24px;
   }
 
   .article-content :global(.article-visual-eyebrow) {
@@ -1835,7 +1839,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin: 0;
     color: #111111;
     font-family: var(--font-heading);
-    font-size: clamp(2.1rem, 4vw, 3.1rem);
+    font-size: clamp(2.35rem, 4vw, 3.3rem);
     line-height: 1.02;
   }
 
@@ -1848,14 +1852,14 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: flex;
     align-items: center;
     gap: 18px;
-    margin: 10px 0 2px;
+    margin: 10px 0 0;
   }
 
   .article-content :global(.article-step-group-title) {
     margin: 0;
     color: #111111;
     font-family: var(--font-body);
-    font-size: clamp(1.85rem, 2.1vw, 2.2rem);
+    font-size: clamp(1.6rem, 1.95vw, 2rem);
     font-weight: 700;
     line-height: 1.12;
   }
@@ -1870,37 +1874,37 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-content :global(.article-step-card) {
     display: grid;
     gap: 22px;
-    padding: 30px 34px 34px;
-    border: 0;
+    padding: 28px 30px 30px;
+    border: 1px solid #ddd7ca;
     border-radius: 18px;
-    background: #fbfaf6;
+    background: #ffffff;
   }
 
   .article-content :global(.article-step-copy) {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 20px;
+    gap: 18px;
     align-items: start;
   }
 
   .article-content :global(.article-step-badge) {
-    width: 56px;
-    height: 56px;
+    width: 54px;
+    height: 54px;
     border-radius: 999px;
     background: #54b6b1;
     color: #ffffff;
     display: grid;
     place-items: center;
     font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .article-content :global(.article-step-text) {
     display: grid;
-    gap: 12px;
+    gap: 10px;
     align-content: start;
-    max-width: 62ch;
+    max-width: 60ch;
   }
 
   .article-content :global(.article-step-section) {
@@ -1916,16 +1920,16 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin: 0 !important;
     color: #111111;
     font-family: var(--font-body);
-    font-size: clamp(1.9rem, 2.2vw, 2.45rem);
+    font-size: clamp(1.55rem, 2vw, 1.95rem);
     font-weight: 700;
-    line-height: 1.14;
+    line-height: 1.18;
   }
 
   .article-content :global(.article-step-body) {
     margin: 0 !important;
     color: #4d4c47;
-    font-size: 1.08rem;
-    line-height: 1.68;
+    font-size: 1rem;
+    line-height: 1.72;
     max-width: 58ch;
   }
 
@@ -1935,11 +1939,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-content :global(.article-step-media img) {
     width: 100%;
-    max-height: 430px;
+    max-height: 520px;
     object-fit: cover;
     display: block;
     margin: 0 !important;
-    border: 0;
+    border: 1px solid #ded8ca;
     border-radius: 18px;
     background: #ece6d8;
   }
@@ -1951,6 +1955,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     padding: 0;
     overflow: hidden;
     background: #fbfaf6;
+    border-radius: 18px;
+    border: 1px solid #ddd7ca;
   }
 
   .article-newsletter-media {
@@ -1970,7 +1976,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 36px 30px 32px;
+    padding: 38px 32px 34px;
     background:
       linear-gradient(135deg, rgba(4, 30, 41, 0.98) 0%, rgba(4, 30, 41, 0.98) 64%, rgba(0, 62, 73, 0.98) 100%),
       #041e29;
@@ -2044,11 +2050,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-related-section--fullwidth {
-    margin-top: 42px;
+    margin-top: 46px;
   }
 
   .article-related-header {
-    margin-bottom: 26px;
+    margin-bottom: 24px;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -2059,7 +2065,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin: 0;
     color: #111111;
     font-family: var(--font-heading);
-    font-size: clamp(2.3rem, 4vw, 3.4rem);
+    font-size: clamp(2.25rem, 3.8vw, 3.1rem);
     line-height: 1.02;
   }
 
@@ -2216,8 +2222,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin: 0;
     color: #111111;
     font-family: var(--font-heading);
-    font-size: clamp(1.8rem, 2vw, 2.7rem);
-    line-height: 1.02;
+    font-size: clamp(1.55rem, 1.9vw, 2rem);
+    line-height: 1.08;
   }
 
   .article-related-footer {
@@ -2261,7 +2267,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-top: 22px;
+    margin-top: 20px;
     padding-left: 4px;
     position: relative;
     z-index: 2;
@@ -2274,8 +2280,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-related-dot {
     border: 0;
     padding: 0;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 999px;
     background: #8e887b;
     transition: transform 0.2s ease, background-color 0.2s ease;
@@ -2304,15 +2310,15 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   @media (min-width: 1024px) {
     .article-layout {
-      grid-template-columns: minmax(0, 1fr) 412px;
+      grid-template-columns: minmax(0, 1fr) 396px;
       align-items: stretch;
-      gap: 26px;
+      gap: 30px;
     }
 
     .article-sidebar-column {
       align-self: stretch;
       display: flex;
-      padding-left: 26px;
+      padding-left: 30px;
       border-left: 1px solid #d8d2c2;
     }
 
@@ -2329,6 +2335,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   @media (max-width: 1023px) {
+    .article-content-card {
+      padding: 26px;
+    }
+
     .article-content :global(.wprm-recipe) {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -2383,6 +2393,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-intro-meta {
       margin-top: 20px;
       gap: 14px;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .article-intro-meta-item {
@@ -2444,6 +2455,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-content :global(.article-step-copy) {
       grid-template-columns: 1fr;
       gap: 14px;
+    }
+
+    .article-content :global(.article-step-card) {
+      padding: 22px 20px 22px;
     }
 
     .article-content :global(.article-step-badge) {
