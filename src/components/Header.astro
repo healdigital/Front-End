@@ -8,7 +8,6 @@ import videosMenuIcon from '../../menu/la_cuisine_de_bernard_24_video_course 1.s
 import voyagesMenuIcon from '../../menu/voyage 1.svg?raw';
 import reportagesMenuIcon from '../../menu/reportages 1.svg?raw';
 import selectionsMenuIcon from '../../menu/Frame-1 1.svg?raw';
-import headerHeartIcon from '../../menu/hear_Vector.svg?raw';
 
 interface Props {
   lang?: string;
@@ -202,7 +201,9 @@ const accountItems = [
           <img src="/images/bernard-avatar-mask.png" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />
         </a>
         <a href="/favoris" class="inline-flex items-center gap-[6px] text-white/85 hover:text-white" aria-label="Favoris">
-          <span class="header-favorites-icon" aria-hidden="true" set:html={headerHeartIcon}></span>
+          <span class="header-favorites-icon" aria-hidden="true">
+            <img src="/images/client-favorites.svg" alt="" loading="lazy" decoding="async" />
+          </span>
           <span class="header-utility-text text-[17px] leading-none normal-case" data-header-utility-label>3</span>
         </a>
       </div>
@@ -534,10 +535,16 @@ const accountItems = [
     justify-content: center;
   }
 
-  .header-favorites-icon :global(svg) {
+  .header-favorites-icon :global(svg),
+  .header-favorites-icon img {
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  .header-favorites-icon img {
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
   }
 
   .header-favorites-icon :global(path) {
