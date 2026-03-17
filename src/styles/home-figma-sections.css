@@ -16,37 +16,18 @@ body {
   aspect-ratio: unset;
 }
 
-.header-main img.h-8.lg\:h-9.w-auto {
-  width: 93px;
-  height: 67px;
-}
+/*
+  Header styling moved to src/components/Header.astro so the desktop header
+  can match the approved design without broad global selector conflicts.
 
-.header-bottom span {
-  color: #091D23;
-  font-size: 15px;
-  font-weight: 500;
-  font-family: var(--font-maison);
-}
-
-.header-bottom svg {
-  color: #54B6B1;
-}
-
-.header-bottom {
-  background: #fff;
-}
-
-.header-main input {
-  color: #FFFFFFAB;
-  font-weight: 300;
-  font-size: 16px;
-  font-family: var(--font-maison);
-}
-
-.header-main span {
-  font-size: 14px;
-  font-family: var(--font-maison);
-}
+  Old broad rules intentionally disabled:
+  - .header-main img.h-8.lg\:h-9.w-auto
+  - .header-bottom span
+  - .header-bottom svg
+  - .header-bottom
+  - .header-main input
+  - .header-main span
+*/
 
 .data-promo-bar p {
   font-family: var(--font-maison) !important;

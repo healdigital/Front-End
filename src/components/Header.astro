@@ -133,14 +133,15 @@ const accountItems = [
       <!-- Search (desktop) -->
       <div class="hidden lg:flex flex-1 max-w-[640px]">
         <div class="relative w-full">
-          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/50">
-            <Icon name="search" size="sm" />
+          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/42">
+            <Icon name="search" size="sm" class="w-[18px] h-[18px]" />
           </div>
           <input
             type="search"
             placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
-            class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/52 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 font-maison text-[17px] tracking-[0.01em]"
+            class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/44 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 header-search-text"
             data-header-search
+            data-header-desktop-search
           />
         </div>
       </div>
@@ -148,23 +149,24 @@ const accountItems = [
       <div class="hidden lg:block w-px h-8 bg-white/25"></div>
 
       <!-- Desktop actions -->
-      <div class="hidden lg:flex items-center gap-7 ml-auto">
-        <a href="/contact" class="flex items-center gap-2 text-white/85 hover:text-white text-[14px] typ-nav">
-          <Icon name="mail" size="sm" />
-          <span>Contact</span>
+      <div class="hidden lg:flex items-center gap-[18px] ml-auto">
+        <a href="/contact" class="flex items-center gap-[7px] text-white/85 hover:text-white text-[14px] header-utility-text" data-header-utility-link>
+          <Icon name="mail" size="sm" class="w-[18px] h-[18px]" />
+          <span data-header-utility-label>Contact</span>
         </a>
         <div class="relative" data-lang-menu data-no-translate="true">
           <button
             type="button"
-            class="flex items-center gap-2 text-white/85 hover:text-white text-[14px] typ-nav"
+            class="flex items-center gap-[7px] text-white/85 hover:text-white text-[14px] header-utility-text"
             data-lang-trigger
+            data-header-utility-link
             aria-haspopup="true"
             aria-expanded="false"
             aria-busy="false"
             aria-controls="header-language-dropdown"
           >
-            <Icon name="globe" size="sm" />
-            <span data-lang-current-label set:html={languageLabel} />
+            <Icon name="globe" size="sm" class="w-[17px] h-[17px]" />
+            <span data-lang-current-label data-header-utility-label set:html={languageLabel} />
             <span
               class="hidden items-center gap-1 text-[11px] text-white/75"
               data-lang-loading
@@ -173,7 +175,7 @@ const accountItems = [
               <span class="inline-block w-3 h-3 rounded-full border border-white/35 border-t-white animate-spin"></span>
               <span>Translating...</span>
             </span>
-            <Icon name="chevron-down" size="sm" class="w-4 h-4" data-lang-chevron />
+            <Icon name="chevron-down" size="sm" class="w-[12px] h-[12px]" data-lang-chevron />
           </button>
           <div
             id="header-language-dropdown"
@@ -185,7 +187,7 @@ const accountItems = [
             {languageOptions.map((option) => (
               <button
                 type="button"
-                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] typ-nav text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
+                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] header-utility-text text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
                 data-lang={option.code}
                 data-lang-option
                 role="menuitemradio"
@@ -199,9 +201,9 @@ const accountItems = [
         <a href="/compte" class="w-9 h-9 rounded-full overflow-hidden border border-white/20" aria-label="Mon compte">
           <img src="/images/bernard-avatar-mask.png" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />
         </a>
-        <a href="/favoris" class="inline-flex items-center gap-2 text-white/85 hover:text-white" aria-label="Favoris">
+        <a href="/favoris" class="inline-flex items-center gap-[6px] text-white/85 hover:text-white" aria-label="Favoris">
           <span class="header-favorites-icon" aria-hidden="true" set:html={headerHeartIcon}></span>
-          <span class="text-[18px] leading-none font-body">3</span>
+          <span class="header-utility-text text-[17px] leading-none normal-case" data-header-utility-label>3</span>
         </a>
       </div>
 
@@ -228,7 +230,7 @@ const accountItems = [
             {languageOptions.map((option) => (
               <button
                 type="button"
-                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] typ-nav text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
+                class={`lang-btn w-full text-left px-3 py-2 rounded-xl text-[13px] header-mobile-nav-text text-white transition-colors hover:bg-white/10 hover:text-white ${option.code === currentLang ? 'hidden' : ''}`}
                 data-lang={option.code}
                 data-mobile-lang-option
                 role="menuitemradio"
@@ -299,13 +301,14 @@ const accountItems = [
             <div class="relative group">
               <a
                 href={item.href}
-                class="flex items-center gap-[10px] text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+                class="flex items-center gap-[10px] text-text-primary hover:text-primary-turquoise transition-colors header-main-nav-text"
+                data-header-nav-link
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
                 aria-haspopup="true"
               >
                 <span class="menu-nav-icon" aria-hidden="true" set:html={item.iconSvg} />
-                <span set:html={item.label} />
+                <span data-header-nav-label set:html={item.label} />
                 <Icon name="chevron-down" size="sm" class="w-[15px] h-[15px] text-[#6F7680] transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
               </a>
 
@@ -325,12 +328,13 @@ const accountItems = [
           ) : (
             <a
               href={item.href}
-              class="flex items-center gap-[10px] text-text-primary hover:text-primary-turquoise transition-colors typ-nav"
+              class="flex items-center gap-[10px] text-text-primary hover:text-primary-turquoise transition-colors header-main-nav-text"
+              data-header-nav-link
               target={item.external ? '_blank' : undefined}
               rel={item.external ? 'noopener noreferrer' : undefined}
             >
               <span class="menu-nav-icon" aria-hidden="true" set:html={item.iconSvg} />
-              <span set:html={item.label} />
+              <span data-header-nav-label set:html={item.label} />
             </a>
           )
         ))}
@@ -368,7 +372,7 @@ const accountItems = [
                 <div class="flex items-center gap-3">
                   <a
                     href={item.href}
-                    class="flex min-w-0 flex-1 items-center gap-3 text-white/80 hover:text-white typ-nav"
+                    class="flex min-w-0 flex-1 items-center gap-3 text-white/80 hover:text-white header-mobile-nav-text"
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
                   >
@@ -410,7 +414,7 @@ const accountItems = [
             ) : (
               <a
                 href={item.href}
-                class="flex items-center justify-between py-3 text-white/80 hover:text-white typ-nav"
+                class="flex items-center justify-between py-3 text-white/80 hover:text-white header-mobile-nav-text"
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
               >
@@ -448,6 +452,62 @@ const accountItems = [
 </header>
 
 <style>
+  @media (min-width: 1024px) {
+    :global(.header-main [data-header-desktop-search]) {
+      font-family: var(--font-maison) !important;
+      font-size: 15px !important;
+      font-weight: 300 !important;
+      line-height: 1 !important;
+      letter-spacing: 0 !important;
+      color: rgba(255, 255, 255, 0.78) !important;
+    }
+
+    :global(.header-main [data-header-desktop-search]::placeholder) {
+      font-family: var(--font-maison) !important;
+      font-size: 15px !important;
+      font-weight: 300 !important;
+      line-height: 1 !important;
+      letter-spacing: 0 !important;
+      color: rgba(255, 255, 255, 0.46) !important;
+      opacity: 1 !important;
+    }
+
+    :global(.header-main [data-header-utility-link]),
+    :global(.header-main [data-header-utility-label]) {
+      font-family: var(--font-maison) !important;
+      font-size: 13px !important;
+      font-weight: 300 !important;
+      line-height: 1 !important;
+      letter-spacing: 0 !important;
+      text-transform: uppercase !important;
+    }
+
+    :global(.header-main [data-lang-trigger]),
+    :global(.header-main [data-header-utility-link]) {
+      min-height: 21px;
+    }
+
+    :global(.header-bottom [data-header-nav-link]),
+    :global(.header-bottom [data-header-nav-label]) {
+      font-family: var(--font-maison) !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 1 !important;
+      letter-spacing: 0 !important;
+      text-transform: uppercase !important;
+    }
+  }
+
+  :global(.header-main .header-mobile-nav-text),
+  :global(.header-main .header-mobile-nav-text span) {
+    font-family: var(--font-maison) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0 !important;
+    text-transform: uppercase !important;
+  }
+
   .menu-nav-icon {
     display: inline-flex;
     width: 30px;

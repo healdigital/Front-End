@@ -1,6 +1,20 @@
 @import "tailwindcss";
 @import "./home-figma-sections.css";
 
+@font-face {
+  font-family: "Maison Neue";
+  src: url("https://db.onlinewebfonts.com/t/2173dceabf0710a335c0bca178efc162.eot");
+  src:
+    url("https://db.onlinewebfonts.com/t/2173dceabf0710a335c0bca178efc162.eot?#iefix") format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/2173dceabf0710a335c0bca178efc162.woff2") format("woff2"),
+    url("https://db.onlinewebfonts.com/t/2173dceabf0710a335c0bca178efc162.woff") format("woff"),
+    url("https://db.onlinewebfonts.com/t/2173dceabf0710a335c0bca178efc162.ttf") format("truetype"),
+    url("https://db.onlinewebfonts.com/t/2173dceabf0710a335c0bca178efc162.svg#Maison Neue") format("svg");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Custom animations */
 @layer components {
   .animate-pulse-slow {
@@ -145,14 +159,10 @@ body {
   letter-spacing: 0.23em;
 }
 
-.typ-nav {
-  font-family: var(--font-maison);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.15;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-}
+/*
+  Header typography is now owned by src/components/Header.astro.
+  Keep desktop header styles out of global.css to avoid cross-page cascade conflicts.
+*/
 
 .typ-button {
   font-family: var(--font-button);
