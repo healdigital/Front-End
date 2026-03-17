@@ -241,9 +241,11 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
           const notes = asText(ingredient.notes);
           if (!quantity && !item && !notes) return '';
 
-          const content = [quantity, item].filter(Boolean).join(' ');
-          const notesText = notes ? ` (${notes})` : '';
-          return `<li>${escapeHtml(`${content}${notesText}`.trim())}</li>`;
+          const amountHtml = quantity ? `<span class="wprm-recipe-ingredient-amount">${escapeHtml(quantity)}</span>` : '';
+          const itemHtml = item ? escapeHtml(item) : '';
+          const notesText = notes ? ` (${escapeHtml(notes)})` : '';
+          const row = [amountHtml, itemHtml].filter(Boolean).join(' ').trim();
+          return `<li>${row ? row + notesText : notesText}</li>`;
         })
         .filter(Boolean)
         .join('')
@@ -343,11 +345,22 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
   const tips = renderLexicalRichText(block.tips);
   const personalNotes = renderLexicalRichText(block.personalNotes);
 
+  const recipeId = 'main-recipe';
+
+  const servingsControls = [`
+    <button type="button" class="wprm-recipe-adjustable-servings wprm-toggle-active" data-recipe="${recipeId}" data-multiplier="1">1x</button>
+    <button type="button" class="wprm-recipe-adjustable-servings" data-recipe="${recipeId}" data-multiplier="2">2x</button>
+    <button type="button" class="wprm-recipe-adjustable-servings" data-recipe="${recipeId}" data-multiplier="3">3x</button>
+  `].join('');
+
   const ingredientSection = ingredientsList
     ? [
         '<section class="content-v2-block content-v2-recipe-ingredients">',
-        '  <h2>Ingredients</h2>',
-        `  <ul class="content-v2-recipe-ingredients-list">${ingredientsList}</ul>`,
+        '  <div class="content-v2-recipe-ingredients-header">',
+        '    <h2>Ingredients</h2>',
+        `    <div class="wprm-recipe-servings">${servingsControls}</div>`,
+        '  </div>',
+        `  <ul class="content-v2-recipe-ingredients-list wprm-recipe-ingredients-container" data-recipe="${recipeId}" id="recipe-${recipeId}-ingredients">${ingredientsList}</ul>`,
         '</section>',
       ].join('\n')
     : '';
@@ -358,6 +371,14 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
         '  <h2>Steps with photos</h2>',
         `  <ol class="content-v2-recipe-visual-list">${stepRows}</ol>`,
         '</section>',
+      ].join('\n')
+    : '';
+
+  const bonAppetitSection = stepRows
+    ? [
+        '<div class="content-v2-recipe-bon-appetit">',
+        '  <p>Bon appétit !</p>',
+        '</div>',
       ].join('\n')
     : '';
 
@@ -402,7 +423,9 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     .filter(Boolean)
     .join('\n');
 
-  return [ingredientSection, visualStepsSection, compactRecipeCardSection].filter(Boolean).join('\n');
+  return [ingredientSection, visualStepsSection, bonAppetitSection, compactRecipeCardSection]
+    .filter(Boolean)
+    .join('\n');
 };
 
 const resolveMedia = (
@@ -522,9 +545,9 @@ const renderBlocks = (blocks: unknown): string => {
 
 const renderStructuredContent = (article: AnyRecord): string =>
   [
+    renderBlocks(article.recipeBlocks),
     renderLexicalRichText(article.contentV2),
     renderBlocks(article.contentBlocks),
-    renderBlocks(article.recipeBlocks),
     renderBlocks(article.imageBlocks),
   ]
     .filter(Boolean)

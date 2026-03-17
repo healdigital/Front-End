@@ -345,6 +345,43 @@ body {
   gap: 0.45rem;
 }
 
+.wprm-recipe-servings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.wprm-recipe-adjustable-servings {
+  border: 1px solid #d8d2c2;
+  background: #ffffff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.wprm-recipe-adjustable-servings.wprm-toggle-active {
+  background: #2ec4b6;
+  color: #ffffff;
+  border-color: #2ec4b6;
+}
+
+.wprm-recipe-ingredient-amount {
+  font-weight: 600;
+  margin-right: 0.25rem;
+}
+
+.content-v2-recipe-bon-appetit {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  font-weight: 700;
+  color: #2a2a2a;
+}
+
 .content-v2-recipe-visual-list {
   list-style: none;
   margin: 0;
