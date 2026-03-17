@@ -8,6 +8,7 @@ import videosMenuIcon from '../../menu/la_cuisine_de_bernard_24_video_course 1.s
 import voyagesMenuIcon from '../../menu/voyage 1.svg?raw';
 import reportagesMenuIcon from '../../menu/reportages 1.svg?raw';
 import selectionsMenuIcon from '../../menu/Frame-1 1.svg?raw';
+import headerHeartIcon from '../../menu/hear_Vector.svg?raw';
 
 interface Props {
   lang?: string;
@@ -199,7 +200,7 @@ const accountItems = [
           <img src="/images/bernard-avatar-mask.png" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />
         </a>
         <a href="/favoris" class="inline-flex items-center gap-2 text-white/85 hover:text-white" aria-label="Favoris">
-          <Icon name="heart" size="md" />
+          <span class="header-favorites-icon" aria-hidden="true" set:html={headerHeartIcon}></span>
           <span class="text-[18px] leading-none font-body">3</span>
         </a>
       </div>
@@ -462,6 +463,25 @@ const accountItems = [
     width: auto;
     height: 100%;
     overflow: visible;
+  }
+
+  .header-favorites-icon {
+    display: inline-flex;
+    width: 20px;
+    height: 18px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-favorites-icon :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .header-favorites-icon :global(path) {
+    stroke: currentColor;
   }
 </style>
 
