@@ -638,21 +638,23 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               <div class="flex-1 h-px bg-border-primary"></div>
             </div>
 
-            <article class="bg-white rounded-lg border border-border-light overflow-hidden flex flex-col md:flex-row">
-              <div class="relative md:w-[55%]">
-                <img
-                  src={featuredRecipe.image}
-                  alt={featuredRecipe.title}
-                  class="w-full md:h-full object-contain bg-[#f7f5ef]"
-                  loading="lazy"
-                  fetchpriority="low"
-                  decoding="async"
-                  width="1024"
-                  height="1365"
-                  sizes="(min-width: 1024px) 36vw, 92vw"
-                  data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
-                  onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
-                />
+            <article class="group bg-white rounded-lg border border-border-light overflow-hidden flex flex-col md:flex-row">
+              <div class="relative overflow-hidden md:w-[55%]">
+                <a href={featuredRecipe.slug} class="block h-full" aria-label={featuredRecipe.title}>
+                  <img
+                    src={featuredRecipe.image}
+                    alt={featuredRecipe.title}
+                    class="w-full md:h-full object-contain bg-[#f7f5ef] transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                    loading="lazy"
+                    fetchpriority="low"
+                    decoding="async"
+                    width="1024"
+                    height="1365"
+                    sizes="(min-width: 1024px) 36vw, 92vw"
+                    data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
+                    onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
+                  />
+                </a>
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
@@ -660,7 +662,11 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 </button>
               </div>
               <div class="p-6 flex-1">
-                <h3 class="font-heading text-3xl lg:text-4xl text-text-primary typ-feature-title">{featuredRecipe.title}</h3>
+                <h3 class="font-heading text-3xl lg:text-4xl text-text-primary typ-feature-title">
+                  <a href={featuredRecipe.slug} class="transition-colors duration-200 hover:text-primary-turquoise">
+                    {featuredRecipe.title}
+                  </a>
+                </h3>
                 <div class="flex items-center justify-between text-[12px] uppercase tracking-wider text-text-secondary mt-3 typ-meta">
                   <div class="flex items-center gap-2">
                     <span>{featuredRecipe.difficulty}</span>
