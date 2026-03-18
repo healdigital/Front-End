@@ -243,8 +243,10 @@ const pageLang = normalizePageLanguage(
   }
 
   .article-content :global(img) {
-    margin: 1.5rem 0;
-    max-width: 100%;
+    display: block;
+    margin: 1.5rem auto;
+    width: min(512px, 100%);
+    height: auto;
     border-radius: 10px;
   }
 
