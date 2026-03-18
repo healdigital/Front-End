@@ -277,6 +277,12 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     gap: 1.25rem;
   }
 
+  /* 3-column layout for the salées recipe index */
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
   .static-page.menu-page--recipe-grid .static-page-content .grid-style {
     padding: 0;
     overflow: hidden;
@@ -308,42 +314,58 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
   }
 
   .static-page.menu-page--recipe-list .static-page-content .mag-post-box {
-    margin-bottom: 0;
-    padding: 0;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.1rem;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    transition: background 160ms ease;
   }
 
-  .static-page.menu-page--recipe-list .static-page-content .mag-post-box.first-post {
-    grid-column: 1 / -1;
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box:first-of-type {
+    margin-top: 0;
   }
 
-  .static-page.menu-page--recipe-list .static-page-content .mag-post-box.first-post .magcat-thumb {
-    display: grid;
-    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
-    min-width: 0;
-  }
-
-  .static-page.menu-page--recipe-list .static-page-content .mag-post-box.first-post .penci-image-holder {
-    height: 100%;
-    min-height: 100%;
-    aspect-ratio: auto;
-    border-radius: 0;
-    margin: 0;
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box .magcat-thumb,
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box .penci-image-holder {
+    display: none;
   }
 
   .static-page.menu-page--recipe-list .static-page-content .mag-post-box .magcat-detail {
-    margin-top: 0;
-    padding: 1rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    flex: 1;
   }
 
   .static-page.menu-page--recipe-list .static-page-content .mag-post-box .magcat-padding {
     padding: 0;
   }
 
+  .static-page.menu-page--recipe-list .static-page-content .penci-hide-tagupdated {
+    display: none;
+  }
+
   .static-page.menu-page--recipe-list .static-page-content .magcat-title-small,
   .static-page.menu-page--recipe-list .static-page-content .magcat-titlte {
-    font-size: 1.02rem;
-    line-height: 1.4;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box::after {
+    content: "›";
+    font-size: 1.4rem;
+    color: #6b7280;
+    flex-shrink: 0;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box:hover {
+    background: rgba(46, 196, 182, 0.06);
   }
 
   .static-page.menu-page--travel-grid .static-page-content .penci-grid {
