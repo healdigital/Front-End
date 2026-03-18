@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload';
+import HtmlPreview from '../admin/HtmlPreview';
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
@@ -52,6 +53,11 @@ export const Articles: CollectionConfig = {
       required: true,
       label: 'Full Content',
       maxLength: 1000000, // Allow up to 1 million characters
+      admin: {
+        components: {
+          Field: HtmlPreview,
+        },
+      },
     },
     {
       name: 'date',

@@ -18,12 +18,7 @@
     scroll-behavior: auto !important;
   }
 }
-body .wprm-template-chic-buttons.wprm-container-columns-spaced-middle.body wprm-container-columns-gutter,
-body .wprm-template-chic-buttons,
-body .wprm-recipe-add-to-collection-recipe,
-body .wprm-recipe-add-to-collection,
-body .wprm-recipe-in-collection,
-body .wprm-recipe-link {
+body .wprm-template-chic-buttons.wprm-container-columns-spaced-middle.wprm-container-columns-gutter {
     display: none !important;
 }
 
