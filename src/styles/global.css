@@ -1041,3 +1041,6 @@ section.content-v2-block.content-v2-recipe-card ol li {
 }
 
  
+.wprm-print-recipe-shortcode, .wprm-recipe-link-wide-button, .wprm-recipe-link-wide-butto, .wprm-recipe-add-to-collection-recipe{
+    display: none !important;
+}
