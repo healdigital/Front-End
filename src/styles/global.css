@@ -652,8 +652,10 @@ body {
   display: none !important;
 }
 
-
- 
 .wprm-print-recipe-shortcode, .wprm-recipe-link-wide-button, .wprm-recipe-link-wide-butto, .wprm-recipe-add-to-collection-recipe{
     display: none !important;
+}
+
+a.w-9.h-9.rounded-full.overflow-hidden.border.border-white\/20 {
+    display: none;
 }

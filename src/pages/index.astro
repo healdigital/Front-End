@@ -587,7 +587,7 @@ const normalizedArticles = Array.isArray(allArticles)
   : [];
 
 const heroCards = normalizedArticles.length
-  ? normalizedArticles.slice(0, 5).map((recipe) => ({
+  ? normalizedArticles.slice(0, 10).map((recipe) => ({
       title: recipe.title,
       image: recipe.image,
       imageFallback: recipe.imageFallback,

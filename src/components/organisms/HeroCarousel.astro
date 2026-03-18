@@ -255,5 +255,41 @@ const toHeroCategoryTag = (card: HeroCard): string => {
     track.addEventListener('scroll', updateDots, { passive: true });
     window.addEventListener('resize', updateDots);
     updateDots();
+
+    // Auto-slide every few seconds, looping back to start when reaching the end.
+    const AUTO_SLIDE_INTERVAL_MS = 5000;
+    let autoSlideTimer = window.setInterval(() => {
+      const maxScroll = Math.max(track.scrollWidth - track.clientWidth, 0);
+      const nearEnd = track.scrollLeft + 5 >= maxScroll;
+      if (nearEnd) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: getStep(), behavior: 'smooth' });
+      }
+    }, AUTO_SLIDE_INTERVAL_MS);
+
+    const clearAutoSlide = () => {
+      if (autoSlideTimer) {
+        window.clearInterval(autoSlideTimer);
+        autoSlideTimer = 0;
+      }
+    };
+
+    const restartAutoSlide = () => {
+      clearAutoSlide();
+      autoSlideTimer = window.setInterval(() => {
+        const maxScroll = Math.max(track.scrollWidth - track.clientWidth, 0);
+        const nearEnd = track.scrollLeft + 5 >= maxScroll;
+        if (nearEnd) {
+          track.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          track.scrollBy({ left: getStep(), behavior: 'smooth' });
+        }
+      }, AUTO_SLIDE_INTERVAL_MS);
+    };
+
+    // Pause auto-slide on hover (desktop) to improve UX.
+    carousel.addEventListener('mouseenter', clearAutoSlide);
+    carousel.addEventListener('mouseleave', restartAutoSlide);
   });
 </script>
