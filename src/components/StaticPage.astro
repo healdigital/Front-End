@@ -368,6 +368,21 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     background: rgba(46, 196, 182, 0.06);
   }
 
+  .static-page.menu-page--le-sale .static-page-content .mag-post-box::before {
+    content: "Salé";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(46, 196, 182, 0.18);
+    color: #1a2335;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-right: 0.8rem;
+  }
+
   .static-page.menu-page--travel-grid .static-page-content .penci-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.25rem;
