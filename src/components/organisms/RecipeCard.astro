@@ -45,7 +45,7 @@ const truncatedDescription = description.length > MAX_LENGTH
 
 <article class="group w-full rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
   <!-- Image Container -->
-  <div class="relative w-full overflow-hidden aspect-[3/4]">
+  <div class="relative w-full overflow-hidden aspect-[14/18]">
     <img
       src={image}
       alt={title}
@@ -54,7 +54,7 @@ const truncatedDescription = description.length > MAX_LENGTH
       fetchpriority="low"
       decoding="async"
       width="500"
-      height="667"
+      height="643"
       sizes="(min-width: 1280px) 28vw, (min-width: 1024px) 34vw, (min-width: 768px) 44vw, 92vw"
       data-fallback-src={imageFallback}
       onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
