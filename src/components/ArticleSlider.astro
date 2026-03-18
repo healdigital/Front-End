@@ -90,17 +90,28 @@ const getArticleSlug = (article: any) => {
   };
 
   const nextSlide = () => {
-    currentIndex = Math.min(currentIndex + 1, maxIndex);
+    currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
     updateSlider(currentIndex);
   };
 
   const prevSlide = () => {
-    currentIndex = Math.max(currentIndex - 1, 0);
+    currentIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
     updateSlider(currentIndex);
   };
 
   prevBtn?.addEventListener('click', prevSlide);
   nextBtn?.addEventListener('click', nextSlide);
+
+  // Auto-play loop every 5 seconds, paused on hover
+  let autoplayInterval = setInterval(nextSlide, 5000);
+  const pauseAutoplay = () => clearInterval(autoplayInterval);
+  const resumeAutoplay = () => {
+    pauseAutoplay();
+    autoplayInterval = setInterval(nextSlide, 5000);
+  };
+
+  slider?.addEventListener('mouseenter', pauseAutoplay);
+  slider?.addEventListener('mouseleave', resumeAutoplay);
 
   updateSlider(0);
 </script>
