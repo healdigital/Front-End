@@ -18,7 +18,9 @@
     scroll-behavior: auto !important;
   }
 }
-
+.wprm-template-chic-buttons.wprm-container-columns-spaced-middle.wprm-container-columns-gutter {
+    display: none !important;
+}
 /* Ensure light theme baseline */
 :root {
   color-scheme: light;
