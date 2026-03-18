@@ -30,6 +30,10 @@ prepared-articles*.json
 Front
 Front.pub
 
+# Local generated exports (keep markdown local, not committed)
+chat-exports/
+save/
+
 # local build caches
 .vite-cache-build/
 .vite-cache/
