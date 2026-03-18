@@ -18,8 +18,18 @@
     scroll-behavior: auto !important;
   }
 }
-.wprm-template-chic-buttons.wprm-container-columns-spaced-middle.wprm-container-columns-gutter {
+.wprm-template-chic-buttons.wprm-container-columns-spaced-middle.wprm-container-columns-gutter,
+.wprm-template-chic-buttons,
+.wprm-recipe-add-to-collection-recipe,
+.wprm-recipe-add-to-collection,
+.wprm-recipe-in-collection,
+.wprm-recipe-link {
     display: none !important;
+}
+
+/* Fallback: hide any WPRM “add to collection” buttons inserted via JS */
+[class*="wprm-recipe-add-to-collection"] {
+  display: none !important;
 }
 /* Ensure light theme baseline */
 :root {
