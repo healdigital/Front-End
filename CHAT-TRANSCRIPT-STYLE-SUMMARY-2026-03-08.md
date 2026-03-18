@@ -106,6 +106,12 @@ Use this together with:
 - Legacy migration: on hold
 - No active delivery pending items remain
 
+### Recent updates (2026-03-17)
+
+- Fixed Payload Admin preview build failure by ensuring legacy HTML preview always passes a string to `stripHtml()`.
+- Updated preview so `Short Excerpt` and `Legacy Content (Read-only HTML)` display clean UTF‑8 text (HTML tags are stripped and entities decoded).
+- Updated article editor UX so the **Editor Progress** widget is hidden when a featured image is attached (handled via a conditional class + CSS rule).
+
 ## Final Accepted Metrics
 
 - Mobile Performance: `71`

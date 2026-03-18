@@ -1021,7 +1021,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 .sidebar-title {
-  font-family: Maison Neue;
+  font-family: var(--font-body);
   font-weight: 500;
   font-style: Medium;
   font-size: 18px;
@@ -1095,7 +1095,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 .description-data {
-  font-family: Maison Neue;
+  font-family: var(--font-body);
   font-weight: 400;
   font-style: Book;
   font-size: 16px;
@@ -1113,7 +1113,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   top: 2037px;
   left: 1235px;
   border-radius: 5px;
-  font-family: Maison Neue;
+  font-family: var(--font-body);
   font-weight: 500;
   font-style: Medium;
   font-size: 16px;
@@ -1145,7 +1145,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 .article-title {
-  font-family: Maison Neue;
+  font-family: var(--font-body);
   font-weight: 400;
   font-style: Book;
   font-size: 18px;
@@ -1168,7 +1168,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-clamp-2 {
-  font-family: Maison Neue;
+  font-family: var(--font-body);
   font-weight: 400;
   font-style: Book;
   font-size: 17px;
@@ -1185,7 +1185,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   top: 2866px;
   left: 1057px;
   border-radius: 5px;
-  font-family: Maison Neue;
+  font-family: var(--font-body);
   font-weight: 500;
   font-style: Medium;
   font-size: 16px;
@@ -1319,13 +1319,13 @@ span.text-\[13px\].uppercase.tracking-\[0\.14em\].text-\[\#5F6671\] {
 }
 
 h3.font-body.text-\[28px\].leading-\[1\.05\].text-\[\#1A2335\].mt-6 {
-  font-family: 'Maison Neue';
+  font-family: var(--font-body);
   font-weight: 400 !important;
   color: #111111 !important;
 }
 
 p.text-\[15px\].text-text-secondary.leading-relaxed.mt-4.typ-body {
-  font-family: 'Maison Neue';
+  font-family: var(--font-body);
 }
 
 .home-sidebar-sticky .mt-3.flex.items-center.justify-center.gap-7.text-\[\#1A2335\].text-\[13px\] span {
@@ -1333,7 +1333,7 @@ p.text-\[15px\].text-text-secondary.leading-relaxed.mt-4.typ-body {
 }
 
 ul.mt-4.space-y-4.text-\[16px\].text-\[\#2A3543\] li {
-  font-family: 'Maison Neue';
+  font-family: var(--font-body);
   text-transform: uppercase;
 }
 
@@ -1342,7 +1342,7 @@ ul.mt-4.space-y-4.text-\[16px\].text-\[\#2A3543\] li {
 }
 
 .typ-body {
-  font-family: 'Maison Neue';
+  font-family: var(--font-body);
 }
 
 
@@ -1361,7 +1361,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 
   color: #bcbcbc !important;
 
-  font-family: 'Maison Neue';
+  font-family: var(--font-body);
 
 }
 
@@ -1372,3 +1372,4 @@ footer a.hover\:text-primary-turquoise.transition-colors {
   color: #fff !important;
 }
  
+
