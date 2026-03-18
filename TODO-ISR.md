@@ -1,4 +1,4 @@
-# LCDB Tracker + Chat Summary (Updated: 2026-03-16)
+# LCDB Tracker + Chat Summary (Updated: 2026-03-18)
 
 ## Current State
 
@@ -16,6 +16,7 @@
 - Verify live related articles after deploy using prepared JSON fallback
 - Continue recipe card setup after clean export is ready
 - Review remaining mobile/header interactions after current submenu fix on staging/live
+- Fix recipe item list formatting (spacing and bullet display) inside WPRM-rendered recipe pages
 
 ## Current On Hold
 

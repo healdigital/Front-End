@@ -1,4 +1,4 @@
-# Pending Points (Updated: 2026-03-02)
+# Pending Points (Updated: 2026-03-18)
 ## Client-Promised Pending (Must Track)
 
 - [x] Default site language must remain French (`fr`) on first load.
