@@ -424,17 +424,12 @@ body {
   font-size: 14px;
 }
 
-h3.font-body.text-\[28px\].leading-\[1\.05\].text-\[\#1A2335\].mt-6 {}
 
 .home-sidebar-sticky h3 {
   color: #111111 ;
   font-size: 26px !important;
 }
 
-.home-sidebar-sticky p {
-  /* color: #111111 !important; */
-  /* font-size: 13px !important; */
-}
 
 .home-sidebar-sticky p.font-mono.text-\[13px\].uppercase.tracking-\[0\.15em\].text-\[\#3E4652\].mt-3 {
   color: #111111 !important;
@@ -1373,3 +1368,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 }
  
 
+
+.home-sidebar-sticky .pannel-data{
+  width: 380px;
+}
