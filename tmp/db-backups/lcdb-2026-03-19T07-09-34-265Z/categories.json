@@ -1,0 +1,410 @@
+[
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e654f"
+  },
+  "slug": "أخبار",
+  "term_id": 3998,
+  "language": "ar",
+  "name": "أخبار"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6550"
+  },
+  "slug": "حلو",
+  "term_id": 3769,
+  "language": "ar",
+  "name": "حلو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6551"
+  },
+  "slug": "ريبورتاج",
+  "term_id": 3995,
+  "language": "ar",
+  "name": "ريبورتاج"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6552"
+  },
+  "slug": "غير-مصنف",
+  "term_id": 3764,
+  "language": "ar",
+  "name": "غير مصنف"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6553"
+  },
+  "slug": "متسخ",
+  "term_id": 3777,
+  "language": "ar",
+  "name": "متسخ"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6554"
+  },
+  "slug": "مقابلة",
+  "term_id": 8895,
+  "language": "ar",
+  "name": "مقابلة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6555"
+  },
+  "slug": "يسافر",
+  "term_id": 3886,
+  "language": "ar",
+  "name": "يسافر"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6556"
+  },
+  "slug": "未分类",
+  "term_id": 709,
+  "language": "zh-hans",
+  "name": "未分类"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6557"
+  },
+  "slug": "actualites",
+  "term_id": 658,
+  "language": "fr",
+  "name": "Actualités",
+  "articleCount": 84
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6558"
+  },
+  "slug": "doce-pt-br",
+  "term_id": 717,
+  "language": "pt-br",
+  "name": "Doce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6559"
+  },
+  "slug": "dulce-es",
+  "term_id": 305,
+  "language": "es",
+  "name": "Dulce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e655a"
+  },
+  "slug": "entrevista",
+  "term_id": 8901,
+  "language": "pt-br",
+  "name": "Entrevista"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e655b"
+  },
+  "slug": "entrevista-es",
+  "term_id": 487,
+  "language": "es",
+  "name": "Entrevista"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e655c"
+  },
+  "slug": "informe-es",
+  "term_id": 489,
+  "language": "es",
+  "name": "Informe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e655d"
+  },
+  "slug": "interview",
+  "term_id": 131,
+  "language": "fr",
+  "name": "Interview",
+  "articleCount": 10
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e655e"
+  },
+  "slug": "interview-en",
+  "term_id": 486,
+  "language": "en",
+  "name": "Interview"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e655f"
+  },
+  "slug": "nao-categorizado",
+  "term_id": 705,
+  "language": "pt-br",
+  "name": "Não categorizado"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6560"
+  },
+  "slug": "news",
+  "term_id": 4001,
+  "language": "en",
+  "name": "News"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6561"
+  },
+  "slug": "non-classifiee",
+  "term_id": 1,
+  "language": "fr",
+  "name": "Non classifié(e)",
+  "articleCount": 352
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6562"
+  },
+  "slug": "non-classifiee-ar",
+  "term_id": 3799,
+  "language": "ar",
+  "name": "Non classifié(e)"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6563"
+  },
+  "slug": "non-classifiee-pt-br",
+  "term_id": 3139,
+  "language": "pt-br",
+  "name": "Non classifié(e)"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6564"
+  },
+  "slug": "noticias",
+  "term_id": 3999,
+  "language": "es",
+  "name": "Noticias"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6565"
+  },
+  "slug": "noticias-pt-br",
+  "term_id": 4003,
+  "language": "pt-br",
+  "name": "Notícias"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6566"
+  },
+  "slug": "receta",
+  "term_id": 300,
+  "language": "es",
+  "name": "Receta"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6567"
+  },
+  "slug": "recette",
+  "term_id": 266,
+  "language": "fr",
+  "name": "Recette",
+  "articleCount": 564,
+  "updatedAt": {
+    "$date": "2026-02-07T07:08:08.485Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6568"
+  },
+  "slug": "recipe-en",
+  "term_id": 304,
+  "language": "en",
+  "name": "Recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6569"
+  },
+  "slug": "relatorio",
+  "term_id": 3989,
+  "language": "pt-br",
+  "name": "Relatório"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e656a"
+  },
+  "slug": "report-en",
+  "term_id": 484,
+  "language": "en",
+  "name": "Report"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e656b"
+  },
+  "slug": "reportage",
+  "term_id": 126,
+  "language": "fr",
+  "name": "Reportage",
+  "articleCount": 50
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e656c"
+  },
+  "slug": "sal",
+  "term_id": 10644,
+  "language": "fr",
+  "name": "sal\""
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e656d"
+  },
+  "slug": "sal-es",
+  "term_id": 376,
+  "language": "es",
+  "name": "Sal"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e656e"
+  },
+  "slug": "sal-pt-br",
+  "term_id": 739,
+  "language": "pt-br",
+  "name": "Sal"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e656f"
+  },
+  "slug": "sale",
+  "term_id": 124,
+  "language": "fr",
+  "name": "Salé",
+  "articleCount": 2211
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6570"
+  },
+  "slug": "savory",
+  "term_id": 282,
+  "language": "en",
+  "name": "Savory"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6571"
+  },
+  "slug": "selection",
+  "term_id": 10518,
+  "language": "fr",
+  "name": "Sélection",
+  "articleCount": 2
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6572"
+  },
+  "slug": "sin-clasificar-es",
+  "term_id": 488,
+  "language": "es",
+  "name": "Sin clasificar"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6573"
+  },
+  "slug": "sucre",
+  "term_id": 125,
+  "language": "fr",
+  "name": "Sucré",
+  "articleCount": 2588
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6574"
+  },
+  "slug": "sucre-zh-hans",
+  "term_id": 715,
+  "language": "zh-hans",
+  "name": "Sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6575"
+  },
+  "slug": "sweet",
+  "term_id": 144,
+  "language": "en",
+  "name": "Sweet"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6576"
+  },
+  "slug": "travel-en",
+  "term_id": 485,
+  "language": "en",
+  "name": "Travel"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6577"
+  },
+  "slug": "uncategorized",
+  "term_id": 134,
+  "language": "en",
+  "name": "Uncategorized"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6578"
+  },
+  "slug": "viagens",
+  "term_id": 3890,
+  "language": "pt-br",
+  "name": "Viagens"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6579"
+  },
+  "slug": "viajes-es",
+  "term_id": 490,
+  "language": "es",
+  "name": "Viajes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e657a"
+  },
+  "slug": "voyage",
+  "term_id": 127,
+  "language": "fr",
+  "name": "Voyage",
+  "articleCount": 125
+}
+]

@@ -1,0 +1,35 @@
+[
+{
+  "_id": {
+    "$oid": "699d571e7e1574fc194e875f"
+  },
+  "createdAt": {
+    "$date": "2026-02-24T07:45:34.008Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-18T15:34:26.636Z"
+  },
+  "key": "frontend",
+  "pendingFullRefresh": false,
+  "changes": [
+    {
+      "collectionName": "articles",
+      "operation": "update",
+      "id": "697b44162e3ee7dc031e7bf1",
+      "slug": "sable-mega-pistache",
+      "at": {
+        "$date": "2026-03-18T15:09:53.665Z"
+      }
+    },
+    {
+      "collectionName": "articles",
+      "operation": "update",
+      "id": "69bac55ef0c084c50a489749",
+      "at": {
+        "$date": "2026-03-18T15:34:26.345Z"
+      }
+    }
+  ],
+  "__v": 0
+}
+]

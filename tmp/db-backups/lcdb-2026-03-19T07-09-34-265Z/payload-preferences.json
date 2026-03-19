@@ -1,0 +1,817 @@
+[
+{
+  "_id": {
+    "$oid": "697b435981fb321e81cda5de"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T11:24:09.930Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-30T12:28:55.440Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-comments",
+  "value": {
+    "editViewType": "default",
+    "limit": 10
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "697b436681fb321e81cda5e6"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T11:24:22.338Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-30T07:17:57.076Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-categories",
+  "value": {
+    "editViewType": "default",
+    "limit": 100
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "697b436981fb321e81cda5ee"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T11:24:25.591Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-17T06:49:49.866Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-articles",
+  "value": {
+    "editViewType": "default",
+    "limit": 100,
+    "sort": "-updatedAt"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "697b43c081fb321e81cda602"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T11:25:52.249Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-05T08:22:43.153Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-authors",
+  "value": {
+    "limit": 10,
+    "editViewType": "default"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "697b447981fb321e81cda643"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T11:28:57.182Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-05T08:22:32.678Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-tags",
+  "value": {
+    "limit": 100,
+    "editViewType": "default"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "697b44fb81fb321e81cda6a3"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T11:31:07.747Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-30T09:16:05.716Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-media",
+  "value": {
+    "editViewType": "default",
+    "limit": 10
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "697b6be7353d1010e5f4ac39"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "nav",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-27T08:22:11.220Z"
+  },
+  "value": {
+    "open": true
+  }
+},
+{
+  "_id": {
+    "$oid": "697b6bea88964ebc659d5aab"
+  },
+  "createdAt": {
+    "$date": "2026-01-29T14:17:14.115Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-29T14:17:14.115Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-users",
+  "value": {},
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6983756a2bf4bcbff1bb061f"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:35:54.072Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-04T16:35:54.072Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-users",
+  "value": {},
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6983756f2bf4bcbff1bb062a"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:35:59.375Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-13T13:38:21.298Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-media",
+  "value": {
+    "limit": 10
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698375722bf4bcbff1bb0632"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:36:02.954Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-04T16:36:02.954Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-authors",
+  "value": {},
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698375772bf4bcbff1bb063a"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:36:07.707Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-04T16:36:07.707Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-categories",
+  "value": {},
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698375832bf4bcbff1bb0642"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:36:19.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-04T16:36:19.454Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-tags",
+  "value": {},
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698375892bf4bcbff1bb064a"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:36:25.344Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-16T12:41:18.641Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-articles",
+  "value": {
+    "limit": 10
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698375ed2bf4bcbff1bb0673"
+  },
+  "createdAt": {
+    "$date": "2026-02-04T16:38:05.154Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-04T16:38:05.154Z"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-comments",
+  "value": {},
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698375f36c5c15b295f0d93d"
+  },
+  "key": "nav",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-18T15:31:28.974Z"
+  },
+  "value": {
+    "open": true,
+    "groups": {
+      "Collections": {
+        "open": true
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69844d4d6c5c15b295f0dbf6"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bf1",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-26T11:48:22.641Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 4
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "698491e56c5c15b295f0de48"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bf1",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-06T01:54:27.601Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 0
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69849da16c5c15b295f0de69"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bf0",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-13T13:39:10.090Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 0
+      },
+      "_index-7": {
+        "collapsed": false
+      },
+      "_index-8": {
+        "collapsed": false
+      },
+      "_index-9": {
+        "collapsed": false
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "6984a5b06c5c15b295f0de97"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bee",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-05T14:14:08.653Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 2
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "6984a5d56c5c15b295f0de99"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bea",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-24T11:26:51.384Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 4
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699c1625fe2bbab924eeb2b7"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bee",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-23T08:56:05.085Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 4
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699d801ffe2bbab924eeba57"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bed",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-24T10:40:35.426Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 0
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699d8055fe2bbab924eeba58"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bef",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-18T11:20:29.648Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 0
+      },
+      "_index-4": {
+        "collapsed": false
+      },
+      "_index-6": {
+        "collapsed": true
+      },
+      "_index-5": {
+        "collapsed": true
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699d85fafe2bbab924eeba89"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bec",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-24T11:05:30.661Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 4
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699d8ad9fe2bbab924eebac4"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7beb",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-24T11:26:31.702Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 0
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699d8b0cfe2bbab924eebaf7"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7be9",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-24T11:27:08.849Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 4
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "699d8b16fe2bbab924eebaf8"
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7be8",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-02-24T11:27:18.307Z"
+  },
+  "value": {
+    "fields": {
+      "_index-2": {
+        "tabIndex": 4
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69b413ceb315610be70c467e"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bed",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-13T13:41:23.481Z"
+  },
+  "value": {
+    "fields": {
+      "_index-6": {
+        "collapsed": true
+      },
+      "recipeBlocks.0._index-6": {
+        "collapsed": false
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69b7ccffb315610be70c6498"
+  },
+  "key": "collection-articles-69b3d83af0c701753fee1971",
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-16T09:27:30.475Z"
+  },
+  "value": {
+    "fields": {
+      "_index-7": {
+        "collapsed": false
+      },
+      "_index-8": {
+        "collapsed": false
+      },
+      "_index-9": {
+        "collapsed": false
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69b7fdecb315610be70c6736"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "69835e5248a24268ed975fab"
+    }
+  },
+  "key": "collection-articles-69b7f772fe45b472441a16cf",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-16T12:56:14.947Z"
+  },
+  "value": {
+    "fields": {
+      "_index-8": {
+        "collapsed": false
+      },
+      "_index-9": {
+        "collapsed": false
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69b913225f1264bf983d9952"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-articles-69b7f772fe45b472441a16cf",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-18T09:49:58.949Z"
+  },
+  "value": {
+    "fields": {
+      "recipeBlocks.0._index-1": {
+        "collapsed": true
+      },
+      "recipeBlocks.0.ingredients": {
+        "collapsed": []
+      },
+      "recipeBlocks.0.steps": {
+        "collapsed": []
+      },
+      "recipeBlocks.0._index-5": {
+        "collapsed": false
+      },
+      "recipeBlocks.0._index-6": {
+        "collapsed": true
+      },
+      "_index-6": {
+        "collapsed": true
+      },
+      "_index-7": {
+        "collapsed": true
+      },
+      "_index-8": {
+        "collapsed": true
+      },
+      "_index-9": {
+        "collapsed": true
+      },
+      "_index-5": {
+        "collapsed": false
+      },
+      "_index-4": {
+        "collapsed": true
+      },
+      "recipeBlocks": {
+        "collapsed": []
+      }
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69ba50625f1264bf983da985"
+  },
+  "user": {
+    "relationTo": "users",
+    "value": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    }
+  },
+  "key": "collection-articles-697b44162e3ee7dc031e7bf0",
+  "__v": 0,
+  "updatedAt": {
+    "$date": "2026-03-18T10:12:50.506Z"
+  },
+  "value": {
+    "fields": {
+      "_index-4": {
+        "collapsed": false
+      },
+      "_index-5": {
+        "collapsed": false
+      },
+      "_index-6": {
+        "collapsed": false
+      },
+      "_index-9": {
+        "collapsed": true
+      },
+      "_index-8": {
+        "collapsed": true
+      },
+      "_index-10": {
+        "collapsed": false
+      }
+    }
+  }
+}
+]
