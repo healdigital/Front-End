@@ -339,7 +339,6 @@ const extractSteps = (instructionsHtml) => {
     return {
       id: createObjectId(),
       instruction,
-      image: null,
       imageCaption: '',
     };
   });
@@ -510,9 +509,11 @@ const buildTemplateFromSource = (templateArticle, sourcePost) => {
     author: mapAuthor(sourcePost.author, templateArticle.author),
     categories: mapTaxonomyItems(sourcePost.categories),
     tags: mapTaxonomyItems(sourcePost.tags),
-    featuredMedia,
-    seoImage: featuredMedia,
-    featuredImage: featuredMedia,
+    ...(featuredMedia ? {
+      featuredMedia,
+      seoImage: featuredMedia,
+      featuredImage: featuredMedia,
+    } : {}),
     _status: templateArticle._status || 'published',
     contentBlocks: Array.isArray(templateArticle.contentBlocks) ? templateArticle.contentBlocks : [],
     imageBlocks: Array.isArray(templateArticle.imageBlocks) ? templateArticle.imageBlocks : [],

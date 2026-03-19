@@ -558,6 +558,8 @@
       <div class="filters">
         <button class="filter-btn active"
           onclick="setFilter('all')">All</button>
+        <button class="filter-btn"
+          onclick="setFilter('done')">Done</button>
         <button class="filter-btn p1" onclick="setFilter('P1')">P1 —
           Critical</button>
         <button class="filter-btn p2" onclick="setFilter('P2')">P2 —
@@ -609,14 +611,24 @@
     { id: '#30', title: 'Admin: bulk photo upload for recipe steps', note: 'Currently images must be uploaded one-by-one per step. Build a bulk upload that creates one step entry per uploaded image automatically.', priority: 'P3', cat: 'Admin', time: '16:13' },
   ];
 
-  let done = new Set();
+  let done = new Set([
+    '#04',
+    '#10',
+    '#11',
+    '#14',
+    '#18',
+    '#20',
+    '#21',
+  ]);
   let activeFilter = 'all';
 
   function setFilter(f) {
     activeFilter = f;
     document.querySelectorAll('.filter-btn').forEach(b => {
       b.classList.remove('active');
-      if (b.textContent.startsWith(f === 'all' ? 'All' : f.split(' ')[0])) b.classList.add('active');
+      const label = (b.textContent || '').trim().toLowerCase();
+      const needle = (f === 'all' ? 'all' : f.split(' ')[0]).toLowerCase();
+      if (label.startsWith(needle)) b.classList.add('active');
     });
     render();
   }
@@ -641,6 +653,7 @@
   function render() {
     const filtered = items.filter(i => {
       if (activeFilter === 'all') return true;
+      if (activeFilter === 'done') return done.has(i.id);
       if (activeFilter === 'P1') return i.priority === 'P1';
       if (activeFilter === 'P2') return i.priority === 'P2';
       if (activeFilter === 'P3') return i.priority === 'P3';

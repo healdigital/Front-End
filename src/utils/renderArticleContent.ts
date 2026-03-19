@@ -115,6 +115,85 @@ const renderLegacyArrayContent = (contentBlocks: unknown[]): string =>
     .filter(Boolean)
     .join('\n');
 
+const extractImageAttributes = (tag: string): { alt: string; height: null | number; url: string; width: null | number } | null => {
+  if (!tag || typeof tag !== 'string') return null;
+
+  const srcMatch =
+    tag.match(/\s(?:src|data-src)=["']([^"']+)["']/i) ||
+    tag.match(/\s(?:data-lazy-src|data-original)=["']([^"']+)["']/i);
+
+  const rawUrl = asText(srcMatch?.[1]);
+  if (!rawUrl) return null;
+
+  const widthMatch = tag.match(/\swidth=["'](\d+)["']/i);
+  const heightMatch = tag.match(/\sheight=["'](\d+)["']/i);
+  const altMatch = tag.match(/\salt=["']([^"']*)["']/i);
+
+  return {
+    alt: asText(altMatch?.[1]),
+    height: toPositiveInt(heightMatch?.[1]),
+    url: replaceCdnUrl(rawUrl),
+    width: toPositiveInt(widthMatch?.[1]),
+  };
+};
+
+const extractImageUrlsFromHtml = (html: string): Set<string> => {
+  const urls = new Set<string>();
+  if (!html || typeof html !== 'string') return urls;
+
+  const imageTagRegex = /<img\b[^>]*>/gi;
+  let match: null | RegExpExecArray = null;
+
+  while ((match = imageTagRegex.exec(html))) {
+    const image = extractImageAttributes(match[0]);
+    if (!image?.url) continue;
+    urls.add(image.url);
+  }
+
+  return urls;
+};
+
+const renderLegacyImageFallback = (article: AnyRecord, structuredContent: string): string => {
+  const legacyHtml = typeof article.content === 'string' ? article.content : '';
+  if (!legacyHtml) return '';
+
+  const imageTagRegex = /<img\b[^>]*>/gi;
+  const alreadyRendered = extractImageUrlsFromHtml(structuredContent);
+  const featuredImage = resolveMedia(article.featuredMedia ?? article.featuredImage);
+  if (featuredImage?.url) alreadyRendered.add(featuredImage.url);
+
+  const figures: string[] = [];
+  const seen = new Set<string>();
+  let match: null | RegExpExecArray = null;
+
+  while ((match = imageTagRegex.exec(legacyHtml))) {
+    const image = extractImageAttributes(match[0]);
+    if (!image?.url || seen.has(image.url) || alreadyRendered.has(image.url)) continue;
+
+    seen.add(image.url);
+    const imageDimensions =
+      image.width && image.height ? ` width="${image.width}" height="${image.height}"` : '';
+
+    figures.push(
+      [
+        '<figure class="content-v2-legacy-image-fallback-item">',
+        `  <img src="${escapeAttribute(image.url)}" alt="${escapeAttribute(image.alt || article.title || 'Article image')}" loading="lazy" decoding="async"${imageDimensions} />`,
+        '</figure>',
+      ].join('\n'),
+    );
+  }
+
+  if (figures.length === 0) return '';
+
+  return [
+    '<section class="content-v2-block content-v2-legacy-image-fallback">',
+    '  <div class="content-v2-legacy-image-fallback-grid">',
+    figures.join('\n'),
+    '  </div>',
+    '</section>',
+  ].join('\n');
+};
+
 const renderIntroductionBlock = (block: AnyRecord): string => {
   const title = asText(block.title) || 'Introduction';
   const body = renderLexicalRichText(block.body);
@@ -232,24 +311,57 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     .filter(Boolean)
     .join('');
 
-  const ingredientsList = Array.isArray(block.ingredients)
-    ? block.ingredients
-        .map((ingredient: unknown) => {
-          if (!isRecord(ingredient)) return '';
-          const quantity = asText(ingredient.quantity);
-          const item = asText(ingredient.item);
-          const notes = asText(ingredient.notes);
-          if (!quantity && !item && !notes) return '';
+  const ingredientGroups = Array.isArray(block.ingredients)
+    ? block.ingredients.reduce((groups: Array<{ heading: string; items: string[] }>, ingredient: unknown) => {
+        if (!isRecord(ingredient)) return groups;
 
-          const amountHtml = quantity ? `<span class="wprm-recipe-ingredient-amount">${escapeHtml(quantity)}</span>` : '';
-          const itemHtml = item ? escapeHtml(item) : '';
-          const notesText = notes ? ` (${escapeHtml(notes)})` : '';
-          const row = [amountHtml, itemHtml].filter(Boolean).join(' ').trim();
-          return `<li>${row ? row + notesText : notesText}</li>`;
-        })
+        if (ingredient.isGroupHeading) {
+          const heading = asText(ingredient.groupHeading);
+          if (heading) {
+            groups.push({ heading, items: [] });
+          }
+          return groups;
+        }
+
+        const quantity = asText(ingredient.quantity);
+        const item = asText(ingredient.item);
+        const notes = asText(ingredient.notes);
+        if (!quantity && !item && !notes) return groups;
+
+        const amountHtml = quantity
+          ? `<span class="wprm-recipe-ingredient-amount">${escapeHtml(quantity)}</span>`
+          : '';
+        const itemHtml = item ? escapeHtml(item) : '';
+        const notesText = notes ? ` (${escapeHtml(notes)})` : '';
+        const row = [amountHtml, itemHtml].filter(Boolean).join(' ').trim();
+        const listItem = `<li class="wprm-recipe-ingredient">${row ? row + notesText : notesText}</li>`;
+
+        if (groups.length === 0) {
+          groups.push({ heading: '', items: [listItem] });
+        } else {
+          groups[groups.length - 1].items.push(listItem);
+        }
+
+        return groups;
+      }, [])
+    : [];
+
+  const ingredientsList = ingredientGroups
+    .map((group) => {
+      if (group.items.length === 0) return '';
+      return [
+        '<div class="wprm-recipe-ingredient-group">',
+        group.heading
+          ? `  <h4 class="wprm-recipe-group-name wprm-recipe-ingredient-group-name">${escapeHtml(group.heading)}</h4>`
+          : '',
+        `  <ul class="wprm-recipe-ingredients">${group.items.join('')}</ul>`,
+        '</div>',
+      ]
         .filter(Boolean)
-        .join('')
-    : '';
+        .join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
 
   const stepRows = Array.isArray(block.steps)
     ? block.steps
@@ -360,7 +472,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
         '    <h2>Ingredients</h2>',
         `    <div class="wprm-recipe-servings">${servingsControls}</div>`,
         '  </div>',
-        `  <ul class="content-v2-recipe-ingredients-list wprm-recipe-ingredients-container" data-recipe="${recipeId}" id="recipe-${recipeId}-ingredients">${ingredientsList}</ul>`,
+        `  <div class="content-v2-recipe-ingredients-list wprm-recipe-ingredients-container" data-recipe="${recipeId}" id="recipe-${recipeId}-ingredients">${ingredientsList}</div>`,
         '</section>',
       ].join('\n')
     : '';
@@ -543,8 +655,8 @@ const renderBlocks = (blocks: unknown): string => {
     .join('\n');
 };
 
-const renderStructuredContent = (article: AnyRecord): string =>
-  [
+const renderStructuredContent = (article: AnyRecord): string => {
+  const structuredContent = [
     renderBlocks(article.recipeBlocks),
     renderLexicalRichText(article.contentV2),
     renderBlocks(article.contentBlocks),
@@ -552,6 +664,12 @@ const renderStructuredContent = (article: AnyRecord): string =>
   ]
     .filter(Boolean)
     .join('\n');
+
+  if (!structuredContent) return '';
+
+  const legacyImageFallback = renderLegacyImageFallback(article, structuredContent);
+  return [structuredContent, legacyImageFallback].filter(Boolean).join('\n');
+};
 
 export const renderArticleContent = (article: unknown): string => {
   if (!isRecord(article)) return '';

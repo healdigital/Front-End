@@ -85,7 +85,7 @@ Best sequence:
 
 #### T04. Sticky header
 
-- Status: `Needs verification`
+- Status: `Done`
 - Owner:
   - `Codex`: verify implementation works site-wide
   - `You`: confirm client-facing behavior on staging
@@ -94,6 +94,8 @@ Best sequence:
   - also was said to be “Done” in chat, so must be verified
 - Technical direction:
   - test homepage, article page, archive page, mobile
+- Verified state:
+  - shared header is currently sticky in the active site header implementation
 
 #### T05. Ingredient bullets missing
 
@@ -187,7 +189,7 @@ Best sequence:
 
 #### T12. Sidebar cleanup
 
-- Status: `Needs verification`
+- Status: `Done`
 - Owner:
   - `Codex`: sidebar component
   - `You`: visual check with client
@@ -195,6 +197,9 @@ Best sequence:
   - keep only Facebook and Instagram
   - remove “Découvrir son univers”
   - remove any extra icons/links
+- Verified state:
+  - sidebar currently shows only Facebook and Instagram
+  - the sidebar CTA link that was called out is no longer present
 
 #### T13. Sidebar Figma parity
 
@@ -209,10 +214,12 @@ Best sequence:
 
 #### T14. Remove sticky sidebar because of future ads
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: article/sidebar layout logic
   - `You`: confirm where ad slot must remain available
+- Verified state:
+  - homepage sticky sidebar blocker has been removed per latest fix
 
 #### T15. Recipe cards parity with original
 
@@ -274,12 +281,14 @@ Best sequence:
 
 #### T20. Carousel autoplay
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`
   - `You`: QA all carousel surfaces
 - Includes:
   - auto loop every few seconds
+- Verified state:
+  - homepage carousel currently auto-loops on an interval
 
 #### T21. Carousel arrows site-wide
 

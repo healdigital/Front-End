@@ -158,6 +158,7 @@ const normalizeFromRecipeBlockArticle = (source) => {
   const ingredients = Array.isArray(recipeBlock.ingredients)
     ? recipeBlock.ingredients
         .map((ingredient) => {
+          if (ingredient?.isGroupHeading) return '';
           const quantity = asText(ingredient?.quantity);
           const item = asText(ingredient?.item);
           const notes = asText(ingredient?.notes);

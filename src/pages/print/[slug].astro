@@ -160,17 +160,31 @@ const recipeMetaItems = [
 ].filter((item) => Boolean(item.value));
 
 const recipeIngredients = Array.isArray(primaryRecipe?.ingredients)
-  ? primaryRecipe.ingredients
-      .map((ingredient: any) => {
-        if (!isRecord(ingredient)) return "";
-        const quantity = toText(ingredient.quantity);
-        const item = toText(ingredient.item);
-        const notes = toText(ingredient.notes);
-        const line = [quantity, item].filter(Boolean).join(" ").trim();
-        if (!line && !notes) return "";
-        return notes ? `${line} (${notes})`.trim() : line;
-      })
-      .filter(Boolean)
+  ? primaryRecipe.ingredients.reduce((groups: Array<{ heading: string; items: string[] }>, ingredient: any) => {
+      if (!isRecord(ingredient)) return groups;
+
+      if (ingredient.isGroupHeading) {
+        const heading = toText(ingredient.groupHeading);
+        if (heading) groups.push({ heading, items: [] });
+        return groups;
+      }
+
+      const quantity = toText(ingredient.quantity);
+      const item = toText(ingredient.item);
+      const notes = toText(ingredient.notes);
+      const line = [quantity, item].filter(Boolean).join(" ").trim();
+      if (!line && !notes) return groups;
+      const text = notes ? `${line} (${notes})`.trim() : line;
+
+      if (groups.length === 0) {
+        groups.push({ heading: "", items: [text] });
+      } else {
+        groups[groups.length - 1].items.push(text);
+      }
+
+      return groups;
+    }, [])
+      .filter((group) => group.items.length > 0)
   : [];
 
 const recipeSteps = Array.isArray(primaryRecipe?.steps)
@@ -590,11 +604,16 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
             {recipeIngredients.length > 0 && (
               <section class="print-section">
                 <h3>Ingredients</h3>
-                <ul class="print-list">
-                  {recipeIngredients.map((ingredient) => (
-                    <li>{ingredient}</li>
-                  ))}
-                </ul>
+                {recipeIngredients.map((group) => (
+                  <div class="print-ingredient-group">
+                    {group.heading && <h4>{group.heading}</h4>}
+                    <ul class="print-list">
+                      {group.items.map((ingredient) => (
+                        <li>{ingredient}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </section>
             )}
 

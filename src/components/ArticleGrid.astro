@@ -1,5 +1,6 @@
 ---
 import { payloadFetch } from '../lib/payload.client';
+import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
 
 interface Props {
   limit?: number;
@@ -31,13 +32,20 @@ try {
   {articles.length === 0 ? (
     <p class="no-articles">No articles found</p>
   ) : (
-    articles.map((article: any) => (
+    articles.map((article: any) => {
+      const imageSrc = processArticleImageUrl(article);
+      const articleTitle =
+        typeof article?.title === 'string'
+          ? article.title
+          : article?.title?.rendered || article?.title?.value || 'Article';
+
+      return (
       <article class="article-card">
-        {(article.featured_img_url || article.featureImage || article.featured_image_url) && (
+        {imageSrc && (
           <div class="article-image">
             <img 
-              src={article.featured_img_url || article.featureImage || article.featured_image_url} 
-              alt={article.featured_image_alt || article.title}
+              src={imageSrc} 
+              alt={article.featured_image_alt || articleTitle}
               loading="lazy"
             />
           </div>
@@ -46,7 +54,7 @@ try {
         <div class="article-content">
           <h3 class="article-title">
             <a href={`/articles/${article.slug}`}>
-              {article.title}
+              {articleTitle}
             </a>
           </h3>
           
@@ -69,7 +77,7 @@ try {
           </a>
         </div>
       </article>
-    ))
+    )})
   )}
 </div>
 
