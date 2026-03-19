@@ -659,3 +659,397 @@ body {
 a.w-9.h-9.rounded-full.overflow-hidden.border.border-white\/20 {
     display: none;
 }
+
+
+
+/* New */
+.article-intro-topline h1.article-intro-title {
+    font-size: 70px !important;
+}
+
+.article-intro-card .article-intro-topbar .article-breadcrumb.typ-caption a.article-breadcrumb-link {
+    font-size: 16px;
+    text-transform: capitalize;
+}
+
+.article-intro-card .article-intro-topbar .article-breadcrumb.typ-caption span {
+    font-size: 16px;
+    text-transform: capitalize;
+}
+
+.article-sidebar-column h3 {
+    font-size: 26px;
+}
+
+.article-hero-image img {
+    height: 1127px;
+}
+
+.content-v2-recipe-step-media img {
+    height: 532px !important;
+    border: unset !important;
+    background: unset;
+    object-fit: cover;
+    margin-bottom: 0px !important;
+}
+
+
+.article-sidebar-column p.font-mono {
+    color: #111111;
+}
+ 
+.article-intro-card .article-intro-rating .article-intro-rating-label {
+    color: #111;
+}
+ 
+.article-intro-meta .article-intro-meta-item {
+    display: flex;
+    align-items: center;
+}
+ 
+.article-intro-meta .article-intro-meta-item i::before {
+    font-size: 29px;
+    color: #5fb7b1;
+}
+
+.article-intro-meta .article-intro-meta-item .article-intro-meta-label {
+    color: #111;
+    font-size: 13px;
+}
+
+.article-intro-meta .article-intro-meta-item  .article-intro-meta-value {
+    font-size: 13px;
+    line-height: normal;
+}
+
+article.lcdb-surface-card.article-content-card {
+    background: unset;
+    border-radius: unset !important;
+    border: unset;
+    box-shadow: unset;
+    padding: 34px 0px 38px;
+}
+
+section.lcdb-page-section {
+    background: #f4f4f1 !important;
+}
+
+.content-v2-recipe-ingredients-header .wprm-recipe-servings {
+    align-items: center;
+    background: #fff;
+    border-radius: 55px;
+    width: 217px;
+    height: 55px;
+}
+
+.content-v2-recipe-ingredients-header .wprm-recipe-servings button.wprm-recipe-adjustable-servings.wprm-toggle-active {
+    width: 69px;
+    height: 45px;
+    border-radius: 45px;
+    margin: 5px 6px;
+    font-size: 18px;
+}
+
+.content-v2-recipe-ingredients-header .wprm-recipe-servings  button.wprm-recipe-adjustable-servings {
+    font-size: 18px;
+    border: none;
+}
+.content-v2-recipe-ingredients-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* heading */
+.content-v2-recipe-ingredients-header h2 {
+    margin: 0;
+}
+
+/* buttons right side */
+.wprm-recipe-servings {
+    display: flex;
+    gap: 10px;
+}
+
+.content-v2-recipe-ingredients-header h2 {
+    font-size: 53px !important;
+}
+
+section.content-v2-block.content-v2-recipe-ingredients {
+    background: unset;
+    border: unset;
+    padding: 0px;
+}
+
+
+.content-v2-block.content-v2-recipe-ingredients ul#recipe-main-recipe-ingredients {
+    padding: 38px 24px 28px 39px !important;
+    border: unset !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+}
+
+/* remove default bullets */
+.content-v2-recipe-ingredients-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+/* each item */
+.content-v2-recipe-ingredients-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 10px;
+    color: #111;
+    font-size: 18px;
+}
+
+/* diamond bullet */
+.content-v2-recipe-ingredients-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 10px;
+    height: 10px;
+    background: #54B6B1;
+    transform: rotate(45deg); /* diamond shape */
+}
+
+.content-v2-block.content-v2-recipe-steps-visual {
+    background: unset;
+    border: unset;
+    padding: 0px;
+}
+
+.content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list {gap: 24px;}
+
+.content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list li.content-v2-recipe-visual-step {
+    background: #fff;
+    padding: 40px;
+    border-radius: 10px;
+}
+/* main step container */
+.content-v2-recipe-step-instruction {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #5B5B5B;
+    margin-bottom: 50px;
+}
+
+/* step number box */
+.content-v2-recipe-step-index {
+    min-width: 59px;
+    height: 59px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #54B6B1;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 35px;
+    width: 59px;
+    font-size: 25px;
+}
+
+/* remove dot after number */
+.content-v2-recipe-step-index::after {
+    content: "";
+}
+
+.content-v2-block.content-v2-recipe-steps-visual h2 {
+    margin: 80px 0px;
+}
+
+/* section.article-related-section.article-related-section--fullwidth {
+    background: #E9E9E0;
+} */
+/* =========================
+   SECTION BACKGROUND
+========================= */
+/* .article-related-section {
+    background: #E9E9E0;
+    padding: 60px 40px;
+} */
+
+/* =========================
+   HEADER
+========================= */
+.article-related-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.article-related-title {
+    font-size: 34px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* =========================
+   ARROWS
+========================= */
+.article-related-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.article-related-arrow {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.article-related-arrow:hover {
+    background: #000;
+}
+
+.article-related-arrow:hover img {
+    filter: invert(1);
+}
+
+.article-related-arrow img {
+    width: 18px;
+}
+
+/* =========================
+   CARD WRAPPER
+========================= */
+.article-related-track {
+    display: flex;
+    gap: 20px;
+}
+
+/* =========================
+   CARD
+========================= */
+.article-related-card {
+    display: block;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #000;
+    transition: 0.3s;
+}
+
+.article-related-card:hover {
+    transform: translateY(-5px);
+}
+
+/* =========================
+   IMAGE
+========================= */
+.article-related-media {
+    position: relative;
+    overflow: hidden;
+}
+
+.article-related-media img {
+    width: 100%;
+    /* height: 260px; */
+    object-fit: cover;
+    display: block;
+    aspect-ratio: auto !important;
+}
+
+
+/* bookmark icon */
+.article-related-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================
+   BODY
+========================= */
+.article-related-body {
+    padding: 15px;
+}
+
+.article-related-card-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 10px 0;
+    line-height: 1.4;
+}
+
+/* =========================
+   FOOTER
+========================= */
+.article-related-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #777;
+}
+
+/* =========================
+   DOTS
+========================= */
+.article-related-dots {
+    margin-top: 20px;
+}
+
+.article-related-dot {
+    width: 6px;
+    height: 6px;
+    background: #999;
+    border-radius: 50%;
+    margin-right: 5px;
+    border: none;
+}
+
+.article-related-dot.is-active {
+    background: #000;
+}
+
+section.content-v2-block.content-v2-recipe-card {
+    background: #fff;
+    border: unset;
+    padding: 40px;
+}
+
+section.content-v2-block.content-v2-recipe-card h2 {
+    margin: 0px;
+    margin-bottom: 40px;
+}
+
+section.content-v2-block.content-v2-recipe-card ul li {
+    font-size: 18px;
+    color: #111;
+}
+
+section.content-v2-block.content-v2-recipe-card ol li {
+    color: #111;
+}
+
+
+.article-main-column p {
+    color: #111;
+}
+
+ 
