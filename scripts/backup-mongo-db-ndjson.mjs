@@ -1,7 +1,9 @@
 import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { MongoClient, BSON } from 'mongodb';
+import { once } from 'events';
 
 const { EJSON } = BSON;
 
@@ -27,16 +29,20 @@ const manifest = [];
 
 for (const { name } of collections) {
   const outPath = path.join(outDir, `${name}.ndjson`);
-  const handle = await fs.open(outPath, 'w');
+  const stream = createWriteStream(outPath, { encoding: 'utf8' });
   let count = 0;
 
   try {
-    for await (const doc of db.collection(name).find({})) {
-      await handle.write(`${EJSON.stringify(doc)}\n`);
+    const cursor = db.collection(name).find({}).batchSize(100);
+    for await (const doc of cursor) {
+      if (!stream.write(`${EJSON.stringify(doc)}\n`)) {
+        await once(stream, 'drain');
+      }
       count += 1;
     }
   } finally {
-    await handle.close();
+    stream.end();
+    await once(stream, 'finish');
   }
 
   manifest.push({ name, count, file: `${name}.ndjson` });
