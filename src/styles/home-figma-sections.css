@@ -1275,7 +1275,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
 
 .pannel-data {
   width: 316px;
-  height: 648px;
+  /* height: 648px; */
   angle: 0 deg;
   opacity: 1;
   top: 2299px;
@@ -1371,4 +1371,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 
 .home-sidebar-sticky .pannel-data{
   width: 380px;
+}
+.home-sidebar-sticky ..button-data-full{
+  width: 100%;
 }
