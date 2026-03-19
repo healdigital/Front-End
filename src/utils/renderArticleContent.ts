@@ -153,7 +153,60 @@ const extractImageUrlsFromHtml = (html: string): Set<string> => {
   return urls;
 };
 
+const extractImagesFromHtml = (
+  html: string,
+): Array<{ alt: string; height: null | number; url: string; width: null | number }> => {
+  const images: Array<{ alt: string; height: null | number; url: string; width: null | number }> = [];
+  if (!html || typeof html !== 'string') return images;
+
+  const imageTagRegex = /<img\b[^>]*>/gi;
+  let match: null | RegExpExecArray = null;
+
+  while ((match = imageTagRegex.exec(html))) {
+    const image = extractImageAttributes(match[0]);
+    if (!image?.url) continue;
+    images.push(image);
+  }
+
+  return images;
+};
+
+const extractLegacyStepImages = (
+  article: AnyRecord,
+): Array<{ alt: string; height: null | number; url: string; width: null | number }> => {
+  const legacyHtml = typeof article.content === 'string' ? article.content : '';
+  if (!legacyHtml) return [];
+
+  const excludedImageUrls = new Set(
+    [
+      resolveMedia(article.featuredMedia),
+      resolveMedia(article.featuredImage),
+      resolveMedia(article.featured_image),
+      resolveMedia(article.featured_img_url),
+      resolveMedia(article.featured_image_url),
+      resolveMedia(article.featuredImageUrl),
+    ]
+      .map((image) => image?.url)
+      .filter(Boolean),
+  );
+  const seen = new Set<string>();
+
+  return extractImagesFromHtml(legacyHtml).filter((image) => {
+    if (!image.url || seen.has(image.url)) return false;
+    if (excludedImageUrls.has(image.url)) return false;
+    seen.add(image.url);
+    return true;
+  });
+};
+
 const renderLegacyImageFallback = (article: AnyRecord, structuredContent: string): string => {
+  const hasRecipeSteps =
+    Array.isArray(article.recipeBlocks) &&
+    article.recipeBlocks.some(
+      (block: unknown) => isRecord(block) && Array.isArray(block.steps) && block.steps.length > 0,
+    );
+  if (hasRecipeSteps) return '';
+
   const legacyHtml = typeof article.content === 'string' ? article.content : '';
   if (!legacyHtml) return '';
 
@@ -277,8 +330,8 @@ const normalizeRecipeType = (value: unknown, fallbackSource: string): string => 
   return 'RECIPE';
 };
 
-const renderRecipeCardBlock = (block: AnyRecord): string => {
-  const title = asText(block.title) || 'Recipe card';
+const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string => {
+  const title = asText(block.title) || 'Recette';
   const prepMinutes = toPositiveNumber(block.preparationTimeMinutes);
   const cookMinutes = toPositiveNumber(block.cookingTimeMinutes);
   const prep = formatMinutes(block.preparationTimeMinutes);
@@ -299,14 +352,14 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
   const nutrition = isRecord(block.nutrition) ? block.nutrition : {};
 
   const metaItems = [
-    recipeType ? `<li><strong>Type:</strong> ${escapeHtml(recipeType)}</li>` : '',
-    prep ? `<li><strong>Prep:</strong> ${escapeHtml(prep)}</li>` : '',
-    cook ? `<li><strong>Cook:</strong> ${escapeHtml(cook)}</li>` : '',
-    total ? `<li><strong>Total:</strong> ${escapeHtml(total)}</li>` : '',
-    difficulty ? `<li><strong>Difficulty:</strong> ${escapeHtml(difficulty)}</li>` : '',
-    servings ? `<li><strong>Servings:</strong> ${escapeHtml(servings)}</li>` : '',
-    dishType ? `<li><strong>Dish:</strong> ${escapeHtml(dishType)}</li>` : '',
-    cuisine ? `<li><strong>Cuisine:</strong> ${escapeHtml(cuisine)}</li>` : '',
+    recipeType ? `<li><strong>Type :</strong> ${escapeHtml(recipeType)}</li>` : '',
+    prep ? `<li><strong>Préparation :</strong> ${escapeHtml(prep)}</li>` : '',
+    cook ? `<li><strong>Cuisson :</strong> ${escapeHtml(cook)}</li>` : '',
+    total ? `<li><strong>Total :</strong> ${escapeHtml(total)}</li>` : '',
+    difficulty ? `<li><strong>Difficulté :</strong> ${escapeHtml(difficulty)}</li>` : '',
+    servings ? `<li><strong>Portions :</strong> ${escapeHtml(servings)}</li>` : '',
+    dishType ? `<li><strong>Plat :</strong> ${escapeHtml(dishType)}</li>` : '',
+    cuisine ? `<li><strong>Cuisine :</strong> ${escapeHtml(cuisine)}</li>` : '',
   ]
     .filter(Boolean)
     .join('');
@@ -363,6 +416,9 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     .filter(Boolean)
     .join('\n');
 
+  const legacyStepImages = article ? extractLegacyStepImages(article) : [];
+  let fallbackStepImageIndex = 0;
+
   const stepRows = Array.isArray(block.steps)
     ? block.steps
         .map((step: unknown, index: number) => {
@@ -370,7 +426,22 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
           const instruction = asText(step.instruction);
           if (!instruction) return '';
 
-          const media = resolveMedia(step.image, ['articleStep', 'articleHero', 'gallery']);
+          const explicitMedia =
+            resolveMedia(step.image, ['articleStep', 'articleHero', 'gallery']) ||
+            resolveMedia(step.imageUrl, ['articleStep', 'articleHero', 'gallery']) ||
+            resolveMedia(step.image_url, ['articleStep', 'articleHero', 'gallery']) ||
+            resolveMedia(step.media, ['articleStep', 'articleHero', 'gallery']) ||
+            resolveMedia(step.photo, ['articleStep', 'articleHero', 'gallery']);
+          const fallbackMedia =
+            explicitMedia || fallbackStepImageIndex >= legacyStepImages.length
+              ? null
+              : legacyStepImages[fallbackStepImageIndex];
+          const media = explicitMedia || fallbackMedia;
+
+          if (!explicitMedia && fallbackMedia) {
+            fallbackStepImageIndex += 1;
+          }
+
           const caption = asText(step.imageCaption);
           const imageDimensions =
             media?.width && media?.height
@@ -469,7 +540,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     ? [
         '<section class="content-v2-block content-v2-recipe-ingredients">',
         '  <div class="content-v2-recipe-ingredients-header">',
-        '    <h2>Ingredients</h2>',
+        '    <h2>Ingrédients</h2>',
         `    <div class="wprm-recipe-servings">${servingsControls}</div>`,
         '  </div>',
         `  <div class="content-v2-recipe-ingredients-list wprm-recipe-ingredients-container" data-recipe="${recipeId}" id="recipe-${recipeId}-ingredients">${ingredientsList}</div>`,
@@ -480,7 +551,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
   const visualStepsSection = stepRows
     ? [
         '<section class="content-v2-block content-v2-recipe-steps-visual">',
-        '  <h2>Steps with photos</h2>',
+        '  <h2>Étapes en photos</h2>',
         `  <ol class="content-v2-recipe-visual-list">${stepRows}</ol>`,
         '</section>',
       ].join('\n')
@@ -501,7 +572,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     compactSteps
       ? [
           '  <div class="content-v2-recipe-section">',
-          '    <h3>Recipe steps</h3>',
+          '    <h3>Étapes</h3>',
           `    <ol>${compactSteps}</ol>`,
           '  </div>',
         ].join('\n')
@@ -509,7 +580,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     nutritionRows
       ? [
           '  <div class="content-v2-recipe-section">',
-          '    <h3>Nutrition (per serving)</h3>',
+          '    <h3>Nutrition (par portion)</h3>',
           `    <ul class="content-v2-recipe-nutrition-list">${nutritionRows}</ul>`,
           '  </div>',
         ].join('\n')
@@ -517,7 +588,7 @@ const renderRecipeCardBlock = (block: AnyRecord): string => {
     tips
       ? [
           '  <div class="content-v2-recipe-section">',
-          '    <h3>Tips</h3>',
+          '    <h3>Astuces</h3>',
           `    ${tips}`,
           '  </div>',
         ].join('\n')
@@ -631,7 +702,7 @@ const renderImageGalleryBlock = (block: AnyRecord): string => {
   ].join('\n');
 };
 
-const renderBlocks = (blocks: unknown): string => {
+const renderBlocks = (blocks: unknown, article?: AnyRecord): string => {
   if (!Array.isArray(blocks)) return '';
 
   return blocks
@@ -644,7 +715,7 @@ const renderBlocks = (blocks: unknown): string => {
         case 'editorialNote':
           return renderEditorialNoteBlock(block);
         case 'recipeCard':
-          return renderRecipeCardBlock(block);
+          return renderRecipeCardBlock(block, article);
         case 'imageGallery':
           return renderImageGalleryBlock(block);
         default:
@@ -657,10 +728,10 @@ const renderBlocks = (blocks: unknown): string => {
 
 const renderStructuredContent = (article: AnyRecord): string => {
   const structuredContent = [
-    renderBlocks(article.recipeBlocks),
+    renderBlocks(article.recipeBlocks, article),
     renderLexicalRichText(article.contentV2),
-    renderBlocks(article.contentBlocks),
-    renderBlocks(article.imageBlocks),
+    renderBlocks(article.contentBlocks, article),
+    renderBlocks(article.imageBlocks, article),
   ]
     .filter(Boolean)
     .join('\n');

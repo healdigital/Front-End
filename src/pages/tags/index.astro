@@ -30,12 +30,12 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
   .sort((a: any, b: any) => b.articleCount - a.articleCount);
 ---
 
-<BaseLayout title="Tags" description="Browse articles by tag">
+<BaseLayout title="Mots-clés" description="Parcourir les articles par mot-clé">
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
-      <p class="lcdb-page-eyebrow typ-caption">Explore</p>
-      <h1 class="lcdb-page-title typ-h2">Tags</h1>
-      <p class="lcdb-page-description typ-body">{tags.length} tags disponibles.</p>
+      <p class="lcdb-page-eyebrow typ-caption">Explorer</p>
+      <h1 class="lcdb-page-title typ-h2">Mots-clés</h1>
+      <p class="lcdb-page-description typ-body">{tags.length} mots-clés disponibles.</p>
     </div>
   </section>
 
@@ -43,7 +43,7 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
     <div class="lcdb-page-shell lcdb-page-section-inner">
       {BUILD_ONLY_ARTICLE_PAGES && (
         <div class="mb-8 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
-          Tag pages are excluded in article-only build mode (`BUILD_ONLY_ARTICLE_PAGES=1`).
+          Les pages de mots-clés sont exclues en mode de build réservé aux articles (`BUILD_ONLY_ARTICLE_PAGES=1`).
         </div>
       )}
 
@@ -58,7 +58,7 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
           ))}
         </div>
       ) : (
-        <div class="lcdb-empty-state"><p class="typ-body">Aucun tag disponible.</p></div>
+        <div class="lcdb-empty-state"><p class="typ-body">Aucun mot-clé disponible.</p></div>
       )}
     </div>
   </section>

@@ -482,9 +482,9 @@ const getFilterKey = (categoryLabel: string): string => {
 
 const getRecipeTagLabel = (categoryLabel: string, filterKeyHint = ''): string => {
   const filterKey = filterKeyHint || getFilterKey(categoryLabel);
-  if (filterKey === 'sucrees') return 'SWEET';
-  if (filterKey === 'salees') return 'SAVORY';
-  return 'RECIPE';
+  if (filterKey === 'sucrees') return 'SUCRÉ';
+  if (filterKey === 'salees') return 'SALÉ';
+  return 'RECETTE';
 };
 
 const getRecipeTimeLabel = (article: any): string => {
@@ -963,7 +963,52 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     </div>
   </section>
 
+  <section class="relative bg-[#1c2639] overflow-hidden p-4 home-page-section home-page-section--dark">
+    <div
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-20"
+      aria-hidden="true"
+    ></div>
+    <div class="home-shell-width relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] rounded-[18px] overflow-hidden border border-[#314154] bg-[#1c2639] shadow-[0_20px_60px_rgba(8,16,30,0.28)]">
+        <div class="min-h-[300px] lg:min-h-[360px]">
+          <img
+            src="/images/bernard-blog.png"
+            alt=""
+            class="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div class="px-6 py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 flex flex-col justify-center">
+          <p class="text-[#8be3de] typ-caption uppercase tracking-[0.16em]">Lettre d’information</p>
+          <h2 class="mt-4 font-heading text-[40px] md:text-[52px] lg:text-[62px] leading-[0.95] text-white">
+            Recevez les nouvelles recettes directement chez vous
+          </h2>
+          <p class="mt-5 max-w-[58ch] text-[16px] leading-[1.75] text-[#d7dfeb] typ-body">
+            Abonnez-vous pour suivre les nouvelles publications, les recettes de saison et les prochains contenus de La Cuisine de Bernard.
+          </p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            <button
+              id="open-newsletter-home"
+              type="button"
+              class="inline-flex items-center justify-center bg-primary-turquoise px-6 py-3 text-[12px] uppercase tracking-[0.16em] text-[#13202e] rounded-sm typ-button"
+            >
+              S’abonner
+            </button>
+            <a
+              href="/newsletter"
+              class="inline-flex items-center justify-center border border-[#5d7088] px-6 py-3 text-[12px] uppercase tracking-[0.16em] text-white rounded-sm typ-button"
+            >
+              En savoir plus
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <NewsletterModal triggerId="open-newsletter-footer" />
+  <NewsletterModal triggerId="open-newsletter-home" id="newsletter-modal-home" />
 </MainLayout>
 
 <script define:vars={{ payloadAssetOrigin }}>
@@ -1052,9 +1097,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     const normalizeSlug = (value = '') => String(value).replace(/^\/+|\/+$/g, '');
     const toRecipeTagLabel = (value = '', filterKey = '') => {
       const resolvedFilterKey = filterKey || getFilterKey(value);
-      if (resolvedFilterKey === 'sucrees') return 'SWEET';
-      if (resolvedFilterKey === 'salees') return 'SAVORY';
-      return 'RECIPE';
+      if (resolvedFilterKey === 'sucrees') return 'SUCRÉ';
+      if (resolvedFilterKey === 'salees') return 'SALÉ';
+      return 'RECETTE';
     };
     const formatRecipeTime = (value = '') => {
       const raw = String(value || '').trim();
