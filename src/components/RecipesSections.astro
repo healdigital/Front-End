@@ -40,7 +40,7 @@ const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : a
 <!-- Sweet Recipes Section -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-orange-200 dark:border-orange-800">
   <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-    Sweet Recipes 🍰
+    Recettes sucrées 🍰
   </h2>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -70,7 +70,7 @@ const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : a
               {article.title}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-              {article.excerpt?.[0]?.children?.[0]?.text || 'Delicious sweet recipe'}
+              {article.excerpt?.[0]?.children?.[0]?.text || 'Délicieuse recette sucrée'}
             </p>
           </div>
         </article>
@@ -82,7 +82,7 @@ const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : a
 <!-- Savory Recipes Section -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-green-200 dark:border-green-800">
   <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-    Savory Recipes 🍲
+    Recettes salées 🍲
   </h2>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -112,7 +112,7 @@ const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : a
               {article.title}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-              {article.excerpt?.[0]?.children?.[0]?.text || 'Delicious savory recipe'}
+              {article.excerpt?.[0]?.children?.[0]?.text || 'Délicieuse recette salée'}
             </p>
           </div>
         </article>

@@ -43,11 +43,11 @@ const articleSlug = (article: any) => {
   return String(raw || '').replace(/^\/+|\/+$/g, '');
 };
 
-const getTitle = (article: any) => toText(article?.title) || 'Untitled article';
+const getTitle = (article: any) => toText(article?.title) || 'Article sans titre';
 
 const getExcerpt = (article: any) => {
   const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
-  if (!raw) return 'Recette a decouvrir.';
+  if (!raw) return 'Recette à découvrir.';
   return raw.length > 180 ? `${raw.slice(0, 180).trim()}...` : raw;
 };
 
@@ -148,7 +148,7 @@ const paginationItems = (() => {
                     />
                   ) : (
                     <div class="w-full h-full flex items-center justify-center">
-                      <span class="text-[#8A8578] typ-caption">No image</span>
+                      <span class="text-[#8A8578] typ-caption">Aucune image</span>
                     </div>
                   )}
 

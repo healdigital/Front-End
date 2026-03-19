@@ -41,7 +41,7 @@ Best sequence:
 
 #### T01. UTF-8 / accent issues site-wide
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: trace encoding/import/render/search leakage
   - `You`: verify affected pages from client screenshots
@@ -55,7 +55,7 @@ Best sequence:
 
 #### T02. Missing recipe content on migrated recipes
 
-- Status: `In progress`
+- Status: `Done`
 - Owner:
   - `Codex`: legacy-to-new-editor migration flow
   - `You`: identify highest-priority broken recipe examples from Leo
@@ -71,7 +71,7 @@ Best sequence:
 
 #### T03. Missing images site-wide
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: inspect media mapping and render paths
   - `You`: collect broken URLs/pages from staging if available
@@ -99,7 +99,7 @@ Best sequence:
 
 #### T05. Ingredient bullets missing
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: front-end recipe renderer
   - `You`: provide exact pages client compared if needed
@@ -112,7 +112,7 @@ Best sequence:
 
 #### T06. Ingredient headings missing
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: admin schema + renderer + migration mapping
   - `You`: confirm whether all legacy grouped ingredients must be preserved
@@ -125,7 +125,7 @@ Best sequence:
 
 #### T07. Ingredient group spacing broken
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: CSS/rendering parity
   - `You`: confirm expected original spacing visually
@@ -137,7 +137,7 @@ Best sequence:
 
 #### T08. Remove English from French version
 
-- Status: `Needs verification`
+- Status: `Done`
 - Owner:
   - `Codex`: audit labels and strings
   - `You`: run quick French QA pass
@@ -256,7 +256,7 @@ Best sequence:
 
 #### T18. Category and archive page cleanup
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: archive templates
   - `You`: verify exact intended differences between `/le-sale/` and `/recettes-salees/`
@@ -346,7 +346,7 @@ Best sequence:
 
 #### T26. Newsletter block on homepage
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: homepage block implementation
   - `You`: verify final placement and copy

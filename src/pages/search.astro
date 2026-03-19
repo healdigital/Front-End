@@ -301,8 +301,8 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     }
 
     subtitleEl.innerHTML = hits.length
-      ? `Found <strong>${hits.length}</strong> article${hits.length !== 1 ? 's' : ''} for "<strong>${query}</strong>"`
-      : `No results found for "<strong>${query}</strong>"`;
+      ? `${hits.length} article${hits.length !== 1 ? 's' : ''} trouvé${hits.length !== 1 ? 's' : ''} pour "<strong>${escapeHtml(query)}</strong>"`
+      : `Aucun résultat trouvé pour "<strong>${escapeHtml(query)}</strong>"`;
 
     if (hits.length === 0) {
       noResultsEl.classList.remove('hidden');
@@ -352,7 +352,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     } catch (error) {
       console.error('Local search fallback failed:', error);
       if (subtitleEl) {
-        subtitleEl.textContent = 'Search is temporarily unavailable. Please try again later.';
+        subtitleEl.textContent = "La recherche est temporairement indisponible. Veuillez réessayer plus tard.";
       }
     }
   };
@@ -405,7 +405,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     } catch (error) {
       console.error('Algolia search failed:', error);
       if (subtitleEl) {
-        subtitleEl.textContent = 'Search is temporarily unavailable. Please try again later.';
+        subtitleEl.textContent = "La recherche est temporairement indisponible. Veuillez réessayer plus tard.";
       }
     }
   };

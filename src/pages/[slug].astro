@@ -453,7 +453,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               />
             </div>
             <div class="article-newsletter-copy">
-              <p class="article-newsletter-eyebrow typ-caption">Newsletter</p>
+              <p class="article-newsletter-eyebrow typ-caption">Lettre d’information</p>
               <h2 class="article-newsletter-title">Abonnez-vous à La Cuisine de Bernard</h2>
               <p class="article-newsletter-text">
                 Recevez toute l'actualité de La Cuisine De Bernard, ses dernières publications et plus encore, directement dans votre boîte de réception.
@@ -1638,15 +1638,18 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content :global(.wprm-recipe-ingredient)::before {
-    content: "";
+    content: "◆";
     position: absolute;
     left: 0;
-    top: 0.75em;
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    background: #54b6b1;
-    transform: rotate(45deg);
+    top: 0.15em;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    color: #54b6b1;
+    font-size: 11px;
+    line-height: 1;
+    transform: none;
   }
 
   .article-content :global(.wprm-recipe-ingredient-amount),

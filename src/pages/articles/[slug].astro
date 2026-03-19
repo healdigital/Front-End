@@ -106,7 +106,7 @@ if (slug && !processArticleImageUrl(article)) {
     };
   }
 }
-const title = toText(article?.title) || 'Untitled article';
+const title = toText(article?.title) || 'Article sans titre';
 const excerptRaw = toText(article?.excerpt) || toText(article?.content);
 const excerpt = excerptRaw.length > 180 ? `${excerptRaw.slice(0, 180).trim()}...` : excerptRaw;
 const imageUrl = processArticleImageUrl(article);

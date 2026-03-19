@@ -36,7 +36,7 @@ const articleSlug = (article: any) =>
 
 const getExcerpt = (article: any) => {
   const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
-  if (!raw) return 'Recette a decouvrir.';
+  if (!raw) return 'Recette à découvrir.';
   return raw.length > 180 ? `${raw.slice(0, 180).trim()}...` : raw;
 };
 
@@ -97,10 +97,10 @@ const articles = (Array.isArray(fetchedArticles) ? fetchedArticles : [])
   .filter(Boolean);
 ---
 
-<BaseLayout title={`#${tagTitle}`} description={`Articles tagged with ${tagTitle}`}>
+<BaseLayout title={`#${tagTitle}`} description={`Articles associés au mot-clé ${tagTitle}`}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
-      <p class="lcdb-page-eyebrow typ-caption">Tag</p>
+      <p class="lcdb-page-eyebrow typ-caption">Mot-clé</p>
       <h1 class="lcdb-page-title typ-h2">#{tagTitle}</h1>
       <p class="lcdb-page-description typ-body">{articles.length} article{articles.length !== 1 ? 's' : ''} trouv&eacute;s.</p>
     </div>
@@ -122,7 +122,7 @@ const articles = (Array.isArray(fetchedArticles) ? fetchedArticles : [])
                   />
                 ) : (
                   <div class="w-full h-full flex items-center justify-center">
-                    <span class="text-[#8A8578] typ-caption">No image</span>
+                    <span class="text-[#8A8578] typ-caption">Aucune image</span>
                   </div>
                 )}
               </div>

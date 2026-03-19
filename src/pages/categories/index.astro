@@ -30,11 +30,11 @@ const categories = (Array.isArray(categoriesWithCounts) ? categoriesWithCounts :
   .sort((a: any, b: any) => b.articleCount - a.articleCount);
 ---
 
-<BaseLayout title="Categories" description="Browse articles by category">
+<BaseLayout title="Catégories" description="Parcourir les articles par catégorie">
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
-      <p class="lcdb-page-eyebrow typ-caption">Explore</p>
-      <h1 class="lcdb-page-title typ-h2">Categories</h1>
+      <p class="lcdb-page-eyebrow typ-caption">Explorer</p>
+      <h1 class="lcdb-page-title typ-h2">Catégories</h1>
       <p class="lcdb-page-description typ-body">{categories.length} cat&eacute;gories disponibles.</p>
     </div>
   </section>
@@ -43,7 +43,7 @@ const categories = (Array.isArray(categoriesWithCounts) ? categoriesWithCounts :
     <div class="lcdb-page-shell lcdb-page-section-inner">
       {BUILD_ONLY_ARTICLE_PAGES && (
         <div class="mb-8 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
-          Category pages are excluded in article-only build mode (`BUILD_ONLY_ARTICLE_PAGES=1`).
+          Les pages de catégories sont exclues en mode de build réservé aux articles (`BUILD_ONLY_ARTICLE_PAGES=1`).
         </div>
       )}
 
