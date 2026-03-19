@@ -30,6 +30,9 @@ prepared-articles*.json
 Front
 Front.pub
 
+# Local backup exports and temporary dumps
+tmp/
+
 # Local generated exports (keep markdown local, not committed)
 chat-exports/
 save/
