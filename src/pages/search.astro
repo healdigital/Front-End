@@ -6,15 +6,20 @@ export const prerender = true;
 
 const lang = 'fr';
 const title = translate('nav.search', lang);
+const pageEyebrow = 'Recherche';
+const pageHeading = 'Rechercher des articles';
+const pageSubtitle = "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
+const noResultsMessage = "Aucun résultat trouvé. Essayez un autre terme de recherche.";
+const noImageLabel = 'Aucune image';
 ---
 
 <BaseLayout title={title} lang={lang}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
-      <p class="lcdb-page-eyebrow typ-caption">Search</p>
-      <h1 class="lcdb-page-title typ-h2">Search articles</h1>
+      <p class="lcdb-page-eyebrow typ-caption">{pageEyebrow}</p>
+      <h1 class="lcdb-page-title typ-h2">{pageHeading}</h1>
       <p id="search-subtitle" class="lcdb-page-description typ-body">
-        Use the search bar in the header to find articles.
+        {pageSubtitle}
       </p>
     </div>
   </section>
@@ -22,7 +27,7 @@ const title = translate('nav.search', lang);
   <section class="lcdb-page-section">
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div id="no-results" class="hidden lcdb-empty-state">
-        <p class="text-lg font-medium">No results found. Try a different search term.</p>
+        <p class="text-lg font-medium">{noResultsMessage}</p>
       </div>
 
       <div id="results-grid" class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -36,6 +41,8 @@ const title = translate('nav.search', lang);
   algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
   algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
   algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || 'lcdb_recipes',
+  defaultSubtitle: pageSubtitle,
+  noImageLabelText: noImageLabel,
   payloadAssetOrigin: (() => {
     try {
       return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
@@ -51,6 +58,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
   const subtitleEl = document.getElementById('search-subtitle');
   const resultsGrid = document.getElementById('results-grid');
   const noResultsEl = document.getElementById('no-results');
+  const noImageLabel = noImageLabelText;
 
   const urlParams = new URLSearchParams(window.location.search);
   const searchQuery = urlParams.get('q') || '';
@@ -148,16 +156,25 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     const candidates = [
       hit?.image_url,
       hit?.imageUrl,
+      hit?.featuredMedia?.sizes?.articleHero?.url,
+      hit?.featuredMedia?.sizes?.gallery?.url,
+      hit?.featuredMedia?.url,
+      hit?.featuredMedia?.value?.url,
       hit?.featured_image?.url,
+      hit?.featured_image?.asset?.url,
       hit?.featured_image?.src,
       hit?.featured_image?.sizes?.medium,
       hit?.featured_image?.sizes?.large,
       hit?.featured_image_url,
+      hit?.featured_img_url,
       hit?.featuredImageUrl,
+      hit?.featuredImage?.sizes?.articleHero?.url,
+      hit?.featuredImage?.sizes?.gallery?.url,
       hit?.featuredImage?.url,
       hit?.featuredImage?.src,
       hit?.featuredImage?.node?.sourceUrl,
       hit?.featuredImage,
+      hit?.featureImage,
       hit?.image?.url,
       hit?.image?.src,
       hit?.image?.sizes?.medium,
@@ -237,7 +254,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return `
       <a href="${safeHref}" class="lcdb-article-card">
         <div class="lcdb-article-card-media">
-          ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeAlt}" loading="lazy" />` : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">No image</span></div>`}
+          ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeAlt}" loading="lazy" />` : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">${escapeHtml(noImageLabel)}</span></div>`}
         </div>
         <div class="lcdb-article-card-content">
           ${safeCategory ? `<span class="lcdb-chip">${safeCategory}</span>` : ''}
@@ -253,7 +270,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     if (!subtitleEl || !resultsGrid || !noResultsEl) return;
 
     if (!query.trim()) {
-      subtitleEl.textContent = 'Use the search bar in the header to find articles.';
+      subtitleEl.textContent = defaultSubtitle;
       resultsGrid.innerHTML = '';
       noResultsEl.classList.add('hidden');
       return;
