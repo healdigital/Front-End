@@ -27,6 +27,35 @@ const indexPrefix = process.env.ALGOLIA_INDEX_PREFIX || 'lcdb_recipes';
 const batchSize = Number(process.env.ALGOLIA_BATCH_SIZE || 500);
 const preparedJsonPath = path.join(process.cwd(), 'prepared-articles.json');
 
+const maybeRepairMojibake = (value) => {
+  const text = String(value || '');
+  if (!/(Ã.|Â.|â€|â€™|â€œ|â€|â€“|â€”|â€¦)/.test(text)) return text;
+
+  try {
+    const repaired = Buffer.from(text, 'latin1').toString('utf8');
+    return repaired.includes('\uFFFD') ? text : repaired;
+  } catch {
+    return text;
+  }
+};
+
+const decodeHtmlEntities = (value) =>
+  String(value || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&rsquo;/g, '’')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&rdquo;/g, '”')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&hellip;/g, '…')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)));
+
 const getAlgoliaSource = () => String(process.env.ALGOLIA_SOURCE || '').trim().toLowerCase();
 
 const shouldUsePreparedFirst = () => {
@@ -55,7 +84,8 @@ const normalizeLang = (value) =>
 
 const buildIndexName = (lang) => `${indexPrefix}_${normalizeLang(lang)}`;
 
-const stripHtml = (value) => String(value || '').replace(/<[^>]*>/g, ' ');
+const stripHtml = (value) =>
+  maybeRepairMojibake(decodeHtmlEntities(String(value || '').replace(/<[^>]*>/g, ' ')));
 
 const richTextToPlain = (value) => {
   if (!value) return '';
@@ -66,10 +96,10 @@ const richTextToPlain = (value) => {
         if (!item) return '';
         if (typeof item === 'string') return stripHtml(item);
         if (typeof item === 'object') {
-          if (typeof item.text === 'string') return item.text;
+          if (typeof item.text === 'string') return stripHtml(item.text);
           if (Array.isArray(item.children)) {
             return item.children
-              .map((child) => (typeof child?.text === 'string' ? child.text : ''))
+              .map((child) => (typeof child?.text === 'string' ? stripHtml(child.text) : ''))
               .join(' ');
           }
         }
@@ -78,10 +108,10 @@ const richTextToPlain = (value) => {
       .join(' ');
   }
   if (typeof value === 'object') {
-    if (typeof value.text === 'string') return value.text;
+    if (typeof value.text === 'string') return stripHtml(value.text);
     if (Array.isArray(value.children)) {
       return value.children
-        .map((child) => (typeof child?.text === 'string' ? child.text : ''))
+        .map((child) => (typeof child?.text === 'string' ? stripHtml(child.text) : ''))
         .join(' ');
     }
   }
@@ -90,9 +120,9 @@ const richTextToPlain = (value) => {
 
 const entityName = (value) => {
   if (!value) return '';
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') return stripHtml(value);
   if (typeof value === 'object') {
-    return value.name || value.title || value.label || '';
+    return stripHtml(value.name || value.title || value.label || '');
   }
   return '';
 };
@@ -214,7 +244,7 @@ function buildRecord(article) {
   return {
     objectID,
     id,
-    title: article.title || '',
+    title: stripHtml(article.title || ''),
     slug,
     url: `/${slug}`,
     language,
@@ -226,7 +256,7 @@ function buildRecord(article) {
     publishedAt: article.publishedAt || article.date || article.modified || '',
     featured_image: {
       url: processArticleImageUrl(article),
-      alt: article.featured_image?.alt || article.title || '',
+      alt: stripHtml(article.featured_image?.alt || article.title || ''),
     },
   };
 }

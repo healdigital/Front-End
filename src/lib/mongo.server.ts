@@ -2,6 +2,7 @@ import { MongoClient, ObjectId, type Db } from 'mongodb';
 import { config } from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { repairDeepStrings } from '../utils/repairMojibake';
 
 // Load env variables
 config();
@@ -39,7 +40,7 @@ const getPreparedArticles = () => {
   const preparedPath = path.join(process.cwd(), 'prepared-articles.json');
   const raw = fs.readFileSync(preparedPath, 'utf8');
   const items = JSON.parse(raw);
-  cachedPreparedArticles = Array.isArray(items) ? items : [];
+  cachedPreparedArticles = Array.isArray(items) ? repairDeepStrings(items) : [];
   return cachedPreparedArticles;
 };
 
@@ -659,9 +660,7 @@ export async function getArticleBySlugFromMongo(slug: string) {
   // Optional local JSON lookup
   if (process.env.USE_LOCAL_JSON === '1') {
     try {
-      const preparedPath = path.join(process.cwd(), 'prepared-articles.json');
-      const raw = fs.readFileSync(preparedPath, 'utf8');
-      const items = JSON.parse(raw);
+      const items = getPreparedArticles();
       const decodeSafe = (s: string) => { try { return decodeURIComponent(s); } catch { return s; } };
       const variants = new Set<string>();
       const pushVar = (val?: string) => {
