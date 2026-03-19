@@ -102,16 +102,8 @@ const getArticleSlug = (article: any) => {
   prevBtn?.addEventListener('click', prevSlide);
   nextBtn?.addEventListener('click', nextSlide);
 
-  // Auto-play loop every 5 seconds, paused on hover
-  let autoplayInterval = setInterval(nextSlide, 5000);
-  const pauseAutoplay = () => clearInterval(autoplayInterval);
-  const resumeAutoplay = () => {
-    pauseAutoplay();
-    autoplayInterval = setInterval(nextSlide, 5000);
-  };
-
-  slider?.addEventListener('mouseenter', pauseAutoplay);
-  slider?.addEventListener('mouseleave', resumeAutoplay);
+  // Auto-play loop every 3 seconds (infinite loop)
+  let autoplayInterval = setInterval(nextSlide, 3000);
 
   updateSlider(0);
 </script>
