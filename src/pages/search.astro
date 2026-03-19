@@ -6,6 +6,8 @@ export const prerender = true;
 
 const lang = 'fr';
 const title = translate('nav.search', lang);
+const fixedPageSubtitle = "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
+const fixedNoResultsMessage = "Aucun résultat trouvé. Essayez un autre terme de recherche.";
 const pageEyebrow = 'Recherche';
 const pageHeading = 'Rechercher des articles';
 const pageSubtitle = "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
@@ -19,7 +21,7 @@ const noImageLabel = 'Aucune image';
       <p class="lcdb-page-eyebrow typ-caption">{pageEyebrow}</p>
       <h1 class="lcdb-page-title typ-h2">{pageHeading}</h1>
       <p id="search-subtitle" class="lcdb-page-description typ-body">
-        {pageSubtitle}
+        {fixedPageSubtitle}
       </p>
     </div>
   </section>
@@ -27,7 +29,7 @@ const noImageLabel = 'Aucune image';
   <section class="lcdb-page-section">
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div id="no-results" class="hidden lcdb-empty-state">
-        <p class="text-lg font-medium">{noResultsMessage}</p>
+        <p class="text-lg font-medium">{fixedNoResultsMessage}</p>
       </div>
 
       <div id="results-grid" class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,7 +43,7 @@ const noImageLabel = 'Aucune image';
   algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
   algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
   algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || 'lcdb_recipes',
-  defaultSubtitle: pageSubtitle,
+  defaultSubtitle: fixedPageSubtitle,
   noImageLabelText: noImageLabel,
   payloadAssetOrigin: (() => {
     try {
@@ -59,6 +61,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
   const resultsGrid = document.getElementById('results-grid');
   const noResultsEl = document.getElementById('no-results');
   const noImageLabel = noImageLabelText;
+  const entityDecoder = document.createElement('textarea');
 
   const urlParams = new URLSearchParams(window.location.search);
   const searchQuery = urlParams.get('q') || '';
@@ -82,7 +85,28 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
 
   const resolveHitLanguage = (hit) => normalizeLang(hit?.language || hit?.lang || '');
 
-  const stripMarkup = (value) => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const repairMojibake = (value) => {
+    const text = String(value || '');
+    if (!/(Ã.|Â.|â€|â€™|â€œ|â€|â€“|â€”|â€¦)/.test(text)) return text;
+
+    try {
+      const bytes = Uint8Array.from(text, (char) => char.charCodeAt(0) & 0xff);
+      const repaired = new TextDecoder('utf-8').decode(bytes);
+      return repaired.includes('\uFFFD') ? text : repaired;
+    } catch {
+      return text;
+    }
+  };
+
+  const decodeHtmlEntities = (value) => {
+    entityDecoder.innerHTML = String(value || '');
+    return entityDecoder.value;
+  };
+
+  const stripMarkup = (value) =>
+    repairMojibake(
+      decodeHtmlEntities(String(value || '').replace(/<[^>]*>/g, ' ')),
+    ).replace(/\s+/g, ' ').trim();
 
   const toText = (value) => {
     if (!value) return '';
@@ -123,7 +147,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       toText(hit?._highlightResult?.post_title?.value),
       toText(hit?._highlightResult?.name?.value),
     ];
-    return options.find((value) => value.length > 0) || 'Untitled article';
+    return options.find((value) => value.length > 0) || 'Article sans titre';
   };
 
   const normalizeImageUrl = (value) => {
