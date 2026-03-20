@@ -6,7 +6,7 @@ import NewsletterModal from "../components/organisms/NewsletterModal.astro";
 import RecipeSidebar from "../components/organisms/RecipeSidebar.astro";
 
 import { payloadFetch } from "../lib/payload.client";
-import { getAllArticlesFromMongo, getArticleBySlugFromMongo, getRelatedArticlesFromMongo } from "../lib/mongo.server";
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo, getCommentsByArticleIdFromMongo, getRelatedArticlesFromMongo } from "../lib/mongo.server";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "../utils/buildArticleJsonLd";
 import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
 import { processArticleImageUrl } from "../utils/cdnUrlReplacer";
@@ -178,9 +178,6 @@ const getExcerpt = () => {
 };
 
 const title = article.title || "Untitled";
-const content = renderArticleContent(article);
-const firstContentParagraphHtml = content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
-const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(firstContentParagraphHtml);
 const excerpt = getExcerpt();
 const image = processArticleImageUrl(article);
 const imageAlt = toText(article.featuredMedia?.alt || article.featuredImage?.alt || article.featured_image?.alt) || "Article featured image";
@@ -211,7 +208,6 @@ const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
   : slug;
-const ratingLabel = "Pas encore de notes";
 
 const normalizePageLanguage = (value: any) => {
   const raw = String(value || "").trim().toLowerCase();
@@ -247,6 +243,61 @@ const categoryIds = (Array.isArray(article?.categories) ? article.categories : [
   .filter(Boolean);
 
 const currentArticleId = extractId(article?.id || article?._id);
+const articleComments = currentArticleId ? await getCommentsByArticleIdFromMongo(currentArticleId) : [];
+const validRatings = articleComments
+  .map((comment: any) => Number(comment?.rating))
+  .filter((rating: number) => Number.isFinite(rating) && rating > 0);
+const ratingCount = validRatings.length;
+const ratingAverage = ratingCount > 0
+  ? validRatings.reduce((total: number, rating: number) => total + rating, 0) / ratingCount
+  : 0;
+const ratingLabel =
+  ratingCount > 0
+    ? `${ratingAverage.toFixed(1).replace(/\.0$/, "")}/5 • ${ratingCount} avis`
+    : "Pas encore de notes";
+const ratingStars = Array.from({ length: 5 }, (_, index) => index < Math.round(ratingAverage));
+
+const primaryRecipeBlock =
+  (Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : []).find(
+    (block: any) => block?.blockType === "recipeCard" || Array.isArray(block?.ingredients) || Array.isArray(block?.steps),
+  ) || null;
+
+const recipeOnlyArticle = primaryRecipeBlock
+  ? {
+      ...article,
+      recipeBlocks: [primaryRecipeBlock],
+      contentV2: null,
+      contentBlocks: [],
+      imageBlocks: [],
+    }
+  : article;
+
+const recipeContent = primaryRecipeBlock
+  ? renderArticleContent(recipeOnlyArticle, {
+      includeRecipeBlocks: true,
+      includeContentV2: false,
+      includeContentBlocks: false,
+      includeImageBlocks: false,
+      suppressRecipeSummaryTitle: true,
+    })
+  : "";
+
+const storyContent = renderArticleContent(article, {
+  includeRecipeBlocks: false,
+});
+
+const firstStoryParagraphHtml = storyContent.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[0] || "";
+const introText =
+  excerptText ||
+  toText(firstStoryParagraphHtml) ||
+  excerpt ||
+  "";
+const hasStoryContent = Boolean(storyContent && storyContent.replace(/<[^>]*>/g, "").trim());
+const content = renderArticleContent(article);
+const firstContentParagraphHtml = content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
+const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(firstContentParagraphHtml);
+const pinterestLink = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(articleUrl)}&media=${encodeURIComponent(image || articleUrl)}&description=${encodeURIComponent(title)}`;
+const collectionHref = "/favoris";
 
 const relatedArticlesRaw =
   categoryIds.length > 0 && currentArticleId
@@ -339,6 +390,100 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div class="article-layout">
         <div class="article-main-column">
+          <section class="lcdb-surface-card recipe-detail-shell">
+            <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
+              <a href="/" class="article-breadcrumb-link">Accueil</a>
+              <span>/</span>
+              <span>Recettes</span>
+              <span>/</span>
+              <span class="article-breadcrumb-current">{title}</span>
+            </nav>
+
+            {(categoryItems.length > 0 || tagItems.length > 0) && (
+              <div class="article-chip-groups article-chip-groups--top">
+                {categoryItems.map((category: any) => (
+                  <a href={category.slug ? `/categories/${category.slug}` : "/categories"} class="lcdb-chip article-chip-link">
+                    {category.title}
+                  </a>
+                ))}
+                {tagItems.map((tag: any) => (
+                  <a href={tag.slug ? `/tags/${tag.slug}` : "/tags"} class="lcdb-chip article-chip-link article-tag-chip">
+                    #{tag.title}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            <div class="recipe-detail-head">
+              <div class="recipe-detail-copy">
+                <h1 class="recipe-detail-title">{title}</h1>
+                {introText && <p class="recipe-detail-excerpt">{introText}</p>}
+
+                <div class="recipe-detail-rating" aria-label={ratingLabel}>
+                  <span class="recipe-detail-stars" aria-hidden="true">
+                    {ratingStars.map((filled) => (
+                      <i class={filled ? "fas fa-star" : "far fa-star"}></i>
+                    ))}
+                  </span>
+                  <span class="recipe-detail-rating-label">{ratingLabel}</span>
+                </div>
+
+                <div class="recipe-detail-actions" aria-label="Actions de la recette">
+                  <a
+                    href={`/print/${slug}/?auto=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="recipe-detail-action recipe-detail-action--primary"
+                  >
+                    <i class="fas fa-print" aria-hidden="true"></i>
+                    <span>Imprimer la recette</span>
+                  </a>
+                  <a
+                    href={pinterestLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="recipe-detail-action"
+                  >
+                    <i class="fab fa-pinterest-p" aria-hidden="true"></i>
+                    <span>Épingler la recette</span>
+                  </a>
+                  <a href={collectionHref} class="recipe-detail-action">
+                    <i class="far fa-bookmark" aria-hidden="true"></i>
+                    <span>Ajouter à la collection</span>
+                  </a>
+                </div>
+              </div>
+
+              {image && (
+                <figure class="recipe-detail-media">
+                  <img src={image} alt={imageAlt} loading="eager" decoding="async" />
+                </figure>
+              )}
+            </div>
+          </section>
+
+          {recipeContent && (
+            <article class="lcdb-surface-card article-content-card article-content-card--recipe">
+              <div
+                class="article-content article-content--recipe typ-body"
+                data-article-title={title}
+                data-article-summary={excerptText}
+                set:html={recipeContent}
+              />
+            </article>
+          )}
+
+          {hasStoryContent && (
+            <article class="lcdb-surface-card article-content-card article-content-card--story">
+              <div
+                class="article-content article-content--story typ-body"
+                data-article-title={title}
+                data-article-summary={excerptText}
+                set:html={storyContent}
+              />
+            </article>
+          )}
+
           <section class="article-intro-card">
             <div class="article-intro-topbar">
               <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
@@ -1061,10 +1206,144 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     gap: 30px;
   }
 
+  .recipe-detail-shell {
+    padding: 26px 28px 28px;
+    border: 2px solid #7fd4d7;
+    box-shadow: none;
+  }
+
+  .recipe-detail-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(220px, 300px);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .recipe-detail-copy {
+    min-width: 0;
+  }
+
+  .recipe-detail-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-body);
+    font-size: clamp(2.25rem, 3.7vw, 3.3rem);
+    font-weight: 700;
+    line-height: 1.04;
+  }
+
+  .recipe-detail-excerpt {
+    margin: 14px 0 0;
+    color: #444641;
+    font-size: 1.04rem;
+    line-height: 1.78;
+    max-width: 58ch;
+  }
+
+  .recipe-detail-rating {
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #5f6671;
+    font-size: 0.98rem;
+  }
+
+  .recipe-detail-stars {
+    display: inline-flex;
+    gap: 5px;
+    color: #7da444;
+    font-size: 0.95rem;
+  }
+
+  .recipe-detail-actions {
+    margin-top: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .recipe-detail-action {
+    min-height: 50px;
+    padding: 0 18px;
+    border: 1px solid #bfc7cd;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #4e4d48;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .recipe-detail-action:hover {
+    border-color: #54b6b1;
+    color: #111111;
+  }
+
+  .recipe-detail-action--primary {
+    background: #54b6b1;
+    border-color: #54b6b1;
+    color: #ffffff;
+  }
+
+  .recipe-detail-action--primary:hover {
+    background: #429d99;
+    border-color: #429d99;
+    color: #ffffff;
+  }
+
+  .recipe-detail-media {
+    margin: 0;
+    border: 1px solid #d8d2c2;
+    background: #efe5d6;
+    overflow: hidden;
+  }
+
+  .recipe-detail-media img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+  }
+
+  .article-chip-groups--top {
+    margin-bottom: 20px;
+  }
+
+  .article-content-card--recipe {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .article-content-card--story {
+    padding: 28px 32px 34px;
+  }
+
+  .article-content--recipe :global(.wprm-recipe-container) {
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .article-content--story :global(.wprm-recipe-container) {
+    display: none !important;
+  }
+
   .article-sidebar-column {
     min-width: 0;
     align-self: start;
     background: #fafaf8;
+  }
+
+  .article-intro-card,
+  .article-hero-image,
+  .article-main-column > .article-content-card:not(.article-content-card--recipe):not(.article-content-card--story) {
+    display: none !important;
   }
 
   .article-intro-card {
@@ -2339,6 +2618,14 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   @media (max-width: 1023px) {
+    .recipe-detail-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .recipe-detail-media {
+      max-width: 420px;
+    }
+
     .article-content-card {
       padding: 26px;
     }
@@ -2366,6 +2653,24 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   @media (max-width: 767px) {
+    .recipe-detail-shell {
+      padding: 22px 18px 20px;
+    }
+
+    .recipe-detail-title {
+      font-size: clamp(1.95rem, 10vw, 2.6rem);
+    }
+
+    .recipe-detail-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .recipe-detail-action {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
     .article-intro-card {
       padding-top: 10px;
       padding-bottom: 18px;

@@ -580,11 +580,11 @@
     <script>
   const items = [
     { id: '#01', title: 'Fix UTF-8 encoding — accents broken site-wide', note: 'Affects "à", "é", "ô", "â", etc. Also affects search results (HTML entities not decoded, e.g. &rsquo;). Must fix at data import level AND rendering layer.', priority: 'P1', cat: 'Bug', time: '15:41 / 16:13' },
-    { id: '#02', title: 'Missing recipe content — most recipes are empty', note: 'Large number of recipes have no body content on staging. Likely a data migration/sync issue. Blocking QA of almost all other items.', priority: 'P1', cat: 'Content', time: '15:22' },
-    { id: '#03', title: 'Missing images site-wide', note: 'Recipe cards, article images, and steps are missing. Check media import pipeline.', priority: 'P1', cat: 'Bug', time: '15:22' },
+    { id: '#02', title: 'Missing recipe content — most recipes are empty', note: 'Completed through the legacy-to-editor migration: 2000+ recipe/articles were exported, converted, re-imported into the new editor structure, and synced to Mongo + prepared-articles.json. Grouped ingredient/step headings were then backfilled so editor, frontend, print, and preview all read the same structured data.', priority: 'P1', cat: 'Content', time: '15:22' },
+    { id: '#03', title: 'Missing images site-wide', note: 'Featured images, inline article images, and step-image fallback rendering were fixed so migrated recipe/article content shows images again across the frontend.', priority: 'P1', cat: 'Bug', time: '15:22' },
     { id: '#04', title: 'Sticky header', note: 'Header must remain fixed at top on scroll across all pages.', priority: 'P1', cat: 'UI/Layout', time: '15:22' },
     { id: '#05', title: 'Ingredient bullets missing on recipe page', note: 'Ingredients should display as a bulleted list. This also covered grouped ingredient headings from admin so front-end fetch/render matches the client reference.', priority: 'P1', cat: 'Bug', time: '15:59 / 16:13' },
-    { id: '#06', title: 'Ingredient spacing broken vs original', note: 'No visual separation between ingredient groups (e.g. "Pour le thangzong" / "Pour la brioche" / "Pour le fourrage"). Admin now supports heading rows for grouped ingredients and grouped steps; front-end/print/preview rendering was aligned to that structure.', priority: 'P1', cat: 'Bug', time: '16:07' },
+    { id: '#06', title: 'Ingredient spacing broken vs original', note: 'No visual separation between ingredient groups (e.g. "Pour le thangzong" / "Pour la brioche" / "Pour le fourrage"). Admin now supports heading rows for grouped ingredients and grouped steps, and existing recipes were backfilled so Mongo/editor/prepared JSON keep the same grouped structure.', priority: 'P1', cat: 'Bug', time: '16:07' },
     { id: '#07', title: 'Remove all English text from French version', note: 'Translate "Sweet" → "Sucré" and "Savory" → "Salé". Audit entire site for any other English strings leaking into the FR version.', priority: 'P1', cat: 'Bug', time: '15:55' },
     { id: '#08', title: 'Recipe cards: format with image (portrait), like original', note: 'Cards must show the recipe photo. Current staging cards are too large — resize to match the original site card dimensions. Reference: original "Cake de l\'impossible" page.', priority: 'P2', cat: 'UI/Layout', time: '15:10 / 16:02' },
     { id: '#09', title: 'Article images: centered, 512px width', note: 'All inline images inside article/recipe body should be centered with a max-width of 512px.', priority: 'P2', cat: 'UI/Layout', time: '15:16' },
@@ -608,7 +608,7 @@
     { id: '#27', title: 'Homepage recipe grid: 3 recipes per row', note: 'Switch from 2-per-row to 3-per-row grid on the homepage recipe listing.', priority: 'P3', cat: 'UI/Layout', time: '16:41' },
     { id: '#28', title: 'Recipe page: add recipe summary tags at the top', note: 'Add the recipe meta summary at the top of the page/card, matching the client reference: Temps de préparation, Temps de cuisson, Type de plat, Cuisine, Portions, Calories.', priority: 'P3', cat: 'UI/Layout', time: '17:02' },
     { id: '#29', title: 'Popular recipes section (homepage + article pages)', note: 'Find a solution to surface "Popular recipes" dynamically — on the homepage sidebar and on individual recipe pages. Discuss approach with Leo (view count? manual curation?).', priority: 'P3', cat: 'Content', time: '15:41' },
-    { id: '#30', title: 'Admin: bulk photo upload for recipe steps', note: 'Bulk upload now creates one step entry per uploaded image automatically. The same admin flow also supports grouped step headings so recipes can be structured as heading -> steps -> next heading.', priority: 'P3', cat: 'Admin', time: '16:13' },
+    { id: '#30', title: 'Admin: bulk photo upload for recipe steps', note: 'Bulk upload now creates one step entry per uploaded image automatically. The same admin flow also supports grouped step headings so recipes can be structured as heading -> steps -> next heading, with heading-first insertion working on first try.', priority: 'P3', cat: 'Admin', time: '16:13' },
   ];
 
   let done = new Set([
@@ -725,3 +725,4 @@
 
   </body>
 </html>
+
