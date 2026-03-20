@@ -419,12 +419,26 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
   const legacyStepImages = article ? extractLegacyStepImages(article) : [];
   let fallbackStepImageIndex = 0;
 
-  const stepRows = Array.isArray(block.steps)
-    ? block.steps
-        .map((step: unknown, index: number) => {
-          if (!isRecord(step)) return '';
+  const stepGroups = Array.isArray(block.steps)
+    ? block.steps.reduce(
+        (
+          groups: Array<
+            { heading: string; items: Array<{ caption: string; instruction: string; media: AnyRecord | null }> }
+          >,
+          step: unknown,
+        ) => {
+          if (!isRecord(step)) return groups;
+
+          if (step.isGroupHeading) {
+            const heading = asText(step.groupHeading);
+            if (heading) {
+              groups.push({ heading, items: [] });
+            }
+            return groups;
+          }
+
           const instruction = asText(step.instruction);
-          if (!instruction) return '';
+          if (!instruction) return groups;
 
           const explicitMedia =
             resolveMedia(step.image, ['articleStep', 'articleHero', 'gallery']) ||
@@ -442,20 +456,40 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
             fallbackStepImageIndex += 1;
           }
 
-          const caption = asText(step.imageCaption);
+          const currentGroup =
+            groups.length === 0 ? (groups.push({ heading: '', items: [] }), groups[0]) : groups[groups.length - 1];
+
+          currentGroup.items.push({
+            caption: asText(step.imageCaption),
+            instruction,
+            media,
+          });
+
+          return groups;
+        },
+        [],
+      )
+    : [];
+
+  const stepRows = stepGroups
+    .map((group) => {
+      if (group.items.length === 0) return '';
+
+      const groupRows = group.items
+        .map((step, index) => {
           const imageDimensions =
-            media?.width && media?.height
-              ? ` width="${media.width}" height="${media.height}"`
+            step.media?.width && step.media?.height
+              ? ` width="${step.media.width}" height="${step.media.height}"`
               : '';
 
           return [
             '<li class="content-v2-recipe-visual-step">',
-            `  <p class="content-v2-recipe-step-instruction"><span class="content-v2-recipe-step-index">${index + 1}.</span> ${escapeHtml(instruction)}</p>`,
-            media?.url
+            `  <p class="content-v2-recipe-step-instruction"><span class="content-v2-recipe-step-index">${index + 1}.</span> ${escapeHtml(step.instruction)}</p>`,
+            step.media?.url
               ? [
                   '  <figure class="content-v2-recipe-step-media">',
-                  `    <img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.alt || instruction)}" loading="lazy" decoding="async"${imageDimensions} />`,
-                  caption ? `    <figcaption>${escapeHtml(caption)}</figcaption>` : '',
+                  `    <img src="${escapeAttribute(step.media.url)}" alt="${escapeAttribute(step.media.alt || step.instruction)}" loading="lazy" decoding="async"${imageDimensions} />`,
+                  step.caption ? `    <figcaption>${escapeHtml(step.caption)}</figcaption>` : '',
                   '  </figure>',
                 ]
                   .filter(Boolean)
@@ -466,20 +500,41 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
             .filter(Boolean)
             .join('\n');
         })
-        .filter(Boolean)
-        .join('')
-    : '';
+        .join('');
 
-  const compactSteps = Array.isArray(block.steps)
-    ? block.steps
-        .map((step: unknown) => {
-          if (!isRecord(step)) return '';
-          const instruction = asText(step.instruction);
-          return instruction ? `<li>${escapeHtml(instruction)}</li>` : '';
-        })
+      return [
+        '<div class="wprm-recipe-instruction-group">',
+        group.heading
+          ? `  <h4 class="wprm-recipe-group-name wprm-recipe-instruction-group-name">${escapeHtml(group.heading)}</h4>`
+          : '',
+        `  <ol class="wprm-recipe-instructions">${groupRows}</ol>`,
+        '</div>',
+      ]
         .filter(Boolean)
-        .join('')
-    : '';
+        .join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  const compactSteps = stepGroups
+    .map((group) => {
+      if (group.items.length === 0) return '';
+
+      return [
+        '<div class="wprm-recipe-instruction-group">',
+        group.heading
+          ? `  <h4 class="wprm-recipe-group-name wprm-recipe-instruction-group-name">${escapeHtml(group.heading)}</h4>`
+          : '',
+        `  <ol class="wprm-recipe-instructions">${group.items
+          .map((step) => `<li>${escapeHtml(step.instruction)}</li>`)
+          .join('')}</ol>`,
+        '</div>',
+      ]
+        .filter(Boolean)
+        .join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
 
   const nutritionRows = [
     {

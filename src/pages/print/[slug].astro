@@ -188,12 +188,27 @@ const recipeIngredients = Array.isArray(primaryRecipe?.ingredients)
   : [];
 
 const recipeSteps = Array.isArray(primaryRecipe?.steps)
-  ? primaryRecipe.steps
-      .map((step: any) => {
-        if (!isRecord(step)) return "";
-        return toText(step.instruction);
-      })
-      .filter(Boolean)
+  ? primaryRecipe.steps.reduce((groups: Array<{ heading: string; items: string[] }>, step: any) => {
+      if (!isRecord(step)) return groups;
+
+      if (step.isGroupHeading) {
+        const heading = toText(step.groupHeading);
+        if (heading) groups.push({ heading, items: [] });
+        return groups;
+      }
+
+      const instruction = toText(step.instruction);
+      if (!instruction) return groups;
+
+      if (groups.length === 0) {
+        groups.push({ heading: "", items: [instruction] });
+      } else {
+        groups[groups.length - 1].items.push(instruction);
+      }
+
+      return groups;
+    }, [])
+      .filter((group) => group.items.length > 0)
   : [];
 
 const nutritionRows = [
@@ -620,11 +635,16 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
             {recipeSteps.length > 0 && (
               <section class="print-section">
                 <h3>Etapes</h3>
-                <ol class="print-list">
-                  {recipeSteps.map((step) => (
-                    <li>{step}</li>
-                  ))}
-                </ol>
+                {recipeSteps.map((group) => (
+                  <div class="print-step-group">
+                    {group.heading && <h4>{group.heading}</h4>}
+                    <ol class="print-list">
+                      {group.items.map((step) => (
+                        <li>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
               </section>
             )}
 
