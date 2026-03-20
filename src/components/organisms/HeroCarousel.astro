@@ -85,18 +85,30 @@ const toHeroCategoryTag = (card: HeroCard): string => {
 
         <div class="hidden md:flex items-center gap-3 self-start pt-2">
           <button
-            class="hero-arrow-btn w-[62px] h-[62px] rounded-full border border-[#1A2335] flex items-center justify-center hover:bg-[#1A2335] hover:text-white transition-colors"
+            class="hero-arrow-btn"
             aria-label="Pr&eacute;c&eacute;dent"
             data-carousel-prev
           >
-            <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <img
+              src="/images/client-arrow-circle.svg"
+              alt=""
+              class="hero-arrow-btn-icon hero-arrow-btn-icon--prev"
+              loading="lazy"
+              decoding="async"
+            />
           </button>
           <button
-            class="hero-arrow-btn w-[62px] h-[62px] rounded-full border border-[#1A2335] flex items-center justify-center hover:bg-[#1A2335] hover:text-white transition-colors"
+            class="hero-arrow-btn"
             aria-label="Suivant"
             data-carousel-next
           >
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <img
+              src="/images/client-arrow-circle.svg"
+              alt=""
+              class="hero-arrow-btn-icon hero-arrow-btn-icon--next"
+              loading="lazy"
+              decoding="async"
+            />
           </button>
         </div>
       </div>
@@ -137,18 +149,30 @@ const toHeroCategoryTag = (card: HeroCard): string => {
 
       <div class="mt-4 md:hidden flex items-center justify-start gap-3">
         <button
-          class="hero-arrow-btn w-[56px] h-[56px] rounded-full border border-[#1A2335] flex items-center justify-center"
+          class="hero-arrow-btn hero-arrow-btn--mobile"
           aria-label="Pr&eacute;c&eacute;dent"
           data-carousel-prev
         >
-          <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <img
+            src="/images/client-arrow-circle.svg"
+            alt=""
+            class="hero-arrow-btn-icon hero-arrow-btn-icon--prev"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
         <button
-          class="hero-arrow-btn w-[56px] h-[56px] rounded-full border border-[#1A2335] flex items-center justify-center"
+          class="hero-arrow-btn hero-arrow-btn--mobile"
           aria-label="Suivant"
           data-carousel-next
         >
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <img
+            src="/images/client-arrow-circle.svg"
+            alt=""
+            class="hero-arrow-btn-icon hero-arrow-btn-icon--next"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
       </div>
 
@@ -188,8 +212,44 @@ const toHeroCategoryTag = (card: HeroCard): string => {
   }
 
   .hero-arrow-btn {
-    color: #1a2335;
+    width: 62px;
+    height: 62px;
+    border: 0;
     background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .hero-arrow-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .hero-arrow-btn:disabled,
+  .hero-arrow-btn[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .hero-arrow-btn--mobile {
+    width: 56px;
+    height: 56px;
+  }
+
+  .hero-arrow-btn-icon {
+    width: 48px;
+    height: 48px;
+    display: block;
+  }
+
+  .hero-arrow-btn-icon--prev {
+    transform: rotate(-90deg);
+  }
+
+  .hero-arrow-btn-icon--next {
+    transform: rotate(90deg);
   }
 
   .hero-dot {

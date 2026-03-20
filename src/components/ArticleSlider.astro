@@ -55,18 +55,30 @@ const getArticleSlug = (article: any) => {
       <!-- Navigation Buttons -->
       <button
         id="slider-prev"
-        class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full p-2 z-10 transition-all shadow-lg -translate-x-4"
-        aria-label="Previous"
+        class="article-slider-arrow article-slider-arrow--prev"
+        aria-label="Précédent"
       >
-        <i class="fas fa-chevron-left w-6 h-6"></i>
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="article-slider-arrow-icon article-slider-arrow-icon--prev"
+          loading="lazy"
+          decoding="async"
+        />
       </button>
 
       <button
         id="slider-next"
-        class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full p-2 z-10 transition-all shadow-lg translate-x-4"
-        aria-label="Next"
+        class="article-slider-arrow article-slider-arrow--next"
+        aria-label="Suivant"
       >
-        <i class="fas fa-chevron-right w-6 h-6"></i>
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="article-slider-arrow-icon article-slider-arrow-icon--next"
+          loading="lazy"
+          decoding="async"
+        />
       </button>
     </div>
   </div>
@@ -111,5 +123,53 @@ const getArticleSlug = (article: any) => {
 <style>
   #article-slider {
     will-change: transform;
+  }
+
+  .article-slider-arrow {
+    position: absolute;
+    top: 50%;
+    width: 52px;
+    height: 52px;
+    border: 0;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 10;
+    transform: translateY(-50%);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .article-slider-arrow:hover {
+    transform: translateY(calc(-50% - 1px));
+  }
+
+  .article-slider-arrow:disabled,
+  .article-slider-arrow[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .article-slider-arrow--prev {
+    left: -8px;
+  }
+
+  .article-slider-arrow--next {
+    right: -8px;
+  }
+
+  .article-slider-arrow-icon {
+    width: 48px;
+    height: 48px;
+    display: block;
+  }
+
+  .article-slider-arrow-icon--prev {
+    transform: rotate(-90deg);
+  }
+
+  .article-slider-arrow-icon--next {
+    transform: rotate(90deg);
   }
 </style>
