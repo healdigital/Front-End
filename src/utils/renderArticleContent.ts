@@ -3,6 +3,13 @@ import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html';
 import { replaceCdnUrl } from './cdnUrlReplacer';
 
 type AnyRecord = Record<string, any>;
+type RenderArticleContentOptions = {
+  includeContentBlocks?: boolean;
+  includeContentV2?: boolean;
+  includeImageBlocks?: boolean;
+  includeRecipeBlocks?: boolean;
+  suppressRecipeSummaryTitle?: boolean;
+};
 
 const isRecord = (value: unknown): value is AnyRecord =>
   Boolean(value && typeof value === 'object' && !Array.isArray(value));
@@ -330,7 +337,11 @@ const normalizeRecipeType = (value: unknown, fallbackSource: string): string => 
   return 'RECIPE';
 };
 
-const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string => {
+const renderRecipeCardBlock = (
+  block: AnyRecord,
+  article?: AnyRecord,
+  options: RenderArticleContentOptions = {},
+): string => {
   const title = asText(block.title) || 'Recette';
   const prepMinutes = toPositiveNumber(block.preparationTimeMinutes);
   const cookMinutes = toPositiveNumber(block.cookingTimeMinutes);
@@ -628,7 +639,7 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
   const topSummarySection = topSummaryItems
     ? [
         '<section class="content-v2-block content-v2-recipe-summary-grid-section">',
-        `  <h2>${escapeHtml(title)}</h2>`,
+        !options.suppressRecipeSummaryTitle ? `  <h2>${escapeHtml(title)}</h2>` : '',
         '  <div class="content-v2-recipe-summary-grid">',
         topSummaryItems,
         '  </div>',
@@ -657,7 +668,7 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
     '<section class="content-v2-block content-v2-recipe-card">',
     !topSummaryItems ? `  <h2>${escapeHtml(title)}</h2>` : '',
     !topSummaryItems && metaItems ? `  <ul class="content-v2-recipe-meta">${metaItems}</ul>` : '',
-    compactSteps
+    compactSteps && !stepRows
       ? [
           '  <div class="content-v2-recipe-section">',
           '    <h3>Étapes</h3>',
@@ -790,7 +801,11 @@ const renderImageGalleryBlock = (block: AnyRecord): string => {
   ].join('\n');
 };
 
-const renderBlocks = (blocks: unknown, article?: AnyRecord): string => {
+const renderBlocks = (
+  blocks: unknown,
+  article?: AnyRecord,
+  options: RenderArticleContentOptions = {},
+): string => {
   if (!Array.isArray(blocks)) return '';
 
   return blocks
@@ -803,7 +818,7 @@ const renderBlocks = (blocks: unknown, article?: AnyRecord): string => {
         case 'editorialNote':
           return renderEditorialNoteBlock(block);
         case 'recipeCard':
-          return renderRecipeCardBlock(block, article);
+          return renderRecipeCardBlock(block, article, options);
         case 'imageGallery':
           return renderImageGalleryBlock(block);
         default:
@@ -814,12 +829,12 @@ const renderBlocks = (blocks: unknown, article?: AnyRecord): string => {
     .join('\n');
 };
 
-const renderStructuredContent = (article: AnyRecord): string => {
+const renderStructuredContent = (article: AnyRecord, options: RenderArticleContentOptions = {}): string => {
   const structuredContent = [
-    renderBlocks(article.recipeBlocks, article),
-    renderLexicalRichText(article.contentV2),
-    renderBlocks(article.contentBlocks, article),
-    renderBlocks(article.imageBlocks, article),
+    options.includeRecipeBlocks === false ? '' : renderBlocks(article.recipeBlocks, article, options),
+    options.includeContentV2 === false ? '' : renderLexicalRichText(article.contentV2),
+    options.includeContentBlocks === false ? '' : renderBlocks(article.contentBlocks, article, options),
+    options.includeImageBlocks === false ? '' : renderBlocks(article.imageBlocks, article, options),
   ]
     .filter(Boolean)
     .join('\n');
@@ -830,10 +845,13 @@ const renderStructuredContent = (article: AnyRecord): string => {
   return [structuredContent, legacyImageFallback].filter(Boolean).join('\n');
 };
 
-export const renderArticleContent = (article: unknown): string => {
+export const renderArticleContent = (
+  article: unknown,
+  options: RenderArticleContentOptions = {},
+): string => {
   if (!isRecord(article)) return '';
 
-  const structuredContent = renderStructuredContent(article);
+  const structuredContent = renderStructuredContent(article, options);
   if (structuredContent) return structuredContent;
 
   if (typeof article.content === 'string') return article.content;

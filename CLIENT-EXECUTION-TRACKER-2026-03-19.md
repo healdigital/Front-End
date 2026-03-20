@@ -68,6 +68,10 @@ Best sequence:
   - build safe one-article migration flow before bulk migration
 - Existing related work:
   - [MERGE-LEGACY-SINGLE-ARTICLE-HANDOFF.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/MERGE-LEGACY-SINGLE-ARTICLE-HANDOFF.md)
+- Completed state:
+  - 2000+ legacy recipe/articles were exported, converted, and re-imported into the new editor structure
+  - Mongo documents and [prepared-articles.json](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/prepared-articles.json) were synced
+  - grouped ingredient and grouped step headings were backfilled into migrated recipes where source data supported them
 
 #### T03. Missing images site-wide
 
@@ -82,6 +86,8 @@ Best sequence:
   - verify inline images
   - verify recipe step images
   - inspect media import pipeline and front-end rendering
+- Completed state:
+  - featured image fallback, inline content image rendering, and step-image fallback rendering are working again across migrated recipe/article content
 
 #### T04. Sticky header
 
@@ -125,6 +131,7 @@ Best sequence:
 - Completed state:
   - grouped ingredient headings now work in Payload admin
   - grouped step headings are also supported in admin, preview, print, and front-end recipe rendering
+  - existing migrated recipes were backfilled so Mongo/editor/prepared JSON keep the same grouped structure
 
 #### T07. Ingredient group spacing broken
 
@@ -330,6 +337,9 @@ Best sequence:
   - generate slugs
   - add ingredient archive pages
   - later link ingredient names to archives
+- Current reality:
+  - this remains separate scope
+  - recipe/article data cleanup and grouped heading sync are complete first
 
 #### T25. Newsletter / Acumbamail integration
 
@@ -369,6 +379,13 @@ Best sequence:
   - first-click helper flow is working
   - pending step heading input is inserted before created/uploaded steps
   - grouped step sections now match the same heading-first flow used for grouped ingredients
+
+## Current Pending Scope
+
+- Article/detail page recreate as a separate phase
+- Ingredient archive pages
+- Newsletter / Acumbamail real submit integration
+- Font/license final decision from client
 
 ## “Done In Chat” But Must Be Re-checked
 
