@@ -119,14 +119,26 @@ const totalRecipeCount = totalCount;
     </div>
 
     <div class="mt-10 pt-6 border-t border-[#D8D2C2] flex items-center flex-wrap justify-between gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-suggested-pagination>
-      <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-suggested-prev>
-        Pr&eacute;c&eacute;dent
+      <button type="button" class="suggested-arrow-btn" data-suggested-prev aria-label="Précédent">
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="suggested-arrow-btn-icon suggested-arrow-btn-icon--prev"
+          loading="lazy"
+          decoding="async"
+        />
       </button>
       <div class="flex items-center gap-4" data-suggested-pages>
         <span class="text-text-primary">1</span>
       </div>
-      <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-suggested-next>
-        Suivant
+      <button type="button" class="suggested-arrow-btn" data-suggested-next aria-label="Suivant">
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="suggested-arrow-btn-icon suggested-arrow-btn-icon--next"
+          loading="lazy"
+          decoding="async"
+        />
       </button>
     </div>
   </div>
@@ -613,6 +625,42 @@ const totalRecipeCount = totalCount;
 <style>
 .suggested-grid[data-view='list'] {
   grid-template-columns: 1fr;
+}
+
+.suggested-arrow-btn {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.suggested-arrow-btn:hover {
+  transform: translateY(-1px);
+}
+
+.suggested-arrow-btn:disabled,
+.suggested-arrow-btn[aria-disabled='true'] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.suggested-arrow-btn-icon {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+.suggested-arrow-btn-icon--prev {
+  transform: rotate(-90deg);
+}
+
+.suggested-arrow-btn-icon--next {
+  transform: rotate(90deg);
 }
 
 .suggested-card-shell {

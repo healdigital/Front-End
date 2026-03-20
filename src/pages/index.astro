@@ -1458,20 +1458,6 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     applyFilters(true);
   }
 
-  function setupViewToggle() {
-    const grid = document.querySelector('[data-recipe-grid]');
-    const buttons = Array.from(document.querySelectorAll('[data-view-toggle]'));
-    if (!grid || buttons.length === 0) return;
-
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const view = btn.getAttribute('data-view-toggle');
-        if (!view) return;
-        grid.setAttribute('data-view', view);
-      });
-    });
-  }
-
   function setupWorkshopsLiveData() {
     const grid = document.querySelector('[data-workshops-grid]');
     if (!(grid instanceof HTMLElement)) return;
@@ -1783,19 +1769,13 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
   scheduleWorkshopsLiveData();
   setupHomepageFilters();
-  setupViewToggle();
   document.addEventListener('astro:page-load', () => {
     scheduleWorkshopsLiveData();
     setupHomepageFilters();
-    setupViewToggle();
   });
 </script>
 
 <style>
-  .recipe-grid-home[data-view='list'] {
-    grid-template-columns: 1fr;
-  }
-
   .home-recipe-card-shell {
     contain-intrinsic-size: auto 780px;
   }

@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
+import { buildWpSquareVariantUrl, processArticleImageUrl } from "../utils/cdnUrlReplacer";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 
 const navLinks = [
   {
@@ -15,18 +17,288 @@ const navLinks = [
     href: "/le-sucre/",
   },
 ];
+
+const stripHtml = (value: string) =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value === "string") return decodeHtmlEntities(stripHtml(value));
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(record.children)) {
+      return record.children.map((child) => toText(child)).filter(Boolean).join(" ");
+    }
+  }
+  return "";
+};
+
+const getPrimaryRecipeBlock = (article: PreparedArchiveArticle | undefined) =>
+  Array.isArray(article?.recipeBlocks)
+    ? article.recipeBlocks.find((block) => block && typeof block === "object")
+    : null;
+
+const formatDuration = (minutes: number): string => {
+  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
+  const whole = Math.round(minutes);
+  if (whole >= 60) {
+    const hours = Math.floor(whole / 60);
+    const mins = whole % 60;
+    return mins > 0 ? `${hours}h${String(mins).padStart(2, "0")}` : `${hours}h`;
+  }
+  return `${whole} min`;
+};
+
+const formatRecipeTime = (article: PreparedArchiveArticle | undefined): string => {
+  if (!article) return "—";
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
+  const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
+
+  if (Number.isFinite(prep) && prep > 0) {
+    const total = prep + (Number.isFinite(cook) && cook > 0 ? cook : 0);
+    return formatDuration(total || prep);
+  }
+
+  const raw = String(article.recipe?.prepTime ?? article.prepTime ?? article.prep_time ?? "").trim();
+  if (!raw) return "—";
+  if (/[0-9].*(min|h)/i.test(raw)) return raw.toLowerCase();
+  if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
+  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
+  return suffix ? `${raw} ${suffix}`.trim() : raw;
+};
+
+const formatDifficulty = (article: PreparedArchiveArticle | undefined): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const raw = String(recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "")
+    .trim()
+    .toLowerCase();
+
+  switch (raw) {
+    case "easy":
+    case "facile":
+      return "Facile";
+    case "medium":
+    case "moyen":
+    case "moyenne":
+      return "Moyen";
+    case "hard":
+    case "difficult":
+    case "difficile":
+      return "Difficile";
+    default:
+      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "Recette";
+  }
+};
+
+const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return `Découvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
+  return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
+};
+
+const sourceEntries = getStaticArchiveEntries("recettes-sucrees");
+const articleMap = new Map(
+  getPreparedArchiveArticles()
+    .filter((article) => typeof article?.slug === "string" && article.slug.trim())
+    .map((article) => [String(article.slug).trim(), article]),
+);
+
+const cards = sourceEntries.map((entry) => {
+  const article = articleMap.get(entry.slug);
+  const fallbackImage = entry.fallbackImage || "";
+  const resolvedImage = processArticleImageUrl(article) || fallbackImage;
+
+  return {
+    href: entry.href,
+    title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
+    excerpt: getExcerpt(article, entry.fallbackTitle || entry.slug),
+    difficulty: formatDifficulty(article),
+    time: formatRecipeTime(article),
+    image: resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "",
+  };
+});
 ---
 
 <BaseLayout title="Recettes sucrées">
   <StaticPage
     title="Recettes sucrées"
     subtitle="Index des recettes sucrées avec photo."
-    className="menu-page menu-page--recipe-grid"
+    className="menu-page menu-page--sweet-grid"
     navLinks={navLinks}
   >
-    <StaticPageContent
-      slug="recettes-sucrees"
-      sourceUrl="https://lacuisinedebernard.com/recettes-sucrees/"
-    />
+    <div class="sweet-grid" aria-label="Recettes sucrées">
+      {cards.map((card) => (
+        <article class="sweet-card">
+          <a href={card.href} class="sweet-card-media-link" aria-label={card.title}>
+            <div class="sweet-card-media">
+              {card.image ? (
+                <img src={card.image} alt={card.title} loading="lazy" decoding="async" class="sweet-card-image" />
+              ) : (
+                <div class="sweet-card-image sweet-card-image--empty">Aucune image</div>
+              )}
+              <span class="sweet-card-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 5h5v5" />
+                  <path d="M10 14 19 5" />
+                  <path d="M19 14v4a1 1 0 0 1-1 1h-4" />
+                  <path d="M10 19H6a1 1 0 0 1-1-1v-4" />
+                </svg>
+              </span>
+            </div>
+          </a>
+
+          <div class="sweet-card-content">
+            <p class="sweet-card-meta">{card.difficulty.toUpperCase()} · {card.time}</p>
+            <h2 class="sweet-card-title">
+              <a href={card.href}>{card.title}</a>
+            </h2>
+            <p class="sweet-card-excerpt">{card.excerpt}</p>
+            <a href={card.href} class="sweet-card-cta">Lire la suite</a>
+          </div>
+        </article>
+      ))}
+    </div>
   </StaticPage>
 </BaseLayout>
+
+<style is:global>
+  .menu-page--sweet-grid .static-page-body {
+    padding: clamp(18px, 2.8vw, 30px);
+  }
+
+  .menu-page--sweet-grid .sweet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .menu-page--sweet-grid .sweet-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d8d2c2;
+    border-radius: 14px;
+    background: #f8f5ee;
+    overflow: hidden;
+    box-shadow: 0 14px 32px rgba(14, 24, 39, 0.06);
+  }
+
+  .menu-page--sweet-grid .sweet-card-media-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .menu-page--sweet-grid .sweet-card-media {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #ece5d8;
+  }
+
+  .menu-page--sweet-grid .sweet-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .menu-page--sweet-grid .sweet-card-image--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a7569;
+    font-size: 0.92rem;
+  }
+
+  .menu-page--sweet-grid .sweet-card-badge {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: #67d5cf;
+    color: #1a2335;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(24, 37, 57, 0.18);
+  }
+
+  .menu-page--sweet-grid .sweet-card-badge svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .menu-page--sweet-grid .sweet-card-content {
+    padding: 1rem 1rem 1.2rem;
+  }
+
+  .menu-page--sweet-grid .sweet-card-meta {
+    margin: 0;
+    color: #787161;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menu-page--sweet-grid .sweet-card-title {
+    margin: 0.62rem 0 0;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(120, 113, 97, 0.18);
+    font-family: var(--font-maison);
+    font-size: 1.75rem;
+    line-height: 1.18;
+    color: #26231c;
+  }
+
+  .menu-page--sweet-grid .sweet-card-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .menu-page--sweet-grid .sweet-card-excerpt {
+    margin: 0.9rem 0 0;
+    color: #655f54;
+    font-size: 0.98rem;
+    line-height: 1.72;
+  }
+
+  .menu-page--sweet-grid .sweet-card-cta {
+    display: inline-flex;
+    margin-top: 1rem;
+    color: #54b6b1;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1100px) {
+    .menu-page--sweet-grid .sweet-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .menu-page--sweet-grid .sweet-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .menu-page--sweet-grid .sweet-card-title {
+      font-size: 1.45rem;
+    }
+  }
+</style>

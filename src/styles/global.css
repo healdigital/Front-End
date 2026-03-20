@@ -441,6 +441,45 @@ body {
   gap: 0.4rem;
 }
 
+.content-v2-recipe-summary-grid-section {
+  background: #fff;
+  border: 1px solid #d8d2c2;
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+
+.content-v2-recipe-summary-grid-section h2 {
+  margin: 0 0 1.4rem;
+}
+
+.content-v2-recipe-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 20px;
+}
+
+.content-v2-recipe-summary-item {
+  padding-top: 12px;
+  border-top: 1px solid rgba(120, 113, 97, 0.2);
+}
+
+.content-v2-recipe-summary-label {
+  margin: 0;
+  color: #787161;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-v2-recipe-summary-value {
+  margin: 0.42rem 0 0;
+  color: #232323;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
 .content-v2-gallery {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;

@@ -525,6 +525,28 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
     )
     .join('');
 
+  const topSummaryItems = [
+    prep ? { label: 'Temps de préparation', value: prep } : null,
+    cook ? { label: 'Temps de cuisson', value: cook } : null,
+    dishType ? { label: 'Type de plat', value: dishType } : null,
+    cuisine ? { label: 'Cuisine', value: cuisine } : null,
+    servings ? { label: 'Portions', value: servings } : null,
+    toPositiveNumber(nutrition.caloriesKcal) !== null
+      ? { label: 'Calories', value: `${Math.round(toPositiveNumber(nutrition.caloriesKcal) || 0)} kcal` }
+      : null,
+  ]
+    .filter((item): item is { label: string; value: string } => Boolean(item))
+    .map(
+      (item) =>
+        [
+          '<div class="content-v2-recipe-summary-item">',
+          `  <p class="content-v2-recipe-summary-label">${escapeHtml(item.label)}</p>`,
+          `  <p class="content-v2-recipe-summary-value">${escapeHtml(item.value)}</p>`,
+          '</div>',
+        ].join('\n'),
+    )
+    .join('\n');
+
   const tips = renderLexicalRichText(block.tips);
   const personalNotes = renderLexicalRichText(block.personalNotes);
 
@@ -548,6 +570,17 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
       ].join('\n')
     : '';
 
+  const topSummarySection = topSummaryItems
+    ? [
+        '<section class="content-v2-block content-v2-recipe-summary-grid-section">',
+        `  <h2>${escapeHtml(title)}</h2>`,
+        '  <div class="content-v2-recipe-summary-grid">',
+        topSummaryItems,
+        '  </div>',
+        '</section>',
+      ].join('\n')
+    : '';
+
   const visualStepsSection = stepRows
     ? [
         '<section class="content-v2-block content-v2-recipe-steps-visual">',
@@ -567,8 +600,8 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
 
   const compactRecipeCardSection = [
     '<section class="content-v2-block content-v2-recipe-card">',
-    `  <h2>${escapeHtml(title)}</h2>`,
-    metaItems ? `  <ul class="content-v2-recipe-meta">${metaItems}</ul>` : '',
+    !topSummaryItems ? `  <h2>${escapeHtml(title)}</h2>` : '',
+    !topSummaryItems && metaItems ? `  <ul class="content-v2-recipe-meta">${metaItems}</ul>` : '',
     compactSteps
       ? [
           '  <div class="content-v2-recipe-section">',
@@ -606,7 +639,7 @@ const renderRecipeCardBlock = (block: AnyRecord, article?: AnyRecord): string =>
     .filter(Boolean)
     .join('\n');
 
-  return [ingredientSection, visualStepsSection, bonAppetitSection, compactRecipeCardSection]
+  return [topSummarySection, ingredientSection, visualStepsSection, bonAppetitSection, compactRecipeCardSection]
     .filter(Boolean)
     .join('\n');
 };
