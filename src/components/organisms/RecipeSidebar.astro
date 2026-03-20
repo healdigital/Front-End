@@ -75,7 +75,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
   {isFull && (
     <div class="sidebar-block px-7 py-8">
       <h4 class="sidebar-title">Apprendre en atelier</h4>
-      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-7 mt-5 workshop-box" data-sidebar-workshop data-workshops-api={workshopsApiUrl}>
+      <div class="recipe-sidebar__workshop-card rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-7 mt-5 workshop-box" data-sidebar-workshop data-workshops-api={workshopsApiUrl}>
         <p class="sidebar-subtitle font-mono text-[13px] uppercase tracking-[0.14em] text-[#5F6671]" data-sidebar-workshop-status>Chargement...</p>
         <div class="mt-3 grid grid-cols-[minmax(0,1fr)_82px] items-start gap-5">
           <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111]" data-sidebar-workshop-title>Atelier a venir</h5>
@@ -97,7 +97,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
             <span class="text-[13px] uppercase tracking-[0.14em] text-[#5F6671]">A partir de</span>
             <div class="font-heading text-[44px] leading-none text-[#111111]" data-sidebar-workshop-price>--</div>
           </div>
-          <Button href="/ateliers" class="button-data" variant="primary" size="sm" data-sidebar-workshop-cta>Reserver</Button>
+          <Button href="/ateliers" class="recipe-sidebar__workshop-button" variant="primary" size="sm" data-sidebar-workshop-cta>Reserver</Button>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
   {isFull && (
     <div class="sidebar-block px-7 py-8">
       <h4 class="sidebar-title">Masterclass videos</h4>
-      <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden mt-5 pannel-data">
+      <div class="recipe-sidebar__masterclass-card rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden mt-5">
         <div class="relative">
           <img
             src="/images/masterclass-video.jpg"
@@ -124,16 +124,16 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
           </div>
         </div>
 
-        <div class="p-5">
+        <div class="recipe-sidebar__masterclass-body p-5">
           <div class="flex items-center gap-3 mb-4 flex-wrap justify-start">
-            <span class="inline-flex items-center gap-2 rounded-full bg-[#ECEBE4] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-[#1E2B3A] acces-data">
+            <span class="recipe-sidebar__pill recipe-sidebar__pill--light inline-flex items-center gap-2 rounded-full bg-[#ECEBE4] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-[#1E2B3A]">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1.50646 15.641C1.08549 15.641 0.729167 15.4952 0.4375 15.2035C0.145833 14.9119 0 14.5556 0 14.1346V6.31417C0 5.8932 0.145833 5.53688 0.4375 5.24521C0.729167 4.95354 1.08549 4.80771 1.50646 4.80771H14.3269C14.7478 4.80771 15.1042 4.95354 15.3958 5.24521C15.6875 5.53688 15.8333 5.8932 15.8333 6.31417V14.1346C15.8333 14.5556 15.6875 14.9119 15.3958 15.2035C15.1042 15.4952 14.7478 15.641 14.3269 15.641H1.50646ZM1.50646 14.391H14.3269C14.391 14.391 14.4498 14.3643 14.5031 14.3108C14.5566 14.2575 14.5833 14.1988 14.5833 14.1346V6.31417C14.5833 6.25 14.5566 6.19125 14.5031 6.13792C14.4498 6.08444 14.391 6.05771 14.3269 6.05771H1.50646C1.44229 6.05771 1.38354 6.08444 1.33021 6.13792C1.27674 6.19125 1.25 6.25 1.25 6.31417V14.1346C1.25 14.1988 1.27674 14.2575 1.33021 14.3108C1.38354 14.3643 1.44229 14.391 1.50646 14.391ZM6.45833 13.1731L10.8815 10.2244L6.45833 7.27563V13.1731ZM1.45833 3.65396V2.40396H14.375V3.65396H1.45833ZM3.95833 1.25V0H11.875V1.25H3.95833Z" fill="#091D23"/>
               </svg>
 
               Acces illimite
             </span>
-            <span class="inline-flex items-center gap-2 rounded-full bg-[#BBA86B] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-white reserve-data">
+            <span class="recipe-sidebar__pill recipe-sidebar__pill--gold inline-flex items-center gap-2 rounded-full bg-[#BBA86B] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-white">
               <svg width="17" height="15" viewBox="0 0 17 15" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.085 14.4631L0 4.75958L2.37979 0H13.7902L16.17 4.75958L8.085 14.4631ZM5.76917 4.16667H10.4008L8.94229 1.25H7.22771L5.76917 4.16667ZM7.46 11.7644V5.41667H2.18583L7.46 11.7644ZM8.71 11.7644L13.9842 5.41667H8.71V11.7644ZM11.7902 4.16667H14.4633L13.0048 1.25H10.3317L11.7902 4.16667ZM1.70667 4.16667H4.37979L5.83833 1.25H3.16521L1.70667 4.16667Z" fill="white"/>
               </svg>
@@ -149,7 +149,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
           </div>
 
           <p class="description-data text-[16px] text-[#5F6671] mt-5 leading-[1.65]">Technique professionnelle pas a pas.</p>
-          <Button href="/masterclass" variant="primary" size="sm" class="button-data-full w-full mt-5">Voir la video</Button>
+          <Button href="/masterclass" variant="primary" size="sm" class="recipe-sidebar__masterclass-button w-full mt-5">Voir la video</Button>
         </div>
       </div>
 
@@ -189,7 +189,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
   )}
 
   <div class:list={['recipe-sidebar-sticky-rail', stickyPopularRail && 'recipe-sidebar-sticky-rail--enabled']}>
-    <div class="sidebar-block px-7 pt-6 pb-3">
+    <div class="sidebar-block recipe-sidebar__popular-block px-7 pt-6 pb-3">
       <h4 class="sidebar-title">Articles populaires</h4>
       <div class="space-y-4 mt-5">
         {popularArticles.map((article) => (
@@ -210,8 +210,8 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
       </div>
     </div>
 
-    <div class="sidebar-block px-5 pt-2 pb-5">
-      <div class="bg-[#DCDCCF] rounded-[8px] border border-[#D8D2C2] h-[220px] flex items-center justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em]">
+    <div class="sidebar-block recipe-sidebar__ad-shell px-5 pt-2 pb-5">
+      <div class="recipe-sidebar__ad-box bg-[#DCDCCF] rounded-[8px] border border-[#D8D2C2] h-[220px] flex items-center justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em]">
         Espace publicite
       </div>
     </div>
@@ -463,6 +463,8 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
     border: 1px solid #d8d2c2;
     border-radius: 12px;
     overflow: hidden;
+    padding-left: 22px !important;
+    padding-right: 22px !important;
   }
 
   /* .recipe-sidebar--popular :global(.sidebar-block:first-child) {
@@ -488,27 +490,32 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 
   .recipe-sidebar-sticky-rail {
     display: grid;
-    gap: 16px;
+    gap: 8px;
   }
 
-  .recipe-sidebar :global(.pannel-data),
-  .recipe-sidebar :global(.workshop-box) {
+  .recipe-sidebar__masterclass-card,
+  .recipe-sidebar__workshop-card {
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;
   }
 
-  .recipe-sidebar :global(.button-data-full) {
+  .recipe-sidebar__masterclass-body {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 20px 22px !important;
+  }
+
+  .recipe-sidebar__masterclass-button {
     width: 100% !important;
   }
 
-  .recipe-sidebar :global(.button-data) {
+  .recipe-sidebar__workshop-button {
     width: auto !important;
     min-width: 156px;
   }
 
-  .recipe-sidebar :global(.acces-data),
-  .recipe-sidebar :global(.reserve-data) {
+  .recipe-sidebar__pill {
     width: auto !important;
     max-width: 100%;
     flex: 0 0 auto;
@@ -521,7 +528,16 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
     flex-shrink: 0;
   }
 
-  .recipe-sidebar :global(.sidebar-block > .bg-\[\#DCDCCF\]) {
+  .recipe-sidebar__popular-block {
+    padding-bottom: 6px !important;
+  }
+
+  .recipe-sidebar__ad-shell {
+    padding-top: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  .recipe-sidebar__ad-box {
     width: 100%;
   }
 
@@ -529,6 +545,59 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
     position: sticky;
     top: 16px;
     align-self: flex-start;
+  }
+
+  .recipe-sidebar--detail {
+    gap: 14px;
+  }
+
+  .recipe-sidebar--detail > *,
+  .recipe-sidebar--detail .recipe-sidebar-sticky-rail > * {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .recipe-sidebar--detail :global(.sidebar-block) {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__masterclass-card,
+  .recipe-sidebar--detail .recipe-sidebar__workshop-card {
+    width: 100% !important;
+    max-width: none !important;
+    display: block;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__masterclass-body {
+    padding: 18px 18px 20px !important;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__masterclass-button,
+  .recipe-sidebar--detail .recipe-sidebar__workshop-button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__pill {
+    max-width: none;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar-sticky-rail {
+    gap: 2px;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__popular-block {
+    padding-bottom: 2px !important;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__ad-shell {
+    padding-top: 2px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .recipe-sidebar--detail .recipe-sidebar__ad-box {
+    margin-top: 0;
   }
 
   @media (max-width: 1023px) {
