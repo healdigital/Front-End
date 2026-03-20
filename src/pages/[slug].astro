@@ -261,6 +261,13 @@ const primaryRecipeBlock =
   (Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : []).find(
     (block: any) => block?.blockType === "recipeCard" || Array.isArray(block?.ingredients) || Array.isArray(block?.steps),
   ) || null;
+const recipeDifficulty = toText(primaryRecipeBlock?.difficulty);
+const recipePortions = toText(primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount);
+const heroMetaItems = [
+  displayCategoryTitles[0] || "Recette",
+  recipeDifficulty,
+  recipePortions ? `${recipePortions}` : "",
+].filter(Boolean);
 
 const recipeOnlyArticle = primaryRecipeBlock
   ? {
@@ -281,6 +288,19 @@ const recipeContent = primaryRecipeBlock
       suppressRecipeSummaryTitle: true,
     })
   : "";
+const recipeContentSanitized = recipeContent
+  .replace(
+    /(<section class="content-v2-block content-v2-recipe-steps-visual">\s*<h2>)([^<]+)(<\/h2>)/,
+    '$1Pr&eacute;paration$3',
+  )
+  .replace(
+    /(<div class="content-v2-recipe-section">\s*<h3>)([^<]+)(<\/h3>\s*<ol>)/,
+    '$1Pr&eacute;paration$3',
+  )
+  .replace(
+    /(<div class="content-v2-recipe-section">\s*<h3>)Nutrition[^<]*(<\/h3>)/,
+    '$1Nutrition$2',
+  );
 
 const storyContent = renderArticleContent(article, {
   includeRecipeBlocks: false,
@@ -293,7 +313,7 @@ const introText =
   toText(firstStoryParagraphHtml) ||
   excerpt ||
   "";
-const hasStoryContent = Boolean(storyContent && storyContent.replace(/<[^>]*>/g, "").trim());
+const hasStoryContent = false;
 const content = renderArticleContent(article);
 const firstContentParagraphHtml = content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
 const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(firstContentParagraphHtml);
@@ -392,13 +412,29 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       <div class="article-layout">
         <div class="article-main-column">
           <section class="lcdb-surface-card recipe-detail-shell">
-            <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
-              <a href="/" class="article-breadcrumb-link">Accueil</a>
-              <span>/</span>
-              <span>Recettes</span>
-              <span>/</span>
-              <span class="article-breadcrumb-current">{title}</span>
-            </nav>
+            <div class="recipe-detail-topbar">
+              <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
+                <a href="/" class="article-breadcrumb-link">Accueil</a>
+                <span>/</span>
+                <span>Recettes</span>
+                <span>/</span>
+                <span class="article-breadcrumb-current">{title}</span>
+              </nav>
+
+              <div class="recipe-detail-topbar-actions" aria-label="Partager la recette">
+                {articleShareLinks.map((link) => (
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="recipe-detail-topbar-link"
+                    aria-label={`Partager sur ${link.label}`}
+                  >
+                    <i class={link.icon} aria-hidden="true"></i>
+                  </a>
+                ))}
+              </div>
+            </div>
 
             {(categoryItems.length > 0 || tagItems.length > 0) && (
               <div class="article-chip-groups article-chip-groups--top">
@@ -428,6 +464,14 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                   </span>
                   <span class="recipe-detail-rating-label">{ratingLabel}</span>
                 </div>
+
+                {heroMetaItems.length > 0 && (
+                  <div class="recipe-detail-meta-strip">
+                    {heroMetaItems.map((item) => (
+                      <span class="recipe-detail-meta-pill">{item}</span>
+                    ))}
+                  </div>
+                )}
 
                 <div class="recipe-detail-actions" aria-label="Actions de la recette">
                   <a
@@ -463,13 +507,13 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
             </div>
           </section>
 
-          {recipeContent && (
+          {recipeContentSanitized && (
             <article class="lcdb-surface-card article-content-card article-content-card--recipe">
               <div
                 class="article-content article-content--recipe typ-body"
                 data-article-title={title}
                 data-article-summary={excerptText}
-                set:html={recipeContent}
+                set:html={recipeContentSanitized}
               />
             </article>
           )}
@@ -1215,6 +1259,33 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     box-shadow: none;
   }
 
+  .recipe-detail-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    margin-bottom: 10px;
+  }
+
+  .recipe-detail-topbar-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .recipe-detail-topbar-link {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #d8d2c2;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f5a67;
+    text-decoration: none;
+    background: #ffffff;
+  }
+
   .recipe-detail-head {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 190px;
@@ -1258,6 +1329,28 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     gap: 4px;
     color: #7da444;
     font-size: 0.86rem;
+  }
+
+  .recipe-detail-meta-strip {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .recipe-detail-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #f4efe4;
+    color: #7a7364;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .recipe-detail-actions {
@@ -1340,6 +1433,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content--recipe :global(.content-v2-recipe-summary-grid-section) {
+    margin-top: 10px;
     padding: 22px 24px;
     border-radius: 12px;
   }
@@ -1367,6 +1461,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     line-height: 1.02;
   }
 
+  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
+    margin-top: 28px;
+  }
+
   .article-content--recipe :global(.content-v2-block.content-v2-recipe-ingredients ul#recipe-main-recipe-ingredients) {
     border: 1px solid #ddd6c7 !important;
     border-radius: 12px !important;
@@ -1381,10 +1479,6 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual) {
     margin-top: 2px;
-  }
-
-  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
-    margin: 42px 0 18px;
   }
 
   .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list li.content-v2-recipe-visual-step) {
@@ -1405,6 +1499,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     border: 1px solid #ddd6c7;
     border-radius: 12px;
     padding: 24px 28px;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-bon-appetit) {
+    margin: 18px 0 8px;
+    text-align: center;
   }
 
   .article-content--story :global(.wprm-recipe-container) {
