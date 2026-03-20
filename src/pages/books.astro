@@ -2,13 +2,11 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import StaticPageContent from "../components/StaticPageContent.astro";
-import BooksSection from "../components/organisms/BooksSection.astro";
 ---
 
 <BaseLayout title="My Books">
   <StaticPage title="My Books" subtitle="Mes Livres">
     <div class="books-page">
-      <BooksSection embedded={true} />
       <StaticPageContent
         slug="mes-livres"
         sourceUrl="https://lacuisinedebernard.com/mes-livres/"
