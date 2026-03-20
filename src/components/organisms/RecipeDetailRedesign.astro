@@ -38,10 +38,19 @@ const quickInfoItems = [
   { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
   { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
 ].filter((item) => item.value);
+
+const firstStepImage =
+  stepGroups
+    .flatMap((group: any) => (Array.isArray(group?.items) ? group.items : []))
+    .find((step: any) => step?.media?.url)?.media || null;
+
+const heroImageSrc = image || firstStepImage?.url || "";
+const heroImageAlt = imageAlt || firstStepImage?.alt || title;
+const hasHeroImage = Boolean(heroImageSrc);
 ---
 
 <div class="recipe-redesign" data-recipe-redesign>
-  <section class="recipe-redesign__hero-card">
+  <section class:list={["recipe-redesign__hero-card", hasHeroImage && "recipe-redesign__hero-card--with-image"]}>
     <div class="recipe-redesign__topline">
       <nav class="recipe-redesign__breadcrumb" aria-label="Breadcrumb">
         <a href="/">Accueil</a>
@@ -107,9 +116,9 @@ const quickInfoItems = [
       </div>
     </div>
 
-    {image && (
+    {hasHeroImage && (
       <figure class="recipe-redesign__hero-image">
-        <img src={image} alt={imageAlt || title} loading="eager" decoding="async" />
+        <img src={heroImageSrc} alt={heroImageAlt} loading="eager" decoding="async" />
       </figure>
     )}
   </section>
@@ -171,9 +180,9 @@ const quickInfoItems = [
 
   <p class="recipe-redesign__bon-appetit">Bon appétit !</p>
 
-  {image && (
+  {hasHeroImage && (
     <figure class="recipe-redesign__final-image">
-      <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
+      <img src={heroImageSrc} alt={heroImageAlt} loading="lazy" decoding="async" />
     </figure>
   )}
 
@@ -192,9 +201,9 @@ const quickInfoItems = [
         {introText && <p class="recipe-redesign__excerpt">{introText}</p>}
       </div>
 
-      {image && (
+      {hasHeroImage && (
         <figure class="recipe-redesign__recipe-card-image">
-          <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
+          <img src={heroImageSrc} alt={heroImageAlt} loading="lazy" decoding="async" />
         </figure>
       )}
     </div>
@@ -256,8 +265,10 @@ const quickInfoItems = [
 
     {nutritionItems.length > 0 && (
       <div class="recipe-redesign__card recipe-redesign__nutrition-card">
-        <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
         <div class="recipe-redesign__nutrition">
+          <div class="recipe-redesign__nutrition-lead">
+            <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
+          </div>
           {nutritionItems.map((item: any) => (
             <div class="recipe-redesign__nutrition-item">
               <span>{item.label}</span>
@@ -368,7 +379,7 @@ const quickInfoItems = [
 <style>
   .recipe-redesign {
     display: grid;
-    gap: 26px;
+    gap: 30px;
   }
 
   .recipe-redesign__hero-card,
@@ -383,11 +394,15 @@ const quickInfoItems = [
   }
 
   .recipe-redesign__hero-card {
-    padding: 26px 28px 30px;
+    padding: 30px 32px 34px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
-    gap: 24px 26px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px 30px;
     align-items: start;
+  }
+
+  .recipe-redesign__hero-card--with-image {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 40%);
   }
 
   .recipe-redesign__topline,
@@ -437,7 +452,7 @@ const quickInfoItems = [
 
   .recipe-redesign__hero-copy {
     display: grid;
-    gap: 16px;
+    gap: 18px;
     align-content: start;
   }
 
@@ -455,6 +470,8 @@ const quickInfoItems = [
 
   .recipe-redesign__title {
     font-size: clamp(2.35rem, 4vw, 4rem);
+    max-width: 10.5ch;
+    text-wrap: balance;
   }
 
   .recipe-redesign__rating {
@@ -479,9 +496,9 @@ const quickInfoItems = [
   }
 
   .recipe-redesign__actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
-    flex-wrap: nowrap;
   }
 
   .recipe-redesign__meta-pill {
@@ -496,12 +513,11 @@ const quickInfoItems = [
 
   .recipe-redesign__action {
     min-width: 0;
-    padding: 12px 14px;
+    padding: 13px 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    flex: 1 1 0;
+    gap: 9px;
     white-space: nowrap;
     border: 1px solid #cfc6b6;
     border-radius: 12px;
@@ -527,6 +543,8 @@ const quickInfoItems = [
     overflow: hidden;
     border-radius: 18px;
     align-self: start;
+    min-height: 100%;
+    background: #f3eee5;
   }
 
   .recipe-redesign__hero-image img,
@@ -539,13 +557,14 @@ const quickInfoItems = [
   }
 
   .recipe-redesign__hero-image img {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 0.94;
     object-fit: cover;
+    height: 100%;
   }
 
   .recipe-redesign__section {
     display: grid;
-    gap: 14px;
+    gap: 16px;
   }
 
   .recipe-redesign__section h2 {
@@ -557,7 +576,7 @@ const quickInfoItems = [
     padding: 4px;
     gap: 4px;
     border-radius: 999px;
-    background: #fff;
+    background: #faf8f2;
     border: 1px solid #e5ddd0;
     flex-shrink: 0;
   }
@@ -580,7 +599,7 @@ const quickInfoItems = [
   .recipe-redesign__card,
   .recipe-redesign__recipe-card,
   .recipe-redesign__step-card {
-    padding: 24px;
+    padding: 28px;
   }
 
   .recipe-redesign__group + .recipe-redesign__group {
@@ -590,7 +609,7 @@ const quickInfoItems = [
   }
 
   .recipe-redesign__group-title {
-    margin: 0 0 14px;
+    margin: 0 0 16px;
     color: #161616;
     font-size: 2rem;
     line-height: 1.1;
@@ -604,7 +623,7 @@ const quickInfoItems = [
     padding: 0;
     list-style: none;
     display: grid;
-    gap: 14px;
+    gap: 16px;
   }
 
   .recipe-redesign__ingredient,
@@ -644,17 +663,18 @@ const quickInfoItems = [
 
   .recipe-redesign__steps {
     display: grid;
-    gap: 16px;
+    gap: 18px;
   }
 
   .recipe-redesign__step-group {
     display: grid;
-    gap: 16px;
+    gap: 18px;
   }
 
   .recipe-redesign__step-card {
     display: grid;
-    gap: 18px;
+    gap: 20px;
+    padding: 24px;
   }
 
   .recipe-redesign__step-copy {
@@ -669,22 +689,23 @@ const quickInfoItems = [
   }
 
   .recipe-redesign__bon-appetit {
-    margin: 4px 0 0;
+    margin: -2px 0 2px;
     text-align: center;
     color: #433d36;
     font-family: var(--font-heading), serif;
-    font-size: 2rem;
+    font-size: clamp(1.85rem, 3vw, 2.35rem);
     line-height: 1.1;
+    letter-spacing: 0.01em;
   }
 
   .recipe-redesign__final-image {
-    margin-top: 0;
+    margin-top: -6px;
     overflow: hidden;
   }
 
   .recipe-redesign__recipe-card {
     display: grid;
-    gap: 22px;
+    gap: 24px;
   }
 
   .recipe-redesign__recipe-card-hero {
@@ -706,7 +727,7 @@ const quickInfoItems = [
   .recipe-redesign__quick-info {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
+    gap: 18px;
   }
 
   .recipe-redesign__quick-info-item {
@@ -742,36 +763,41 @@ const quickInfoItems = [
 
   .recipe-redesign__nutrition-card {
     display: grid;
-    gap: 18px;
+    gap: 0;
   }
 
   .recipe-redesign__nutrition-title {
-    font-size: 2rem;
+    font-size: 2.15rem;
   }
 
   .recipe-redesign__nutrition {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px 26px;
+    grid-template-columns: minmax(160px, 0.9fr) repeat(4, minmax(0, 1fr));
+    gap: 20px 26px;
+    align-items: start;
+  }
+
+  .recipe-redesign__nutrition-lead {
+    display: grid;
+    align-content: start;
+    min-height: 100%;
   }
 
   .recipe-redesign__nutrition-item {
     display: grid;
-    gap: 4px;
+    gap: 6px;
+    align-content: start;
   }
 
   @media (max-width: 1080px) {
     .recipe-redesign__actions {
-      flex-wrap: wrap;
-    }
-
-    .recipe-redesign__action {
-      flex: 1 1 calc(50% - 10px);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (max-width: 960px) {
     .recipe-redesign__hero-card,
+    .recipe-redesign__hero-card--with-image,
     .recipe-redesign__recipe-card-hero,
     .recipe-redesign__quick-info,
     .recipe-redesign__nutrition {
@@ -802,11 +828,11 @@ const quickInfoItems = [
     }
 
     .recipe-redesign__actions {
-      flex-wrap: wrap;
+      grid-template-columns: 1fr;
     }
 
     .recipe-redesign__action {
-      flex: 1 1 100%;
+      width: 100%;
     }
   }
 </style>
