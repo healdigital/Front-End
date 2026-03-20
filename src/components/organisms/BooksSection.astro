@@ -16,31 +16,98 @@ const { embedded = false } = Astro.props as Props;
       <div class="flex-1 h-px bg-[#D7D1C2] hidden md:block"></div>
     </div>
 
-    <div class="books-section-card">
-      <div class="books-section-grid">
-        <div class="books-section-media">
+    <div class="books-section-card books-feature-card">
+      <div class="books-section-grid books-feature-grid">
+        <div class="books-section-media books-feature-media">
           <img
             src="/images/livres-diaporama-3.jpg"
             alt="Bernard Laurance"
-            class="books-section-media-image"
+            class="books-section-media-image books-feature-image"
             loading="lazy"
             decoding="async"
             sizes="(min-width: 1024px) 42vw, 92vw"
           />
         </div>
 
-        <div class="books-section-content">
-          <div class="books-section-inner">
+        <div class="books-section-content books-feature-content">
+          <div class="books-section-inner books-feature-inner">
             <p class="books-section-eyebrow">L'humain derriere les recettes</p>
             <h3 class="books-section-title">Mes livres pour approfondir</h3>
             <p class="books-section-description">
               Bienvenue dans mon univers culinaire. Voyageur curieux, j'ai ramene de mes periples bien plus que des souvenirs : des saveurs oubliees et des tours de main ancestraux.
               Aujourd'hui, je vous livre tous mes secrets de cuisine, sans filtre et avec transparence.
             </p>
-            <a href="/livres" class="books-section-button">Decouvrir mes livres</a>
+            <a href="/livres" class="books-section-button books-feature-button">Decouvrir mes livres</a>
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<style>
+  .books-feature-card {
+    background: #faf8f2;
+  }
+
+  .books-feature-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1fr);
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .books-feature-media {
+    width: 100%;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #f4efe4;
+  }
+
+  .books-feature-image {
+    width: 100%;
+    height: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    object-position: center;
+    min-height: 0;
+  }
+
+  .books-feature-content {
+    width: 100%;
+    height: auto;
+    padding: 34px 34px 32px;
+    display: flex;
+    align-items: center;
+  }
+
+  .books-feature-inner {
+    width: 100%;
+    max-width: 520px;
+    gap: 18px;
+  }
+
+  .books-feature-button {
+    width: fit-content;
+    min-width: 260px;
+    max-width: 100%;
+  }
+
+  @media (max-width: 1023px) {
+    .books-feature-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .books-feature-media {
+      min-height: 300px;
+      padding: 20px;
+    }
+
+    .books-feature-content {
+      padding: 24px 22px 26px;
+    }
+  }
+</style>
