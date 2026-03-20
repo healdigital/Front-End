@@ -9,7 +9,7 @@ import { payloadFetch } from "../lib/payload.client";
 import { getAllArticlesFromMongo, getArticleBySlugFromMongo, getCommentsByArticleIdFromMongo, getRelatedArticlesFromMongo } from "../lib/mongo.server";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "../utils/buildArticleJsonLd";
 import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
-import { processArticleImageUrl } from "../utils/cdnUrlReplacer";
+import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
 import { renderArticleContent } from "../utils/renderArticleContent";
 
 export const prerender = true;
@@ -99,6 +99,117 @@ const formatRecipeTimeLabel = (value: any): string => {
   }
 
   return raw.toUpperCase();
+};
+
+const toPositiveNumber = (value: any): number | null => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) return null;
+  return numeric;
+};
+
+const formatMinutes = (value: any): string => {
+  const numeric = toPositiveNumber(value);
+  if (numeric === null) return "";
+  return `${Math.round(numeric)} min`;
+};
+
+const resolveRecipeMedia = (...candidates: any[]) => {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    if (typeof candidate === "string" && candidate.trim()) {
+      return {
+        url: replaceCdnUrl(candidate.trim()),
+        alt: "",
+      };
+    }
+
+    if (typeof candidate === "object") {
+      const url =
+        candidate?.sizes?.articleStep?.url ||
+        candidate?.sizes?.gallery?.url ||
+        candidate?.sizes?.articleHero?.url ||
+        candidate?.url;
+
+      if (typeof url === "string" && url.trim()) {
+        return {
+          url: replaceCdnUrl(url.trim()),
+          alt: toText(candidate?.alt),
+        };
+      }
+    }
+  }
+
+  return null;
+};
+
+const extractLegacyStepImages = (html: string, featuredUrl: string) => {
+  if (!html) return [];
+
+  const images: Array<{ alt: string; url: string }> = [];
+  const seen = new Set<string>();
+  const regex = /<img\b[^>]*(?:src|data-src)=["']([^"']+)["'][^>]*>/gi;
+  let match: RegExpExecArray | null = null;
+
+  while ((match = regex.exec(html))) {
+    const rawUrl = String(match[1] || "").trim();
+    if (!rawUrl) continue;
+    const url = replaceCdnUrl(rawUrl);
+    if (!url || seen.has(url) || url === featuredUrl) continue;
+    seen.add(url);
+    images.push({ alt: "", url });
+  }
+
+  return images;
+};
+
+const buildIngredientGroups = (ingredients: any[]) => {
+  return (Array.isArray(ingredients) ? ingredients : []).reduce((groups: any[], row: any) => {
+    if (!row) return groups;
+
+    if (row.isGroupHeading) {
+      const heading = toText(row.groupHeading);
+      if (heading) groups.push({ heading, items: [] });
+      return groups;
+    }
+
+    const quantity = String(row.quantity || "").trim();
+    const item = toText(row.item);
+    const notes = toText(row.notes);
+    if (!quantity && !item && !notes) return groups;
+
+    const target = groups.length === 0 ? (groups.push({ heading: "", items: [] }), groups[0]) : groups[groups.length - 1];
+    target.items.push({ item, notes, quantity });
+    return groups;
+  }, []);
+};
+
+const buildStepGroups = (steps: any[], legacyImages: Array<{ alt: string; url: string }>) => {
+  let fallbackIndex = 0;
+
+  return (Array.isArray(steps) ? steps : []).reduce((groups: any[], row: any) => {
+    if (!row) return groups;
+
+    if (row.isGroupHeading) {
+      const heading = toText(row.groupHeading);
+      if (heading) groups.push({ heading, items: [] });
+      return groups;
+    }
+
+    const instruction = toText(row.instruction);
+    if (!instruction) return groups;
+
+    const explicitMedia = resolveRecipeMedia(row.image, row.imageUrl, row.image_url, row.media, row.photo);
+    const fallbackMedia = explicitMedia ? null : legacyImages[fallbackIndex] || null;
+    if (!explicitMedia && fallbackMedia) fallbackIndex += 1;
+
+    const target = groups.length === 0 ? (groups.push({ heading: "", items: [] }), groups[0]) : groups[groups.length - 1];
+    target.items.push({
+      instruction,
+      media: explicitMedia || fallbackMedia,
+    });
+    return groups;
+  }, []);
 };
 
 export async function getStaticPaths() {
@@ -268,6 +379,40 @@ const heroMetaItems = [
   recipeDifficulty,
   recipePortions ? `${recipePortions}` : "",
 ].filter(Boolean);
+const recipeLegacyImages = extractLegacyStepImages(typeof article?.content === "string" ? article.content : "", image);
+const ingredientGroups = buildIngredientGroups(primaryRecipeBlock?.ingredients || []);
+const stepGroups = buildStepGroups(primaryRecipeBlock?.steps || [], recipeLegacyImages);
+const topInfoItems = [
+  { label: "Temps de préparation", value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes) },
+  { label: "Temps de cuisson", value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes) },
+  { label: "Cuisine", value: toText(primaryRecipeBlock?.cuisine) },
+  { label: "Portions", value: toText(primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount) },
+  {
+    label: "Calories",
+    value: toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) !== null
+      ? `${Math.round(toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) || 0)} kcal`
+      : "",
+  },
+].filter((item) => item.value);
+const quickInfoItems = [
+  { label: "Preparation Time Minutes", value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes) },
+  { label: "Cooking Time Minutes", value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes) },
+  { label: "Servings Count", value: toText(primaryRecipeBlock?.servingsCount) },
+  { label: "Difficulty", value: toText(primaryRecipeBlock?.difficulty) },
+  { label: "Recipe Type", value: toText(primaryRecipeBlock?.recipeType) },
+  { label: "Dish Type", value: toText(primaryRecipeBlock?.dishType) },
+  { label: "Cuisine", value: toText(primaryRecipeBlock?.cuisine) },
+  { label: "Servings", value: toText(primaryRecipeBlock?.servings) },
+].filter((item) => item.value);
+const nutritionItems = [
+  { label: "Calories", value: primaryRecipeBlock?.nutrition?.caloriesKcal, unit: "kcal" },
+  { label: "Protein", value: primaryRecipeBlock?.nutrition?.proteinGrams, unit: "g" },
+  { label: "Carbs", value: primaryRecipeBlock?.nutrition?.carbohydratesGrams, unit: "g" },
+  { label: "Fat", value: primaryRecipeBlock?.nutrition?.fatGrams, unit: "g" },
+  { label: "Fiber", value: primaryRecipeBlock?.nutrition?.fiberGrams, unit: "g" },
+  { label: "Sugar", value: primaryRecipeBlock?.nutrition?.sugarGrams, unit: "g" },
+  { label: "Sodium", value: primaryRecipeBlock?.nutrition?.sodiumMg, unit: "mg" },
+].filter((item) => toPositiveNumber(item.value) !== null);
 
 const recipeOnlyArticle = primaryRecipeBlock
   ? {
@@ -507,26 +652,164 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
             </div>
           </section>
 
-          {recipeContentSanitized && (
-            <article class="lcdb-surface-card article-content-card article-content-card--recipe">
-              <div
-                class="article-content article-content--recipe typ-body"
-                data-article-title={title}
-                data-article-summary={excerptText}
-                set:html={recipeContentSanitized}
-              />
-            </article>
-          )}
+          {primaryRecipeBlock && (
+            <>
+              {topInfoItems.length > 0 && (
+                <section class="lcdb-surface-card recipe-detail-info-card">
+                  <div class="recipe-detail-info-grid">
+                    {topInfoItems.map((item) => (
+                      <div class="recipe-detail-info-item">
+                        <p class="recipe-detail-info-label">{item.label}</p>
+                        <p class="recipe-detail-info-value">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-          {hasStoryContent && (
-            <article class="lcdb-surface-card article-content-card article-content-card--story">
-              <div
-                class="article-content article-content--story typ-body"
-                data-article-title={title}
-                data-article-summary={excerptText}
-                set:html={storyContent}
-              />
-            </article>
+              <section class="recipe-detail-section">
+                <div class="recipe-detail-section-head">
+                  <h2 class="recipe-detail-section-title">Ingrédients</h2>
+                  <div class="recipe-detail-servings" aria-label="Portions">
+                    <button type="button" class="wprm-recipe-adjustable-servings wprm-toggle-active" data-multiplier="1">1x</button>
+                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="2">2x</button>
+                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="3">3x</button>
+                  </div>
+                </div>
+
+                <div class="lcdb-surface-card recipe-detail-group-card">
+                  {ingredientGroups.map((group: any) => (
+                    <section class="recipe-detail-group">
+                      {group.heading && <h3 class="recipe-detail-group-title">{group.heading}</h3>}
+                      <ul class="recipe-detail-ingredients-list">
+                        {group.items.map((item: any) => (
+                          <li class="recipe-detail-ingredient-item">
+                            {item.quantity && <span class="wprm-recipe-ingredient-amount">{item.quantity}</span>}
+                            {" "}
+                            <span>{item.item}</span>
+                            {item.notes && <span class="recipe-detail-ingredient-note"> {item.notes}</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+                </div>
+              </section>
+
+              <section class="recipe-detail-section">
+                <h2 class="recipe-detail-section-title">Préparation</h2>
+                <div class="recipe-detail-steps-list">
+                  {stepGroups.map((group: any) => (
+                    <section class="recipe-detail-step-group">
+                      {group.heading && <h3 class="recipe-detail-group-title">{group.heading}</h3>}
+                      {group.items.map((step: any, index: number) => (
+                        <article class="lcdb-surface-card recipe-detail-step-card">
+                          <div class="recipe-detail-step-copy">
+                            <span class="recipe-detail-step-index">{index + 1}.</span>
+                            <p class="recipe-detail-step-text">{step.instruction}</p>
+                          </div>
+                          {step.media?.url && (
+                            <figure class="recipe-detail-step-media">
+                              <img src={step.media.url} alt={step.media.alt || step.instruction} loading="lazy" decoding="async" />
+                            </figure>
+                          )}
+                        </article>
+                      ))}
+                    </section>
+                  ))}
+                </div>
+              </section>
+
+              <p class="recipe-detail-bon-appetit">Bon appétit !</p>
+
+              <section class="lcdb-surface-card recipe-detail-compact-card">
+                <div class="recipe-detail-compact-hero">
+                  <div class="recipe-detail-compact-copy">
+                    <h2 class="recipe-detail-compact-title">{title}</h2>
+                    <div class="recipe-detail-rating" aria-label={ratingLabel}>
+                      <span class="recipe-detail-stars" aria-hidden="true">
+                        {ratingStars.map((filled) => (
+                          <i class={filled ? "fas fa-star" : "far fa-star"}></i>
+                        ))}
+                      </span>
+                      <span class="recipe-detail-rating-label">{ratingLabel}</span>
+                    </div>
+                    {introText && <p class="recipe-detail-compact-excerpt">{introText}</p>}
+                  </div>
+                  {image && (
+                    <figure class="recipe-detail-compact-media">
+                      <img src={image} alt={imageAlt} loading="lazy" decoding="async" />
+                    </figure>
+                  )}
+                </div>
+
+                {quickInfoItems.length > 0 && (
+                  <div class="recipe-detail-compact-info">
+                    {quickInfoItems.map((item) => (
+                      <div class="recipe-detail-compact-info-item">
+                        <p class="recipe-detail-info-label">{item.label}</p>
+                        <p class="recipe-detail-info-value">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div class="recipe-detail-section-head recipe-detail-section-head--compact">
+                  <h3 class="recipe-detail-compact-section-title">Ingrédients</h3>
+                  <div class="recipe-detail-servings" aria-label="Portions">
+                    <button type="button" class="wprm-recipe-adjustable-servings wprm-toggle-active" data-multiplier="1">1x</button>
+                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="2">2x</button>
+                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="3">3x</button>
+                  </div>
+                </div>
+
+                <div class="recipe-detail-compact-panel">
+                  {ingredientGroups.map((group: any) => (
+                    <section class="recipe-detail-group">
+                      {group.heading && <h4 class="recipe-detail-group-title">{group.heading}</h4>}
+                      <ul class="recipe-detail-ingredients-list">
+                        {group.items.map((item: any) => (
+                          <li class="recipe-detail-ingredient-item">
+                            {item.quantity && <span class="wprm-recipe-ingredient-amount">{item.quantity}</span>}
+                            {" "}
+                            <span>{item.item}</span>
+                            {item.notes && <span class="recipe-detail-ingredient-note"> {item.notes}</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+                </div>
+
+                <div class="recipe-detail-compact-panel">
+                  <h3 class="recipe-detail-compact-section-title">Préparation</h3>
+                  {stepGroups.map((group: any) => (
+                    <section class="recipe-detail-group">
+                      {group.heading && <h4 class="recipe-detail-group-title">{group.heading}</h4>}
+                      <ol class="recipe-detail-instructions-list">
+                        {group.items.map((step: any) => (
+                          <li class="recipe-detail-instruction-item">{step.instruction}</li>
+                        ))}
+                      </ol>
+                    </section>
+                  ))}
+                </div>
+
+                {nutritionItems.length > 0 && (
+                  <div class="recipe-detail-compact-panel">
+                    <h3 class="recipe-detail-compact-section-title">Nutrition</h3>
+                    <div class="recipe-detail-nutrition-grid">
+                      {nutritionItems.map((item) => (
+                        <div class="recipe-detail-nutrition-item">
+                          <span class="recipe-detail-nutrition-label">{item.label}</span>
+                          <span class="recipe-detail-nutrition-value">{Math.round(Number(item.value))} {item.unit}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
+            </>
           )}
 
           <section class="article-intro-card">
@@ -1508,6 +1791,274 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-content--story :global(.wprm-recipe-container) {
     display: none !important;
+  }
+
+  .recipe-detail-info-card {
+    padding: 24px 18px;
+  }
+
+  .recipe-detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+
+  .recipe-detail-info-item,
+  .recipe-detail-compact-info-item {
+    padding-top: 12px;
+    border-top: 1px solid #ddd7ca;
+  }
+
+  .recipe-detail-info-label {
+    margin: 0;
+    color: #7b7b6f;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .recipe-detail-info-value {
+    margin: 10px 0 0;
+    color: #1c1c19;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .recipe-detail-section {
+    display: grid;
+    gap: 18px;
+  }
+
+  .recipe-detail-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .recipe-detail-section-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(2.6rem, 4vw, 3.5rem);
+    line-height: 1.02;
+  }
+
+  .recipe-detail-servings {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #e2ddd1;
+  }
+
+  .recipe-detail-servings .wprm-recipe-adjustable-servings {
+    min-width: 48px;
+    height: 36px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #7b7b6f;
+    font-size: 0.92rem;
+    cursor: pointer;
+  }
+
+  .recipe-detail-servings .wprm-recipe-adjustable-servings.wprm-toggle-active {
+    background: #54b6b1;
+    color: #ffffff;
+  }
+
+  .recipe-detail-group-card,
+  .recipe-detail-compact-panel {
+    padding: 20px 18px 18px;
+    border-radius: 12px;
+  }
+
+  .recipe-detail-group + .recipe-detail-group,
+  .recipe-detail-compact-panel .recipe-detail-group + .recipe-detail-group {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #ddd7ca;
+  }
+
+  .recipe-detail-group-title {
+    margin: 0 0 14px;
+    color: #111111;
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .recipe-detail-ingredients-list,
+  .recipe-detail-instructions-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  .recipe-detail-ingredient-item,
+  .recipe-detail-instruction-item {
+    position: relative;
+    padding-left: 18px;
+    color: #22211e;
+    line-height: 1.6;
+  }
+
+  .recipe-detail-ingredient-item::before,
+  .recipe-detail-instruction-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 7px;
+    height: 7px;
+    background: #54b6b1;
+    transform: rotate(45deg);
+  }
+
+  .recipe-detail-ingredient-item .wprm-recipe-ingredient-amount {
+    color: #54b6b1;
+    font-weight: 600;
+  }
+
+  .recipe-detail-ingredient-note {
+    color: #666158;
+  }
+
+  .recipe-detail-steps-list {
+    display: grid;
+    gap: 18px;
+  }
+
+  .recipe-detail-step-card {
+    padding: 24px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .recipe-detail-step-copy {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .recipe-detail-step-index {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: #54b6b1;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .recipe-detail-step-text {
+    margin: 8px 0 0;
+    color: #1f1f1d;
+    font-size: 1rem;
+    line-height: 1.62;
+  }
+
+  .recipe-detail-step-media {
+    margin: 0;
+  }
+
+  .recipe-detail-step-media img,
+  .recipe-detail-compact-media img {
+    width: 100%;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .recipe-detail-bon-appetit {
+    margin: 2px 0 8px;
+    text-align: center;
+    color: #57524b;
+  }
+
+  .recipe-detail-compact-card {
+    padding: 24px 20px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .recipe-detail-compact-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 180px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .recipe-detail-compact-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-body);
+    font-size: clamp(1.7rem, 2.8vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.06;
+  }
+
+  .recipe-detail-compact-excerpt {
+    margin: 12px 0 0;
+    color: #444641;
+    line-height: 1.6;
+  }
+
+  .recipe-detail-compact-media {
+    margin: 0;
+  }
+
+  .recipe-detail-compact-info {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 14px;
+  }
+
+  .recipe-detail-section-head--compact {
+    margin-bottom: -6px;
+  }
+
+  .recipe-detail-compact-section-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.04;
+  }
+
+  .recipe-detail-nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 18px;
+  }
+
+  .recipe-detail-nutrition-item {
+    display: grid;
+    gap: 6px;
+  }
+
+  .recipe-detail-nutrition-label {
+    color: #7b7b6f;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .recipe-detail-nutrition-value {
+    color: #1c1c19;
   }
 
   .article-sidebar-column {
@@ -2802,6 +3353,19 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       max-width: 420px;
     }
 
+    .recipe-detail-info-grid,
+    .recipe-detail-compact-info {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .recipe-detail-compact-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .recipe-detail-nutrition-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .article-content--recipe :global(.content-v2-recipe-summary-grid) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -2849,6 +3413,23 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .recipe-detail-action {
       width: 100%;
       justify-content: flex-start;
+    }
+
+    .recipe-detail-topbar,
+    .recipe-detail-section-head,
+    .recipe-detail-section-head--compact {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .recipe-detail-info-grid,
+    .recipe-detail-compact-info,
+    .recipe-detail-nutrition-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .recipe-detail-step-copy {
+      grid-template-columns: 1fr;
     }
 
     .article-content--recipe :global(.content-v2-recipe-summary-grid) {
