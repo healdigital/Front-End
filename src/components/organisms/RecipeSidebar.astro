@@ -176,11 +176,23 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
   {isFull && (
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Mes livres pour approfondir</h4>
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <img src="/images/book-desserts.png" alt="Mes desserts" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
-        <img src="/images/book-vege.png" alt="Vege-terrien" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
-        <img src="/images/book-chocolat.png" alt="Je fais mon chocolat maison" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
-        <img src="/images/book-bouchee.png" alt="Je n'en ferai qu'une bouchee" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
+      <div class="sidebar-books-showcase mt-4">
+        <div class="sidebar-books-showcase__portrait">
+          <img
+            src="/images/bernard-chef-2010.png"
+            alt="Bernard Laurance"
+            class="sidebar-books-showcase__portrait-image"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <img
+          src="/images/bernard-books.png"
+          alt="Les livres de Bernard Laurance"
+          class="sidebar-books-showcase__image"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
       <a href="/livres" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir tous les livres
@@ -472,6 +484,42 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 
   .recipe-sidebar :global(.label-data) {
     text-underline-offset: 4px;
+  }
+
+  .sidebar-books-showcase {
+    position: relative;
+    padding-top: 28px;
+  }
+
+  .sidebar-books-showcase__portrait {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 92px;
+    height: 92px;
+    padding: 4px;
+    border-radius: 999px;
+    background: #7fd4d7;
+    box-shadow: 0 10px 24px rgba(27, 33, 40, 0.14);
+    z-index: 2;
+  }
+
+  .sidebar-books-showcase__portrait-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 999px;
+    background: #7fd4d7;
+  }
+
+  .sidebar-books-showcase__image {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #d8d2c2;
+    background: #fff;
   }
 
   .recipe-sidebar :global(.article-date) {
