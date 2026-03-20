@@ -188,7 +188,7 @@ Best sequence:
 
 #### T11. Article images centered at 512px
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: article content CSS / render
   - `You`: verify if this applies to all inline images or only article-body images
@@ -196,6 +196,9 @@ Best sequence:
   - center inline images
   - max-width `512px`
   - keep responsive behavior
+- Verified state:
+  - standard inline article-body images are centered with the `512px` cap
+  - recipe detail pages intentionally keep their wider custom image layout to match the reference design
 
 #### T12. Sidebar cleanup
 
