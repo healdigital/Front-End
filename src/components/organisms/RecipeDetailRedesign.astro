@@ -402,7 +402,7 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__hero-card--with-image {
-    grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
   }
 
   .recipe-redesign__topline,
@@ -499,7 +499,7 @@ const hasHeroImage = Boolean(heroImageSrc);
   .recipe-redesign__actions {
     display: flex;
     flex-wrap: nowrap;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
   }
 
@@ -515,7 +515,7 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   .recipe-redesign__action {
     min-width: 0;
-    padding: 13px 16px;
+    padding: 12px 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -526,6 +526,7 @@ const hasHeroImage = Boolean(heroImageSrc);
     color: #2f2a24;
     text-decoration: none;
     background: #faf8f2;
+    font-size: 0.95rem;
     flex: 0 1 auto;
   }
 
@@ -543,12 +544,17 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__hero-image {
+    position: relative;
     overflow: hidden;
     border-radius: 18px;
     align-self: start;
-    min-height: 280px;
-    background: #f3eee5;
-    display: flex;
+    min-height: 0;
+    aspect-ratio: 1 / 0.92;
+    background: transparent;
+    display: block;
+    width: 100%;
+    max-width: 460px;
+    justify-self: end;
   }
 
   .recipe-redesign__hero-image img,
@@ -561,10 +567,10 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__hero-image img {
-    aspect-ratio: 1 / 0.92;
+    position: absolute;
+    inset: 0;
     object-fit: cover;
     height: 100%;
-    flex: 1 1 auto;
   }
 
   .recipe-redesign__section {
