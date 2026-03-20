@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import StaticPageContent from "../components/StaticPageContent.astro";
+import BooksSection from "../components/organisms/BooksSection.astro";
 
 const navLinks = [
   {
@@ -24,6 +25,7 @@ const navLinks = [
     className="menu-page menu-page--books"
     navLinks={navLinks}
   >
+    <BooksSection embedded={true} />
     <StaticPageContent
       slug="mes-livres"
       sourceUrl="https://lacuisinedebernard.com/mes-livres/"
