@@ -240,7 +240,7 @@ Best sequence:
 
 #### T15. Recipe cards parity with original
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: shared recipe card component
   - `You`: collect 2-3 original vs staging references
@@ -252,6 +252,11 @@ Best sequence:
   - keep only time tag
   - remove V/GF/DF tags
   - move category tags to top
+- Verified state:
+  - cards use the portrait image format with tighter original-style dimensions
+  - excerpt/intro text is truncated correctly
+  - only the time tag remains on the card
+  - the missing right border issue was fixed on tablet/grid layouts
 
 #### T16. Homepage ateliers section
 
