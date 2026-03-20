@@ -37,8 +37,8 @@
 }
 
 :root {
-  --lcdb-surface: #f7f5ef;
-  --lcdb-surface-strong: #fafaf8;
+  --lcdb-surface: #faf8f2;
+  --lcdb-surface-strong: #faf8f2;
   --lcdb-border: #d8d2c2;
   --lcdb-heading: #111111;
   --lcdb-copy: #5b5b5b;
@@ -977,7 +977,7 @@ section.content-v2-block.content-v2-recipe-ingredients {
 ========================= */
 .article-related-card {
     display: block;
-    background: #fff;
+    background: #faf8f2;
     border-radius: 10px;
     overflow: hidden;
     text-decoration: none;
