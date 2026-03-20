@@ -221,6 +221,10 @@ Best sequence:
   - beige/cream background
   - internal spacing
   - align with overall article layout
+- Latest detail-page pass:
+  - sidebar column width/padding was tightened
+  - empty beige strip beside the author card was removed
+  - ad block spacing was reduced so the empty band above the ad no longer shows
 
 #### T14. Remove sticky sidebar because of future ads
 
@@ -382,7 +386,9 @@ Best sequence:
 
 ## Current Pending Scope
 
-- Article/detail page recreate as a separate phase
+- Article/detail page recreate is `In progress`
+  - latest pass removed the extra story-fed `Bon appétit !` source, tightened the hero/image layout, and cleaned sidebar spacing
+  - still pending: final visual parity with the client reference/Figma
 - Ingredient archive pages
 - Newsletter / Acumbamail real submit integration
 - Font/license final decision from client
