@@ -292,10 +292,12 @@ Best sequence:
 
 #### T21. Carousel arrows site-wide
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`
   - `You`: QA homepage + article page carousels
+- Verified state:
+  - shared client arrow style is now applied on the main site carousel/slider surfaces, including homepage and article-related navigation
 
 #### T22. Random “Vous aimerez aussi”
 

@@ -80,16 +80,8 @@ const totalRecipeCount = totalCount;
       <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
     </div>
 
-    <div class="flex items-center justify-between gap-4 mb-8">
+    <div class="flex items-center justify-start gap-4 mb-8">
       <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
-      <div class="flex items-center gap-3">
-        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue grille" data-suggested-view="grid">
-          <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        </button>
-        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue liste" data-suggested-view="list">
-          <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-      </div>
     </div>
 
     <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
@@ -162,8 +154,6 @@ const totalRecipeCount = totalCount;
       const paginationPrev = paginationRoot?.querySelector('[data-suggested-prev]');
       const paginationNext = paginationRoot?.querySelector('[data-suggested-next]');
       const grid = section.querySelector('[data-suggested-grid]');
-      const viewButtons = Array.from(section.querySelectorAll('[data-suggested-view]'));
-
       let activeFilter = 'toutes';
       let activePage = 1;
       const cardsPerPage = 4;
@@ -575,14 +565,6 @@ const totalRecipeCount = totalCount;
         handlePageClick();
       });
 
-      viewButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const view = btn.getAttribute('data-suggested-view');
-          if (!grid || !view) return;
-          grid.setAttribute('data-view', view);
-        });
-      });
-
       applyFilters(true);
     });
   }
@@ -623,10 +605,6 @@ const totalRecipeCount = totalCount;
 </script>
 
 <style>
-.suggested-grid[data-view='list'] {
-  grid-template-columns: 1fr;
-}
-
 .suggested-arrow-btn {
   width: 52px;
   height: 52px;
