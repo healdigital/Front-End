@@ -122,6 +122,9 @@ Best sequence:
   - preserve headings in migrated data
   - render headings on front-end
   - check admin support
+- Completed state:
+  - grouped ingredient headings now work in Payload admin
+  - grouped step headings are also supported in admin, preview, print, and front-end recipe rendering
 
 #### T07. Ingredient group spacing broken
 
@@ -362,6 +365,10 @@ Best sequence:
 - Goal:
   - upload multiple photos
   - automatically create one step entry per photo
+- Completed state:
+  - first-click helper flow is working
+  - pending step heading input is inserted before created/uploaded steps
+  - grouped step sections now match the same heading-first flow used for grouped ingredients
 
 ## “Done In Chat” But Must Be Re-checked
 
