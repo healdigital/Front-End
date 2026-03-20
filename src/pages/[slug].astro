@@ -542,7 +542,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   loadAds={true}
   showGlobalAbout={false}
 >
-  <section class="lcdb-page-hero">
+  <section class="lcdb-page-hero" style="display:none">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
         <a href="/" class="article-breadcrumb-link">Accueil</a>
@@ -595,10 +595,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               nutritionItems={nutritionItems}
               pinterestLink={pinterestLink}
               collectionHref={collectionHref}
-              storyHtml={stripHtml(storyContent).length > 0 ? storyContent : ""}
+              storyHtml=""
             />
           )}
 
+          <div hidden aria-hidden="true" style="display:none">
           <section class="lcdb-surface-card recipe-detail-shell">
             <div class="recipe-detail-topbar">
               <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
@@ -958,6 +959,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               set:html={content}
             />
           </article>
+          </div>
 
           <section class="lcdb-surface-card article-newsletter-card">
             <div class="article-newsletter-media" aria-hidden="true">
@@ -2107,7 +2109,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .article-sidebar-column {
     min-width: 0;
     align-self: start;
-    background: #fafaf8;
+    background: transparent;
   }
 
   .lcdb-page-hero,
@@ -3368,16 +3370,17 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   @media (min-width: 1024px) {
     .article-layout {
-      grid-template-columns: minmax(0, 1fr) 396px;
+      grid-template-columns: minmax(0, 1fr) 352px;
       align-items: stretch;
-      gap: 30px;
+      gap: 24px;
     }
 
     .article-sidebar-column {
       align-self: stretch;
       display: flex;
-      padding-left: 30px;
-      border-left: 1px solid #d8d2c2;
+      padding-left: 0;
+      border-left: 0;
+      background: transparent;
     }
 
     .article-sidebar-column :global(aside) {
@@ -3386,8 +3389,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     }
 
     .article-sidebar-column :global(.workshop-box) {
-      width: 316px;
-      /* max-width: 100%; */
+      width: 100%;
     }
 
   }

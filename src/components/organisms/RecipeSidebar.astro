@@ -40,7 +40,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 
 <aside class={`recipe-sidebar hidden lg:flex flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
   {isFull && (
-    <div class="sidebar-block px-2 py-8 text-center">
+    <div class="sidebar-block px-5 py-7 text-center">
       <img
         src="/images/bernard-avatar-mask.png"
         alt="Bernard Laurance"
@@ -210,8 +210,8 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
       </div>
     </div>
 
-    <div class="sidebar-block px-6 py-8">
-      <div class="bg-[#DCDCCF] rounded-[2px] border border-[#D8D2C2] h-[240px] flex items-start justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em] pt-8">
+    <div class="sidebar-block px-4 pt-4 pb-5">
+      <div class="bg-[#DCDCCF] rounded-[8px] border border-[#D8D2C2] h-[220px] flex items-center justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em]">
         Espace publicite
       </div>
     </div>
@@ -453,10 +453,13 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 <style>
   .recipe-sidebar {
     gap: 18px;
+    width: 100%;
   }
 
   .recipe-sidebar :global(.sidebar-block) {
-    background: #f5f0e4;
+    width: 100%;
+    box-sizing: border-box;
+    background: #faf8f2;
     border: 1px solid #d8d2c2;
     border-radius: 12px;
     overflow: hidden;

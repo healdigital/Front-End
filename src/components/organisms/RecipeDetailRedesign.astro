@@ -300,6 +300,10 @@ const summaryInfoItems = [
 
   .recipe-redesign__hero-card {
     padding: 26px 28px 30px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
+    gap: 24px 26px;
+    align-items: start;
   }
 
   .recipe-redesign__topline,
@@ -308,6 +312,10 @@ const summaryInfoItems = [
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+  }
+
+  .recipe-redesign__topline {
+    grid-column: 1 / -1;
   }
 
   .recipe-redesign__breadcrumb {
@@ -345,7 +353,8 @@ const summaryInfoItems = [
   .recipe-redesign__hero-copy {
     display: grid;
     gap: 16px;
-    margin-top: 18px;
+    margin-top: 0;
+    align-content: start;
   }
 
   .recipe-redesign__title,
@@ -361,7 +370,7 @@ const summaryInfoItems = [
 
   .recipe-redesign__title {
     font-size: clamp(2.4rem, 4vw, 4rem);
-    max-width: 12ch;
+    /* max-width: 12ch; */
   }
 
   .recipe-redesign__rating {
@@ -421,9 +430,10 @@ const summaryInfoItems = [
   }
 
   .recipe-redesign__hero-image {
-    margin-top: 22px;
+    margin-top: 0;
     overflow: hidden;
     border-radius: 18px;
+    align-self: start;
   }
 
   .recipe-redesign__hero-image img,
@@ -433,6 +443,11 @@ const summaryInfoItems = [
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  .recipe-redesign__hero-image img {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
   }
 
   .recipe-redesign__section {
@@ -552,14 +567,22 @@ const summaryInfoItems = [
   }
 
   .recipe-redesign__bon-appetit {
-    margin: -2px 0 0;
+    margin: 2px 0 4px;
     text-align: center;
     color: #5d574e;
   }
 
   .recipe-redesign__final-image {
-    margin-top: -10px;
-    overflow: hidden;
+    margin-top: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .recipe-redesign__final-image img {
+    border-radius: 18px;
   }
 
   .recipe-redesign__recipe-card {
@@ -632,6 +655,7 @@ const summaryInfoItems = [
   }
 
   @media (max-width: 960px) {
+    .recipe-redesign__hero-card,
     .recipe-redesign__recipe-card-hero,
     .recipe-redesign__quick-info,
     .recipe-redesign__nutrition {
