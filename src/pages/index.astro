@@ -699,7 +699,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
 
               <div
-                class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
+                class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10"
                 data-recipe-grid
                 data-recipes-source="/home-recipes-index.json"
                 data-recipes-total-count={totalBrowseRecipeCount}
@@ -760,7 +760,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   </section>
 
   <!-- Dark Section -->
-  <section class="relative overflow-hidden home-page-section home-page-section--dark home-render-deferred">
+  <section class="relative overflow-hidden home-page-section home-page-section--dark home-render-deferred home-workshops-section">
     <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
     <img
       src="/images/dark-section-base.png"
@@ -821,8 +821,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
-        <div class="max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
+      <div class="home-workshops-feature-grid grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
+        <div class="home-workshops-feature-card max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
             <img
               src={featuredWorkshop?.image || WORKSHOP_FALLBACK_IMAGE}
@@ -859,7 +859,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           </div>
         </div>
 
-        <div class="max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
+        <div class="home-workshops-feature-card max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
             <img
               src="/images/masterclass-video.jpg"
@@ -914,7 +914,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       </div>
 
       <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center"
+        class="home-workshops-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center"
         data-workshops-grid
         data-workshops-api={WORKSHOPS_SOURCE_URL}
       >

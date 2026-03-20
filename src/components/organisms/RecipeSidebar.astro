@@ -1,6 +1,7 @@
 ---
 import Icon from '../atoms/Icon.astro';
 import Button from '../atoms/Button.astro';
+import { getPopularSidebarArticles } from '../../lib/articleDiscovery';
 
 interface Props {
   variant?: 'full' | 'popular';
@@ -13,42 +14,31 @@ const isFull = variant === 'full';
 const workshopsApiUrl =
   process.env.WORKSHOPS_CACHE_URL ||
   'https://lacuisinedebernard.com/api/workshops-cache';
-
-const popularArticles = [
+const fallbackPopularArticles = [
   {
-    title: 'Salade de nouilles de tofu aux 5 parfums, legumes frais et sauce...',
-    date: 'Redige le 3 jan 2026',
+    title: 'Salade de nouilles de tofu aux 5 parfums',
+    date: 'Rédigé récemment',
     image: '/images/workshop-soup.jpg',
     slug: '/salade-nouilles-tofu',
   },
   {
-    title: 'Concombres marines',
-    date: 'Redige le 8 janv 2026',
+    title: 'Concombres marinés',
+    date: 'Rédigé récemment',
     image: '/images/workshop-dumplings.jpg',
     slug: '/concombres-marines',
   },
   {
-    title: 'Caldo de feijao (soupe bresilienne de haricots)',
-    date: 'Redige le 12 janv 2026',
-    image: '/images/masterclass-featured.jpg',
-    slug: '/caldo-feijao',
-  },
-  {
-    title: 'Les indispensables de ma cuisine professionnelle',
-    date: 'Redige le 14 fev 2026',
-    image: '/images/ateliers-physiques.jpg',
-    slug: '/indispensables-cuisine-pro',
-  },
-  {
-    title: 'Lohikeitto (soupe de saumon finlandaise)',
-    date: 'Redige le 23 fev 2026',
+    title: 'Lohikeitto',
+    date: 'Rédigé récemment',
     image: '/images/masterclass-video.jpg',
     slug: '/lohikeitto',
-  }
+  },
 ];
+const computedPopularArticles = await getPopularSidebarArticles(5, 'fr');
+const popularArticles = computedPopularArticles.length ? computedPopularArticles : fallbackPopularArticles;
 ---
 
-<aside class={`hidden lg:flex flex-col w-full min-h-full ${className}`}>
+<aside class={`recipe-sidebar hidden lg:flex flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
   {isFull && (
     <div class="sidebar-block px-2 py-8 text-center">
       <img
@@ -461,6 +451,37 @@ const popularArticles = [
 </script>
 
 <style>
+  .recipe-sidebar {
+    gap: 18px;
+  }
+
+  .recipe-sidebar :global(.sidebar-block) {
+    background: #f5f0e4;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .recipe-sidebar--popular :global(.sidebar-block:first-child) {
+    background: #f6f1e7;
+  }
+
+  .recipe-sidebar :global(.sidebar-block:last-child) {
+    margin-bottom: 0;
+  }
+
+  .recipe-sidebar :global(.label-data) {
+    text-underline-offset: 4px;
+  }
+
+  .recipe-sidebar :global(.article-date) {
+    color: #59606d;
+  }
+
+  .recipe-sidebar :global(.article-title) {
+    color: #111111;
+  }
+
   .recipe-sidebar-sticky-rail--enabled {
     position: sticky;
     top: 16px;
