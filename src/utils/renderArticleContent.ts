@@ -7,6 +7,7 @@ type RenderArticleContentOptions = {
   includeContentBlocks?: boolean;
   includeContentV2?: boolean;
   includeImageBlocks?: boolean;
+  includeLegacyFallback?: boolean;
   includeRecipeBlocks?: boolean;
   suppressRecipeSummaryTitle?: boolean;
 };
@@ -853,6 +854,8 @@ export const renderArticleContent = (
 
   const structuredContent = renderStructuredContent(article, options);
   if (structuredContent) return structuredContent;
+
+  if (options.includeLegacyFallback === false) return '';
 
   if (typeof article.content === 'string') return article.content;
   if (isLexicalValue(article.content)) return renderLexicalRichText(article.content);
