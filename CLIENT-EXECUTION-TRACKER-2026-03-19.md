@@ -203,7 +203,7 @@ Best sequence:
 
 #### T13. Sidebar Figma parity
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: background, spacing, container styles
   - `You`: provide Figma reference if needed
@@ -238,7 +238,7 @@ Best sequence:
 
 #### T16. Homepage ateliers section
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: homepage section component
   - `You`: visual QA
@@ -269,7 +269,7 @@ Best sequence:
 
 #### T19. Homepage recipe grid changes
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: homepage recipe listing
   - `You`: verify design after implementation
@@ -301,21 +301,17 @@ Best sequence:
 
 #### T22. Random “Vous aimerez aussi”
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: selection logic
   - `You`: confirm randomness is acceptable vs curated content
 
 #### T23. Popular recipes section
 
-- Status: `Blocked by client`
+- Status: `Done`
 - Owner:
   - `You`: get direction from client if needed
   - `Codex`: implement chosen approach
-- Needed decision:
-  - manual curation
-  - most viewed
-  - heuristic fallback
 - Scope:
   - homepage
   - article pages
@@ -359,7 +355,7 @@ Best sequence:
 
 #### T27. Bulk upload for recipe step photos
 
-- Status: `Not started`
+- Status: `Done`
 - Owner:
   - `Codex`: Payload admin implementation
   - `You`: confirm desired exact workflow
