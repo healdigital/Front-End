@@ -15,7 +15,6 @@ const {
   nutritionItems = [],
   pinterestLink = "",
   collectionHref = "/favoris",
-  storyHtml = "",
 } = Astro.props;
 
 const toNumber = (value: any) => {
@@ -39,16 +38,9 @@ const quickInfoItems = [
   { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
   { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
 ].filter((item) => item.value);
-
-const summaryInfoItems = [
-  { label: "Temps de préparation", value: formatMinutes(recipeBlock?.preparationTimeMinutes) },
-  { label: "Temps de cuisson", value: formatMinutes(recipeBlock?.cookingTimeMinutes) },
-  { label: "Portions", value: String(recipeBlock?.servings || recipeBlock?.servingsCount || "").trim() },
-  { label: "Calories", value: toNumber(recipeBlock?.nutrition?.caloriesKcal) !== null ? `${Math.round(Number(recipeBlock?.nutrition?.caloriesKcal))} kcal` : "" },
-].filter((item) => item.value);
 ---
 
-<div class="recipe-redesign">
+<div class="recipe-redesign" data-recipe-redesign>
   <section class="recipe-redesign__hero-card">
     <div class="recipe-redesign__topline">
       <nav class="recipe-redesign__breadcrumb" aria-label="Breadcrumb">
@@ -126,9 +118,9 @@ const summaryInfoItems = [
     <div class="recipe-redesign__section-head">
       <h2>Ingrédients</h2>
       <div class="recipe-redesign__servings" aria-label="Portions">
-        <button type="button" class="is-active">1x</button>
-        <button type="button">2x</button>
-        <button type="button">3x</button>
+        <button type="button" class="is-active" data-multiplier="1">1x</button>
+        <button type="button" data-multiplier="2">2x</button>
+        <button type="button" data-multiplier="3">3x</button>
       </div>
     </div>
 
@@ -139,7 +131,11 @@ const summaryInfoItems = [
           <ul class="recipe-redesign__ingredients">
             {group.items.map((item: any) => (
               <li class="recipe-redesign__ingredient">
-                {item.quantity && <span class="recipe-redesign__amount">{item.quantity}</span>}
+                {item.quantity && (
+                  <span class="recipe-redesign__amount" data-base-quantity={item.quantity}>
+                    {item.quantity}
+                  </span>
+                )}
                 <span>{item.item}</span>
                 {item.notes && <span class="recipe-redesign__note">{item.notes}</span>}
               </li>
@@ -217,9 +213,9 @@ const summaryInfoItems = [
     <div class="recipe-redesign__section-head recipe-redesign__section-head--compact">
       <h3>Ingrédients</h3>
       <div class="recipe-redesign__servings" aria-label="Portions">
-        <button type="button" class="is-active">1x</button>
-        <button type="button">2x</button>
-        <button type="button">3x</button>
+        <button type="button" class="is-active" data-multiplier="1">1x</button>
+        <button type="button" data-multiplier="2">2x</button>
+        <button type="button" data-multiplier="3">3x</button>
       </div>
     </div>
 
@@ -230,7 +226,11 @@ const summaryInfoItems = [
           <ul class="recipe-redesign__ingredients">
             {group.items.map((item: any) => (
               <li class="recipe-redesign__ingredient">
-                {item.quantity && <span class="recipe-redesign__amount">{item.quantity}</span>}
+                {item.quantity && (
+                  <span class="recipe-redesign__amount" data-base-quantity={item.quantity}>
+                    {item.quantity}
+                  </span>
+                )}
                 <span>{item.item}</span>
                 {item.notes && <span class="recipe-redesign__note">{item.notes}</span>}
               </li>
@@ -255,8 +255,8 @@ const summaryInfoItems = [
     </div>
 
     {nutritionItems.length > 0 && (
-      <div class="recipe-redesign__card">
-        <h3 class="recipe-redesign__compact-title">Nutrition</h3>
+      <div class="recipe-redesign__card recipe-redesign__nutrition-card">
+        <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
         <div class="recipe-redesign__nutrition">
           {nutritionItems.map((item: any) => (
             <div class="recipe-redesign__nutrition-item">
@@ -268,17 +268,102 @@ const summaryInfoItems = [
       </div>
     )}
   </section>
-
-  {summaryInfoItems.length > 0 && false && (
-    <div></div>
-  )}
-
-  {storyHtml && (
-    <article class="recipe-redesign__story-card">
-      <div class="article-content typ-body" set:html={storyHtml} />
-    </article>
-  )}
 </div>
+
+<script is:inline>
+  (() => {
+    const roots = Array.from(document.querySelectorAll('[data-recipe-redesign]'));
+    if (!roots.length) return;
+
+    const unicodeFractions = {
+      '¼': 0.25,
+      '½': 0.5,
+      '¾': 0.75,
+      '⅓': 1 / 3,
+      '⅔': 2 / 3,
+      '⅛': 0.125,
+      '⅜': 0.375,
+      '⅝': 0.625,
+      '⅞': 0.875,
+    };
+
+    const parseFraction = (token) => {
+      const clean = String(token || '').trim();
+      if (!clean) return null;
+      if (unicodeFractions[clean] !== undefined) return unicodeFractions[clean];
+      if (/^\d+\s+\d+\/\d+$/.test(clean)) {
+        const [whole, fraction] = clean.split(/\s+/);
+        const [num, den] = fraction.split('/').map(Number);
+        return Number(whole) + num / den;
+      }
+      if (/^\d+\/\d+$/.test(clean)) {
+        const [num, den] = clean.split('/').map(Number);
+        return num / den;
+      }
+      const normalized = clean.replace(',', '.');
+      const numeric = Number(normalized);
+      return Number.isFinite(numeric) ? numeric : null;
+    };
+
+    const formatScaled = (value) => {
+      const rounded = Math.round(value * 100) / 100;
+      const fractionEntries = [
+        [0.125, '1/8'],
+        [0.25, '1/4'],
+        [1 / 3, '1/3'],
+        [0.375, '3/8'],
+        [0.5, '1/2'],
+        [0.625, '5/8'],
+        [2 / 3, '2/3'],
+        [0.75, '3/4'],
+        [0.875, '7/8'],
+      ];
+      const whole = Math.floor(rounded);
+      const decimal = rounded - whole;
+      for (const [candidate, label] of fractionEntries) {
+        if (Math.abs(decimal - candidate) < 0.02) {
+          return whole > 0 ? `${whole} ${label}` : label;
+        }
+      }
+      if (Math.abs(rounded - Math.round(rounded)) < 0.02) return String(Math.round(rounded));
+      return String(rounded).replace(/\.0+$/, '').replace('.', ',');
+    };
+
+    const scaleQuantityText = (raw, multiplier) => {
+      const value = String(raw || '').trim();
+      if (!value) return value;
+      const mixedMatch = value.match(/^(\d+\s+\d+\/\d+)(.*)$/);
+      const fractionMatch = value.match(/^(\d+\/\d+|[¼½¾⅓⅔⅛⅜⅝⅞])(.*)$/);
+      const decimalMatch = value.match(/^(\d+(?:[.,]\d+)?)(.*)$/);
+      const match = mixedMatch || fractionMatch || decimalMatch;
+      if (!match) return value;
+      const base = parseFraction(match[1]);
+      if (base === null) return value;
+      const suffix = match[2] || '';
+      return `${formatScaled(base * multiplier)}${suffix}`;
+    };
+
+    const applyMultiplier = (root, multiplier) => {
+      root.querySelectorAll('[data-base-quantity]').forEach((node) => {
+        const raw = node.getAttribute('data-base-quantity') || '';
+        node.textContent = scaleQuantityText(raw, multiplier);
+      });
+      root.querySelectorAll('.recipe-redesign__servings button').forEach((button) => {
+        button.classList.toggle('is-active', Number(button.dataset.multiplier || '1') === multiplier);
+      });
+    };
+
+    roots.forEach((root) => {
+      root.querySelectorAll('.recipe-redesign__servings button').forEach((button) => {
+        button.addEventListener('click', () => {
+          const multiplier = Number(button.dataset.multiplier || '1');
+          applyMultiplier(root, multiplier);
+        });
+      });
+      applyMultiplier(root, 1);
+    });
+  })();
+</script>
 
 <style>
   .recipe-redesign {
@@ -290,9 +375,8 @@ const summaryInfoItems = [
   .recipe-redesign__card,
   .recipe-redesign__recipe-card,
   .recipe-redesign__step-card,
-  .recipe-redesign__story-card,
   .recipe-redesign__final-image {
-    background: #FAF8F2;
+    background: #faf8f2;
     border: 1px solid #ddd6c8;
     border-radius: 18px;
     box-shadow: 0 8px 28px rgba(50, 42, 28, 0.05);
@@ -301,7 +385,7 @@ const summaryInfoItems = [
   .recipe-redesign__hero-card {
     padding: 26px 28px 30px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
     gap: 24px 26px;
     align-items: start;
   }
@@ -336,6 +420,7 @@ const summaryInfoItems = [
   .recipe-redesign__share {
     display: inline-flex;
     gap: 10px;
+    flex-shrink: 0;
   }
 
   .recipe-redesign__share-link {
@@ -353,14 +438,14 @@ const summaryInfoItems = [
   .recipe-redesign__hero-copy {
     display: grid;
     gap: 16px;
-    margin-top: 0;
     align-content: start;
   }
 
   .recipe-redesign__title,
   .recipe-redesign__section h2,
   .recipe-redesign__recipe-card h2,
-  .recipe-redesign__compact-title {
+  .recipe-redesign__compact-title,
+  .recipe-redesign__nutrition-title {
     margin: 0;
     color: #111;
     font-family: var(--font-heading), serif;
@@ -369,8 +454,7 @@ const summaryInfoItems = [
   }
 
   .recipe-redesign__title {
-    font-size: clamp(2.4rem, 4vw, 4rem);
-    /* max-width: 12ch; */
+    font-size: clamp(2.35rem, 4vw, 4rem);
   }
 
   .recipe-redesign__rating {
@@ -379,6 +463,7 @@ const summaryInfoItems = [
     gap: 12px;
     color: #4a463f;
     font-size: 0.95rem;
+    flex-wrap: wrap;
   }
 
   .recipe-redesign__stars {
@@ -387,11 +472,16 @@ const summaryInfoItems = [
     color: #87c84f;
   }
 
-  .recipe-redesign__meta,
-  .recipe-redesign__actions {
+  .recipe-redesign__meta {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .recipe-redesign__actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
   }
 
   .recipe-redesign__meta-pill {
@@ -405,15 +495,19 @@ const summaryInfoItems = [
   }
 
   .recipe-redesign__action {
-    padding: 12px 16px;
+    min-width: 0;
+    padding: 12px 14px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
+    flex: 1 1 0;
+    white-space: nowrap;
     border: 1px solid #cfc6b6;
     border-radius: 12px;
     color: #2f2a24;
     text-decoration: none;
-    background: #fff;
+    background: #faf8f2;
   }
 
   .recipe-redesign__action--primary {
@@ -430,7 +524,6 @@ const summaryInfoItems = [
   }
 
   .recipe-redesign__hero-image {
-    margin-top: 0;
     overflow: hidden;
     border-radius: 18px;
     align-self: start;
@@ -466,6 +559,7 @@ const summaryInfoItems = [
     border-radius: 999px;
     background: #fff;
     border: 1px solid #e5ddd0;
+    flex-shrink: 0;
   }
 
   .recipe-redesign__servings button {
@@ -475,6 +569,7 @@ const summaryInfoItems = [
     padding: 8px 13px;
     border-radius: 999px;
     font: inherit;
+    cursor: pointer;
   }
 
   .recipe-redesign__servings .is-active {
@@ -484,8 +579,7 @@ const summaryInfoItems = [
 
   .recipe-redesign__card,
   .recipe-redesign__recipe-card,
-  .recipe-redesign__step-card,
-  .recipe-redesign__story-card {
+  .recipe-redesign__step-card {
     padding: 24px;
   }
 
@@ -513,22 +607,30 @@ const summaryInfoItems = [
     gap: 14px;
   }
 
+  .recipe-redesign__ingredient,
+  .recipe-redesign__instructions li {
+    position: relative;
+    padding-left: 18px;
+    color: #222;
+  }
+
   .recipe-redesign__ingredient {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 6px;
-    color: #222;
   }
 
-  .recipe-redesign__ingredient::before {
+  .recipe-redesign__ingredient::before,
+  .recipe-redesign__instructions li::before {
     content: "";
-    width: 7px;
-    height: 7px;
-    margin-top: 0.5em;
-    border-radius: 999px;
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 8px;
+    height: 8px;
     background: #69cfd0;
-    flex: 0 0 auto;
+    transform: rotate(45deg);
   }
 
   .recipe-redesign__amount {
@@ -567,22 +669,17 @@ const summaryInfoItems = [
   }
 
   .recipe-redesign__bon-appetit {
-    margin: 2px 0 4px;
+    margin: 4px 0 0;
     text-align: center;
-    color: #5d574e;
+    color: #433d36;
+    font-family: var(--font-heading), serif;
+    font-size: 2rem;
+    line-height: 1.1;
   }
 
   .recipe-redesign__final-image {
     margin-top: 0;
-    overflow: visible;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    border-radius: 0;
-  }
-
-  .recipe-redesign__final-image img {
-    border-radius: 18px;
+    overflow: hidden;
   }
 
   .recipe-redesign__recipe-card {
@@ -643,15 +740,34 @@ const summaryInfoItems = [
     font-weight: 500;
   }
 
+  .recipe-redesign__nutrition-card {
+    display: grid;
+    gap: 18px;
+  }
+
+  .recipe-redesign__nutrition-title {
+    font-size: 2rem;
+  }
+
   .recipe-redesign__nutrition {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px 18px;
+    gap: 18px 26px;
   }
 
   .recipe-redesign__nutrition-item {
     display: grid;
     gap: 4px;
+  }
+
+  @media (max-width: 1080px) {
+    .recipe-redesign__actions {
+      flex-wrap: wrap;
+    }
+
+    .recipe-redesign__action {
+      flex: 1 1 calc(50% - 10px);
+    }
   }
 
   @media (max-width: 960px) {
@@ -661,14 +777,17 @@ const summaryInfoItems = [
     .recipe-redesign__nutrition {
       grid-template-columns: minmax(0, 1fr);
     }
+
+    .recipe-redesign__hero-image {
+      max-width: 480px;
+    }
   }
 
   @media (max-width: 767px) {
     .recipe-redesign__hero-card,
     .recipe-redesign__card,
     .recipe-redesign__recipe-card,
-    .recipe-redesign__step-card,
-    .recipe-redesign__story-card {
+    .recipe-redesign__step-card {
       padding: 18px;
     }
 
@@ -678,8 +797,16 @@ const summaryInfoItems = [
       flex-direction: column;
     }
 
-    .recipe-redesign__step-copy {
-      display: block;
+    .recipe-redesign__servings {
+      align-self: flex-start;
+    }
+
+    .recipe-redesign__actions {
+      flex-wrap: wrap;
+    }
+
+    .recipe-redesign__action {
+      flex: 1 1 100%;
     }
   }
 </style>
