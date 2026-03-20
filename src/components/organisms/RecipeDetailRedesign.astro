@@ -38,19 +38,10 @@ const quickInfoItems = [
   { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
   { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
 ].filter((item) => item.value);
-
-const firstStepImage =
-  stepGroups
-    .flatMap((group: any) => (Array.isArray(group?.items) ? group.items : []))
-    .find((step: any) => step?.media?.url)?.media || null;
-
-const heroImageSrc = image || firstStepImage?.url || "";
-const heroImageAlt = imageAlt || firstStepImage?.alt || title;
-const hasHeroImage = Boolean(heroImageSrc);
 ---
 
 <div class="recipe-redesign" data-recipe-redesign>
-  <section class:list={["recipe-redesign__hero-card", hasHeroImage && "recipe-redesign__hero-card--with-image"]}>
+  <section class="recipe-redesign__hero-card">
     <div class="recipe-redesign__topline">
       <nav class="recipe-redesign__breadcrumb" aria-label="Breadcrumb">
         <a href="/">Accueil</a>
@@ -116,9 +107,9 @@ const hasHeroImage = Boolean(heroImageSrc);
       </div>
     </div>
 
-    {hasHeroImage && (
+    {image && (
       <figure class="recipe-redesign__hero-image">
-        <img src={heroImageSrc} alt={heroImageAlt} loading="eager" decoding="async" />
+        <img src={image} alt={imageAlt || title} loading="eager" decoding="async" />
       </figure>
     )}
   </section>
@@ -180,9 +171,9 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   <p class="recipe-redesign__bon-appetit">Bon appétit !</p>
 
-  {hasHeroImage && (
+  {image && (
     <figure class="recipe-redesign__final-image">
-      <img src={heroImageSrc} alt={heroImageAlt} loading="lazy" decoding="async" />
+      <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
     </figure>
   )}
 
@@ -201,9 +192,9 @@ const hasHeroImage = Boolean(heroImageSrc);
         {introText && <p class="recipe-redesign__excerpt">{introText}</p>}
       </div>
 
-      {hasHeroImage && (
+      {image && (
         <figure class="recipe-redesign__recipe-card-image">
-          <img src={heroImageSrc} alt={heroImageAlt} loading="lazy" decoding="async" />
+          <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
         </figure>
       )}
     </div>
@@ -265,10 +256,8 @@ const hasHeroImage = Boolean(heroImageSrc);
 
     {nutritionItems.length > 0 && (
       <div class="recipe-redesign__card recipe-redesign__nutrition-card">
+        <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
         <div class="recipe-redesign__nutrition">
-          <div class="recipe-redesign__nutrition-lead">
-            <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
-          </div>
           {nutritionItems.map((item: any) => (
             <div class="recipe-redesign__nutrition-item">
               <span>{item.label}</span>
@@ -379,7 +368,7 @@ const hasHeroImage = Boolean(heroImageSrc);
 <style>
   .recipe-redesign {
     display: grid;
-    gap: 30px;
+    gap: 26px;
   }
 
   .recipe-redesign__hero-card,
@@ -394,15 +383,11 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__hero-card {
-    padding: 30px 32px 34px;
+    padding: 26px 28px 30px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px 30px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
+    gap: 24px 26px;
     align-items: start;
-  }
-
-  .recipe-redesign__hero-card--with-image {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 40%);
   }
 
   .recipe-redesign__topline,
@@ -452,7 +437,7 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   .recipe-redesign__hero-copy {
     display: grid;
-    gap: 18px;
+    gap: 16px;
     align-content: start;
   }
 
@@ -470,8 +455,6 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   .recipe-redesign__title {
     font-size: clamp(2.35rem, 4vw, 4rem);
-    max-width: 10.5ch;
-    text-wrap: balance;
   }
 
   .recipe-redesign__rating {
@@ -496,9 +479,9 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
     gap: 10px;
+    flex-wrap: nowrap;
   }
 
   .recipe-redesign__meta-pill {
@@ -513,11 +496,12 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   .recipe-redesign__action {
     min-width: 0;
-    padding: 13px 14px;
+    padding: 12px 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 9px;
+    gap: 10px;
+    flex: 1 1 0;
     white-space: nowrap;
     border: 1px solid #cfc6b6;
     border-radius: 12px;
@@ -543,8 +527,6 @@ const hasHeroImage = Boolean(heroImageSrc);
     overflow: hidden;
     border-radius: 18px;
     align-self: start;
-    min-height: 100%;
-    background: #f3eee5;
   }
 
   .recipe-redesign__hero-image img,
@@ -557,14 +539,13 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__hero-image img {
-    aspect-ratio: 1 / 0.94;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
-    height: 100%;
   }
 
   .recipe-redesign__section {
     display: grid;
-    gap: 16px;
+    gap: 14px;
   }
 
   .recipe-redesign__section h2 {
@@ -576,7 +557,7 @@ const hasHeroImage = Boolean(heroImageSrc);
     padding: 4px;
     gap: 4px;
     border-radius: 999px;
-    background: #faf8f2;
+    background: #fff;
     border: 1px solid #e5ddd0;
     flex-shrink: 0;
   }
@@ -599,7 +580,7 @@ const hasHeroImage = Boolean(heroImageSrc);
   .recipe-redesign__card,
   .recipe-redesign__recipe-card,
   .recipe-redesign__step-card {
-    padding: 28px;
+    padding: 24px;
   }
 
   .recipe-redesign__group + .recipe-redesign__group {
@@ -609,7 +590,7 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__group-title {
-    margin: 0 0 16px;
+    margin: 0 0 14px;
     color: #161616;
     font-size: 2rem;
     line-height: 1.1;
@@ -623,7 +604,7 @@ const hasHeroImage = Boolean(heroImageSrc);
     padding: 0;
     list-style: none;
     display: grid;
-    gap: 16px;
+    gap: 14px;
   }
 
   .recipe-redesign__ingredient,
@@ -663,18 +644,17 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   .recipe-redesign__steps {
     display: grid;
-    gap: 18px;
+    gap: 16px;
   }
 
   .recipe-redesign__step-group {
     display: grid;
-    gap: 18px;
+    gap: 16px;
   }
 
   .recipe-redesign__step-card {
     display: grid;
-    gap: 20px;
-    padding: 24px;
+    gap: 18px;
   }
 
   .recipe-redesign__step-copy {
@@ -689,23 +669,22 @@ const hasHeroImage = Boolean(heroImageSrc);
   }
 
   .recipe-redesign__bon-appetit {
-    margin: -2px 0 2px;
+    margin: 4px 0 0;
     text-align: center;
     color: #433d36;
     font-family: var(--font-heading), serif;
-    font-size: clamp(1.85rem, 3vw, 2.35rem);
+    font-size: 2rem;
     line-height: 1.1;
-    letter-spacing: 0.01em;
   }
 
   .recipe-redesign__final-image {
-    margin-top: -6px;
+    margin-top: 0;
     overflow: hidden;
   }
 
   .recipe-redesign__recipe-card {
     display: grid;
-    gap: 24px;
+    gap: 22px;
   }
 
   .recipe-redesign__recipe-card-hero {
@@ -727,7 +706,7 @@ const hasHeroImage = Boolean(heroImageSrc);
   .recipe-redesign__quick-info {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
+    gap: 14px;
   }
 
   .recipe-redesign__quick-info-item {
@@ -763,41 +742,36 @@ const hasHeroImage = Boolean(heroImageSrc);
 
   .recipe-redesign__nutrition-card {
     display: grid;
-    gap: 0;
+    gap: 18px;
   }
 
   .recipe-redesign__nutrition-title {
-    font-size: 2.15rem;
+    font-size: 2rem;
   }
 
   .recipe-redesign__nutrition {
     display: grid;
-    grid-template-columns: minmax(160px, 0.9fr) repeat(4, minmax(0, 1fr));
-    gap: 20px 26px;
-    align-items: start;
-  }
-
-  .recipe-redesign__nutrition-lead {
-    display: grid;
-    align-content: start;
-    min-height: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px 26px;
   }
 
   .recipe-redesign__nutrition-item {
     display: grid;
-    gap: 6px;
-    align-content: start;
+    gap: 4px;
   }
 
   @media (max-width: 1080px) {
     .recipe-redesign__actions {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      flex-wrap: wrap;
+    }
+
+    .recipe-redesign__action {
+      flex: 1 1 calc(50% - 10px);
     }
   }
 
   @media (max-width: 960px) {
     .recipe-redesign__hero-card,
-    .recipe-redesign__hero-card--with-image,
     .recipe-redesign__recipe-card-hero,
     .recipe-redesign__quick-info,
     .recipe-redesign__nutrition {
@@ -828,11 +802,11 @@ const hasHeroImage = Boolean(heroImageSrc);
     }
 
     .recipe-redesign__actions {
-      grid-template-columns: 1fr;
+      flex-wrap: wrap;
     }
 
     .recipe-redesign__action {
-      width: 100%;
+      flex: 1 1 100%;
     }
   }
 </style>
