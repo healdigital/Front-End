@@ -1,0 +1,673 @@
+---
+const {
+  title,
+  slug,
+  image,
+  imageAlt,
+  ratingLabel,
+  ratingStars = [],
+  articleShareLinks = [],
+  heroMetaItems = [],
+  introText = "",
+  recipeBlock = null,
+  ingredientGroups = [],
+  stepGroups = [],
+  nutritionItems = [],
+  pinterestLink = "",
+  collectionHref = "/favoris",
+  storyHtml = "",
+} = Astro.props;
+
+const toNumber = (value: any) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+};
+
+const formatMinutes = (value: any) => {
+  const numeric = toNumber(value);
+  if (numeric === null || numeric < 0) return "";
+  return `${Math.round(numeric)} min`;
+};
+
+const quickInfoItems = [
+  { label: "Temps de préparation", value: formatMinutes(recipeBlock?.preparationTimeMinutes) },
+  { label: "Temps de cuisson", value: formatMinutes(recipeBlock?.cookingTimeMinutes) },
+  { label: "Nombre de portions", value: String(recipeBlock?.servingsCount || "").trim() },
+  { label: "Difficulté", value: String(recipeBlock?.difficulty || "").trim() },
+  { label: "Type de recette", value: String(recipeBlock?.recipeType || "").trim() },
+  { label: "Type de plat", value: String(recipeBlock?.dishType || "").trim() },
+  { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
+  { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
+].filter((item) => item.value);
+
+const summaryInfoItems = [
+  { label: "Temps de préparation", value: formatMinutes(recipeBlock?.preparationTimeMinutes) },
+  { label: "Temps de cuisson", value: formatMinutes(recipeBlock?.cookingTimeMinutes) },
+  { label: "Portions", value: String(recipeBlock?.servings || recipeBlock?.servingsCount || "").trim() },
+  { label: "Calories", value: toNumber(recipeBlock?.nutrition?.caloriesKcal) !== null ? `${Math.round(Number(recipeBlock?.nutrition?.caloriesKcal))} kcal` : "" },
+].filter((item) => item.value);
+---
+
+<div class="recipe-redesign">
+  <section class="recipe-redesign__hero-card">
+    <div class="recipe-redesign__topline">
+      <nav class="recipe-redesign__breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Accueil</a>
+        <span>/</span>
+        <span>Recettes</span>
+        <span>/</span>
+        <span>{title}</span>
+      </nav>
+
+      <div class="recipe-redesign__share" aria-label="Partager la recette">
+        {articleShareLinks.map((link: any) => (
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="recipe-redesign__share-link"
+            aria-label={`Partager sur ${link.label}`}
+          >
+            <i class={link.icon} aria-hidden="true"></i>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="recipe-redesign__hero-copy">
+      <h1 class="recipe-redesign__title">{title}</h1>
+
+      <div class="recipe-redesign__rating" aria-label={ratingLabel}>
+        <span class="recipe-redesign__stars" aria-hidden="true">
+          {ratingStars.map((filled: boolean) => (
+            <i class={filled ? "fas fa-star" : "far fa-star"}></i>
+          ))}
+        </span>
+        <span>{ratingLabel}</span>
+      </div>
+
+      {heroMetaItems.length > 0 && (
+        <div class="recipe-redesign__meta">
+          {heroMetaItems.map((item: string) => (
+            <span class="recipe-redesign__meta-pill">{item}</span>
+          ))}
+        </div>
+      )}
+
+      <div class="recipe-redesign__actions">
+        <a
+          href={`/print/${slug}/?auto=1`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="recipe-redesign__action recipe-redesign__action--primary"
+        >
+          <i class="fas fa-print" aria-hidden="true"></i>
+          <span>Imprimer la recette</span>
+        </a>
+        <a href={pinterestLink} target="_blank" rel="noopener noreferrer" class="recipe-redesign__action">
+          <i class="fab fa-pinterest-p" aria-hidden="true"></i>
+          <span>Épingler la recette</span>
+        </a>
+        <a href={collectionHref} class="recipe-redesign__action">
+          <i class="far fa-bookmark" aria-hidden="true"></i>
+          <span>Ajouter à la collection</span>
+        </a>
+      </div>
+    </div>
+
+    {image && (
+      <figure class="recipe-redesign__hero-image">
+        <img src={image} alt={imageAlt || title} loading="eager" decoding="async" />
+      </figure>
+    )}
+  </section>
+
+  <section class="recipe-redesign__section">
+    <div class="recipe-redesign__section-head">
+      <h2>Ingrédients</h2>
+      <div class="recipe-redesign__servings" aria-label="Portions">
+        <button type="button" class="is-active">1x</button>
+        <button type="button">2x</button>
+        <button type="button">3x</button>
+      </div>
+    </div>
+
+    <div class="recipe-redesign__card">
+      {ingredientGroups.map((group: any) => (
+        <section class="recipe-redesign__group">
+          {group.heading && <h3 class="recipe-redesign__group-title">{group.heading}</h3>}
+          <ul class="recipe-redesign__ingredients">
+            {group.items.map((item: any) => (
+              <li class="recipe-redesign__ingredient">
+                {item.quantity && <span class="recipe-redesign__amount">{item.quantity}</span>}
+                <span>{item.item}</span>
+                {item.notes && <span class="recipe-redesign__note">{item.notes}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </section>
+
+  <section class="recipe-redesign__section">
+    <h2>Préparation</h2>
+    <div class="recipe-redesign__steps">
+      {stepGroups.map((group: any) => (
+        <section class="recipe-redesign__step-group">
+          {group.heading && <h3 class="recipe-redesign__group-title">{group.heading}</h3>}
+          {group.items.map((step: any) => (
+            <article class="recipe-redesign__step-card">
+              <div class="recipe-redesign__step-copy">
+                <span class="recipe-redesign__step-index">{step.stepNumber}.</span>
+                <p class="recipe-redesign__step-text">{step.instruction}</p>
+              </div>
+              {step.media?.url && (
+                <figure class="recipe-redesign__step-media">
+                  <img src={step.media.url} alt={step.media.alt || step.instruction} loading="lazy" decoding="async" />
+                </figure>
+              )}
+            </article>
+          ))}
+        </section>
+      ))}
+    </div>
+  </section>
+
+  <p class="recipe-redesign__bon-appetit">Bon appétit !</p>
+
+  {image && (
+    <figure class="recipe-redesign__final-image">
+      <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
+    </figure>
+  )}
+
+  <section class="recipe-redesign__recipe-card">
+    <div class="recipe-redesign__recipe-card-hero">
+      <div class="recipe-redesign__recipe-card-copy">
+        <h2>{title}</h2>
+        <div class="recipe-redesign__rating" aria-label={ratingLabel}>
+          <span class="recipe-redesign__stars" aria-hidden="true">
+            {ratingStars.map((filled: boolean) => (
+              <i class={filled ? "fas fa-star" : "far fa-star"}></i>
+            ))}
+          </span>
+          <span>{ratingLabel}</span>
+        </div>
+        {introText && <p class="recipe-redesign__excerpt">{introText}</p>}
+      </div>
+
+      {image && (
+        <figure class="recipe-redesign__recipe-card-image">
+          <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
+        </figure>
+      )}
+    </div>
+
+    {quickInfoItems.length > 0 && (
+      <div class="recipe-redesign__quick-info">
+        {quickInfoItems.map((item) => (
+          <div class="recipe-redesign__quick-info-item">
+            <p>{item.label}</p>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <div class="recipe-redesign__section-head recipe-redesign__section-head--compact">
+      <h3>Ingrédients</h3>
+      <div class="recipe-redesign__servings" aria-label="Portions">
+        <button type="button" class="is-active">1x</button>
+        <button type="button">2x</button>
+        <button type="button">3x</button>
+      </div>
+    </div>
+
+    <div class="recipe-redesign__card">
+      {ingredientGroups.map((group: any) => (
+        <section class="recipe-redesign__group">
+          {group.heading && <h4 class="recipe-redesign__group-title">{group.heading}</h4>}
+          <ul class="recipe-redesign__ingredients">
+            {group.items.map((item: any) => (
+              <li class="recipe-redesign__ingredient">
+                {item.quantity && <span class="recipe-redesign__amount">{item.quantity}</span>}
+                <span>{item.item}</span>
+                {item.notes && <span class="recipe-redesign__note">{item.notes}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <div class="recipe-redesign__card">
+      <h3 class="recipe-redesign__compact-title">Préparation</h3>
+      {stepGroups.map((group: any) => (
+        <section class="recipe-redesign__group">
+          {group.heading && <h4 class="recipe-redesign__group-title">{group.heading}</h4>}
+          <ol class="recipe-redesign__instructions">
+            {group.items.map((step: any) => (
+              <li>{step.instruction}</li>
+            ))}
+          </ol>
+        </section>
+      ))}
+    </div>
+
+    {nutritionItems.length > 0 && (
+      <div class="recipe-redesign__card">
+        <h3 class="recipe-redesign__compact-title">Nutrition</h3>
+        <div class="recipe-redesign__nutrition">
+          {nutritionItems.map((item: any) => (
+            <div class="recipe-redesign__nutrition-item">
+              <span>{item.label}</span>
+              <strong>{Math.round(Number(item.value))} {item.unit}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </section>
+
+  {summaryInfoItems.length > 0 && false && (
+    <div></div>
+  )}
+
+  {storyHtml && (
+    <article class="recipe-redesign__story-card">
+      <div class="article-content typ-body" set:html={storyHtml} />
+    </article>
+  )}
+</div>
+
+<style>
+  .recipe-redesign {
+    display: grid;
+    gap: 26px;
+  }
+
+  .recipe-redesign__hero-card,
+  .recipe-redesign__card,
+  .recipe-redesign__recipe-card,
+  .recipe-redesign__step-card,
+  .recipe-redesign__story-card,
+  .recipe-redesign__final-image {
+    background: #fff;
+    border: 1px solid #ddd6c8;
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(50, 42, 28, 0.05);
+  }
+
+  .recipe-redesign__hero-card {
+    padding: 26px 28px 30px;
+  }
+
+  .recipe-redesign__topline,
+  .recipe-redesign__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .recipe-redesign__breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    color: #706a60;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .recipe-redesign__breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .recipe-redesign__share {
+    display: inline-flex;
+    gap: 10px;
+  }
+
+  .recipe-redesign__share-link {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8d0c2;
+    border-radius: 999px;
+    color: #2a2a2a;
+    text-decoration: none;
+  }
+
+  .recipe-redesign__hero-copy {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .recipe-redesign__title,
+  .recipe-redesign__section h2,
+  .recipe-redesign__recipe-card h2,
+  .recipe-redesign__compact-title {
+    margin: 0;
+    color: #111;
+    font-family: var(--font-heading), serif;
+    font-weight: 500;
+    line-height: 1.02;
+  }
+
+  .recipe-redesign__title {
+    font-size: clamp(2.4rem, 4vw, 4rem);
+    max-width: 12ch;
+  }
+
+  .recipe-redesign__rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #4a463f;
+    font-size: 0.95rem;
+  }
+
+  .recipe-redesign__stars {
+    display: inline-flex;
+    gap: 4px;
+    color: #87c84f;
+  }
+
+  .recipe-redesign__meta,
+  .recipe-redesign__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .recipe-redesign__meta-pill {
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #f4efe6;
+    color: #5d564d;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .recipe-redesign__action {
+    padding: 12px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #cfc6b6;
+    border-radius: 12px;
+    color: #2f2a24;
+    text-decoration: none;
+    background: #fff;
+  }
+
+  .recipe-redesign__action--primary {
+    background: #69cfd0;
+    border-color: #69cfd0;
+    color: #fff;
+  }
+
+  .recipe-redesign__hero-image,
+  .recipe-redesign__final-image,
+  .recipe-redesign__recipe-card-image,
+  .recipe-redesign__step-media {
+    margin: 0;
+  }
+
+  .recipe-redesign__hero-image {
+    margin-top: 22px;
+    overflow: hidden;
+    border-radius: 18px;
+  }
+
+  .recipe-redesign__hero-image img,
+  .recipe-redesign__final-image img,
+  .recipe-redesign__recipe-card-image img,
+  .recipe-redesign__step-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .recipe-redesign__section {
+    display: grid;
+    gap: 14px;
+  }
+
+  .recipe-redesign__section h2 {
+    font-size: clamp(2rem, 3.2vw, 3rem);
+  }
+
+  .recipe-redesign__servings {
+    display: inline-flex;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #e5ddd0;
+  }
+
+  .recipe-redesign__servings button {
+    border: 0;
+    background: transparent;
+    color: #8b857c;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font: inherit;
+  }
+
+  .recipe-redesign__servings .is-active {
+    background: #67c8c8;
+    color: #fff;
+  }
+
+  .recipe-redesign__card,
+  .recipe-redesign__recipe-card,
+  .recipe-redesign__step-card,
+  .recipe-redesign__story-card {
+    padding: 24px;
+  }
+
+  .recipe-redesign__group + .recipe-redesign__group {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #ebe3d7;
+  }
+
+  .recipe-redesign__group-title {
+    margin: 0 0 14px;
+    color: #161616;
+    font-size: 2rem;
+    line-height: 1.1;
+    font-family: var(--font-heading), serif;
+    font-weight: 500;
+  }
+
+  .recipe-redesign__ingredients,
+  .recipe-redesign__instructions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 14px;
+  }
+
+  .recipe-redesign__ingredient {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    color: #222;
+  }
+
+  .recipe-redesign__ingredient::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-top: 0.5em;
+    border-radius: 999px;
+    background: #69cfd0;
+    flex: 0 0 auto;
+  }
+
+  .recipe-redesign__amount {
+    color: #2aa7aa;
+    font-weight: 600;
+  }
+
+  .recipe-redesign__note {
+    color: #666057;
+  }
+
+  .recipe-redesign__steps {
+    display: grid;
+    gap: 16px;
+  }
+
+  .recipe-redesign__step-group {
+    display: grid;
+    gap: 16px;
+  }
+
+  .recipe-redesign__step-card {
+    display: grid;
+    gap: 18px;
+  }
+
+  .recipe-redesign__step-copy {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .recipe-redesign__step-index {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #67c8c8;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .recipe-redesign__step-text,
+  .recipe-redesign__excerpt {
+    margin: 0;
+    color: #26211b;
+    line-height: 1.7;
+  }
+
+  .recipe-redesign__bon-appetit {
+    margin: -2px 0 2px;
+    text-align: center;
+    color: #5d574e;
+  }
+
+  .recipe-redesign__recipe-card {
+    display: grid;
+    gap: 22px;
+  }
+
+  .recipe-redesign__recipe-card-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .recipe-redesign__recipe-card-copy {
+    display: grid;
+    gap: 14px;
+  }
+
+  .recipe-redesign__recipe-card h2 {
+    font-size: clamp(2rem, 3.4vw, 3.1rem);
+  }
+
+  .recipe-redesign__quick-info {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .recipe-redesign__quick-info-item {
+    padding-top: 14px;
+    border-top: 1px solid #e7e0d4;
+    display: grid;
+    gap: 4px;
+  }
+
+  .recipe-redesign__quick-info-item p,
+  .recipe-redesign__nutrition-item span {
+    margin: 0;
+    color: #6c655b;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .recipe-redesign__quick-info-item strong,
+  .recipe-redesign__nutrition-item strong {
+    color: #1a1714;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .recipe-redesign__section-head--compact h3,
+  .recipe-redesign__compact-title {
+    margin: 0;
+    font-size: 1.6rem;
+    font-family: var(--font-heading), serif;
+    font-weight: 500;
+  }
+
+  .recipe-redesign__nutrition {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px 18px;
+  }
+
+  .recipe-redesign__nutrition-item {
+    display: grid;
+    gap: 4px;
+  }
+
+  @media (max-width: 960px) {
+    .recipe-redesign__recipe-card-hero,
+    .recipe-redesign__quick-info,
+    .recipe-redesign__nutrition {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .recipe-redesign__hero-card,
+    .recipe-redesign__card,
+    .recipe-redesign__recipe-card,
+    .recipe-redesign__step-card,
+    .recipe-redesign__story-card {
+      padding: 18px;
+    }
+
+    .recipe-redesign__topline,
+    .recipe-redesign__section-head {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .recipe-redesign__step-copy {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

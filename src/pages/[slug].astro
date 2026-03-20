@@ -4,6 +4,7 @@ import DisqusComments from "../components/DisqusComments.astro";
 import SocialShare from "../components/molecules/SocialShare.astro";
 import NewsletterModal from "../components/organisms/NewsletterModal.astro";
 import RecipeSidebar from "../components/organisms/RecipeSidebar.astro";
+import RecipeDetailRedesign from "../components/organisms/RecipeDetailRedesign.astro";
 
 import { payloadFetch } from "../lib/payload.client";
 import { getAllArticlesFromMongo, getArticleBySlugFromMongo, getCommentsByArticleIdFromMongo, getRelatedArticlesFromMongo } from "../lib/mongo.server";
@@ -382,6 +383,27 @@ const heroMetaItems = [
 const recipeLegacyImages = extractLegacyStepImages(typeof article?.content === "string" ? article.content : "", image);
 const ingredientGroups = buildIngredientGroups(primaryRecipeBlock?.ingredients || []);
 const stepGroups = buildStepGroups(primaryRecipeBlock?.steps || [], recipeLegacyImages);
+let absoluteStepNumber = 1;
+const stepGroupsDetailed = stepGroups.map((group: any) => ({
+  ...group,
+  items: group.items.map((item: any) => ({
+    ...item,
+    stepNumber: absoluteStepNumber++,
+  })),
+}));
+const uiText = {
+  home: "Accueil",
+  recipes: "Recettes",
+  ingredients: "Ingrédients",
+  preparation: "Préparation",
+  bonAppetit: "Bon appétit !",
+  print: "Imprimer la recette",
+  pin: "Épingler la recette",
+  collect: "Ajouter à la collection",
+  quickInfo: "Quick Info",
+  nutrition: "Nutrition",
+  finalRecipe: "Fiche recette",
+};
 const topInfoItems = [
   { label: "Temps de préparation", value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes) },
   { label: "Temps de cuisson", value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes) },
@@ -556,6 +578,27 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div class="article-layout">
         <div class="article-main-column">
+          {primaryRecipeBlock && (
+            <RecipeDetailRedesign
+              title={title}
+              slug={slug}
+              image={image}
+              imageAlt={imageAlt}
+              ratingLabel={ratingLabel}
+              ratingStars={ratingStars}
+              articleShareLinks={articleShareLinks}
+              heroMetaItems={heroMetaItems}
+              introText={introText}
+              recipeBlock={primaryRecipeBlock}
+              ingredientGroups={ingredientGroups}
+              stepGroups={stepGroupsDetailed}
+              nutritionItems={nutritionItems}
+              pinterestLink={pinterestLink}
+              collectionHref={collectionHref}
+              storyHtml={stripHtml(storyContent).length > 0 ? storyContent : ""}
+            />
+          )}
+
           <section class="lcdb-surface-card recipe-detail-shell">
             <div class="recipe-detail-topbar">
               <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
@@ -2067,6 +2110,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     background: #fafaf8;
   }
 
+  .lcdb-page-hero,
+  .recipe-detail-shell,
+  .recipe-detail-info-card,
+  .recipe-detail-section,
+  .recipe-detail-compact-card,
   .article-intro-card,
   .article-hero-image,
   .article-main-column > .article-content-card:not(.article-content-card--recipe):not(.article-content-card--story) {
