@@ -189,7 +189,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
   )}
 
   <div class:list={['recipe-sidebar-sticky-rail', stickyPopularRail && 'recipe-sidebar-sticky-rail--enabled']}>
-    <div class="sidebar-block px-6 py-8">
+    <div class="sidebar-block px-6 pt-6 pb-4">
       <h4 class="sidebar-title">Articles populaires</h4>
       <div class="space-y-4 mt-5">
         {popularArticles.map((article) => (
@@ -465,9 +465,9 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
     overflow: hidden;
   }
 
-  .recipe-sidebar--popular :global(.sidebar-block:first-child) {
+  /* .recipe-sidebar--popular :global(.sidebar-block:first-child) {
     background: #f6f1e7;
-  }
+  } */
 
   .recipe-sidebar :global(.sidebar-block:last-child) {
     margin-bottom: 0;
@@ -484,6 +484,11 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 
   .recipe-sidebar :global(.article-title) {
     color: #111111;
+  }
+
+  .recipe-sidebar-sticky-rail {
+    display: grid;
+    gap: 10px;
   }
 
   .recipe-sidebar-sticky-rail--enabled {
