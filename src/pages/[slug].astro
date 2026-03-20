@@ -1005,7 +1005,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         </div>
 
         <div class="article-sidebar-column">
-          <RecipeSidebar variant="full" className="recipe-sidebar--detail" />
+          <RecipeSidebar variant="full" />
         </div>
       </div>
 
@@ -3370,9 +3370,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   @media (min-width: 1024px) {
     .article-layout {
-      grid-template-columns: minmax(0, 1fr) 420px;
+      grid-template-columns: minmax(0, 1fr) 388px;
       align-items: stretch;
-      gap: 24px;
+      gap: 28px;
     }
 
     .article-sidebar-column {
