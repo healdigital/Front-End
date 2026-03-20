@@ -3,9 +3,6 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 
-dotenv.config({ path: path.join(process.cwd(), 'payload-admin', '.env') });
-dotenv.config({ path: path.join(process.cwd(), '.env') });
-
 const args = process.argv.slice(2);
 
 const getArgValue = (flag, fallback = '') => {
@@ -16,19 +13,32 @@ const getArgValue = (flag, fallback = '') => {
 
 const hasFlag = (flag) => args.includes(flag);
 
-const dryRun = hasFlag('--dry-run');
-const limitArg = Number(getArgValue('--limit', '0'));
+const envArg = getArgValue('--env', 'payload-admin/.env');
 const preparedArg = getArgValue('--prepared', 'prepared-articles.json');
 const backupDirArg = getArgValue('--backup-dir', 'tmp/article-group-backups');
+const langArg = getArgValue('--lang', '');
+const slugArg = getArgValue('--slug', '');
+const idArg = getArgValue('--id', '');
+const limitArg = Number(getArgValue('--limit', '0'));
+const apply = hasFlag('--apply');
+const updatePrepared = apply && !hasFlag('--no-prepared-sync');
+
+dotenv.config({ path: path.resolve(process.cwd(), envArg) });
+
+const mongoUrl = process.env.DATABASE_URL;
+if (!mongoUrl) {
+  console.error('DATABASE_URL not found.');
+  process.exit(1);
+}
 
 const preparedPath = path.resolve(process.cwd(), preparedArg);
 const backupDir = path.resolve(process.cwd(), backupDirArg);
-const mongoUrl = process.env.DATABASE_URL;
-
-if (!mongoUrl) {
-  console.error('DATABASE_URL is missing.');
-  process.exit(1);
-}
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const reportPath = path.resolve(
+  process.cwd(),
+  'tmp',
+  `recipe-group-backfill-report-${timestamp}.json`,
+);
 
 const NAMED_ENTITIES = {
   amp: '&',
@@ -96,15 +106,6 @@ const cleanText = (value) =>
 
 const normalizeSentence = (value) => cleanText(value).replace(/\s+/g, ' ').trim();
 
-const normalizeCompare = (value) =>
-  normalizeSentence(value)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
 const normalizeGroupLabel = (value) =>
   normalizeSentence(value)
     .replace(/\s*:\s*$/, '')
@@ -114,338 +115,341 @@ const normalizeGroupLabel = (value) =>
 const createObjectId = () =>
   `${Math.floor(Date.now() / 1000).toString(16)}${Math.random().toString(16).slice(2, 18)}`.slice(0, 24);
 
-const clone = (value) => JSON.parse(JSON.stringify(value));
+const sanitizeHeadingText = (value) => normalizeGroupLabel(value).replace(/\s+/g, ' ').trim();
 
-const extractIngredientGroupsFromHtml = (html) => {
+const stripGroupingFields = (row) => {
+  const next = { ...(row || {}) };
+  delete next.isGroupHeading;
+  delete next.groupHeading;
+  if (next.image === null) delete next.image;
+  return next;
+};
+
+const groupStructureSignature = (rows) =>
+  (Array.isArray(rows) ? rows : [])
+    .map((row) => (row?.isGroupHeading ? `H:${sanitizeHeadingText(row.groupHeading)}` : 'R'))
+    .join('|');
+
+const extractIngredientGroupsFromContent = (html) => {
+  const content = String(html || '');
   const groups = [];
   const groupRegex =
-    /<div[^>]*class="[^"]*wprm-recipe-ingredient-group[^"]*"[^>]*>([\s\S]*?)<\/div>\s*(?=<div[^>]*class="[^"]*wprm-recipe-ingredient-group|<\/div>\s*<\/div>|$)/gi;
+    /<h4[^>]*class="[^"]*wprm-recipe-ingredient-group-name[^"]*"[^>]*>([\s\S]*?)<\/h4>\s*<ul[^>]*class="[^"]*wprm-recipe-ingredients[^"]*"[^>]*>([\s\S]*?)<\/ul>/gi;
 
   let groupMatch;
-  while ((groupMatch = groupRegex.exec(html))) {
-    const groupHtml = groupMatch[1];
-    const heading = normalizeGroupLabel(
-      groupHtml.match(/wprm-recipe-ingredient-group-name[^>]*>([\s\S]*?)<\/h4>/i)?.[1] || '',
-    );
-    const items = [];
-
-    const liRegex = /<li[^>]*class="[^"]*wprm-recipe-ingredient[^"]*"[^>]*>([\s\S]*?)<\/li>/gi;
-    let liMatch;
-    while ((liMatch = liRegex.exec(groupHtml))) {
-      const liHtml = liMatch[1];
-      const quantity = normalizeSentence(liHtml.match(/wprm-recipe-ingredient-amount[^>]*>([\s\S]*?)<\/span>/i)?.[1] || '');
-      const unit = normalizeSentence(liHtml.match(/wprm-recipe-ingredient-unit[^>]*>([\s\S]*?)<\/span>/i)?.[1] || '');
-      const item = normalizeSentence(liHtml.match(/wprm-recipe-ingredient-name[^>]*>([\s\S]*?)<\/span>/i)?.[1] || '');
-      const notes = normalizeSentence(liHtml.match(/wprm-recipe-ingredient-notes[^>]*>([\s\S]*?)<\/span>/i)?.[1] || '');
-      if (!quantity && !unit && !item && !notes) continue;
-      items.push({
-        quantity: [quantity, unit].filter(Boolean).join(' ').trim(),
-        item,
-        notes,
-      });
-    }
-
-    if (items.length > 0) {
-      groups.push({ heading, items });
+  while ((groupMatch = groupRegex.exec(content))) {
+    const label = sanitizeHeadingText(groupMatch[1]);
+    const listHtml = groupMatch[2];
+    const itemCount = [...listHtml.matchAll(/<li[^>]*class="[^"]*wprm-recipe-ingredient[^"]*"[^>]*>/gi)].length;
+    if (itemCount > 0) {
+      groups.push({ label, count: itemCount });
     }
   }
 
   return groups;
 };
 
-const extractStepGroupsFromHtml = (html) => {
+const extractInstructionGroupsFromContent = (html) => {
+  const content = String(html || '');
   const groups = [];
   const groupRegex =
-    /<div[^>]*class="[^"]*wprm-recipe-instruction-group[^"]*"[^>]*>([\s\S]*?)<\/div>\s*(?=<div[^>]*class="[^"]*wprm-recipe-instruction-group|<\/div>\s*<\/div>|$)/gi;
+    /<div[^>]*class="[^"]*wprm-recipe-instruction-group[^"]*"[^>]*>\s*<h4[^>]*class="[^"]*wprm-recipe-instruction-group-name[^"]*"[^>]*>([\s\S]*?)<\/h4>\s*<(?:ul|ol)[^>]*class="[^"]*wprm-recipe-instructions[^"]*"[^>]*>([\s\S]*?)<\/(?:ul|ol)>\s*<\/div>/gi;
 
   let groupMatch;
-  while ((groupMatch = groupRegex.exec(html))) {
-    const groupHtml = groupMatch[1];
-    const heading = normalizeGroupLabel(
-      groupHtml.match(/wprm-recipe-instruction-group-name[^>]*>([\s\S]*?)<\/h4>/i)?.[1] || '',
-    );
-    const items = [];
-
-    const stepRegex =
-      /<li[^>]*class="[^"]*wprm-recipe-instruction[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*wprm-recipe-instruction-text[^"]*"[^>]*>([\s\S]*?)<\/div>[\s\S]*?<\/li>/gi;
-    let stepMatch;
-    while ((stepMatch = stepRegex.exec(groupHtml))) {
-      const instruction = normalizeSentence(stepMatch[1]);
-      if (!instruction) continue;
-      items.push({ instruction });
-    }
-
-    if (items.length > 0) {
-      groups.push({ heading, items });
+  while ((groupMatch = groupRegex.exec(content))) {
+    const label = sanitizeHeadingText(groupMatch[1]);
+    const listHtml = groupMatch[2];
+    const itemCount = [...listHtml.matchAll(/<li[^>]*class="[^"]*wprm-recipe-instruction[^"]*"[^>]*>/gi)].length;
+    if (itemCount > 0) {
+      groups.push({ label, count: itemCount });
     }
   }
 
   return groups;
 };
 
-const stripHeadingRows = (rows) =>
-  (Array.isArray(rows) ? rows : []).filter((row) => !row?.isGroupHeading);
+const rebuildRowsWithGroups = (rows, parsedGroups, options = {}) => {
+  const currentRows = Array.isArray(rows) ? rows : [];
+  const nonHeadingRows = currentRows.filter((row) => !Boolean(row?.isGroupHeading));
+  const groups = Array.isArray(parsedGroups) ? parsedGroups.filter((group) => group?.count > 0) : [];
+  const allowLeadingUngrouped = Boolean(options.allowLeadingUngrouped);
 
-const ingredientComparable = (row) =>
-  normalizeCompare([row?.quantity || '', row?.item || '', row?.notes || ''].filter(Boolean).join(' | '));
-
-const stepComparable = (row) => normalizeCompare(row?.instruction || '');
-
-const canAlignGroups = (existingRows, groupedRows, getComparable) => {
-  const flatItems = groupedRows.flatMap((group) => group.items);
-  if (existingRows.length !== flatItems.length) return false;
-
-  for (let i = 0; i < existingRows.length; i += 1) {
-    const existing = getComparable(existingRows[i]);
-    const parsed = getComparable(flatItems[i]);
-    if (!existing || !parsed) return false;
-    if (existing !== parsed) return false;
+  if (!groups.length) {
+    return { changed: false, reason: 'no-groups' };
   }
 
-  return true;
-};
+  const parsedLabelCount = groups.filter((group) => sanitizeHeadingText(group.label)).length;
+  if (!parsedLabelCount) {
+    return { changed: false, reason: 'no-meaningful-headings' };
+  }
 
-const buildGroupedIngredients = (existingRows, groupedRows) => {
-  const next = [];
+  const expectedCount = groups.reduce((sum, group) => sum + group.count, 0);
+  const canUseLeadingUngroupedFallback =
+    allowLeadingUngrouped &&
+    nonHeadingRows.length > expectedCount;
+
+  if (expectedCount !== nonHeadingRows.length && !canUseLeadingUngroupedFallback) {
+    return {
+      changed: false,
+      reason: 'count-mismatch',
+      expectedCount,
+      currentCount: nonHeadingRows.length,
+    };
+  }
+
+  const nextRows = [];
   let cursor = 0;
 
-  for (const group of groupedRows) {
-    if (group.heading) {
-      next.push({
-        id: createObjectId(),
-        isGroupHeading: true,
-        groupHeading: group.heading,
-      });
-    }
-
-    for (let i = 0; i < group.items.length; i += 1) {
-      next.push(clone(existingRows[cursor]));
+  if (canUseLeadingUngroupedFallback) {
+    const leadingCount = nonHeadingRows.length - expectedCount;
+    for (let index = 0; index < leadingCount; index += 1) {
+      nextRows.push(stripGroupingFields(nonHeadingRows[cursor]));
       cursor += 1;
     }
   }
 
-  return next;
-};
-
-const buildGroupedSteps = (existingRows, groupedRows) => {
-  const next = [];
-  let cursor = 0;
-
-  for (const group of groupedRows) {
-    if (group.heading) {
-      next.push({
-        id: createObjectId(),
+  for (const group of groups) {
+    const heading = sanitizeHeadingText(group.label);
+    if (heading) {
+      nextRows.push({
         isGroupHeading: true,
-        groupHeading: group.heading,
+        groupHeading: heading,
+        id: createObjectId(),
       });
     }
 
-    for (let i = 0; i < group.items.length; i += 1) {
-      next.push(clone(existingRows[cursor]));
+    for (let index = 0; index < group.count; index += 1) {
+      const row = stripGroupingFields(nonHeadingRows[cursor]);
+      nextRows.push(row);
       cursor += 1;
     }
   }
 
-  return next;
-};
+  const currentSignature = groupStructureSignature(currentRows);
+  const nextSignature = groupStructureSignature(nextRows);
 
-const sameRows = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-
-const getIdentity = (doc) => String(doc?._id || doc?.id || '').trim();
-
-const getSlug = (doc) => String(doc?.slug || '').trim();
-
-const ensurePreparedDocIds = (doc) => {
-  const id = getIdentity(doc);
-  return id
-    ? {
-        ...doc,
-        id: doc.id || id,
-        _id: doc._id || id,
-      }
-    : doc;
-};
-
-const upsertPrepared = (items, doc) => {
-  const normalized = ensurePreparedDocIds(doc);
-  const id = getIdentity(normalized);
-  const slug = getSlug(normalized);
-
-  let index = -1;
-  if (id) {
-    index = items.findIndex((item) => getIdentity(item) === id);
-  }
-  if (index === -1 && slug) {
-    index = items.findIndex((item) => getSlug(item) === slug);
+  if (currentSignature === nextSignature) {
+    return { changed: false, reason: 'already-grouped' };
   }
 
-  if (index >= 0) items[index] = normalized;
-  else items.push(normalized);
+  return { changed: true, rows: nextRows };
 };
 
-const loadPrepared = () => {
-  if (!fs.existsSync(preparedPath)) return [];
+const loadPreparedArticles = () => {
+  if (!updatePrepared) return null;
+  if (!fs.existsSync(preparedPath)) {
+    throw new Error(`Prepared JSON not found: ${preparedPath}`);
+  }
   const raw = fs.readFileSync(preparedPath, 'utf8');
   const parsed = JSON.parse(raw);
   return Array.isArray(parsed) ? parsed : [];
 };
 
-const writePrepared = (items) => {
-  fs.writeFileSync(preparedPath, JSON.stringify(items, null, 2));
+const backupPreparedArticles = () => {
+  if (!updatePrepared || !fs.existsSync(preparedPath)) return null;
+  fs.mkdirSync(path.dirname(preparedPath), { recursive: true });
+  fs.mkdirSync(path.resolve(process.cwd(), 'tmp'), { recursive: true });
+  const backupPath = path.resolve(
+    process.cwd(),
+    'tmp',
+    `prepared-articles-group-backup-${timestamp}.json`,
+  );
+  fs.copyFileSync(preparedPath, backupPath);
+  return backupPath;
 };
 
-const saveBackup = (doc) => {
-  fs.mkdirSync(backupDir, { recursive: true });
-  const safeSlug = getSlug(doc) || getIdentity(doc);
-  const backupPath = path.join(backupDir, `${safeSlug}-before-group-backfill.json`);
-  if (!fs.existsSync(backupPath)) {
-    fs.writeFileSync(backupPath, JSON.stringify(doc, null, 2));
-  }
+const findPreparedIndex = (items, doc) => {
+  const docId = String(doc?._id || doc?.id || '');
+  const slug = String(doc?.slug || '').trim();
+  return items.findIndex((item) => {
+    const itemId = String(item?._id || item?.id || '');
+    if (docId && itemId === docId) return true;
+    if (slug && String(item?.slug || '').trim() === slug) return true;
+    return false;
+  });
 };
 
-const main = async () => {
-  const client = new MongoClient(mongoUrl);
+const allCandidates = hasFlag('--all-candidates');
+
+const filterQuery = allCandidates
+  ? {
+      'recipeBlocks.0': { $exists: true },
+      content: {
+        $regex: 'wprm-recipe-(ingredient|instruction)-group-name',
+        $options: 'i',
+      },
+    }
+  : {
+      'recipeBlocks.0': { $exists: true },
+      $or: [
+        {
+          content: {
+            $regex: 'wprm-recipe-ingredient-group-name',
+            $options: 'i',
+          },
+          'recipeBlocks.0.ingredients.isGroupHeading': { $ne: true },
+        },
+        {
+          content: {
+            $regex: 'wprm-recipe-instruction-group-name',
+            $options: 'i',
+          },
+          'recipeBlocks.0.steps.isGroupHeading': { $ne: true },
+        },
+      ],
+    };
+
+if (langArg) filterQuery.lang = langArg;
+if (slugArg) filterQuery.slug = slugArg;
+if (idArg) filterQuery._id = idArg;
+
+const client = new MongoClient(mongoUrl);
+
+const run = async () => {
   await client.connect();
-
   const dbName = new URL(mongoUrl).pathname.replace(/^\//, '') || 'lcdb';
   const db = client.db(dbName);
   const collection = db.collection('articles');
 
-  const filter = {
-    'recipeBlocks.0': { $exists: true },
-    content: {
-      $regex: 'wprm-recipe-(ingredient|instruction)-group-name',
-      $options: 'i',
-    },
-  };
-
-  const docs = await collection
-    .find(filter)
-    .project({
-      title: 1,
+  const cursor = collection.find(filterQuery, {
+    projection: {
       slug: 1,
+      lang: 1,
+      title: 1,
       content: 1,
       recipeBlocks: 1,
-      migrationStatus: 1,
       updatedAt: 1,
-      date: 1,
-      excerpt: 1,
-      contentV2: 1,
-      categories: 1,
-      tags: 1,
-      author: 1,
-      featuredMedia: 1,
-      featuredImage: 1,
-      lang: 1,
-      _status: 1,
-      noIndex: 1,
-      readyForPublication: 1,
-    })
-    .toArray();
+    },
+  });
 
-  const limitedDocs = limitArg > 0 ? docs.slice(0, limitArg) : docs;
-  const prepared = loadPrepared();
+  if (limitArg > 0) cursor.limit(limitArg);
+  const docs = await cursor.toArray();
+
+  const preparedItems = loadPreparedArticles();
+  const preparedBackupPath = apply ? backupPreparedArticles() : null;
+  fs.mkdirSync(backupDir, { recursive: true });
 
   const stats = {
-    scanned: limitedDocs.length,
-    candidatesWithIngredientGroups: 0,
-    candidatesWithStepGroups: 0,
-    ingredientUpdates: 0,
-    stepUpdates: 0,
-    updatedDocs: 0,
-    skippedIngredientMismatch: 0,
-    skippedStepMismatch: 0,
+    scanned: docs.length,
+    ingredientCandidates: 0,
+    ingredientUpdated: 0,
+    ingredientSkipped: 0,
+    stepCandidates: 0,
+    stepUpdated: 0,
+    stepSkipped: 0,
+    docsChanged: 0,
+    preparedUpdated: 0,
   };
 
-  for (const doc of limitedDocs) {
-    const recipeBlock = Array.isArray(doc.recipeBlocks)
-      ? doc.recipeBlocks.find((block) => block?.blockType === 'recipeCard') || doc.recipeBlocks[0]
-      : null;
-    if (!recipeBlock) continue;
+  const skipped = [];
 
-    const html = String(doc.content || '');
-    const ingredientGroups = extractIngredientGroupsFromHtml(html);
-    const stepGroups = extractStepGroupsFromHtml(html);
+  for (const doc of docs) {
+    const recipeBlocks = Array.isArray(doc.recipeBlocks) ? [...doc.recipeBlocks] : [];
+    const firstBlock = recipeBlocks[0];
+    if (!firstBlock) continue;
 
-    if (ingredientGroups.length > 0) stats.candidatesWithIngredientGroups += 1;
-    if (stepGroups.length > 0) stats.candidatesWithStepGroups += 1;
+    const content = String(doc.content || '');
+    const ingredientGroups = extractIngredientGroupsFromContent(content);
+    const stepGroups = extractInstructionGroupsFromContent(content);
 
-    const currentIngredientRows = stripHeadingRows(recipeBlock.ingredients);
-    const currentStepRows = stripHeadingRows(recipeBlock.steps);
+    if (ingredientGroups.length) stats.ingredientCandidates += 1;
+    if (stepGroups.length) stats.stepCandidates += 1;
 
-    let nextIngredients = recipeBlock.ingredients;
-    let nextSteps = recipeBlock.steps;
-    let changed = false;
-
-    if (ingredientGroups.length > 1 || ingredientGroups.some((group) => group.heading)) {
-      if (canAlignGroups(currentIngredientRows, ingredientGroups, ingredientComparable)) {
-        const rebuiltIngredients = buildGroupedIngredients(currentIngredientRows, ingredientGroups);
-        if (!sameRows(rebuiltIngredients, recipeBlock.ingredients || [])) {
-          nextIngredients = rebuiltIngredients;
-          stats.ingredientUpdates += 1;
-          changed = true;
-        }
-      } else {
-        stats.skippedIngredientMismatch += 1;
-      }
-    }
-
-    if (stepGroups.length > 1 || stepGroups.some((group) => group.heading)) {
-      if (canAlignGroups(currentStepRows, stepGroups, stepComparable)) {
-        const rebuiltSteps = buildGroupedSteps(currentStepRows, stepGroups);
-        if (!sameRows(rebuiltSteps, recipeBlock.steps || [])) {
-          nextSteps = rebuiltSteps;
-          stats.stepUpdates += 1;
-          changed = true;
-        }
-      } else {
-        stats.skippedStepMismatch += 1;
-      }
-    }
-
-    if (!changed) continue;
-
-    const updatedRecipeBlocks = (doc.recipeBlocks || []).map((block) => {
-      if (block !== recipeBlock) return block;
-      return {
-        ...block,
-        ingredients: nextIngredients,
-        steps: nextSteps,
-      };
+    const ingredientResult = rebuildRowsWithGroups(firstBlock.ingredients, ingredientGroups);
+    const stepResult = rebuildRowsWithGroups(firstBlock.steps, stepGroups, {
+      allowLeadingUngrouped: true,
     });
 
-    const updatedDoc = {
-      ...doc,
-      recipeBlocks: updatedRecipeBlocks,
-      updatedAt: new Date().toISOString(),
+    if (ingredientGroups.length && !ingredientResult.changed && ingredientResult.reason !== 'already-grouped') {
+      stats.ingredientSkipped += 1;
+    }
+    if (stepGroups.length && !stepResult.changed && stepResult.reason !== 'already-grouped') {
+      stats.stepSkipped += 1;
+    }
+
+    if (!ingredientResult.changed && !stepResult.changed) {
+      if (
+        (ingredientGroups.length && ingredientResult.reason !== 'already-grouped') ||
+        (stepGroups.length && stepResult.reason !== 'already-grouped')
+      ) {
+        skipped.push({
+          slug: doc.slug,
+          lang: doc.lang,
+          ingredientReason: ingredientResult.reason,
+          ingredientExpected: ingredientResult.expectedCount,
+          ingredientCurrent: ingredientResult.currentCount,
+          stepReason: stepResult.reason,
+          stepExpected: stepResult.expectedCount,
+          stepCurrent: stepResult.currentCount,
+        });
+      }
+      continue;
+    }
+
+    const nextBlock = {
+      ...firstBlock,
+      ...(ingredientResult.changed ? { ingredients: ingredientResult.rows } : {}),
+      ...(stepResult.changed ? { steps: stepResult.rows } : {}),
     };
 
-    stats.updatedDocs += 1;
+    recipeBlocks[0] = nextBlock;
+    if (ingredientResult.changed) stats.ingredientUpdated += 1;
+    if (stepResult.changed) stats.stepUpdated += 1;
+    stats.docsChanged += 1;
 
-    if (!dryRun) {
-      saveBackup(doc);
+    if (apply) {
+      const backupFile = path.join(
+        backupDir,
+        `${doc.slug || doc._id}-${doc.lang || 'na'}-${timestamp}-before.json`,
+      );
+      fs.writeFileSync(backupFile, JSON.stringify(doc, null, 2));
+
       await collection.updateOne(
         { _id: doc._id },
         {
           $set: {
-            recipeBlocks: updatedRecipeBlocks,
-            updatedAt: updatedDoc.updatedAt,
+            recipeBlocks,
+            updatedAt: new Date(),
           },
         },
       );
-      upsertPrepared(prepared, updatedDoc);
+
+      if (preparedItems) {
+        const index = findPreparedIndex(preparedItems, doc);
+        if (index >= 0) {
+          const currentPrepared = preparedItems[index];
+          preparedItems[index] = {
+            ...currentPrepared,
+            recipeBlocks,
+          };
+          stats.preparedUpdated += 1;
+        }
+      }
     }
   }
 
-  if (!dryRun) {
-    writePrepared(prepared);
+  if (apply && preparedItems) {
+    fs.writeFileSync(preparedPath, JSON.stringify(preparedItems, null, 2));
   }
 
-  await client.close();
-  console.log(JSON.stringify({ dryRun, ...stats }, null, 2));
+  const report = {
+    dryRun: !apply,
+    preparedBackupPath,
+    reportPath,
+    stats,
+    skipped: skipped.slice(0, 50),
+  };
+
+  fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+  console.log(JSON.stringify(report, null, 2));
 };
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+run()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await client.close().catch(() => undefined);
+  });
