@@ -1375,3 +1375,50 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 .home-sidebar-sticky .button-data-full{
   width: 100%;
 }
+
+.recipe-grid-home,
+.suggested-grid {
+  align-items: start;
+}
+
+.recipe-grid-home > *,
+.suggested-grid > * {
+  width: 100%;
+}
+
+.recipe-grid-home article.group.w-full.rounded-\[10px\].bg-\[\#F7F5EF\].overflow-hidden.border.border-\[\#D8D2C2\].transition-all.duration-300.hover\:shadow-lg,
+.suggested-grid article.group.w-full.rounded-\[10px\].bg-\[\#F7F5EF\].overflow-hidden.border.border-\[\#D8D2C2\].transition-all.duration-300.hover\:shadow-lg {
+  border: 1px solid #d8d2c2 !important;
+  background: #faf8f2 !important;
+  box-shadow: 0 16px 40px rgba(8, 18, 34, 0.08);
+}
+
+.home-sidebar-column {
+  background: #f3eee2 !important;
+  border-left: 1px solid #d8d2c2 !important;
+  padding-left: 26px !important;
+  padding-right: 22px !important;
+}
+
+.home-sidebar-sticky {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  top: 96px !important;
+}
+
+.home-workshops-section .home-workshops-feature-grid {
+  align-items: stretch;
+}
+
+.home-workshops-section .home-workshops-feature-card {
+  border-radius: 14px;
+  background: #f7f3e9;
+  box-shadow: 0 18px 48px rgba(6, 18, 40, 0.24);
+}
+
+.home-workshops-section .home-workshops-grid article {
+  background: #f7f3e9;
+  border: 1px solid #d9d4c6;
+  box-shadow: 0 14px 38px rgba(6, 18, 40, 0.18);
+}

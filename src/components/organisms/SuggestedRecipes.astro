@@ -161,6 +161,21 @@ const totalRecipeCount = totalCount;
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
       const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
 
+      const shuffleInPlace = (items) => {
+        for (let index = items.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+        }
+        return items;
+      };
+
+      if (grid instanceof HTMLElement && cards.length > 1) {
+        cards = shuffleInPlace([...cards]);
+        const fragment = document.createDocumentFragment();
+        cards.forEach((card) => fragment.appendChild(card));
+        grid.appendChild(fragment);
+      }
+
       const normalizeToken = (value = '') =>
         String(value)
           .normalize('NFD')
@@ -426,6 +441,8 @@ const totalRecipeCount = totalCount;
               grid.dataset.suggestedHydrated = 'true';
               return;
             }
+
+            shuffleInPlace(recipes);
 
             let pointer = 0;
             const chunkSize = 24;
