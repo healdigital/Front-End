@@ -284,6 +284,7 @@ const recipeContent = primaryRecipeBlock
 
 const storyContent = renderArticleContent(article, {
   includeRecipeBlocks: false,
+  includeLegacyFallback: false,
 });
 
 const firstStoryParagraphHtml = storyContent.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[0] || "";
@@ -1207,15 +1208,17 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .recipe-detail-shell {
-    padding: 26px 28px 28px;
+    padding: 18px 18px 20px;
     border: 2px solid #7fd4d7;
+    border-radius: 8px;
+    background: #ffffff;
     box-shadow: none;
   }
 
   .recipe-detail-head {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(220px, 300px);
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) 190px;
+    gap: 18px;
     align-items: start;
   }
 
@@ -1224,57 +1227,58 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .recipe-detail-title {
-    margin: 0;
+    margin: 6px 0 0;
     color: #111111;
     font-family: var(--font-body);
-    font-size: clamp(2.25rem, 3.7vw, 3.3rem);
+    font-size: clamp(2.1rem, 3.2vw, 3.8rem);
     font-weight: 700;
-    line-height: 1.04;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
   }
 
   .recipe-detail-excerpt {
-    margin: 14px 0 0;
+    margin: 12px 0 0;
     color: #444641;
-    font-size: 1.04rem;
-    line-height: 1.78;
-    max-width: 58ch;
+    font-size: 0.98rem;
+    line-height: 1.62;
+    max-width: 50ch;
   }
 
   .recipe-detail-rating {
-    margin-top: 18px;
+    margin-top: 16px;
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     color: #5f6671;
-    font-size: 0.98rem;
+    font-size: 0.93rem;
   }
 
   .recipe-detail-stars {
     display: inline-flex;
-    gap: 5px;
+    gap: 4px;
     color: #7da444;
-    font-size: 0.95rem;
+    font-size: 0.86rem;
   }
 
   .recipe-detail-actions {
-    margin-top: 22px;
+    margin-top: 18px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
   }
 
   .recipe-detail-action {
-    min-height: 50px;
-    padding: 0 18px;
+    min-height: 44px;
+    padding: 0 15px;
     border: 1px solid #bfc7cd;
     background: #ffffff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     color: #4e4d48;
     text-decoration: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
@@ -1301,22 +1305,26 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     border: 1px solid #d8d2c2;
     background: #efe5d6;
     overflow: hidden;
+    align-self: start;
   }
 
   .recipe-detail-media img {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 0.98 / 1;
     object-fit: cover;
     display: block;
   }
 
   .article-chip-groups--top {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   .article-content-card--recipe {
     padding: 0;
     overflow: hidden;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
   }
 
   .article-content-card--story {
@@ -1328,6 +1336,75 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-summary-grid-section) {
+    padding: 22px 24px;
+    border-radius: 12px;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-summary-grid) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px 16px;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-summary-item) {
+    min-width: 0;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-summary-value) {
+    font-size: 0.98rem;
+  }
+
+  .article-content--recipe :global(section.content-v2-block.content-v2-recipe-ingredients) {
+    margin-top: 6px;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-ingredients-header h2),
+  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
+    font-size: clamp(2.6rem, 4vw, 3.5rem) !important;
+    line-height: 1.02;
+  }
+
+  .article-content--recipe :global(.content-v2-block.content-v2-recipe-ingredients ul#recipe-main-recipe-ingredients) {
+    border: 1px solid #ddd6c7 !important;
+    border-radius: 12px !important;
+    padding: 28px 24px 22px 34px !important;
+  }
+
+  .article-content--recipe :global(.wprm-recipe-ingredient-group-name),
+  .article-content--recipe :global(.wprm-recipe-instruction-group-name) {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+  }
+
+  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual) {
+    margin-top: 2px;
+  }
+
+  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
+    margin: 42px 0 18px;
+  }
+
+  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list li.content-v2-recipe-visual-step) {
+    padding: 28px;
+    border-radius: 12px;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-step-instruction) {
+    margin-bottom: 24px;
+  }
+
+  .article-content--recipe :global(.content-v2-recipe-step-media img) {
+    border-radius: 8px;
+  }
+
+  .article-content--recipe :global(section.content-v2-block.content-v2-recipe-card) {
+    margin-top: 14px;
+    border: 1px solid #ddd6c7;
+    border-radius: 12px;
+    padding: 24px 28px;
   }
 
   .article-content--story :global(.wprm-recipe-container) {
@@ -2626,6 +2703,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       max-width: 420px;
     }
 
+    .article-content--recipe :global(.content-v2-recipe-summary-grid) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .article-content-card {
       padding: 26px;
     }
@@ -2669,6 +2750,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .recipe-detail-action {
       width: 100%;
       justify-content: flex-start;
+    }
+
+    .article-content--recipe :global(.content-v2-recipe-summary-grid) {
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .article-intro-card {
