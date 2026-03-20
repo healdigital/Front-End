@@ -606,7 +606,7 @@
     { id: '#25', title: 'Recipe cards: keep only time tag, remove V/GF/DF tags', note: 'In recipe cards, only show the time/duration tag (e.g. "45 mins"). Remove dietary tags (V, GF, DF, etc.).', priority: 'P3', cat: 'UI/Layout', time: '16:41' },
     { id: '#26', title: 'Recipe cards: fix missing right border', note: 'Cards are missing their right-side border. Visible on tablet view (see IMG_2189). Check CSS border on .recipe-card.', priority: 'P3', cat: 'Bug', time: '16:41' },
     { id: '#27', title: 'Homepage recipe grid: 3 recipes per row', note: 'Switch from 2-per-row to 3-per-row grid on the homepage recipe listing.', priority: 'P3', cat: 'UI/Layout', time: '16:41' },
-    { id: '#28', title: 'Recipe page: move category tags to top', note: 'Tags (e.g. RECETTE, SALÉ, #SALÉ) currently appear at the bottom of the recipe card. Move them to the top, just below the title or above the meta info.', priority: 'P3', cat: 'UI/Layout', time: '17:02' },
+    { id: '#28', title: 'Recipe page: add recipe summary tags at the top', note: 'Add the recipe meta summary at the top of the page/card, matching the client reference: Temps de préparation, Temps de cuisson, Type de plat, Cuisine, Portions, Calories.', priority: 'P3', cat: 'UI/Layout', time: '17:02' },
     { id: '#29', title: 'Popular recipes section (homepage + article pages)', note: 'Find a solution to surface "Popular recipes" dynamically — on the homepage sidebar and on individual recipe pages. Discuss approach with Leo (view count? manual curation?).', priority: 'P3', cat: 'Content', time: '15:41' },
     { id: '#30', title: 'Admin: bulk photo upload for recipe steps', note: 'Currently images must be uploaded one-by-one per step. Build a bulk upload that creates one step entry per uploaded image automatically.', priority: 'P3', cat: 'Admin', time: '16:13' },
   ];
@@ -629,7 +629,9 @@
     '#19',
     '#20',
     '#21',
+    '#24',
     '#25',
+    '#28',
   ]);
   let activeFilter = 'all';
 
