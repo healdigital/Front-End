@@ -328,6 +328,39 @@ const extractIngredients = (ingredientsHtml) => {
 };
 
 const extractSteps = (instructionsHtml) => {
+  const groupedSteps = [];
+  const instructionGroupRegex =
+    /<div[^>]*class="[^"]*wprm-recipe-instruction-group[^"]*"[^>]*>\s*<h4[^>]*class="[^"]*wprm-recipe-instruction-group-name[^"]*"[^>]*>([\s\S]*?)<\/h4>\s*<(?:ul|ol)[^>]*class="[^"]*wprm-recipe-instructions[^"]*"[^>]*>([\s\S]*?)<\/(?:ul|ol)>\s*<\/div>/gi;
+
+  let groupMatch;
+  while ((groupMatch = instructionGroupRegex.exec(instructionsHtml))) {
+    const heading = normalizeGroupLabel(groupMatch[1]);
+    const listHtml = groupMatch[2];
+    if (heading) {
+      groupedSteps.push({
+        isGroupHeading: true,
+        groupHeading: heading,
+        id: createObjectId(),
+      });
+    }
+
+    const stepRegexWithinGroup =
+      /<li[^>]*class="[^"]*wprm-recipe-instruction[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*wprm-recipe-instruction-text[^"]*"[^>]*>([\s\S]*?)<\/div>[\s\S]*?<\/li>/gi;
+
+    let groupedStepMatch;
+    while ((groupedStepMatch = stepRegexWithinGroup.exec(listHtml))) {
+      const instruction = normalizeSentence(groupedStepMatch[1]);
+      if (!instruction) continue;
+      groupedSteps.push({
+        instruction,
+        imageCaption: '',
+        id: createObjectId(),
+      });
+    }
+  }
+
+  if (groupedSteps.length > 0) return groupedSteps;
+
   const steps = [];
   const stepRegex =
     /<li[^>]*class="[^"]*wprm-recipe-instruction[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*wprm-recipe-instruction-text[^"]*"[^>]*>([\s\S]*?)<\/div>[\s\S]*?<\/li>/gi;
