@@ -38,6 +38,8 @@ const quickInfoItems = [
   { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
   { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
 ].filter((item) => item.value);
+
+const printLink = `/print/${slug}/?auto=1`;
 ---
 
 <div class="recipe-redesign" data-recipe-redesign>
@@ -63,6 +65,15 @@ const quickInfoItems = [
             <i class={link.icon} aria-hidden="true"></i>
           </a>
         ))}
+        <a
+          href={printLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="recipe-redesign__share-link"
+          aria-label="Imprimer la recette"
+        >
+          <i class="fas fa-print" aria-hidden="true"></i>
+        </a>
       </div>
     </div>
 
@@ -87,20 +98,7 @@ const quickInfoItems = [
       )}
 
       <div class="recipe-redesign__actions">
-        <a
-          href={`/print/${slug}/?auto=1`}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="recipe-redesign__action recipe-redesign__action--primary"
-        >
-          <i class="fas fa-print" aria-hidden="true"></i>
-          <span>Imprimer la recette</span>
-        </a>
-        <a href={pinterestLink} target="_blank" rel="noopener noreferrer" class="recipe-redesign__action">
-          <i class="fab fa-pinterest-p" aria-hidden="true"></i>
-          <span>Épingler la recette</span>
-        </a>
-        <a href={collectionHref} class="recipe-redesign__action">
+        <a href={collectionHref} class="recipe-redesign__action recipe-redesign__action--collection">
           <i class="far fa-bookmark" aria-hidden="true"></i>
           <span>Ajouter à la collection</span>
         </a>
@@ -484,6 +482,10 @@ const quickInfoItems = [
     flex-wrap: nowrap;
   }
 
+  .recipe-redesign__action--collection {
+    flex: 0 0 auto;
+  }
+
   .recipe-redesign__meta-pill {
     padding: 7px 12px;
     border-radius: 999px;
@@ -670,7 +672,7 @@ const quickInfoItems = [
 
   .recipe-redesign__bon-appetit {
     margin: 4px 0 0;
-    text-align: center;
+    /* text-align: center; */
     color: #433d36;
     font-family: var(--font-heading), serif;
     font-size: 2rem;
