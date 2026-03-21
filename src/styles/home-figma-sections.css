@@ -1394,7 +1394,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 }
 
 .home-sidebar-column {
-  background: #f3eee2 !important;
+  /* background: #f3eee2 !important; */
   border-left: 1px solid #d8d2c2 !important;
   padding-left: 26px !important;
   padding-right: 22px !important;
