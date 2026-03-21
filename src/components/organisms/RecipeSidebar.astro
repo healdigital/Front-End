@@ -125,15 +125,15 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
         </div>
 
         <div class="p-4">
-          <div class="flex  gap-2 mb-3 ">
-            <span class="inline-flex items-center gap-2 rounded-full bg-[#ECEBE4] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-[#1E2B3A] acces-data">
+          <div class="masterclass-badges mb-3">
+            <span class="masterclass-badge masterclass-badge--light inline-flex items-center gap-2 rounded-full bg-[#ECEBE4] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-[#1E2B3A] acces-data">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1.50646 15.641C1.08549 15.641 0.729167 15.4952 0.4375 15.2035C0.145833 14.9119 0 14.5556 0 14.1346V6.31417C0 5.8932 0.145833 5.53688 0.4375 5.24521C0.729167 4.95354 1.08549 4.80771 1.50646 4.80771H14.3269C14.7478 4.80771 15.1042 4.95354 15.3958 5.24521C15.6875 5.53688 15.8333 5.8932 15.8333 6.31417V14.1346C15.8333 14.5556 15.6875 14.9119 15.3958 15.2035C15.1042 15.4952 14.7478 15.641 14.3269 15.641H1.50646ZM1.50646 14.391H14.3269C14.391 14.391 14.4498 14.3643 14.5031 14.3108C14.5566 14.2575 14.5833 14.1988 14.5833 14.1346V6.31417C14.5833 6.25 14.5566 6.19125 14.5031 6.13792C14.4498 6.08444 14.391 6.05771 14.3269 6.05771H1.50646C1.44229 6.05771 1.38354 6.08444 1.33021 6.13792C1.27674 6.19125 1.25 6.25 1.25 6.31417V14.1346C1.25 14.1988 1.27674 14.2575 1.33021 14.3108C1.38354 14.3643 1.44229 14.391 1.50646 14.391ZM6.45833 13.1731L10.8815 10.2244L6.45833 7.27563V13.1731ZM1.45833 3.65396V2.40396H14.375V3.65396H1.45833ZM3.95833 1.25V0H11.875V1.25H3.95833Z" fill="#091D23"/>
               </svg>
 
               Acces illimite
             </span>
-            <span class="inline-flex items-center gap-2 rounded-full bg-[#BBA86B] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-white reserve-data">
+            <span class="masterclass-badge masterclass-badge--gold inline-flex items-center gap-2 rounded-full bg-[#BBA86B] px-3 py-1 text-[13px] uppercase tracking-[0.08em] text-white reserve-data">
               <svg width="17" height="15" viewBox="0 0 17 15" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.085 14.4631L0 4.75958L2.37979 0H13.7902L16.17 4.75958L8.085 14.4631ZM5.76917 4.16667H10.4008L8.94229 1.25H7.22771L5.76917 4.16667ZM7.46 11.7644V5.41667H2.18583L7.46 11.7644ZM8.71 11.7644L13.9842 5.41667H8.71V11.7644ZM11.7902 4.16667H14.4633L13.0048 1.25H10.3317L11.7902 4.16667ZM1.70667 4.16667H4.37979L5.83833 1.25H3.16521L1.70667 4.16667Z" fill="white"/>
               </svg>
@@ -484,6 +484,20 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 
   .recipe-sidebar :global(.article-title) {
     color: #111111;
+  }
+
+  .recipe-sidebar :global(.masterclass-badges) {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .recipe-sidebar :global(.masterclass-badge) {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    white-space: nowrap;
   }
 
   .recipe-sidebar-sticky-rail--enabled {
