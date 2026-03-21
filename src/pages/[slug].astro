@@ -7,8 +7,16 @@ import RecipeSidebar from "../components/organisms/RecipeSidebar.astro";
 import RecipeDetailRedesign from "../components/organisms/RecipeDetailRedesign.astro";
 
 import { payloadFetch } from "../lib/payload.client";
-import { getAllArticlesFromMongo, getArticleBySlugFromMongo, getCommentsByArticleIdFromMongo, getRelatedArticlesFromMongo } from "../lib/mongo.server";
-import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "../utils/buildArticleJsonLd";
+import {
+  getAllArticlesFromMongo,
+  getArticleBySlugFromMongo,
+  getCommentsByArticleIdFromMongo,
+  getRelatedArticlesFromMongo,
+} from "../lib/mongo.server";
+import {
+  buildArticleJsonLd,
+  buildBreadcrumbJsonLd,
+} from "../utils/buildArticleJsonLd";
 import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
 import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
 import { renderArticleContent } from "../utils/renderArticleContent";
@@ -29,26 +37,39 @@ const stripHtml = (value: string) =>
 const toText = (value: any): string => {
   if (!value) return "";
   if (typeof value === "string") return stripHtml(value);
-  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (Array.isArray(value))
+    return value
+      .map((item) => toText(item))
+      .filter(Boolean)
+      .join(" ");
   if (typeof value === "object") {
-    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    const directCandidates = [
+      value.rendered,
+      value.value,
+      value.text,
+      value.title,
+      value.name,
+      value.label,
+    ];
     for (const candidate of directCandidates) {
       const text = toText(candidate);
       if (text) return text;
     }
     if (Array.isArray(value.children)) {
-      return value.children.map((child: any) => toText(child)).filter(Boolean).join(" ");
+      return value.children
+        .map((child: any) => toText(child))
+        .filter(Boolean)
+        .join(" ");
     }
     if (value.content) return toText(value.content);
   }
   return "";
 };
 
-const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
+const normalizeSlug = (value: any) =>
+  String(value || "").replace(/^\/+|\/+$/g, "");
 const toTitleCase = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/(?:^|\s|[-/])\S/g, (char) => char.toUpperCase());
+  value.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (char) => char.toUpperCase());
 
 const dedupeTextList = (items: string[]) => {
   const seen = new Set<string>();
@@ -79,7 +100,8 @@ const deriveFlavorCategory = (article: any, categoryTitles: string[]) => {
 
 const extractId = (value: any): string => {
   if (!value) return "";
-  if (typeof value === "string" || typeof value === "number") return String(value);
+  if (typeof value === "string" || typeof value === "number")
+    return String(value);
   if (typeof value === "object") {
     return String(value.id || value._id || value.value || "");
   }
@@ -96,7 +118,9 @@ const formatRecipeTimeLabel = (value: any): string => {
     if (numeric < 60) return `${numeric}MIN`;
     const hours = Math.floor(numeric / 60);
     const minutes = numeric % 60;
-    return minutes ? `${hours}H${String(minutes).padStart(2, "0")}` : `${hours}H`;
+    return minutes
+      ? `${hours}H${String(minutes).padStart(2, "0")}`
+      : `${hours}H`;
   }
 
   return raw.toUpperCase();
@@ -165,52 +189,75 @@ const extractLegacyStepImages = (html: string, featuredUrl: string) => {
 };
 
 const buildIngredientGroups = (ingredients: any[]) => {
-  return (Array.isArray(ingredients) ? ingredients : []).reduce((groups: any[], row: any) => {
-    if (!row) return groups;
+  return (Array.isArray(ingredients) ? ingredients : []).reduce(
+    (groups: any[], row: any) => {
+      if (!row) return groups;
 
-    if (row.isGroupHeading) {
-      const heading = toText(row.groupHeading);
-      if (heading) groups.push({ heading, items: [] });
+      if (row.isGroupHeading) {
+        const heading = toText(row.groupHeading);
+        if (heading) groups.push({ heading, items: [] });
+        return groups;
+      }
+
+      const quantity = String(row.quantity || "").trim();
+      const item = toText(row.item);
+      const notes = toText(row.notes);
+      if (!quantity && !item && !notes) return groups;
+
+      const target =
+        groups.length === 0
+          ? (groups.push({ heading: "", items: [] }), groups[0])
+          : groups[groups.length - 1];
+      target.items.push({ item, notes, quantity });
       return groups;
-    }
-
-    const quantity = String(row.quantity || "").trim();
-    const item = toText(row.item);
-    const notes = toText(row.notes);
-    if (!quantity && !item && !notes) return groups;
-
-    const target = groups.length === 0 ? (groups.push({ heading: "", items: [] }), groups[0]) : groups[groups.length - 1];
-    target.items.push({ item, notes, quantity });
-    return groups;
-  }, []);
+    },
+    [],
+  );
 };
 
-const buildStepGroups = (steps: any[], legacyImages: Array<{ alt: string; url: string }>) => {
+const buildStepGroups = (
+  steps: any[],
+  legacyImages: Array<{ alt: string; url: string }>,
+) => {
   let fallbackIndex = 0;
 
-  return (Array.isArray(steps) ? steps : []).reduce((groups: any[], row: any) => {
-    if (!row) return groups;
+  return (Array.isArray(steps) ? steps : []).reduce(
+    (groups: any[], row: any) => {
+      if (!row) return groups;
 
-    if (row.isGroupHeading) {
-      const heading = toText(row.groupHeading);
-      if (heading) groups.push({ heading, items: [] });
+      if (row.isGroupHeading) {
+        const heading = toText(row.groupHeading);
+        if (heading) groups.push({ heading, items: [] });
+        return groups;
+      }
+
+      const instruction = toText(row.instruction);
+      if (!instruction) return groups;
+
+      const explicitMedia = resolveRecipeMedia(
+        row.image,
+        row.imageUrl,
+        row.image_url,
+        row.media,
+        row.photo,
+      );
+      const fallbackMedia = explicitMedia
+        ? null
+        : legacyImages[fallbackIndex] || null;
+      if (!explicitMedia && fallbackMedia) fallbackIndex += 1;
+
+      const target =
+        groups.length === 0
+          ? (groups.push({ heading: "", items: [] }), groups[0])
+          : groups[groups.length - 1];
+      target.items.push({
+        instruction,
+        media: explicitMedia || fallbackMedia,
+      });
       return groups;
-    }
-
-    const instruction = toText(row.instruction);
-    if (!instruction) return groups;
-
-    const explicitMedia = resolveRecipeMedia(row.image, row.imageUrl, row.image_url, row.media, row.photo);
-    const fallbackMedia = explicitMedia ? null : legacyImages[fallbackIndex] || null;
-    if (!explicitMedia && fallbackMedia) fallbackIndex += 1;
-
-    const target = groups.length === 0 ? (groups.push({ heading: "", items: [] }), groups[0]) : groups[groups.length - 1];
-    target.items.push({
-      instruction,
-      media: explicitMedia || fallbackMedia,
-    });
-    return groups;
-  }, []);
+    },
+    [],
+  );
 };
 
 export async function getStaticPaths() {
@@ -227,7 +274,10 @@ export async function getStaticPaths() {
   try {
     articles = await getAllArticlesFromMongo();
   } catch (error) {
-    console.error("getAllArticlesFromMongo failed, falling back to Payload:", error);
+    console.error(
+      "getAllArticlesFromMongo failed, falling back to Payload:",
+      error,
+    );
   }
 
   if (!articles || articles.length === 0) {
@@ -247,7 +297,8 @@ export async function getStaticPaths() {
   return articles
     .filter((item: any) => item?.slug)
     .map((item: any) => {
-      const rawSlug = typeof item.slug === "string" ? item.slug : item.slug?.current || "";
+      const rawSlug =
+        typeof item.slug === "string" ? item.slug : item.slug?.current || "";
       const slugValue = decodeSafe(rawSlug);
       return {
         params: { slug: slugValue },
@@ -266,7 +317,9 @@ if (!article) {
   throw new Error("Article data missing at build time");
 }
 
-const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
+const slug = normalizeSlug(
+  typeof article.slug === "string" ? article.slug : article.slug?.current || "",
+);
 
 if (slug && !processArticleImageUrl(article)) {
   const hydratedArticle = await getArticleBySlugFromMongo(slug);
@@ -279,10 +332,14 @@ if (slug && !processArticleImageUrl(article)) {
 }
 
 const getExcerpt = () => {
-  if (typeof article.excerpt === "string") return article.excerpt.substring(0, 160);
+  if (typeof article.excerpt === "string")
+    return article.excerpt.substring(0, 160);
   if (Array.isArray(article.excerpt)) {
     return article.excerpt
-      .map((block: any) => block.children?.map((child: any) => child.text).join(" ") || "")
+      .map(
+        (block: any) =>
+          block.children?.map((child: any) => child.text).join(" ") || "",
+      )
       .join(" ")
       .substring(0, 160);
   }
@@ -292,10 +349,22 @@ const getExcerpt = () => {
 const title = article.title || "Untitled";
 const excerpt = getExcerpt();
 const image = processArticleImageUrl(article);
-const imageAlt = toText(article.featuredMedia?.alt || article.featuredImage?.alt || article.featured_image?.alt) || "Article featured image";
+const imageAlt =
+  toText(
+    article.featuredMedia?.alt ||
+      article.featuredImage?.alt ||
+      article.featured_image?.alt,
+  ) || "Article featured image";
 
-const articleJsonLd = buildArticleJsonLd(article, "https://lacuisinedebernard.com");
-const breadcrumbJsonLd = buildBreadcrumbJsonLd(title, slug, "https://lacuisinedebernard.com");
+const articleJsonLd = buildArticleJsonLd(
+  article,
+  "https://lacuisinedebernard.com",
+);
+const breadcrumbJsonLd = buildBreadcrumbJsonLd(
+  title,
+  slug,
+  "https://lacuisinedebernard.com",
+);
 const recipeJsonLd = buildRecipeJsonLd(article);
 
 const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
@@ -317,25 +386,34 @@ const articleShareLinks = [
   },
 ];
 const numericPostId = Number(article?.post_id);
-const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
-  ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
-  : slug;
+const disqusIdentifier =
+  Number.isFinite(numericPostId) && numericPostId > 0
+    ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
+    : slug;
 
 const normalizePageLanguage = (value: any) => {
-  const raw = String(value || "").trim().toLowerCase();
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
   if (raw === "pt" || raw === "pt_br" || raw === "ptbr") return "pt-br";
   if (["en", "fr", "es", "pt-br", "ar"].includes(raw)) return raw;
   return "fr";
 };
 
-const pageLang = normalizePageLanguage(article?.lang || article?.language || article?.locale);
+const pageLang = normalizePageLanguage(
+  article?.lang || article?.language || article?.locale,
+);
 const excerptText = toText(article?.excerpt);
 const displayAuthorName = "Bernard Laurance";
 
-const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
+const categoryItems = (
+  Array.isArray(article?.categories) ? article.categories : []
+)
   .map((item: any) => {
     const itemTitle = toText(item?.title || item?.name || item?.label || item);
-    const itemSlug = normalizeSlug(typeof item?.slug === "string" ? item.slug : item?.slug?.current);
+    const itemSlug = normalizeSlug(
+      typeof item?.slug === "string" ? item.slug : item?.slug?.current,
+    );
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
   .filter(Boolean);
@@ -348,41 +426,66 @@ const displayCategoryTitles = dedupeTextList([
   ...(categoryTitles.length > 0 ? categoryTitles : ["Recette"]),
   flavorCategoryLabel,
 ]);
-const secondaryCategoryTitle = displayCategoryTitles.find((item) => item !== displayCategoryTitles[0]) || "";
+const secondaryCategoryTitle =
+  displayCategoryTitles.find((item) => item !== displayCategoryTitles[0]) || "";
 
-const categoryIds = (Array.isArray(article?.categories) ? article.categories : [])
+const categoryIds = (
+  Array.isArray(article?.categories) ? article.categories : []
+)
   .map((item: any) => extractId(item))
   .filter(Boolean);
 
 const currentArticleId = extractId(article?.id || article?._id);
-const articleComments = currentArticleId ? await getCommentsByArticleIdFromMongo(currentArticleId) : [];
+const articleComments = currentArticleId
+  ? await getCommentsByArticleIdFromMongo(currentArticleId)
+  : [];
 const validRatings = articleComments
   .map((comment: any) => Number(comment?.rating))
   .filter((rating: number) => Number.isFinite(rating) && rating > 0);
 const ratingCount = validRatings.length;
-const ratingAverage = ratingCount > 0
-  ? validRatings.reduce((total: number, rating: number) => total + rating, 0) / ratingCount
-  : 0;
+const ratingAverage =
+  ratingCount > 0
+    ? validRatings.reduce(
+        (total: number, rating: number) => total + rating,
+        0,
+      ) / ratingCount
+    : 0;
 const ratingLabel =
   ratingCount > 0
     ? `${ratingAverage.toFixed(1).replace(/\.0$/, "")}/5 • ${ratingCount} avis`
     : "Pas encore de notes";
-const ratingStars = Array.from({ length: 5 }, (_, index) => index < Math.round(ratingAverage));
+const ratingStars = Array.from(
+  { length: 5 },
+  (_, index) => index < Math.round(ratingAverage),
+);
 
 const primaryRecipeBlock =
   (Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : []).find(
-    (block: any) => block?.blockType === "recipeCard" || Array.isArray(block?.ingredients) || Array.isArray(block?.steps),
+    (block: any) =>
+      block?.blockType === "recipeCard" ||
+      Array.isArray(block?.ingredients) ||
+      Array.isArray(block?.steps),
   ) || null;
 const recipeDifficulty = toText(primaryRecipeBlock?.difficulty);
-const recipePortions = toText(primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount);
+const recipePortions = toText(
+  primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount,
+);
 const heroMetaItems = [
   displayCategoryTitles[0] || "Recette",
   recipeDifficulty,
   recipePortions ? `${recipePortions}` : "",
 ].filter(Boolean);
-const recipeLegacyImages = extractLegacyStepImages(typeof article?.content === "string" ? article.content : "", image);
-const ingredientGroups = buildIngredientGroups(primaryRecipeBlock?.ingredients || []);
-const stepGroups = buildStepGroups(primaryRecipeBlock?.steps || [], recipeLegacyImages);
+const recipeLegacyImages = extractLegacyStepImages(
+  typeof article?.content === "string" ? article.content : "",
+  image,
+);
+const ingredientGroups = buildIngredientGroups(
+  primaryRecipeBlock?.ingredients || [],
+);
+const stepGroups = buildStepGroups(
+  primaryRecipeBlock?.steps || [],
+  recipeLegacyImages,
+);
 let absoluteStepNumber = 1;
 const stepGroupsDetailed = stepGroups.map((group: any) => ({
   ...group,
@@ -405,20 +508,38 @@ const uiText = {
   finalRecipe: "Fiche recette",
 };
 const topInfoItems = [
-  { label: "Temps de préparation", value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes) },
-  { label: "Temps de cuisson", value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes) },
+  {
+    label: "Temps de préparation",
+    value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes),
+  },
+  {
+    label: "Temps de cuisson",
+    value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes),
+  },
   { label: "Cuisine", value: toText(primaryRecipeBlock?.cuisine) },
-  { label: "Portions", value: toText(primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount) },
+  {
+    label: "Portions",
+    value: toText(
+      primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount,
+    ),
+  },
   {
     label: "Calories",
-    value: toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) !== null
-      ? `${Math.round(toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) || 0)} kcal`
-      : "",
+    value:
+      toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) !== null
+        ? `${Math.round(toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) || 0)} kcal`
+        : "",
   },
 ].filter((item) => item.value);
 const quickInfoItems = [
-  { label: "Preparation Time Minutes", value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes) },
-  { label: "Cooking Time Minutes", value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes) },
+  {
+    label: "Preparation Time Minutes",
+    value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes),
+  },
+  {
+    label: "Cooking Time Minutes",
+    value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes),
+  },
   { label: "Servings Count", value: toText(primaryRecipeBlock?.servingsCount) },
   { label: "Difficulty", value: toText(primaryRecipeBlock?.difficulty) },
   { label: "Recipe Type", value: toText(primaryRecipeBlock?.recipeType) },
@@ -427,13 +548,37 @@ const quickInfoItems = [
   { label: "Servings", value: toText(primaryRecipeBlock?.servings) },
 ].filter((item) => item.value);
 const nutritionItems = [
-  { label: "Calories", value: primaryRecipeBlock?.nutrition?.caloriesKcal, unit: "kcal" },
-  { label: "Protein", value: primaryRecipeBlock?.nutrition?.proteinGrams, unit: "g" },
-  { label: "Carbs", value: primaryRecipeBlock?.nutrition?.carbohydratesGrams, unit: "g" },
+  {
+    label: "Calories",
+    value: primaryRecipeBlock?.nutrition?.caloriesKcal,
+    unit: "kcal",
+  },
+  {
+    label: "Protein",
+    value: primaryRecipeBlock?.nutrition?.proteinGrams,
+    unit: "g",
+  },
+  {
+    label: "Carbs",
+    value: primaryRecipeBlock?.nutrition?.carbohydratesGrams,
+    unit: "g",
+  },
   { label: "Fat", value: primaryRecipeBlock?.nutrition?.fatGrams, unit: "g" },
-  { label: "Fiber", value: primaryRecipeBlock?.nutrition?.fiberGrams, unit: "g" },
-  { label: "Sugar", value: primaryRecipeBlock?.nutrition?.sugarGrams, unit: "g" },
-  { label: "Sodium", value: primaryRecipeBlock?.nutrition?.sodiumMg, unit: "mg" },
+  {
+    label: "Fiber",
+    value: primaryRecipeBlock?.nutrition?.fiberGrams,
+    unit: "g",
+  },
+  {
+    label: "Sugar",
+    value: primaryRecipeBlock?.nutrition?.sugarGrams,
+    unit: "g",
+  },
+  {
+    label: "Sodium",
+    value: primaryRecipeBlock?.nutrition?.sodiumMg,
+    unit: "mg",
+  },
 ].filter((item) => toPositiveNumber(item.value) !== null);
 
 const recipeOnlyArticle = primaryRecipeBlock
@@ -458,15 +603,15 @@ const recipeContent = primaryRecipeBlock
 const recipeContentSanitized = recipeContent
   .replace(
     /(<section class="content-v2-block content-v2-recipe-steps-visual">\s*<h2>)([^<]+)(<\/h2>)/,
-    '$1Pr&eacute;paration$3',
+    "$1Pr&eacute;paration$3",
   )
   .replace(
     /(<div class="content-v2-recipe-section">\s*<h3>)([^<]+)(<\/h3>\s*<ol>)/,
-    '$1Pr&eacute;paration$3',
+    "$1Pr&eacute;paration$3",
   )
   .replace(
     /(<div class="content-v2-recipe-section">\s*<h3>)Nutrition[^<]*(<\/h3>)/,
-    '$1Nutrition$2',
+    "$1Nutrition$2",
   );
 
 const storyContent = renderArticleContent(article, {
@@ -474,16 +619,17 @@ const storyContent = renderArticleContent(article, {
   includeLegacyFallback: false,
 });
 
-const firstStoryParagraphHtml = storyContent.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[0] || "";
+const firstStoryParagraphHtml =
+  storyContent.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[0] || "";
 const introText =
-  excerptText ||
-  toText(firstStoryParagraphHtml) ||
-  excerpt ||
-  "";
+  excerptText || toText(firstStoryParagraphHtml) || excerpt || "";
 const hasStoryContent = false;
 const content = renderArticleContent(article);
-const firstContentParagraphHtml = content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
-const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(firstContentParagraphHtml);
+const firstContentParagraphHtml =
+  content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
+const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(
+  firstContentParagraphHtml,
+);
 const pinterestLink = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(articleUrl)}&media=${encodeURIComponent(image || articleUrl)}&description=${encodeURIComponent(title)}`;
 const collectionHref = "/favoris";
 
@@ -492,15 +638,23 @@ const relatedArticlesRaw =
     ? await getRelatedArticlesFromMongo(categoryIds, currentArticleId, 6)
     : [];
 
-const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : [])
+const relatedArticles = (
+  Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : []
+)
   .map((item: any) => {
-    const relatedSlug = normalizeSlug(typeof item?.slug === "string" ? item.slug : item?.slug?.current || "");
+    const relatedSlug = normalizeSlug(
+      typeof item?.slug === "string" ? item.slug : item?.slug?.current || "",
+    );
     const relatedTitle = toText(item?.title);
     if (!relatedSlug || !relatedTitle) return null;
 
-    const relatedCategories = Array.isArray(item?.categories) ? item.categories : [];
+    const relatedCategories = Array.isArray(item?.categories)
+      ? item.categories
+      : [];
     const relatedCategory = relatedCategories
-      .map((category: any) => toText(category?.name || category?.title || category))
+      .map((category: any) =>
+        toText(category?.name || category?.title || category),
+      )
       .find(Boolean);
 
     return {
@@ -508,7 +662,15 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
       title: relatedTitle,
       image: processArticleImageUrl(item),
       category: relatedCategory || "Recette",
-      metaPrimary: (toText(item?.difficulty || item?.recipeDifficulty || item?.recipe?.difficulty) || relatedCategory || "Recette").toUpperCase(),
+      metaPrimary: (
+        toText(
+          item?.difficulty ||
+            item?.recipeDifficulty ||
+            item?.recipe?.difficulty,
+        ) ||
+        relatedCategory ||
+        "Recette"
+      ).toUpperCase(),
       metaSecondary: formatRecipeTimeLabel(
         item?.prep_time ??
           item?.prepTime ??
@@ -525,7 +687,9 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
 const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .map((item: any) => {
     const itemTitle = toText(item?.title || item?.name || item?.label || item);
-    const itemSlug = normalizeSlug(typeof item?.slug === "string" ? item.slug : item?.slug?.current);
+    const itemSlug = normalizeSlug(
+      typeof item?.slug === "string" ? item.slug : item?.slug?.current,
+    );
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
   .filter(Boolean);
@@ -551,7 +715,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       </nav>
       <div class="article-hero-topline">
         <div class="article-hero-copy">
-          <p class="lcdb-page-eyebrow typ-caption">{displayCategoryTitles[0] || "Recette"}</p>
+          <p class="lcdb-page-eyebrow typ-caption">
+            {displayCategoryTitles[0] || "Recette"}
+          </p>
           <h1 class="lcdb-page-title typ-h2">{title}</h1>
           <div class="article-hero-meta typ-body">
             <span>{displayAuthorName}</span>
@@ -560,7 +726,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         </div>
 
         <div class="article-hero-actions">
-          <SocialShare url={articleUrl} title={title} class="article-share-inline" />
+          <SocialShare
+            url={articleUrl}
+            title={title}
+            class="article-share-inline"
+          />
           <a
             href={`/print/${slug}/?auto=1`}
             target="_blank"
@@ -578,387 +748,563 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div class="article-layout">
         <div class="article-main-column">
-          {primaryRecipeBlock && (
-            <RecipeDetailRedesign
-              title={title}
-              slug={slug}
-              image={image}
-              imageAlt={imageAlt}
-              ratingLabel={ratingLabel}
-              ratingStars={ratingStars}
-              articleShareLinks={articleShareLinks}
-              heroMetaItems={heroMetaItems}
-              introText={introText}
-              recipeBlock={primaryRecipeBlock}
-              ingredientGroups={ingredientGroups}
-              stepGroups={stepGroupsDetailed}
-              nutritionItems={nutritionItems}
-              pinterestLink={pinterestLink}
-              collectionHref={collectionHref}
-              storyHtml=""
-            />
-          )}
+          {
+            primaryRecipeBlock && (
+              <RecipeDetailRedesign
+                title={title}
+                slug={slug}
+                image={image}
+                imageAlt={imageAlt}
+                ratingLabel={ratingLabel}
+                ratingStars={ratingStars}
+                articleShareLinks={articleShareLinks}
+                heroMetaItems={heroMetaItems}
+                introText={introText}
+                recipeBlock={primaryRecipeBlock}
+                ingredientGroups={ingredientGroups}
+                stepGroups={stepGroupsDetailed}
+                nutritionItems={nutritionItems}
+                pinterestLink={pinterestLink}
+                collectionHref={collectionHref}
+                storyHtml=""
+              />
+            )
+          }
 
           <div hidden aria-hidden="true" style="display:none">
-          <section class="lcdb-surface-card recipe-detail-shell">
-            <div class="recipe-detail-topbar">
-              <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
-                <a href="/" class="article-breadcrumb-link">Accueil</a>
-                <span>/</span>
-                <span>Recettes</span>
-                <span>/</span>
-                <span class="article-breadcrumb-current">{title}</span>
-              </nav>
+            <section class="lcdb-surface-card recipe-detail-shell">
+              <div class="recipe-detail-topbar">
+                <nav
+                  class="article-breadcrumb typ-caption"
+                  aria-label="Breadcrumb"
+                >
+                  <a href="/" class="article-breadcrumb-link">Accueil</a>
+                  <span>/</span>
+                  <span>Recettes</span>
+                  <span>/</span>
+                  <span class="article-breadcrumb-current">{title}</span>
+                </nav>
 
-              <div class="recipe-detail-topbar-actions" aria-label="Partager la recette">
-                {articleShareLinks.map((link) => (
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="recipe-detail-topbar-link"
-                    aria-label={`Partager sur ${link.label}`}
-                  >
-                    <i class={link.icon} aria-hidden="true"></i>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {(categoryItems.length > 0 || tagItems.length > 0) && (
-              <div class="article-chip-groups article-chip-groups--top">
-                {categoryItems.map((category: any) => (
-                  <a href={category.slug ? `/categories/${category.slug}` : "/categories"} class="lcdb-chip article-chip-link">
-                    {category.title}
-                  </a>
-                ))}
-                {tagItems.map((tag: any) => (
-                  <a href={tag.slug ? `/tags/${tag.slug}` : "/tags"} class="lcdb-chip article-chip-link article-tag-chip">
-                    #{tag.title}
-                  </a>
-                ))}
-              </div>
-            )}
-
-            <div class="recipe-detail-head">
-              <div class="recipe-detail-copy">
-                <h1 class="recipe-detail-title">{title}</h1>
-                {introText && <p class="recipe-detail-excerpt">{introText}</p>}
-
-                <div class="recipe-detail-rating" aria-label={ratingLabel}>
-                  <span class="recipe-detail-stars" aria-hidden="true">
-                    {ratingStars.map((filled) => (
-                      <i class={filled ? "fas fa-star" : "far fa-star"}></i>
-                    ))}
-                  </span>
-                  <span class="recipe-detail-rating-label">{ratingLabel}</span>
+                <div
+                  class="recipe-detail-topbar-actions"
+                  aria-label="Partager la recette"
+                >
+                  {
+                    articleShareLinks.map((link) => (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="recipe-detail-topbar-link"
+                        aria-label={`Partager sur ${link.label}`}
+                      >
+                        <i class={link.icon} aria-hidden="true" />
+                      </a>
+                    ))
+                  }
                 </div>
+              </div>
 
-                {heroMetaItems.length > 0 && (
-                  <div class="recipe-detail-meta-strip">
-                    {heroMetaItems.map((item) => (
-                      <span class="recipe-detail-meta-pill">{item}</span>
+              {
+                (categoryItems.length > 0 || tagItems.length > 0) && (
+                  <div class="article-chip-groups article-chip-groups--top">
+                    {categoryItems.map((category: any) => (
+                      <a
+                        href={
+                          category.slug
+                            ? `/categories/${category.slug}`
+                            : "/categories"
+                        }
+                        class="lcdb-chip article-chip-link"
+                      >
+                        {category.title}
+                      </a>
+                    ))}
+                    {tagItems.map((tag: any) => (
+                      <a
+                        href={tag.slug ? `/tags/${tag.slug}` : "/tags"}
+                        class="lcdb-chip article-chip-link article-tag-chip"
+                      >
+                        #{tag.title}
+                      </a>
                     ))}
                   </div>
-                )}
+                )
+              }
 
-                <div class="recipe-detail-actions" aria-label="Actions de la recette">
+              <div class="recipe-detail-head">
+                <div class="recipe-detail-copy">
+                  <h1 class="recipe-detail-title">{title}</h1>
+                  {
+                    introText && (
+                      <p class="recipe-detail-excerpt">{introText}</p>
+                    )
+                  }
+
+                  <div class="recipe-detail-rating" aria-label={ratingLabel}>
+                    <span class="recipe-detail-stars" aria-hidden="true">
+                      {
+                        ratingStars.map((filled) => (
+                          <i class={filled ? "fas fa-star" : "far fa-star"} />
+                        ))
+                      }
+                    </span>
+                    <span class="recipe-detail-rating-label">{ratingLabel}</span
+                    >
+                  </div>
+
+                  {
+                    heroMetaItems.length > 0 && (
+                      <div class="recipe-detail-meta-strip">
+                        {heroMetaItems.map((item) => (
+                          <span class="recipe-detail-meta-pill">{item}</span>
+                        ))}
+                      </div>
+                    )
+                  }
+
+                  <div
+                    class="recipe-detail-actions"
+                    aria-label="Actions de la recette"
+                  >
+                    <a
+                      href={`/print/${slug}/?auto=1`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="recipe-detail-action recipe-detail-action--primary"
+                    >
+                      <i class="fas fa-print" aria-hidden="true"></i>
+                      <span>Imprimer la recette</span>
+                    </a>
+                    <a
+                      href={pinterestLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="recipe-detail-action"
+                    >
+                      <i class="fab fa-pinterest-p" aria-hidden="true"></i>
+                      <span>Épingler la recette</span>
+                    </a>
+                    <a href={collectionHref} class="recipe-detail-action">
+                      <i class="far fa-bookmark" aria-hidden="true"></i>
+                      <span>Ajouter à la collection</span>
+                    </a>
+                  </div>
+                </div>
+
+                {
+                  image && (
+                    <figure class="recipe-detail-media">
+                      <img
+                        src={image}
+                        alt={imageAlt}
+                        loading="eager"
+                        decoding="async"
+                      />
+                    </figure>
+                  )
+                }
+              </div>
+            </section>
+
+            {
+              primaryRecipeBlock && (
+                <>
+                  {topInfoItems.length > 0 && (
+                    <section class="lcdb-surface-card recipe-detail-info-card">
+                      <div class="recipe-detail-info-grid">
+                        {topInfoItems.map((item) => (
+                          <div class="recipe-detail-info-item">
+                            <p class="recipe-detail-info-label">{item.label}</p>
+                            <p class="recipe-detail-info-value">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  <section class="recipe-detail-section">
+                    <div class="recipe-detail-section-head">
+                      <h2 class="recipe-detail-section-title">Ingrédients</h2>
+                      <div class="recipe-detail-servings" aria-label="Portions">
+                        <button
+                          type="button"
+                          class="wprm-recipe-adjustable-servings wprm-toggle-active"
+                          data-multiplier="1"
+                        >
+                          1x
+                        </button>
+                        <button
+                          type="button"
+                          class="wprm-recipe-adjustable-servings"
+                          data-multiplier="2"
+                        >
+                          2x
+                        </button>
+                        <button
+                          type="button"
+                          class="wprm-recipe-adjustable-servings"
+                          data-multiplier="3"
+                        >
+                          3x
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="lcdb-surface-card recipe-detail-group-card">
+                      {ingredientGroups.map((group: any) => (
+                        <section class="recipe-detail-group">
+                          {group.heading && (
+                            <h3 class="recipe-detail-group-title">
+                              {group.heading}
+                            </h3>
+                          )}
+                          <ul class="recipe-detail-ingredients-list">
+                            {group.items.map((item: any) => (
+                              <li class="recipe-detail-ingredient-item">
+                                {item.quantity && (
+                                  <span class="wprm-recipe-ingredient-amount">
+                                    {item.quantity}
+                                  </span>
+                                )}{" "}
+                                <span>{item.item}</span>
+                                {item.notes && (
+                                  <span class="recipe-detail-ingredient-note">
+                                    {" "}
+                                    {item.notes}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section class="recipe-detail-section">
+                    <h2 class="recipe-detail-section-title">Préparation</h2>
+                    <div class="recipe-detail-steps-list">
+                      {stepGroups.map((group: any) => (
+                        <section class="recipe-detail-step-group">
+                          {group.heading && (
+                            <h3 class="recipe-detail-group-title">
+                              {group.heading}
+                            </h3>
+                          )}
+                          {group.items.map((step: any, index: number) => (
+                            <article class="lcdb-surface-card recipe-detail-step-card">
+                              <div class="recipe-detail-step-copy">
+                                <span class="recipe-detail-step-index">
+                                  {index + 1}.
+                                </span>
+                                <p class="recipe-detail-step-text">
+                                  {step.instruction}
+                                </p>
+                              </div>
+                              {step.media?.url && (
+                                <figure class="recipe-detail-step-media">
+                                  <img
+                                    src={step.media.url}
+                                    alt={step.media.alt || step.instruction}
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                </figure>
+                              )}
+                            </article>
+                          ))}
+                        </section>
+                      ))}
+                    </div>
+                  </section>
+
+                  <p class="recipe-detail-bon-appetit">Bon appétit !</p>
+
+                  <section class="lcdb-surface-card recipe-detail-compact-card">
+                    <div class="recipe-detail-compact-hero">
+                      <div class="recipe-detail-compact-copy">
+                        <h2 class="recipe-detail-compact-title">{title}</h2>
+                        <div
+                          class="recipe-detail-rating"
+                          aria-label={ratingLabel}
+                        >
+                          <span class="recipe-detail-stars" aria-hidden="true">
+                            {ratingStars.map((filled) => (
+                              <i
+                                class={filled ? "fas fa-star" : "far fa-star"}
+                              />
+                            ))}
+                          </span>
+                          <span class="recipe-detail-rating-label">
+                            {ratingLabel}
+                          </span>
+                        </div>
+                        {introText && (
+                          <p class="recipe-detail-compact-excerpt">
+                            {introText}
+                          </p>
+                        )}
+                      </div>
+                      {image && (
+                        <figure class="recipe-detail-compact-media">
+                          <img
+                            src={image}
+                            alt={imageAlt}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </figure>
+                      )}
+                    </div>
+
+                    {quickInfoItems.length > 0 && (
+                      <div class="recipe-detail-compact-info">
+                        {quickInfoItems.map((item) => (
+                          <div class="recipe-detail-compact-info-item">
+                            <p class="recipe-detail-info-label">{item.label}</p>
+                            <p class="recipe-detail-info-value">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div class="recipe-detail-section-head recipe-detail-section-head--compact">
+                      <h3 class="recipe-detail-compact-section-title">
+                        Ingrédients
+                      </h3>
+                      <div class="recipe-detail-servings" aria-label="Portions">
+                        <button
+                          type="button"
+                          class="wprm-recipe-adjustable-servings wprm-toggle-active"
+                          data-multiplier="1"
+                        >
+                          1x
+                        </button>
+                        <button
+                          type="button"
+                          class="wprm-recipe-adjustable-servings"
+                          data-multiplier="2"
+                        >
+                          2x
+                        </button>
+                        <button
+                          type="button"
+                          class="wprm-recipe-adjustable-servings"
+                          data-multiplier="3"
+                        >
+                          3x
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="recipe-detail-compact-panel">
+                      {ingredientGroups.map((group: any) => (
+                        <section class="recipe-detail-group">
+                          {group.heading && (
+                            <h4 class="recipe-detail-group-title">
+                              {group.heading}
+                            </h4>
+                          )}
+                          <ul class="recipe-detail-ingredients-list">
+                            {group.items.map((item: any) => (
+                              <li class="recipe-detail-ingredient-item">
+                                {item.quantity && (
+                                  <span class="wprm-recipe-ingredient-amount">
+                                    {item.quantity}
+                                  </span>
+                                )}{" "}
+                                <span>{item.item}</span>
+                                {item.notes && (
+                                  <span class="recipe-detail-ingredient-note">
+                                    {" "}
+                                    {item.notes}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      ))}
+                    </div>
+
+                    <div class="recipe-detail-compact-panel">
+                      <h3 class="recipe-detail-compact-section-title">
+                        Préparation
+                      </h3>
+                      {stepGroups.map((group: any) => (
+                        <section class="recipe-detail-group">
+                          {group.heading && (
+                            <h4 class="recipe-detail-group-title">
+                              {group.heading}
+                            </h4>
+                          )}
+                          <ol class="recipe-detail-instructions-list">
+                            {group.items.map((step: any) => (
+                              <li class="recipe-detail-instruction-item">
+                                {step.instruction}
+                              </li>
+                            ))}
+                          </ol>
+                        </section>
+                      ))}
+                    </div>
+
+                    {nutritionItems.length > 0 && (
+                      <div class="recipe-detail-compact-panel">
+                        <h3 class="recipe-detail-compact-section-title">
+                          Nutrition
+                        </h3>
+                        <div class="recipe-detail-nutrition-grid">
+                          {nutritionItems.map((item) => (
+                            <div class="recipe-detail-nutrition-item">
+                              <span class="recipe-detail-nutrition-label">
+                                {item.label}
+                              </span>
+                              <span class="recipe-detail-nutrition-value">
+                                {Math.round(Number(item.value))} {item.unit}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </section>
+                </>
+              )
+            }
+
+            <section class="article-intro-card">
+              <div class="article-intro-topbar">
+                <nav
+                  class="article-breadcrumb typ-caption"
+                  aria-label="Breadcrumb"
+                >
+                  <a href="/" class="article-breadcrumb-link">Accueil</a>
+                  <span>/</span>
+                  <span>Recettes</span>
+                  <span>/</span>
+                  <span class="article-breadcrumb-current">{title}</span>
+                </nav>
+
+                <div
+                  class="article-intro-actions-bar"
+                  aria-label="Actions de l'article"
+                >
+                  <div class="article-toolbar-share-links">
+                    {
+                      articleShareLinks.map((link) => (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="article-toolbar-link article-toolbar-link--share"
+                          aria-label={`Partager sur ${link.label}`}
+                        >
+                          <i class={link.icon} aria-hidden="true" />
+                        </a>
+                      ))
+                    }
+                  </div>
                   <a
                     href={`/print/${slug}/?auto=1`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="recipe-detail-action recipe-detail-action--primary"
+                    class="article-toolbar-link article-toolbar-link--print"
+                    aria-label="Imprimer la recette"
                   >
                     <i class="fas fa-print" aria-hidden="true"></i>
-                    <span>Imprimer la recette</span>
                   </a>
                   <a
-                    href={pinterestLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="recipe-detail-action"
+                    href="/favoris"
+                    class="article-toolbar-link article-toolbar-link--favorite"
+                    aria-label="Ajouter aux favoris"
                   >
-                    <i class="fab fa-pinterest-p" aria-hidden="true"></i>
-                    <span>Épingler la recette</span>
-                  </a>
-                  <a href={collectionHref} class="recipe-detail-action">
                     <i class="far fa-bookmark" aria-hidden="true"></i>
-                    <span>Ajouter à la collection</span>
                   </a>
                 </div>
               </div>
 
-              {image && (
-                <figure class="recipe-detail-media">
-                  <img src={image} alt={imageAlt} loading="eager" decoding="async" />
-                </figure>
-              )}
-            </div>
-          </section>
-
-          {primaryRecipeBlock && (
-            <>
-              {topInfoItems.length > 0 && (
-                <section class="lcdb-surface-card recipe-detail-info-card">
-                  <div class="recipe-detail-info-grid">
-                    {topInfoItems.map((item) => (
-                      <div class="recipe-detail-info-item">
-                        <p class="recipe-detail-info-label">{item.label}</p>
-                        <p class="recipe-detail-info-value">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              <section class="recipe-detail-section">
-                <div class="recipe-detail-section-head">
-                  <h2 class="recipe-detail-section-title">Ingrédients</h2>
-                  <div class="recipe-detail-servings" aria-label="Portions">
-                    <button type="button" class="wprm-recipe-adjustable-servings wprm-toggle-active" data-multiplier="1">1x</button>
-                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="2">2x</button>
-                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="3">3x</button>
-                  </div>
-                </div>
-
-                <div class="lcdb-surface-card recipe-detail-group-card">
-                  {ingredientGroups.map((group: any) => (
-                    <section class="recipe-detail-group">
-                      {group.heading && <h3 class="recipe-detail-group-title">{group.heading}</h3>}
-                      <ul class="recipe-detail-ingredients-list">
-                        {group.items.map((item: any) => (
-                          <li class="recipe-detail-ingredient-item">
-                            {item.quantity && <span class="wprm-recipe-ingredient-amount">{item.quantity}</span>}
-                            {" "}
-                            <span>{item.item}</span>
-                            {item.notes && <span class="recipe-detail-ingredient-note"> {item.notes}</span>}
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  ))}
-                </div>
-              </section>
-
-              <section class="recipe-detail-section">
-                <h2 class="recipe-detail-section-title">Préparation</h2>
-                <div class="recipe-detail-steps-list">
-                  {stepGroups.map((group: any) => (
-                    <section class="recipe-detail-step-group">
-                      {group.heading && <h3 class="recipe-detail-group-title">{group.heading}</h3>}
-                      {group.items.map((step: any, index: number) => (
-                        <article class="lcdb-surface-card recipe-detail-step-card">
-                          <div class="recipe-detail-step-copy">
-                            <span class="recipe-detail-step-index">{index + 1}.</span>
-                            <p class="recipe-detail-step-text">{step.instruction}</p>
-                          </div>
-                          {step.media?.url && (
-                            <figure class="recipe-detail-step-media">
-                              <img src={step.media.url} alt={step.media.alt || step.instruction} loading="lazy" decoding="async" />
-                            </figure>
-                          )}
-                        </article>
-                      ))}
-                    </section>
-                  ))}
-                </div>
-              </section>
-
-              <p class="recipe-detail-bon-appetit">Bon appétit !</p>
-
-              <section class="lcdb-surface-card recipe-detail-compact-card">
-                <div class="recipe-detail-compact-hero">
-                  <div class="recipe-detail-compact-copy">
-                    <h2 class="recipe-detail-compact-title">{title}</h2>
-                    <div class="recipe-detail-rating" aria-label={ratingLabel}>
-                      <span class="recipe-detail-stars" aria-hidden="true">
-                        {ratingStars.map((filled) => (
-                          <i class={filled ? "fas fa-star" : "far fa-star"}></i>
-                        ))}
-                      </span>
-                      <span class="recipe-detail-rating-label">{ratingLabel}</span>
-                    </div>
-                    {introText && <p class="recipe-detail-compact-excerpt">{introText}</p>}
-                  </div>
-                  {image && (
-                    <figure class="recipe-detail-compact-media">
-                      <img src={image} alt={imageAlt} loading="lazy" decoding="async" />
-                    </figure>
-                  )}
-                </div>
-
-                {quickInfoItems.length > 0 && (
-                  <div class="recipe-detail-compact-info">
-                    {quickInfoItems.map((item) => (
-                      <div class="recipe-detail-compact-info-item">
-                        <p class="recipe-detail-info-label">{item.label}</p>
-                        <p class="recipe-detail-info-value">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div class="recipe-detail-section-head recipe-detail-section-head--compact">
-                  <h3 class="recipe-detail-compact-section-title">Ingrédients</h3>
-                  <div class="recipe-detail-servings" aria-label="Portions">
-                    <button type="button" class="wprm-recipe-adjustable-servings wprm-toggle-active" data-multiplier="1">1x</button>
-                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="2">2x</button>
-                    <button type="button" class="wprm-recipe-adjustable-servings" data-multiplier="3">3x</button>
-                  </div>
-                </div>
-
-                <div class="recipe-detail-compact-panel">
-                  {ingredientGroups.map((group: any) => (
-                    <section class="recipe-detail-group">
-                      {group.heading && <h4 class="recipe-detail-group-title">{group.heading}</h4>}
-                      <ul class="recipe-detail-ingredients-list">
-                        {group.items.map((item: any) => (
-                          <li class="recipe-detail-ingredient-item">
-                            {item.quantity && <span class="wprm-recipe-ingredient-amount">{item.quantity}</span>}
-                            {" "}
-                            <span>{item.item}</span>
-                            {item.notes && <span class="recipe-detail-ingredient-note"> {item.notes}</span>}
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  ))}
-                </div>
-
-                <div class="recipe-detail-compact-panel">
-                  <h3 class="recipe-detail-compact-section-title">Préparation</h3>
-                  {stepGroups.map((group: any) => (
-                    <section class="recipe-detail-group">
-                      {group.heading && <h4 class="recipe-detail-group-title">{group.heading}</h4>}
-                      <ol class="recipe-detail-instructions-list">
-                        {group.items.map((step: any) => (
-                          <li class="recipe-detail-instruction-item">{step.instruction}</li>
-                        ))}
-                      </ol>
-                    </section>
-                  ))}
-                </div>
-
-                {nutritionItems.length > 0 && (
-                  <div class="recipe-detail-compact-panel">
-                    <h3 class="recipe-detail-compact-section-title">Nutrition</h3>
-                    <div class="recipe-detail-nutrition-grid">
-                      {nutritionItems.map((item) => (
-                        <div class="recipe-detail-nutrition-item">
-                          <span class="recipe-detail-nutrition-label">{item.label}</span>
-                          <span class="recipe-detail-nutrition-value">{Math.round(Number(item.value))} {item.unit}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </section>
-            </>
-          )}
-
-          <section class="article-intro-card">
-            <div class="article-intro-topbar">
-              <nav class="article-breadcrumb typ-caption" aria-label="Breadcrumb">
-                <a href="/" class="article-breadcrumb-link">Accueil</a>
-                <span>/</span>
-                <span>Recettes</span>
-                <span>/</span>
-                <span class="article-breadcrumb-current">{title}</span>
-              </nav>
-
-              <div class="article-intro-actions-bar" aria-label="Actions de l'article">
-                <div class="article-toolbar-share-links">
-                  {articleShareLinks.map((link) => (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="article-toolbar-link article-toolbar-link--share"
-                      aria-label={`Partager sur ${link.label}`}
+              <div class="article-intro-topline">
+                <div class="article-intro-copy">
+                  <h1 class="article-intro-title">{title}</h1>
+                  <div class="article-intro-rating" aria-label={ratingLabel}>
+                    <span class="article-intro-stars" aria-hidden="true">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                    </span>
+                    <span class="article-intro-rating-label">{ratingLabel}</span
                     >
-                      <i class={link.icon} aria-hidden="true"></i>
-                    </a>
-                  ))}
+                  </div>
                 </div>
-                <a
-                  href={`/print/${slug}/?auto=1`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="article-toolbar-link article-toolbar-link--print"
-                  aria-label="Imprimer la recette"
-                >
-                  <i class="fas fa-print" aria-hidden="true"></i>
-                </a>
-                <a
-                  href="/favoris"
-                  class="article-toolbar-link article-toolbar-link--favorite"
-                  aria-label="Ajouter aux favoris"
-                >
-                  <i class="far fa-bookmark" aria-hidden="true"></i>
-                </a>
               </div>
-            </div>
 
-            <div class="article-intro-topline">
-              <div class="article-intro-copy">
-                <h1 class="article-intro-title">{title}</h1>
-                <div class="article-intro-rating" aria-label={ratingLabel}>
-                  <span class="article-intro-stars" aria-hidden="true">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
+              <div class="article-intro-meta">
+                <div class="article-intro-meta-item">
+                  <span class="article-intro-meta-label"
+                    ><i class="far fa-folder-open"></i> Catégorie</span
+                  >
+                  <span class="article-intro-meta-value">
+                    {displayCategoryTitles.join(", ") || "Recette"}
                   </span>
-                  <span class="article-intro-rating-label">{ratingLabel}</span>
+                </div>
+                <div class="article-intro-meta-item">
+                  <span class="article-intro-meta-label"
+                    ><i class="far fa-user"></i> Auteur</span
+                  >
+                  <span class="article-intro-meta-value"
+                    >{displayAuthorName}</span
+                  >
                 </div>
               </div>
+            </section>
 
-            </div>
+            {
+              image && !firstContentParagraphHasImage && (
+                <figure class="lcdb-surface-card article-hero-image">
+                  <img src={image} alt={imageAlt} loading="eager" />
+                </figure>
+              )
+            }
 
-            <div class="article-intro-meta">
-              <div class="article-intro-meta-item">
-                <span class="article-intro-meta-label"><i class="far fa-folder-open"></i> Catégorie</span>
-                <span class="article-intro-meta-value">
-                  {displayCategoryTitles.join(", ") || "Recette"}
-                </span>
-              </div>
-              <div class="article-intro-meta-item">
-                <span class="article-intro-meta-label"><i class="far fa-user"></i> Auteur</span>
-                <span class="article-intro-meta-value">{displayAuthorName}</span>
-              </div>
-            </div>
-          </section>
+            <article class="lcdb-surface-card article-content-card">
+              {
+                (categoryItems.length > 0 || tagItems.length > 0) && (
+                  <div class="article-chip-groups">
+                    {categoryItems.map((category: any) => (
+                      <a
+                        href={
+                          category.slug
+                            ? `/categories/${category.slug}`
+                            : "/categories"
+                        }
+                        class="lcdb-chip article-chip-link"
+                      >
+                        {category.title}
+                      </a>
+                    ))}
+                    {tagItems.map((tag: any) => (
+                      <a
+                        href={tag.slug ? `/tags/${tag.slug}` : "/tags"}
+                        class="lcdb-chip article-chip-link article-tag-chip"
+                      >
+                        #{tag.title}
+                      </a>
+                    ))}
+                  </div>
+                )
+              }
 
-          {image && !firstContentParagraphHasImage && (
-            <figure class="lcdb-surface-card article-hero-image">
-              <img src={image} alt={imageAlt} loading="eager" />
-            </figure>
-          )}
-
-          <article class="lcdb-surface-card article-content-card">
-            {(categoryItems.length > 0 || tagItems.length > 0) && (
-              <div class="article-chip-groups">
-                {categoryItems.map((category: any) => (
-                  <a href={category.slug ? `/categories/${category.slug}` : "/categories"} class="lcdb-chip article-chip-link">
-                    {category.title}
-                  </a>
-                ))}
-                {tagItems.map((tag: any) => (
-                  <a href={tag.slug ? `/tags/${tag.slug}` : "/tags"} class="lcdb-chip article-chip-link article-tag-chip">
-                    #{tag.title}
-                  </a>
-                ))}
-              </div>
-            )}
-
-            <div
-              class="article-content typ-body"
-              data-article-title={title}
-              data-article-summary={excerptText}
-              set:html={content}
-            />
-          </article>
+              <div
+                class="article-content typ-body"
+                data-article-title={title}
+                data-article-summary={excerptText}
+                set:html={content}
+              />
+            </article>
           </div>
 
           <section class="lcdb-surface-card article-newsletter-card">
@@ -971,10 +1317,16 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               />
             </div>
             <div class="article-newsletter-copy">
-              <p class="article-newsletter-eyebrow typ-caption">Lettre d’information</p>
-              <h2 class="article-newsletter-title">Abonnez-vous à La Cuisine de Bernard</h2>
+              <p class="article-newsletter-eyebrow typ-caption">
+                Lettre d’information
+              </p>
+              <h2 class="article-newsletter-title">
+                Abonnez-vous à La Cuisine de Bernard
+              </h2>
               <p class="article-newsletter-text">
-                Recevez toute l'actualité de La Cuisine De Bernard, ses dernières publications et plus encore, directement dans votre boîte de réception.
+                Recevez toute l'actualité de La Cuisine De Bernard, ses
+                dernières publications et plus encore, directement dans votre
+                boîte de réception.
               </p>
               <div class="article-newsletter-form">
                 <input
@@ -984,7 +1336,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                   placeholder="Votre adresse email"
                   aria-label="Votre adresse email"
                 />
-                <button id="open-newsletter-article" class="article-newsletter-btn typ-button" type="button">
+                <button
+                  id="open-newsletter-article"
+                  class="article-newsletter-btn typ-button"
+                  type="button"
+                >
                   S'abonner
                 </button>
               </div>
@@ -1001,7 +1357,6 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               showComposerPreview={true}
             />
           </section>
-
         </div>
 
         <div class="article-sidebar-column">
@@ -1009,82 +1364,115 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         </div>
       </div>
 
-      {relatedArticles.length > 0 && (
-        <section class="article-related-section article-related-section--fullwidth">
-          <div class="article-related-header">
-            <div>
-              <h2 class="article-related-title">Vous aimerez aussi</h2>
+      {
+        relatedArticles.length > 0 && (
+          <section class="article-related-section article-related-section--fullwidth">
+            <div class="article-related-header">
+              <div>
+                <h2 class="article-related-title">Vous aimerez aussi</h2>
+              </div>
+              <div class="article-related-controls">
+                <button
+                  class="article-related-arrow"
+                  type="button"
+                  data-related-prev
+                  aria-label="Précédent"
+                >
+                  <img
+                    src="/images/client-arrow-circle.svg"
+                    alt=""
+                    class="article-related-arrow-icon article-related-arrow-icon--prev"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
+                <button
+                  class="article-related-arrow"
+                  type="button"
+                  data-related-next
+                  aria-label="Suivant"
+                >
+                  <img
+                    src="/images/client-arrow-circle.svg"
+                    alt=""
+                    class="article-related-arrow-icon article-related-arrow-icon--next"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
+              </div>
             </div>
-            <div class="article-related-controls">
-              <button class="article-related-arrow" type="button" data-related-prev aria-label="Précédent">
-                <img
-                  src="/images/client-arrow-circle.svg"
-                  alt=""
-                  class="article-related-arrow-icon article-related-arrow-icon--prev"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </button>
-              <button class="article-related-arrow" type="button" data-related-next aria-label="Suivant">
-                <img
-                  src="/images/client-arrow-circle.svg"
-                  alt=""
-                  class="article-related-arrow-icon article-related-arrow-icon--next"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </button>
-            </div>
-          </div>
 
-          <div class="article-related-viewport" data-related-viewport>
-            <div class="article-related-track" data-related-track>
-              {relatedArticles.map((related: any) => (
-                <a href={`/${related.slug}/`} class="article-related-card">
-                  <div class="article-related-media">
-                    <span class="article-related-badge" aria-hidden="true">
-                      <span class="article-related-badge-icon">
-                        <i class="far fa-bookmark"></i>
-                        <span class="article-related-badge-plus"></span>
+            <div class="article-related-viewport" data-related-viewport>
+              <div class="article-related-track" data-related-track>
+                {relatedArticles.map((related: any) => (
+                  <a href={`/${related.slug}/`} class="article-related-card">
+                    <div class="article-related-media">
+                      <span class="article-related-badge" aria-hidden="true">
+                        <span class="article-related-badge-icon">
+                          <i class="far fa-bookmark" />
+                          <span class="article-related-badge-plus" />
+                        </span>
                       </span>
-                    </span>
-                    {related.image ? (
-                      <img src={related.image} alt={related.title} loading="lazy" />
-                    ) : (
-                      <div class="article-related-placeholder" aria-hidden="true"></div>
-                    )}
-                  </div>
-                  <div class="article-related-body">
-                    <p class="article-related-category typ-caption">{related.category}</p>
-                    <h3 class="article-related-card-title">{related.title}</h3>
-                    <div class="article-related-footer">
-                      <div class="article-related-meta">
-                        <span>{related.metaPrimary}</span>
-                        {related.metaSecondary && (
-                          <>
-                            <span class="article-related-meta-divider" aria-hidden="true"></span>
-                            <span>{related.metaSecondary}</span>
-                          </>
-                        )}
-                      </div>
-                      <div class="article-related-share" aria-hidden="true">
-                        <i class="fab fa-facebook-f"></i>
-                        <i class="fab fa-pinterest-p"></i>
-                        <i class="far fa-envelope"></i>
+                      {related.image ? (
+                        <img
+                          src={related.image}
+                          alt={related.title}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          class="article-related-placeholder"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </div>
+                    <div class="article-related-body">
+                      <p class="article-related-category typ-caption">
+                        {related.category}
+                      </p>
+                      <h3 class="article-related-card-title">
+                        {related.title}
+                      </h3>
+                      <div class="article-related-footer">
+                        <div class="article-related-meta">
+                          <span>{related.metaPrimary}</span>
+                          {related.metaSecondary && (
+                            <>
+                              <span
+                                class="article-related-meta-divider"
+                                aria-hidden="true"
+                              />
+                              <span>{related.metaSecondary}</span>
+                            </>
+                          )}
+                        </div>
+                        <div class="article-related-share" aria-hidden="true">
+                          <i class="fab fa-facebook-f" />
+                          <i class="fab fa-pinterest-p" />
+                          <i class="far fa-envelope" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
-          <div class="article-related-dots" data-related-dots aria-label="Navigation des suggestions"></div>
-        </section>
-      )}
+            <div
+              class="article-related-dots"
+              data-related-dots
+              aria-label="Navigation des suggestions"
+            />
+          </section>
+        )
+      }
     </div>
   </section>
 
-  <NewsletterModal triggerId="open-newsletter-article" id="newsletter-modal-article" />
+  <NewsletterModal
+    triggerId="open-newsletter-article"
+    id="newsletter-modal-article"
+  />
 </BaseLayout>
 
 <script>
@@ -1106,39 +1494,53 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
     const createServingsNote = (title, servings, unit) => {
       const count = String(servings || "").trim();
-      const servingsUnit = String(unit || "").replace(/\s+/g, " ").trim();
+      const servingsUnit = String(unit || "")
+        .replace(/\s+/g, " ")
+        .trim();
       const titleText = String(title || "").toLowerCase();
       if (!count) return "";
-      if (titleText.includes("gunkan")) return `Pour environ ${count} gunkan makis`;
+      if (titleText.includes("gunkan"))
+        return `Pour environ ${count} gunkan makis`;
       return `Pour environ ${count}${servingsUnit ? ` ${servingsUnit}` : ""}`;
     };
 
     const createStepTitle = (text, fallbackLabel, index) => {
-      const cleaned = String(text || "").replace(/\s+/g, " ").trim();
+      const cleaned = String(text || "")
+        .replace(/\s+/g, " ")
+        .trim();
       const normalizedLabel = String(fallbackLabel || "")
         .replace(/\s+/g, " ")
         .trim()
         .replace(/\s*:\s*$/, "");
       const firstSentence = cleaned.split(/[.!?]/)[0]?.trim() || "";
       const actionMatch = firstSentence.match(
-        /\b(?:faire\s+)?(?:mariner|mélanger|couper|laissez?|mettre|placez|égouttez|versez|hachez|prenez|coupez|remplissez|ajoutez|pesez|façonnez|dégustez)\b[^.!?]*/i
+        /\b(?:faire\s+)?(?:mariner|mélanger|couper|laissez?|mettre|placez|égouttez|versez|hachez|prenez|coupez|remplissez|ajoutez|pesez|façonnez|dégustez)\b[^.!?]*/i,
       );
       if (actionMatch?.[0]) {
         let actionTitle = actionMatch[0].replace(/^faire\s+/i, "").trim();
-        actionTitle = actionTitle.split(/\b(?:dans le cas|avant de|afin de|pendant|avec)\b/i)[0]?.trim() || actionTitle;
+        actionTitle =
+          actionTitle
+            .split(/\b(?:dans le cas|avant de|afin de|pendant|avec)\b/i)[0]
+            ?.trim() || actionTitle;
         actionTitle = toSentenceCase(actionTitle);
         if (actionTitle) {
-          return actionTitle.length > 54 ? `${actionTitle.slice(0, 51).trim()}...` : actionTitle;
+          return actionTitle.length > 54
+            ? `${actionTitle.slice(0, 51).trim()}...`
+            : actionTitle;
         }
       }
       const firstClause = firstSentence.split(/[,:;]/)[0]?.trim() || "";
 
       if (firstClause) {
-        return firstClause.length > 54 ? `${firstClause.slice(0, 51).trim()}...` : firstClause;
+        return firstClause.length > 54
+          ? `${firstClause.slice(0, 51).trim()}...`
+          : firstClause;
       }
 
       if (firstSentence) {
-        return firstSentence.length > 60 ? `${firstSentence.slice(0, 57).trim()}...` : firstSentence;
+        return firstSentence.length > 60
+          ? `${firstSentence.slice(0, 57).trim()}...`
+          : firstSentence;
       }
 
       if (normalizedLabel) return normalizedLabel;
@@ -1149,15 +1551,25 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       const content = document.querySelector<HTMLElement>(".article-content");
       if (!content || content.dataset.enhanced === "true") return;
 
-      const recipeContainer = content.querySelector<HTMLElement>(".wprm-recipe-container");
+      const recipeContainer = content.querySelector<HTMLElement>(
+        ".wprm-recipe-container",
+      );
       if (!recipeContainer) return;
 
       content.dataset.enhanced = "true";
 
-      content.querySelectorAll(".xs_social_share_widget, .xs_share_url, .wslu-share-box").forEach((node) => node.remove());
+      content
+        .querySelectorAll(
+          ".xs_social_share_widget, .xs_share_url, .wslu-share-box",
+        )
+        .forEach((node) => node.remove());
 
       content.querySelectorAll(":scope > p").forEach((node) => {
-        const text = node.textContent?.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim() || "";
+        const text =
+          node.textContent
+            ?.replace(/\u00a0/g, " ")
+            .replace(/\s+/g, " ")
+            .trim() || "";
         if (!text && !node.querySelector("img, picture, video, iframe")) {
           node.remove();
         }
@@ -1171,24 +1583,35 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         .trim()
         .toLowerCase();
       const getNodeText = (node: Element | null) =>
-        node?.textContent?.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim() || "";
+        node?.textContent
+          ?.replace(/\u00a0/g, " ")
+          .replace(/\s+/g, " ")
+          .trim() || "";
       const recipeStartIndex = children.findIndex((node, index) => {
         if (index >= recipeIndex) return false;
 
         const text = getNodeText(node);
         if (!text) return false;
 
-        if ((node.tagName === "H2" || node.tagName === "H3") && /^(pour environ|ingrédients?|préparation|instructions?)/i.test(text)) {
+        if (
+          (node.tagName === "H2" || node.tagName === "H3") &&
+          /^(pour environ|ingrédients?|préparation|instructions?)/i.test(text)
+        ) {
           return true;
         }
 
-        if ((node.tagName === "H3" || node.tagName === "H4") && /^(pour les?|pour la|pour le|vinaigre|riz|salade)/i.test(text)) {
+        if (
+          (node.tagName === "H3" || node.tagName === "H4") &&
+          /^(pour les?|pour la|pour le|vinaigre|riz|salade)/i.test(text)
+        ) {
           return true;
         }
 
         if ((node.tagName === "UL" || node.tagName === "OL") && index > 0) {
           const previousTag = children[index - 1]?.tagName;
-          return previousTag === "H2" || previousTag === "H3" || previousTag === "H4";
+          return (
+            previousTag === "H2" || previousTag === "H3" || previousTag === "H4"
+          );
         }
 
         return false;
@@ -1196,14 +1619,25 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       const duplicateRecipeStartIndex =
         recipeStartIndex > 0 &&
         children[recipeStartIndex - 1]?.tagName === "P" &&
-        getNodeText(children[recipeStartIndex - 1]).replace(/\s*:\s*$/, "").toLowerCase() === articleTitleNormalized
+        getNodeText(children[recipeStartIndex - 1])
+          .replace(/\s*:\s*$/, "")
+          .toLowerCase() === articleTitleNormalized
           ? recipeStartIndex - 1
           : recipeStartIndex;
-      const stepStartIndex = children.findIndex((node, index) => index >= Math.max(duplicateRecipeStartIndex, 0) && node.tagName === "H4");
+      const stepStartIndex = children.findIndex(
+        (node, index) =>
+          index >= Math.max(duplicateRecipeStartIndex, 0) &&
+          node.tagName === "H4",
+      );
       const heroFigure = children.find((node) => node.tagName === "FIGURE");
       const duplicateRecipeNodes =
         duplicateRecipeStartIndex > -1
-          ? children.slice(duplicateRecipeStartIndex, stepStartIndex > -1 ? stepStartIndex : recipeIndex).filter((node) => node.isConnected)
+          ? children
+              .slice(
+                duplicateRecipeStartIndex,
+                stepStartIndex > -1 ? stepStartIndex : recipeIndex,
+              )
+              .filter((node) => node.isConnected)
           : [];
 
       if (heroFigure) {
@@ -1212,27 +1646,46 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
       recipeContainer
         .querySelectorAll(
-          ".wprm-nutrition-label-text-nutrition-container-empty, .wprm-spacer, .wprm-icon-shortcode, .wprm-icon-shortcode-separate"
+          ".wprm-nutrition-label-text-nutrition-container-empty, .wprm-spacer, .wprm-icon-shortcode, .wprm-icon-shortcode-separate",
         )
         .forEach((node) => node.remove());
 
       const hasRecipeSideMedia = Boolean(
-        recipeContainer.querySelector(".wprm-container-float-right img, .wprm-container-float-right picture, .wprm-container-float-right video")
+        recipeContainer.querySelector(
+          ".wprm-container-float-right img, .wprm-container-float-right picture, .wprm-container-float-right video",
+        ),
       );
       if (!hasRecipeSideMedia) {
         recipeContainer.classList.add("article-recipe--no-side-media");
       }
 
-      const ingredientsContainer = recipeContainer.querySelector<HTMLElement>(".wprm-recipe-ingredients-container");
-      const servingsCount = recipeContainer.querySelector<HTMLElement>(".wprm-recipe-servings")?.textContent?.trim() || "";
-      const servingsUnit = recipeContainer.querySelector<HTMLElement>(".wprm-recipe-servings-unit")?.textContent?.trim() || "";
-      if (ingredientsContainer && !ingredientsContainer.querySelector(".article-ingredients-note")) {
-        const noteText = createServingsNote(content.dataset.articleTitle, servingsCount, servingsUnit);
+      const ingredientsContainer = recipeContainer.querySelector<HTMLElement>(
+        ".wprm-recipe-ingredients-container",
+      );
+      const servingsCount =
+        recipeContainer
+          .querySelector<HTMLElement>(".wprm-recipe-servings")
+          ?.textContent?.trim() || "";
+      const servingsUnit =
+        recipeContainer
+          .querySelector<HTMLElement>(".wprm-recipe-servings-unit")
+          ?.textContent?.trim() || "";
+      if (
+        ingredientsContainer &&
+        !ingredientsContainer.querySelector(".article-ingredients-note")
+      ) {
+        const noteText = createServingsNote(
+          content.dataset.articleTitle,
+          servingsCount,
+          servingsUnit,
+        );
         if (noteText) {
           const note = document.createElement("div");
           note.className = "article-ingredients-note";
           note.textContent = noteText;
-          const firstGroup = ingredientsContainer.querySelector(".wprm-recipe-ingredient-group");
+          const firstGroup = ingredientsContainer.querySelector(
+            ".wprm-recipe-ingredient-group",
+          );
           if (firstGroup) {
             ingredientsContainer.insertBefore(note, firstGroup);
           } else {
@@ -1241,7 +1694,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         }
       }
 
-      const nutritionContainer = recipeContainer.querySelector<HTMLElement>(".wprm-nutrition-label-container");
+      const nutritionContainer = recipeContainer.querySelector<HTMLElement>(
+        ".wprm-nutrition-label-container",
+      );
       if (nutritionContainer) {
         const nutritionOrder = [
           "calories",
@@ -1264,17 +1719,31 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         ];
 
         nutritionContainer
-          .querySelectorAll<HTMLElement>(".wprm-nutrition-label-text-nutrition-label")
+          .querySelectorAll<HTMLElement>(
+            ".wprm-nutrition-label-text-nutrition-label",
+          )
           .forEach((label) => {
-            label.textContent = label.textContent?.replace(/\s*:\s*$/, "") || "";
+            label.textContent =
+              label.textContent?.replace(/\s*:\s*$/, "") || "";
           });
 
         nutritionContainer
-          .querySelectorAll<HTMLElement>(".wprm-nutrition-label-text-nutrition-container")
+          .querySelectorAll<HTMLElement>(
+            ".wprm-nutrition-label-text-nutrition-container",
+          )
           .forEach((item) => {
-            const value = item.querySelector<HTMLElement>(".wprm-nutrition-label-text-nutrition-value");
-            const unit = item.querySelector<HTMLElement>(".wprm-nutrition-label-text-nutrition-unit");
-            if (!value || !unit || item.querySelector(".article-nutrition-metric")) return;
+            const value = item.querySelector<HTMLElement>(
+              ".wprm-nutrition-label-text-nutrition-value",
+            );
+            const unit = item.querySelector<HTMLElement>(
+              ".wprm-nutrition-label-text-nutrition-unit",
+            );
+            if (
+              !value ||
+              !unit ||
+              item.querySelector(".article-nutrition-metric")
+            )
+              return;
 
             const metric = document.createElement("div");
             metric.className = "article-nutrition-metric";
@@ -1285,7 +1754,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
         nutritionOrder.forEach((token) => {
           const item = nutritionContainer.querySelector<HTMLElement>(
-            `.wprm-nutrition-label-text-nutrition-container-${token}`
+            `.wprm-nutrition-label-text-nutrition-container-${token}`,
           );
           if (item) nutritionContainer.appendChild(item);
         });
@@ -1294,7 +1763,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       duplicateRecipeNodes.forEach((node) => node.remove());
 
       if (stepStartIndex > -1 && recipeIndex > stepStartIndex) {
-        const manualNodes = children.slice(stepStartIndex, recipeIndex).filter((node) => node.isConnected);
+        const manualNodes = children
+          .slice(stepStartIndex, recipeIndex)
+          .filter((node) => node.isConnected);
         const journey = document.createElement("section");
         journey.className = "article-visual-journey";
 
@@ -1326,8 +1797,13 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
           const body = node.textContent?.replace(/\s+/g, " ").trim() || "";
           if (!body || body === content.dataset.articleTitle) continue;
 
-          const normalizedSectionLabel = toSentenceCase(normalizeSectionLabel(sectionLabel));
-          if (normalizedSectionLabel && normalizedSectionLabel !== renderedSectionLabel) {
+          const normalizedSectionLabel = toSentenceCase(
+            normalizeSectionLabel(sectionLabel),
+          );
+          if (
+            normalizedSectionLabel &&
+            normalizedSectionLabel !== renderedSectionLabel
+          ) {
             const sectionHeader = document.createElement("div");
             sectionHeader.className = "article-step-group";
             sectionHeader.innerHTML = `
@@ -1391,15 +1867,24 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       }
 
       const recipeName = recipeContainer.querySelector(".wprm-recipe-name");
-      if (recipeName && recipeName.textContent?.trim() === content.dataset.articleTitle?.trim()) {
+      if (
+        recipeName &&
+        recipeName.textContent?.trim() === content.dataset.articleTitle?.trim()
+      ) {
         recipeName.classList.add("article-recipe-name--matched");
       }
     };
 
     const setupNewsletterShortcut = () => {
-      const trigger = document.getElementById("open-newsletter-article") as HTMLButtonElement | null;
-      const quickInput = document.getElementById("newsletter-article-email") as HTMLInputElement | null;
-      const modalInput = document.getElementById("newsletter-modal-article-email") as HTMLInputElement | null;
+      const trigger = document.getElementById(
+        "open-newsletter-article",
+      ) as HTMLButtonElement | null;
+      const quickInput = document.getElementById(
+        "newsletter-article-email",
+      ) as HTMLInputElement | null;
+      const modalInput = document.getElementById(
+        "newsletter-modal-article-email",
+      ) as HTMLInputElement | null;
 
       if (!trigger || !quickInput || !modalInput) return;
 
@@ -1412,15 +1897,25 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     };
 
     const setupRelatedSlider = () => {
-      const viewport = document.querySelector<HTMLElement>("[data-related-viewport]");
+      const viewport = document.querySelector<HTMLElement>(
+        "[data-related-viewport]",
+      );
       const track = document.querySelector<HTMLElement>("[data-related-track]");
-      const prevButton = document.querySelector<HTMLButtonElement>("[data-related-prev]");
-      const nextButton = document.querySelector<HTMLButtonElement>("[data-related-next]");
-      const dotsHost = document.querySelector<HTMLElement>("[data-related-dots]");
+      const prevButton = document.querySelector<HTMLButtonElement>(
+        "[data-related-prev]",
+      );
+      const nextButton = document.querySelector<HTMLButtonElement>(
+        "[data-related-next]",
+      );
+      const dotsHost = document.querySelector<HTMLElement>(
+        "[data-related-dots]",
+      );
 
       if (!viewport || !track) return;
 
-      const cards = Array.from(track.querySelectorAll<HTMLElement>(".article-related-card"));
+      const cards = Array.from(
+        track.querySelectorAll<HTMLElement>(".article-related-card"),
+      );
       if (!cards.length) return;
 
       let currentIndex = 0;
@@ -1462,7 +1957,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
         gap = Number.parseFloat(styles.columnGap || styles.gap || "20") || 20;
 
         const viewportWidth = viewport.clientWidth;
-        const cardWidth = visibleCards > 0 ? (viewportWidth - gap * (visibleCards - 1)) / visibleCards : viewportWidth;
+        const cardWidth =
+          visibleCards > 0
+            ? (viewportWidth - gap * (visibleCards - 1)) / visibleCards
+            : viewportWidth;
         const translateX = currentIndex * (cardWidth + gap);
 
         cards.forEach((card) => {
@@ -1478,11 +1976,16 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
         if (nextButton) {
           nextButton.disabled = currentIndex >= maxIndex;
-          nextButton.setAttribute("aria-disabled", String(currentIndex >= maxIndex));
+          nextButton.setAttribute(
+            "aria-disabled",
+            String(currentIndex >= maxIndex),
+          );
         }
 
         if (dotsHost) {
-          const dots = Array.from(dotsHost.querySelectorAll<HTMLElement>(".article-related-dot"));
+          const dots = Array.from(
+            dotsHost.querySelectorAll<HTMLElement>(".article-related-dot"),
+          );
           if (dots.length !== Math.max(maxIndex + 1, 1)) {
             buildDots();
             return;
@@ -1510,8 +2013,12 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       window.addEventListener("resize", updateSlider, { passive: true });
     };
 
-    const servingButtons = document.querySelectorAll<HTMLElement>(".wprm-recipe-adjustable-servings");
-    const ingredientAmounts = document.querySelectorAll<HTMLElement>(".wprm-recipe-ingredient-amount");
+    const servingButtons = document.querySelectorAll<HTMLElement>(
+      ".wprm-recipe-adjustable-servings",
+    );
+    const ingredientAmounts = document.querySelectorAll<HTMLElement>(
+      ".wprm-recipe-ingredient-amount",
+    );
 
     if (servingButtons.length && ingredientAmounts.length) {
       const originalAmounts = new Map();
@@ -1523,12 +2030,18 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       });
 
       servingButtons.forEach((button) => {
-        button.setAttribute("aria-pressed", String(button.classList.contains("wprm-toggle-active")));
+        button.setAttribute(
+          "aria-pressed",
+          String(button.classList.contains("wprm-toggle-active")),
+        );
       });
 
       servingButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          const multiplier = Number.parseInt(button.dataset.multiplier || "1", 10);
+          const multiplier = Number.parseInt(
+            button.dataset.multiplier || "1",
+            10,
+          );
           if (!Number.isFinite(multiplier) || multiplier <= 0) return;
 
           servingButtons.forEach((otherButton) => {
@@ -1542,7 +2055,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
             if (!Number.isFinite(original)) return;
 
             const updated = original * multiplier;
-            el.textContent = updated % 1 === 0 ? updated.toString() : updated.toFixed(2);
+            el.textContent =
+              updated % 1 === 0 ? updated.toString() : updated.toFixed(2);
           });
         });
       });
@@ -1565,6 +2079,13 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .lcdb-page-section-inner {
     padding-top: 22px;
+  }
+
+  .flex.items-center.gap-2.mb-3.flex-wrap.justify-start {
+    width: max-content;
+}
+  .article-layout .article-sidebar-column{
+    width: 425px;
   }
 
   .article-layout {
@@ -1701,7 +2222,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .recipe-detail-action:hover {
@@ -1779,21 +2303,28 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     font-size: 0.98rem;
   }
 
-  .article-content--recipe :global(section.content-v2-block.content-v2-recipe-ingredients) {
+  .article-content--recipe
+    :global(section.content-v2-block.content-v2-recipe-ingredients) {
     margin-top: 6px;
   }
 
   .article-content--recipe :global(.content-v2-recipe-ingredients-header h2),
-  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
+  .article-content--recipe
+    :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
     font-size: clamp(2.6rem, 4vw, 3.5rem) !important;
     line-height: 1.02;
   }
 
-  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
+  .article-content--recipe
+    :global(.content-v2-block.content-v2-recipe-steps-visual h2) {
     margin-top: 28px;
   }
 
-  .article-content--recipe :global(.content-v2-block.content-v2-recipe-ingredients ul#recipe-main-recipe-ingredients) {
+  .article-content--recipe
+    :global(
+      .content-v2-block.content-v2-recipe-ingredients
+        ul#recipe-main-recipe-ingredients
+    ) {
     border: 1px solid #ddd6c7 !important;
     border-radius: 12px !important;
     padding: 28px 24px 22px 34px !important;
@@ -1805,11 +2336,17 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     font-weight: 700 !important;
   }
 
-  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual) {
+  .article-content--recipe
+    :global(.content-v2-block.content-v2-recipe-steps-visual) {
     margin-top: 2px;
   }
 
-  .article-content--recipe :global(.content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list li.content-v2-recipe-visual-step) {
+  .article-content--recipe
+    :global(
+      .content-v2-block.content-v2-recipe-steps-visual
+        ol.content-v2-recipe-visual-list
+        li.content-v2-recipe-visual-step
+    ) {
     padding: 28px;
     border-radius: 12px;
   }
@@ -1822,7 +2359,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     border-radius: 8px;
   }
 
-  .article-content--recipe :global(section.content-v2-block.content-v2-recipe-card) {
+  .article-content--recipe
+    :global(section.content-v2-block.content-v2-recipe-card) {
     margin-top: 14px;
     border: 1px solid #ddd6c7;
     border-radius: 12px;
@@ -2119,7 +2657,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .recipe-detail-compact-card,
   .article-intro-card,
   .article-hero-image,
-  .article-main-column > .article-content-card:not(.article-content-card--recipe):not(.article-content-card--story) {
+  .article-main-column
+    > .article-content-card:not(.article-content-card--recipe):not(
+      .article-content-card--story
+    ) {
     display: none !important;
   }
 
@@ -2300,7 +2841,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     text-decoration: none;
     font-size: 13px;
     line-height: 1;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .article-toolbar-link:hover {
@@ -2318,7 +2861,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
   }
 
   .article-toolbar-link--print {
@@ -2612,7 +3157,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .article-content :global(.wprm-template-chic-buttons .wprm-recipe-print svg),
-  .article-content :global(.wprm-template-chic-buttons .wprm-recipe-print path) {
+  .article-content
+    :global(.wprm-template-chic-buttons .wprm-recipe-print path) {
     fill: #ffffff !important;
   }
 
@@ -2641,7 +3187,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: contents;
   }
 
-  .article-content :global(.wprm-container-columns-spaced .wprm-recipe-details-container) {
+  .article-content
+    :global(.wprm-container-columns-spaced .wprm-recipe-details-container) {
     display: contents !important;
   }
 
@@ -2825,7 +3372,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     background: transparent;
   }
 
-  .article-content :global(.wprm-recipe-adjustable-servings.wprm-toggle-active) {
+  .article-content
+    :global(.wprm-recipe-adjustable-servings.wprm-toggle-active) {
     background: #54b6b1;
     color: #ffffff;
   }
@@ -2849,7 +3397,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     min-width: 0;
   }
 
-  .article-content :global(.wprm-nutrition-label-text-nutrition-container-empty) {
+  .article-content
+    :global(.wprm-nutrition-label-text-nutrition-container-empty) {
     display: none !important;
   }
 
@@ -3038,7 +3587,12 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     justify-content: center;
     padding: 38px 32px 34px;
     background:
-      linear-gradient(135deg, rgba(4, 30, 41, 0.98) 0%, rgba(4, 30, 41, 0.98) 64%, rgba(0, 62, 73, 0.98) 100%),
+      linear-gradient(
+        135deg,
+        rgba(4, 30, 41, 0.98) 0%,
+        rgba(4, 30, 41, 0.98) 64%,
+        rgba(0, 62, 73, 0.98) 100%
+      ),
       #041e29;
     color: #ffffff;
   }
@@ -3144,7 +3698,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     align-items: center;
     justify-content: center;
     padding: 0;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
   }
 
   .article-related-arrow:hover {
@@ -3192,7 +3748,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     border-radius: 2px;
     background: #fbfaf6;
     text-decoration: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .article-related-card:hover {
@@ -3344,7 +3902,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     height: 7px;
     border-radius: 999px;
     background: #8e887b;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease;
   }
 
   .article-related-dot.is-active {
@@ -3391,7 +3951,6 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-sidebar-column :global(.workshop-box) {
       width: 100%;
     }
-
   }
 
   @media (max-width: 1023px) {

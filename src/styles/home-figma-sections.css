@@ -1173,7 +1173,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
 }
 
 .button-data-full {
-  width: 274px;
+  /* width: 274px; */
   height: 55px;
   angle: 0 deg;
   opacity: 1;
