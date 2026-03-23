@@ -29,11 +29,23 @@ const formatMinutes = (value: any) => {
 };
 
 const quickInfoItems = [
-  { label: "Temps de préparation", value: formatMinutes(recipeBlock?.preparationTimeMinutes) },
-  { label: "Temps de cuisson", value: formatMinutes(recipeBlock?.cookingTimeMinutes) },
-  { label: "Nombre de portions", value: String(recipeBlock?.servingsCount || "").trim() },
+  {
+    label: "Temps de préparation",
+    value: formatMinutes(recipeBlock?.preparationTimeMinutes),
+  },
+  {
+    label: "Temps de cuisson",
+    value: formatMinutes(recipeBlock?.cookingTimeMinutes),
+  },
+  {
+    label: "Nombre de portions",
+    value: String(recipeBlock?.servingsCount || "").trim(),
+  },
   { label: "Difficulté", value: String(recipeBlock?.difficulty || "").trim() },
-  { label: "Type de recette", value: String(recipeBlock?.recipeType || "").trim() },
+  {
+    label: "Type de recette",
+    value: String(recipeBlock?.recipeType || "").trim(),
+  },
   { label: "Type de plat", value: String(recipeBlock?.dishType || "").trim() },
   { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
   { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
@@ -54,17 +66,19 @@ const printLink = `/print/${slug}/?auto=1`;
       </nav>
 
       <div class="recipe-redesign__share" aria-label="Partager la recette">
-        {articleShareLinks.map((link: any) => (
-          <a
-            href={link.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="recipe-redesign__share-link"
-            aria-label={`Partager sur ${link.label}`}
-          >
-            <i class={link.icon} aria-hidden="true"></i>
-          </a>
-        ))}
+        {
+          articleShareLinks.map((link: any) => (
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="recipe-redesign__share-link"
+              aria-label={`Partager sur ${link.label}`}
+            >
+              <i class={link.icon} aria-hidden="true" />
+            </a>
+          ))
+        }
         <a
           href={printLink}
           target="_blank"
@@ -82,34 +96,48 @@ const printLink = `/print/${slug}/?auto=1`;
 
       <div class="recipe-redesign__rating" aria-label={ratingLabel}>
         <span class="recipe-redesign__stars" aria-hidden="true">
-          {ratingStars.map((filled: boolean) => (
-            <i class={filled ? "fas fa-star" : "far fa-star"}></i>
-          ))}
+          {
+            ratingStars.map((filled: boolean) => (
+              <i class={filled ? "fas fa-star" : "far fa-star"} />
+            ))
+          }
         </span>
         <span>{ratingLabel}</span>
       </div>
 
-      {heroMetaItems.length > 0 && (
-        <div class="recipe-redesign__meta">
-          {heroMetaItems.map((item: string) => (
-            <span class="recipe-redesign__meta-pill">{item}</span>
-          ))}
-        </div>
-      )}
+      {
+        heroMetaItems.length > 0 && (
+          <div class="recipe-redesign__meta">
+            {heroMetaItems.map((item: string) => (
+              <span class="recipe-redesign__meta-pill">{item}</span>
+            ))}
+          </div>
+        )
+      }
 
       <div class="recipe-redesign__actions">
-        <a href={collectionHref} class="recipe-redesign__action recipe-redesign__action--collection">
+        <a
+          href={collectionHref}
+          class="recipe-redesign__action recipe-redesign__action--collection"
+        >
           <i class="far fa-bookmark" aria-hidden="true"></i>
           <span>Ajouter à la collection</span>
         </a>
       </div>
     </div>
 
-    {image && (
-      <figure class="recipe-redesign__hero-image">
-        <img src={image} alt={imageAlt || title} loading="eager" decoding="async" />
-      </figure>
-    )}
+    {
+      image && (
+        <figure class="recipe-redesign__hero-image">
+          <img
+            src={image}
+            alt={imageAlt || title}
+            loading="eager"
+            decoding="async"
+          />
+        </figure>
+      )
+    }
   </section>
 
   <section class="recipe-redesign__section">
@@ -123,57 +151,82 @@ const printLink = `/print/${slug}/?auto=1`;
     </div>
 
     <div class="recipe-redesign__card">
-      {ingredientGroups.map((group: any) => (
-        <section class="recipe-redesign__group">
-          {group.heading && <h3 class="recipe-redesign__group-title">{group.heading}</h3>}
-          <ul class="recipe-redesign__ingredients">
-            {group.items.map((item: any) => (
-              <li class="recipe-redesign__ingredient">
-                {item.quantity && (
-                  <span class="recipe-redesign__amount" data-base-quantity={item.quantity}>
-                    {item.quantity}
-                  </span>
-                )}
-                <span>{item.item}</span>
-                {item.notes && <span class="recipe-redesign__note">{item.notes}</span>}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      {
+        ingredientGroups.map((group: any) => (
+          <section class="recipe-redesign__group">
+            {group.heading && (
+              <h3 class="recipe-redesign__group-title">{group.heading}</h3>
+            )}
+            <ul class="recipe-redesign__ingredients">
+              {group.items.map((item: any) => (
+                <li class="recipe-redesign__ingredient">
+                  {item.quantity && (
+                    <span
+                      class="recipe-redesign__amount"
+                      data-base-quantity={item.quantity}
+                    >
+                      {item.quantity}
+                    </span>
+                  )}
+                  <span>{item.item}</span>
+                  {item.notes && (
+                    <span class="recipe-redesign__note">{item.notes}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
     </div>
   </section>
 
   <section class="recipe-redesign__section">
     <h2>Préparation</h2>
     <div class="recipe-redesign__steps">
-      {stepGroups.map((group: any) => (
-        <section class="recipe-redesign__step-group">
-          {group.heading && <h3 class="recipe-redesign__group-title">{group.heading}</h3>}
-          {group.items.map((step: any) => (
-            <article class="recipe-redesign__step-card">
-              <div class="recipe-redesign__step-copy">
-                <p class="recipe-redesign__step-text">{step.instruction}</p>
-              </div>
-              {step.media?.url && (
-                <figure class="recipe-redesign__step-media">
-                  <img src={step.media.url} alt={step.media.alt || step.instruction} loading="lazy" decoding="async" />
-                </figure>
-              )}
-            </article>
-          ))}
-        </section>
-      ))}
+      {
+        stepGroups.map((group: any) => (
+          <section class="recipe-redesign__step-group">
+            {group.heading && (
+              <h3 class="recipe-redesign__group-title">{group.heading}</h3>
+            )}
+            {group.items.map((step: any) => (
+              <article class="recipe-redesign__step-card">
+                <div class="recipe-redesign__step-copy">
+                  <p class="recipe-redesign__step-text">{step.instruction}</p>
+                </div>
+                {step.media?.url && (
+                  <figure class="recipe-redesign__step-media">
+                    <img
+                      src={step.media.url}
+                      alt={step.media.alt || step.instruction}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </figure>
+                )}
+              </article>
+            ))}
+          </section>
+        ))
+      }
     </div>
   </section>
 
   <p class="recipe-redesign__bon-appetit">Bon appétit !</p>
 
-  {image && (
-    <figure class="recipe-redesign__final-image">
-      <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
-    </figure>
-  )}
+  {
+    image && (
+      <figure class="recipe-redesign__final-image">
+        <img
+          src={image}
+          alt={imageAlt || title}
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+    )
+  }
 
   <section class="recipe-redesign__recipe-card">
     <div class="recipe-redesign__recipe-card-hero">
@@ -181,34 +234,47 @@ const printLink = `/print/${slug}/?auto=1`;
         <h2>{title}</h2>
         <div class="recipe-redesign__rating" aria-label={ratingLabel}>
           <span class="recipe-redesign__stars" aria-hidden="true">
-            {ratingStars.map((filled: boolean) => (
-              <i class={filled ? "fas fa-star" : "far fa-star"}></i>
-            ))}
+            {
+              ratingStars.map((filled: boolean) => (
+                <i class={filled ? "fas fa-star" : "far fa-star"} />
+              ))
+            }
           </span>
           <span>{ratingLabel}</span>
         </div>
         {introText && <p class="recipe-redesign__excerpt">{introText}</p>}
       </div>
 
-      {image && (
-        <figure class="recipe-redesign__recipe-card-image">
-          <img src={image} alt={imageAlt || title} loading="lazy" decoding="async" />
-        </figure>
-      )}
+      {
+        image && (
+          <figure class="recipe-redesign__recipe-card-image">
+            <img
+              src={image}
+              alt={imageAlt || title}
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+        )
+      }
     </div>
 
-    {quickInfoItems.length > 0 && (
-      <div class="recipe-redesign__quick-info">
-        {quickInfoItems.map((item) => (
-          <div class="recipe-redesign__quick-info-item">
-            <p>{item.label}</p>
-            <strong>{item.value}</strong>
-          </div>
-        ))}
-      </div>
-    )}
+    {
+      quickInfoItems.length > 0 && (
+        <div class="recipe-redesign__quick-info">
+          {quickInfoItems.map((item) => (
+            <div class="recipe-redesign__quick-info-item">
+              <p>{item.label}</p>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
+        </div>
+      )
+    }
 
-    <div class="recipe-redesign__section-head recipe-redesign__section-head--compact">
+    <div
+      class="recipe-redesign__section-head recipe-redesign__section-head--compact"
+    >
       <h3>Ingrédients</h3>
       <div class="recipe-redesign__servings" aria-label="Portions">
         <button type="button" class="is-active" data-multiplier="1">1x</button>
@@ -218,87 +284,106 @@ const printLink = `/print/${slug}/?auto=1`;
     </div>
 
     <div class="recipe-redesign__card">
-      {ingredientGroups.map((group: any) => (
-        <section class="recipe-redesign__group">
-          {group.heading && <h4 class="recipe-redesign__group-title">{group.heading}</h4>}
-          <ul class="recipe-redesign__ingredients">
-            {group.items.map((item: any) => (
-              <li class="recipe-redesign__ingredient">
-                {item.quantity && (
-                  <span class="recipe-redesign__amount" data-base-quantity={item.quantity}>
-                    {item.quantity}
-                  </span>
-                )}
-                <span>{item.item}</span>
-                {item.notes && <span class="recipe-redesign__note">{item.notes}</span>}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      {
+        ingredientGroups.map((group: any) => (
+          <section class="recipe-redesign__group">
+            {group.heading && (
+              <h4 class="recipe-redesign__group-title">{group.heading}</h4>
+            )}
+            <ul class="recipe-redesign__ingredients">
+              {group.items.map((item: any) => (
+                <li class="recipe-redesign__ingredient">
+                  {item.quantity && (
+                    <span
+                      class="recipe-redesign__amount"
+                      data-base-quantity={item.quantity}
+                    >
+                      {item.quantity}
+                    </span>
+                  )}
+                  <span>{item.item}</span>
+                  {item.notes && (
+                    <span class="recipe-redesign__note">{item.notes}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
     </div>
 
     <div class="recipe-redesign__card">
       <h3 class="recipe-redesign__compact-title">Préparation</h3>
-      {stepGroups.map((group: any) => (
-        <section class="recipe-redesign__group">
-          {group.heading && <h4 class="recipe-redesign__group-title">{group.heading}</h4>}
-          <ol class="recipe-redesign__instructions">
-            {group.items.map((step: any) => (
-              <li>{step.instruction}</li>
-            ))}
-          </ol>
-        </section>
-      ))}
+      {
+        stepGroups.map((group: any) => (
+          <section class="recipe-redesign__group">
+            {group.heading && (
+              <h4 class="recipe-redesign__group-title">{group.heading}</h4>
+            )}
+            <ol class="recipe-redesign__instructions">
+              {group.items.map((step: any) => (
+                <li>{step.instruction}</li>
+              ))}
+            </ol>
+          </section>
+        ))
+      }
     </div>
 
-    {nutritionItems.length > 0 && (
-      <div class="recipe-redesign__card recipe-redesign__nutrition-card">
-        <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
-        <div class="recipe-redesign__nutrition">
-          {nutritionItems.map((item: any) => (
-            <div class="recipe-redesign__nutrition-item">
-              <span>{item.label}</span>
-              <strong>{Math.round(Number(item.value))} {item.unit}</strong>
-            </div>
-          ))}
+    {
+      nutritionItems.length > 0 && (
+        <div class="recipe-redesign__card recipe-redesign__nutrition-card">
+          <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
+          <div class="recipe-redesign__nutrition">
+            {nutritionItems.map((item: any) => (
+              <div class="recipe-redesign__nutrition-item">
+                <span>{item.label}</span>
+                <strong>
+                  {Math.round(Number(item.value))} {item.unit}
+                </strong>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    )}
+      )
+    }
   </section>
 </div>
 
 <script is:inline>
   (() => {
-    const roots = Array.from(document.querySelectorAll('[data-recipe-redesign]'));
+    const roots = Array.from(
+      document.querySelectorAll("[data-recipe-redesign]"),
+    );
     if (!roots.length) return;
 
     const unicodeFractions = {
-      '¼': 0.25,
-      '½': 0.5,
-      '¾': 0.75,
-      '⅓': 1 / 3,
-      '⅔': 2 / 3,
-      '⅛': 0.125,
-      '⅜': 0.375,
-      '⅝': 0.625,
-      '⅞': 0.875,
+      "¼": 0.25,
+      "½": 0.5,
+      "¾": 0.75,
+      "⅓": 1 / 3,
+      "⅔": 2 / 3,
+      "⅛": 0.125,
+      "⅜": 0.375,
+      "⅝": 0.625,
+      "⅞": 0.875,
     };
 
     const parseFraction = (token) => {
-      const clean = String(token || '').trim();
+      const clean = String(token || "").trim();
       if (!clean) return null;
       if (unicodeFractions[clean] !== undefined) return unicodeFractions[clean];
       if (/^\d+\s+\d+\/\d+$/.test(clean)) {
         const [whole, fraction] = clean.split(/\s+/);
-        const [num, den] = fraction.split('/').map(Number);
+        const [num, den] = fraction.split("/").map(Number);
         return Number(whole) + num / den;
       }
       if (/^\d+\/\d+$/.test(clean)) {
-        const [num, den] = clean.split('/').map(Number);
+        const [num, den] = clean.split("/").map(Number);
         return num / den;
       }
-      const normalized = clean.replace(',', '.');
+      const normalized = clean.replace(",", ".");
       const numeric = Number(normalized);
       return Number.isFinite(numeric) ? numeric : null;
     };
@@ -306,15 +391,15 @@ const printLink = `/print/${slug}/?auto=1`;
     const formatScaled = (value) => {
       const rounded = Math.round(value * 100) / 100;
       const fractionEntries = [
-        [0.125, '1/8'],
-        [0.25, '1/4'],
-        [1 / 3, '1/3'],
-        [0.375, '3/8'],
-        [0.5, '1/2'],
-        [0.625, '5/8'],
-        [2 / 3, '2/3'],
-        [0.75, '3/4'],
-        [0.875, '7/8'],
+        [0.125, "1/8"],
+        [0.25, "1/4"],
+        [1 / 3, "1/3"],
+        [0.375, "3/8"],
+        [0.5, "1/2"],
+        [0.625, "5/8"],
+        [2 / 3, "2/3"],
+        [0.75, "3/4"],
+        [0.875, "7/8"],
       ];
       const whole = Math.floor(rounded);
       const decimal = rounded - whole;
@@ -323,12 +408,13 @@ const printLink = `/print/${slug}/?auto=1`;
           return whole > 0 ? `${whole} ${label}` : label;
         }
       }
-      if (Math.abs(rounded - Math.round(rounded)) < 0.02) return String(Math.round(rounded));
-      return String(rounded).replace(/\.0+$/, '').replace('.', ',');
+      if (Math.abs(rounded - Math.round(rounded)) < 0.02)
+        return String(Math.round(rounded));
+      return String(rounded).replace(/\.0+$/, "").replace(".", ",");
     };
 
     const scaleQuantityText = (raw, multiplier) => {
-      const value = String(raw || '').trim();
+      const value = String(raw || "").trim();
       if (!value) return value;
       const mixedMatch = value.match(/^(\d+\s+\d+\/\d+)(.*)$/);
       const fractionMatch = value.match(/^(\d+\/\d+|[¼½¾⅓⅔⅛⅜⅝⅞])(.*)$/);
@@ -337,27 +423,34 @@ const printLink = `/print/${slug}/?auto=1`;
       if (!match) return value;
       const base = parseFraction(match[1]);
       if (base === null) return value;
-      const suffix = match[2] || '';
+      const suffix = match[2] || "";
       return `${formatScaled(base * multiplier)}${suffix}`;
     };
 
     const applyMultiplier = (root, multiplier) => {
-      root.querySelectorAll('[data-base-quantity]').forEach((node) => {
-        const raw = node.getAttribute('data-base-quantity') || '';
+      root.querySelectorAll("[data-base-quantity]").forEach((node) => {
+        const raw = node.getAttribute("data-base-quantity") || "";
         node.textContent = scaleQuantityText(raw, multiplier);
       });
-      root.querySelectorAll('.recipe-redesign__servings button').forEach((button) => {
-        button.classList.toggle('is-active', Number(button.dataset.multiplier || '1') === multiplier);
-      });
+      root
+        .querySelectorAll(".recipe-redesign__servings button")
+        .forEach((button) => {
+          button.classList.toggle(
+            "is-active",
+            Number(button.dataset.multiplier || "1") === multiplier,
+          );
+        });
     };
 
     roots.forEach((root) => {
-      root.querySelectorAll('.recipe-redesign__servings button').forEach((button) => {
-        button.addEventListener('click', () => {
-          const multiplier = Number(button.dataset.multiplier || '1');
-          applyMultiplier(root, multiplier);
+      root
+        .querySelectorAll(".recipe-redesign__servings button")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const multiplier = Number(button.dataset.multiplier || "1");
+            applyMultiplier(root, multiplier);
+          });
         });
-      });
       applyMultiplier(root, 1);
     });
   })();
@@ -531,7 +624,6 @@ const printLink = `/print/${slug}/?auto=1`;
     align-self: start;
   }
 
-  .recipe-redesign__hero-image img,
   .recipe-redesign__recipe-card-image img,
   .recipe-redesign__step-media img {
     display: block;
@@ -540,9 +632,9 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__final-image img {
-     width: 100% !important;
-     height: auto;
-     display: block;
+    width: 100% !important;
+    height: auto;
+    display: block;
     /* aspect-ratio: 1 / 1; */
     /* object-fit: cover; */
   }
@@ -777,17 +869,19 @@ const printLink = `/print/${slug}/?auto=1`;
   @media (max-width: 960px) {
     .recipe-redesign__hero-card,
     .recipe-redesign__recipe-card-hero,
-    .recipe-redesign__quick-info,
-    .recipe-redesign__nutrition {
+    .recipe-redesign__quick-info {
       grid-template-columns: minmax(0, 1fr);
     }
 
-    .recipe-redesign__hero-image {
+    /* .recipe-redesign__hero-image {
       max-width: 480px;
-    }
+    } */
   }
-  
 
+  p.recipe-redesign__step-text {
+    font-size: 16px !important;
+    padding: 5px !important;
+  }
   @media (max-width: 767px) {
     .recipe-redesign__hero-card,
     .recipe-redesign__card,
@@ -814,7 +908,7 @@ const printLink = `/print/${slug}/?auto=1`;
       flex: 1 1 100%;
     }
   }
-  .recipe-redesign__hero-image img{
+  .recipe-redesign__hero-image img {
     width: 100% !important;
   }
 </style>
