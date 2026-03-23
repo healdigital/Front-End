@@ -217,7 +217,7 @@ const printLink = `/print/${slug}/?auto=1`;
 
   {
     image && (
-      <figure class="recipe-redesign__final-image">
+      <figure class="recipe-redesign__final-image bon_img">
         <img
           src={image}
           alt={imageAlt || title}
@@ -457,6 +457,9 @@ const printLink = `/print/${slug}/?auto=1`;
 </script>
 
 <style>
+  .bon_img img {
+    width: 100% !important;
+  }
   .recipe-redesign {
     display: grid;
     gap: 26px;
@@ -868,8 +871,7 @@ const printLink = `/print/${slug}/?auto=1`;
 
   @media (max-width: 960px) {
     .recipe-redesign__hero-card,
-    .recipe-redesign__recipe-card-hero,
-    .recipe-redesign__quick-info {
+    .recipe-redesign__recipe-card-hero {
       grid-template-columns: minmax(0, 1fr);
     }
 

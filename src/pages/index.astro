@@ -623,7 +623,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 >
   <HeroCarousel cards={heroCards} />
 
-  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light">
+  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light section_2">
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-30"
       aria-hidden="true"
@@ -644,7 +644,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                   <img
                     src={featuredRecipe.image}
                     alt={featuredRecipe.title}
-                    class="w-full md:h-full object-contain bg-[#f7f5ef] transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                    class="w-full md:h-full object-cover bg-[#f7f5ef] transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                     loading="lazy"
                     fetchpriority="low"
                     decoding="async"
