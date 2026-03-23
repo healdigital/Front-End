@@ -110,10 +110,12 @@ h4.sidebar-title {
 }
 
 section.home-page-section {
-  padding-top: 48px !important;
+  /* padding-top: 48px !important; */
   padding-bottom: 48px !important;
 }
-
+.home-workshops-section {
+    padding-top: 48px;
+}
 .home-main-column-stack {
   display: flex;
   flex-direction: column;
@@ -131,7 +133,7 @@ section.home-page-section {
 
 @media (min-width: 768px) {
   section.home-page-section {
-    padding-bottom: 48px !important;
+    /* padding-bottom: 48px !important; */
     padding-bottom: 48px !important;
   }
 
@@ -799,6 +801,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
   .home-main-column {
     padding-right: 36px;
+    padding-top: 27px;
   }
 
   .home-sidebar-column {
