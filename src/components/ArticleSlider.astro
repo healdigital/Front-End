@@ -114,8 +114,8 @@ const getArticleSlug = (article: any) => {
   prevBtn?.addEventListener('click', prevSlide);
   nextBtn?.addEventListener('click', nextSlide);
 
-  // Auto-play loop every 3 seconds (infinite loop)
-  let autoplayInterval = setInterval(nextSlide, 3000);
+  // Auto-play loop every 1 second (infinite loop)
+  let autoplayInterval = setInterval(nextSlide, 1000);
 
   updateSlider(0);
 </script>
