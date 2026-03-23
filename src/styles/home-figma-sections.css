@@ -772,7 +772,9 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
     padding-right: 28px;
   }
 }
-
+#main-content .section_2{
+  padding-top: 0px !important;
+}
 @media (min-width: 320px) {
   .typ-section {
     font-size: 37px !important;
