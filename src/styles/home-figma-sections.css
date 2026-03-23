@@ -746,11 +746,10 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   .typ-section {
     font-size: 42px !important;
   }
+
   #main-content .section_2 {
       padding-top: 48px !important;
   }
-
-
 
 }
 
@@ -775,8 +774,8 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
     padding-right: 28px;
   }
 }
-#main-content .section_2{
-  padding-top: 0px;
+.section_2{
+  padding-top: 0px !important;
 }
 @media (min-width: 320px) {
   .typ-section {
