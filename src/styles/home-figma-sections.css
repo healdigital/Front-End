@@ -138,7 +138,13 @@ section.home-page-section {
   }
 
   .home-main-column-stack {
-    /* gap: 64px; */
+    gap: 27px !important;
+  }
+  .home-page-section{
+    padding-top: 48px !important;
+  }
+  .books-section-media {
+    height: 100% !important;
   }
 }
 
