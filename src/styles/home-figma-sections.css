@@ -775,7 +775,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   section.relative.bg-secondary-cream.overflow-hidden.p-4 {
     padding-bottom: 0;
     padding-top: 0;
-    padding-right: 16px;
+    padding-right: 16px !important;
   }
 
 }
