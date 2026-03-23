@@ -131,8 +131,8 @@ section.home-page-section {
 
 @media (min-width: 768px) {
   section.home-page-section {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
+    padding-bottom: 48px !important;
+    padding-bottom: 48px !important;
   }
 
   .home-main-column-stack {
@@ -811,7 +811,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
   .home-sidebar-sticky {
     position: sticky;
-    top: 112px;
+    /* top: 112px; */
   }
 
   .bio-section-grid,
@@ -1404,7 +1404,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  top: 96px !important;
+  /* top: 96px !important; */
 }
 
 .home-workshops-section .home-workshops-feature-grid {
