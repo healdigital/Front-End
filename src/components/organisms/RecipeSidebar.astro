@@ -210,7 +210,7 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
       </div>
     </div>
 
-    <div class="sidebar-block px-4 pt-4 pb-5 mt-5">
+    <div class="sidebar-block px-4 pt-4 pb-5">
       <div class="bg-[#DCDCCF] rounded-[8px] border border-[#D8D2C2] h-[220px] flex items-center justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em]">
         Espace publicite
       </div>
@@ -452,7 +452,6 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
 
 <style>
   .recipe-sidebar {
-    /* gap: 18px; */
     width: 100%;
   }
 
@@ -460,13 +459,53 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
     width: 100%;
     box-sizing: border-box;
     background: #faf8f2;
-    /* border: 1px solid #d8d2c2;
-    border-radius: 12px; */
     overflow: hidden;
   }
 
-  .recipe-sidebar--popular :global(.sidebar-block:first-child) {
-    /* background: #f6f1e7; */
+  .recipe-sidebar--full {
+    gap: 18px;
+  }
+
+  .recipe-sidebar--full > :global(.sidebar-block),
+  .recipe-sidebar--full > .recipe-sidebar-sticky-rail > :global(.sidebar-block) {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .recipe-sidebar--full :global(.workshop-box),
+  .recipe-sidebar--full :global(.pannel-data) {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .recipe-sidebar--full :global(.pannel-data > .p-4) {
+    padding: 16px 16px 18px;
+  }
+
+  .recipe-sidebar--full :global(.masterclass-badges) {
+    width: 100%;
+  }
+
+  .recipe-sidebar--full :global(.masterclass-badge) {
+    min-width: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 12px;
+  }
+
+  .recipe-sidebar--full :global(.button-data),
+  .recipe-sidebar--full :global(.button-data-full) {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .recipe-sidebar--full :global(.date-box) {
+    min-width: 70px;
+  }
+
+  .recipe-sidebar-sticky-rail {
+    display: grid;
+    gap: 14px;
   }
 
   .recipe-sidebar :global(.sidebar-block:last-child) {
