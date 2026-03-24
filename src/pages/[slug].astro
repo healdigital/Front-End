@@ -2082,15 +2082,16 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   .flex.items-center.gap-2.mb-3.flex-wrap.justify-start {
-    width: max-content;
-}
+    width: 100%;
+    max-width: 100%;
+  }
   .article-layout .article-sidebar-column{
-    width: 472px;
+    width: 438px;
   }
 
   .article-layout {
     display: grid;
-    gap: 32px;
+    gap: 18px;
   }
 
   .article-main-column {
@@ -3662,6 +3663,9 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   .article-related-section {
     padding-top: 4px;
+    padding-left: clamp(16px, 2.4vw, 28px);
+    padding-right: clamp(16px, 2.4vw, 28px);
+    box-sizing: border-box;
   }
 
   .article-related-section--fullwidth {
@@ -3930,21 +3934,27 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   @media (min-width: 1024px) {
+    .lcdb-page-shell.lcdb-page-section-inner {
+      max-width: min(1520px, calc(100vw - 8px));
+      padding-right: 0;
+      padding-left: 22px;
+    }
+
     .article-layout {
-      grid-template-columns: minmax(0, 1fr) 452px;
+      grid-template-columns: minmax(0, 1fr) 438px;
       align-items: stretch;
       gap: 0;
     }
 
     .article-main-column {
-      padding-right: 34px;
+      padding-right: 24px;
     }
 
     .article-sidebar-column {
       align-self: stretch;
       display: flex;
-      padding-left: 18px;
-      padding-right: 8px;
+      padding-left: 14px;
+      padding-right: 0;
       border-left: 1px solid #d8d2c2;
       background: transparent;
       box-sizing: border-box;
@@ -4022,8 +4032,71 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   }
 
   @media (max-width: 767px) {
+    :global(html),
+    :global(body) {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    .lcdb-page-shell.lcdb-page-section-inner {
+      width: 100%;
+      max-width: 100%;
+      padding-left: 10px;
+      padding-right: 10px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    .article-layout,
+    .article-main-column,
+    .article-content-card,
     .recipe-detail-shell {
-      padding: 22px 18px 20px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .article-main-column > .recipe-redesign,
+    .article-main-column > .article-newsletter-card,
+    .article-main-column > .comments-card {
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      box-sizing: border-box;
+    }
+
+    .article-main-column > *,
+    .article-main-column > section,
+    .article-main-column > article,
+    .article-main-column > div,
+    .article-main-column > figure {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .article-main-column img,
+    .article-main-column video,
+    .article-main-column iframe,
+    .article-main-column table,
+    .article-main-column .recipe-detail-head,
+    .article-main-column .recipe-detail-media,
+    .article-main-column .recipe-detail-hero-media,
+    .article-main-column .recipe-redesign__hero-image,
+    .article-main-column .recipe-redesign__hero-image img {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .article-main-column table {
+      display: block;
+      overflow-x: auto;
+    }
+
+    .recipe-detail-shell {
+      padding: 18px 14px 18px;
     }
 
     .recipe-detail-title {
