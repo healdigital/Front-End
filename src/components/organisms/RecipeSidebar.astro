@@ -36,6 +36,15 @@ const fallbackPopularArticles = [
 ];
 const computedPopularArticles = await getPopularSidebarArticles(5, 'fr');
 const popularArticles = computedPopularArticles.length ? computedPopularArticles : fallbackPopularArticles;
+const sidebarBooks = [
+  { src: '/images/book-mes-desserts.jpg', alt: 'Mes desserts de Bernard' },
+  { src: '/images/book-mon-grain-de-sel.jpg', alt: 'Mon grain de sel' },
+  { src: '/images/book-bouchee.jpg', alt: "Je n'en ferai qu'une bouchee" },
+  { src: '/images/book-asie-sucree.jpg', alt: 'Asie Sucree' },
+  { src: '/images/book-je-fais-mon-chocolat-maison.png', alt: 'Je fais mon chocolat maison' },
+  { src: '/images/book-lacuisinedebernard.jpg', alt: 'La Cuisine de Bernard' },
+  { src: '/images/book-scandaleusement-decadent.jpg', alt: 'Scandaleusement Decadent' },
+];
 ---
 
 <aside class={`recipe-sidebar hidden lg:flex flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
@@ -177,10 +186,20 @@ const popularArticles = computedPopularArticles.length ? computedPopularArticles
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Mes livres pour approfondir</h4>
       <div class="grid grid-cols-2 gap-3 mt-4">
-        <img src="/images/book-desserts.png" alt="Mes desserts" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
-        <img src="/images/book-vege.png" alt="Vege-terrien" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
-        <img src="/images/book-chocolat.png" alt="Je fais mon chocolat maison" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
-        <img src="/images/book-bouchee.png" alt="Je n'en ferai qu'une bouchee" class="w-full h-[214px] object-cover rounded-[2px]" loading="lazy" decoding="async" />
+        {sidebarBooks.map((book, index) => (
+          <img
+            src={book.src}
+            alt={book.alt}
+            class:list={[
+              'w-full rounded-[2px] object-cover',
+              index === sidebarBooks.length - 1 && sidebarBooks.length % 2 === 1
+                ? 'col-span-2 h-[226px]'
+                : 'h-[214px]',
+            ]}
+            loading="lazy"
+            decoding="async"
+          />
+        ))}
       </div>
       <a href="/livres" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir tous les livres

@@ -50,8 +50,8 @@ const WP_IMAGE_URL_PATTERN =
 
 function normalizeWpUploadBase(base: string): string {
   return base
-    .replace(/-(?:\d+)(?:[^a-z0-9/]|x|X)+(?:\d+)-scaled$/i, '')
-    .replace(/-(?:\d+)(?:[^a-z0-9/]|x|X)+(?:\d+)$/i, '')
+    .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)-scaled$/i, '')
+    .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)$/i, '')
     .replace(/-scaled$/i, '');
 }
 
