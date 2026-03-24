@@ -4,15 +4,6 @@ interface Props {
 }
 
 const { embedded = false } = Astro.props as Props;
-const books = [
-  { src: '/images/book-mes-desserts.jpg', alt: 'Mes desserts' },
-  { src: '/images/book-mon-grain-de-sel.jpg', alt: 'Mon grain de sel' },
-  { src: '/images/book-bouchee.jpg', alt: "Je n'en ferai qu'une bouchee" },
-  { src: '/images/book-asie-sucree.jpg', alt: 'Asie sucree' },
-  { src: '/images/book-je-fais-mon-chocolat-maison.png', alt: 'Je fais mon chocolat maison' },
-  { src: '/images/book-lacuisinedebernard.jpg', alt: 'La Cuisine de Bernard' },
-  { src: '/images/book-scandaleusement-decadent.jpg', alt: 'Scandaleusement Decadent' },
-];
 ---
 
 <section class={`relative ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
@@ -28,19 +19,13 @@ const books = [
     <div class="books-section-card">
       <div class="books-section-grid">
         <div class="books-section-media books-section-media--grid">
-          <div class="books-section-book-grid">
-            {books.map((book) => (
-              <figure class="books-section-book">
-                <img
-                  src={book.src}
-                  alt={book.alt}
-                  class="books-section-media-image books-section-media-image--contain"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </figure>
-            ))}
-          </div>
+          <img
+            src="/images/bernard-books.png"
+            alt="Mes livres de recettes"
+            class="books-section-media-image"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
 
         <div class="books-section-content">
@@ -58,38 +43,3 @@ const books = [
     </div>
   </div>
 </section>
-
-<style>
-  .books-section-media--grid {
-    height: auto;
-    padding: 26px 24px 18px;
-    background: #faf8f2;
-  }
-
-  .books-section-book-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    align-items: start;
-  }
-
-  .books-section-book {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 0;
-  }
-
-  .books-section-media-image--contain {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-  }
-
-  @media (max-width: 767px) {
-    .books-section-book-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-</style>

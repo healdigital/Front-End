@@ -64,8 +64,11 @@ const hasHtml = html.length > 0;
           const candidates = [
             raw,
             `${strippedBase}${ext}${query}${hash}`,
+            `${strippedBase}-1920x2468${ext}${query}${hash}`,
+            `${strippedBase}-1536x2048${ext}${query}${hash}`,
             `${strippedBase}-1593x2048${ext}${query}${hash}`,
             `${strippedBase}-797x1024${ext}${query}${hash}`,
+            `${strippedBase}-768x1024${ext}${query}${hash}`,
             `${strippedBase}-585x585${ext}${query}${hash}`,
             `${strippedBase}-587x587${ext}${query}${hash}`,
             `${strippedBase}-500x500${ext}${query}${hash}`,
