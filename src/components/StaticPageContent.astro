@@ -38,7 +38,67 @@ const hasHtml = html.length > 0;
 ---
 
 {hasHtml ? (
-  <div class="wp-content" set:html={html} />
+  <>
+    <div class="wp-content" set:html={html} />
+    <script is:inline>
+      (() => {
+        const containers = Array.from(document.querySelectorAll('.wp-content'));
+        if (!containers.length) return;
+
+        const buildFallbacks = (url) => {
+          const raw = String(url || '').trim();
+          if (!/\/wp-content\/uploads\//i.test(raw)) return [raw].filter(Boolean);
+
+          const match = raw.match(/^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i);
+          if (!match) return [raw].filter(Boolean);
+
+          const base = match[1];
+          const ext = match[2];
+          const query = match[3] ? `?${match[3]}` : '';
+          const hash = match[4] ? `#${match[4]}` : '';
+          const strippedBase = base
+            .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)-scaled$/i, '')
+            .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)$/i, '')
+            .replace(/-scaled$/i, '');
+
+          const candidates = [
+            raw,
+            `${strippedBase}${ext}${query}${hash}`,
+            `${strippedBase}-1593x2048${ext}${query}${hash}`,
+            `${strippedBase}-797x1024${ext}${query}${hash}`,
+            `${strippedBase}-585x585${ext}${query}${hash}`,
+            `${strippedBase}-587x587${ext}${query}${hash}`,
+            `${strippedBase}-500x500${ext}${query}${hash}`,
+          ];
+
+          return Array.from(new Set(candidates.filter(Boolean)));
+        };
+
+        containers.forEach((container) => {
+          container.querySelectorAll('img').forEach((image) => {
+            if (!(image instanceof HTMLImageElement)) return;
+            if (image.dataset.wpFallbackReady === 'true') return;
+            image.dataset.wpFallbackReady = 'true';
+
+            const candidates = buildFallbacks(image.currentSrc || image.src);
+            image.dataset.wpFallbackCandidates = candidates.join('|');
+
+            image.addEventListener('error', () => {
+              const current = image.currentSrc || image.src;
+              const remaining = (image.dataset.wpFallbackCandidates || '')
+                .split('|')
+                .map((item) => item.trim())
+                .filter((item) => item && item !== current);
+
+              const next = remaining.shift();
+              image.dataset.wpFallbackCandidates = remaining.join('|');
+              if (next) image.src = next;
+            });
+          });
+        });
+      })();
+    </script>
+  </>
 ) : (
   <div class="space-y-4">
     <p>Content import pending for this page.</p>

@@ -1,4 +1,9 @@
 ---
+import {
+  buildWordPressImageFallbackCandidates,
+  buildWpPortraitVariantUrl,
+} from '../../utils/cdnUrlReplacer';
+
 const {
   title,
   slug,
@@ -16,6 +21,14 @@ const {
   pinterestLink = "",
   collectionHref = "/favoris",
 } = Astro.props;
+
+const heroImage = image ? buildWpPortraitVariantUrl(image, '797x1024') || image : '';
+const heroImageFallbackCandidates = image
+  ? buildWordPressImageFallbackCandidates(image)
+  : [];
+const recipeImageFallbackCandidates = image
+  ? buildWordPressImageFallbackCandidates(image)
+  : [];
 
 const toNumber = (value: any) => {
   const numeric = Number(value);
@@ -130,10 +143,12 @@ const printLink = `/print/${slug}/?auto=1`;
       image && (
         <figure class="recipe-redesign__hero-image">
           <img
-            src={image}
+            src={heroImage}
             alt={imageAlt || title}
             loading="eager"
             decoding="async"
+            data-fallback-candidates={heroImageFallbackCandidates.join('|')}
+            onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
           />
         </figure>
       )
@@ -223,6 +238,8 @@ const printLink = `/print/${slug}/?auto=1`;
           alt={imageAlt || title}
           loading="lazy"
           decoding="async"
+          data-fallback-candidates={recipeImageFallbackCandidates.join('|')}
+          onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
         />
       </figure>
     )
@@ -253,6 +270,8 @@ const printLink = `/print/${slug}/?auto=1`;
               alt={imageAlt || title}
               loading="lazy"
               decoding="async"
+              data-fallback-candidates={recipeImageFallbackCandidates.join('|')}
+              onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
             />
           </figure>
         )
@@ -463,6 +482,8 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign {
     display: grid;
     gap: 26px;
+    width: 100%;
+    min-width: 0;
   }
 
   .recipe-redesign__hero-card,
@@ -479,8 +500,8 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__hero-card {
     padding: 26px 28px 30px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
-    gap: 24px 26px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
     align-items: start;
   }
 
@@ -531,8 +552,9 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__hero-copy {
     display: grid;
-    gap: 16px;
+    gap: 20px;
     align-content: start;
+    max-width: none;
   }
 
   .recipe-redesign__title,
@@ -624,22 +646,26 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__hero-image {
     overflow: hidden;
     border-radius: 18px;
-    align-self: stretch;
-    min-height: 100%;
+    align-self: start;
+    justify-self: start;
+    width: min(100%, 440px);
+    max-width: 100%;
+    min-height: auto;
   }
 
   .recipe-redesign__hero-image img {
     display: block;
     width: 100%;
-    height: 100%;
-    min-height: 100%;
-    object-fit: cover;
+    height: auto;
+    min-height: auto;
+    object-fit: contain;
   }
 
   .recipe-redesign__recipe-card-image img,
   .recipe-redesign__step-media img {
     display: block;
-    width: 512px;
+    width: min(512px, 100%);
+    max-width: 100%;
     height: auto;
   }
 
@@ -698,7 +724,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__group-title {
-    margin: 0 0 14px;
+    margin: 0;
+    padding: 8px 0 14px;
     color: #161616;
     font-size: 2rem;
     line-height: 1.1;
@@ -778,7 +805,12 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__excerpt {
     margin: 0;
     color: #26211b;
-    line-height: 1.7;
+    line-height: 1.85;
+  }
+
+  .recipe-redesign__step-text {
+    font-size: 20px;
+    line-height: 1.95;
   }
 
   .recipe-redesign__bon-appetit {
@@ -791,7 +823,7 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__final-image {
-    margin-top: 0;
+    margin-top: 4px;
     overflow: hidden;
   }
 
@@ -890,7 +922,7 @@ const printLink = `/print/${slug}/?auto=1`;
     }
 
     .recipe-redesign__hero-image {
-      min-height: auto;
+      width: min(100%, 420px);
     }
 
     .recipe-redesign__hero-image img {
@@ -901,8 +933,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   p.recipe-redesign__step-text {
-    font-size: 16px !important;
-    padding: 5px !important;
+    font-size: 20px !important;
+    padding: 10px 0 6px !important;
   }
   @media (max-width: 767px) {
     .recipe-redesign__hero-card,
@@ -928,6 +960,10 @@ const printLink = `/print/${slug}/?auto=1`;
 
     .recipe-redesign__action {
       flex: 1 1 100%;
+    }
+
+    .recipe-redesign__title {
+      overflow-wrap: anywhere;
     }
   }
 </style>
