@@ -1469,7 +1469,13 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 .section_1 {
   padding-bottom: 48px !important;
 }
-
+.home-main-block,
+.home-deferred-block ,
+section.relative.overflow-hidden.home-page-section.home-page-section--dark.home-render-deferred.home-workshops-section,
+section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-page-section--light.home-render-deferred,
+h2.font-heading.text-3xl.lg\:text-5xl.text-primary-black.whitespace-nowrap.typ-section {
+    padding-top: 27px;
+}
 
 
 /* section.recipe-redesign__hero-card, 
