@@ -114,6 +114,7 @@ const accountItems = [
         class="lg:hidden text-white/80 hover:text-white transition-colors"
         aria-label="Ouvrir le menu"
         data-menu-trigger
+        data-header-mobile-only
       >
         <Icon name="menu" size="lg" />
       </button>
@@ -130,7 +131,7 @@ const accountItems = [
       </a>
 
       <!-- Search (desktop) -->
-      <div class="hidden lg:flex flex-1 max-w-[640px]">
+      <div class="hidden lg:flex flex-1 max-w-[640px]" data-header-desktop-only>
         <div class="relative w-full">
           <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/42">
             <Icon name="search" size="sm" class="w-[18px] h-[18px]" />
@@ -145,10 +146,10 @@ const accountItems = [
         </div>
       </div>
 
-      <div class="hidden lg:block w-px h-8 bg-white/25"></div>
+      <div class="hidden lg:block w-px h-8 bg-white/25" data-header-desktop-only></div>
 
       <!-- Desktop actions -->
-      <div class="hidden lg:flex items-center gap-[18px] ml-auto">
+      <div class="hidden lg:flex items-center gap-[18px] ml-auto" data-header-desktop-only>
         <a href="/contact" class="flex items-center gap-[7px] text-white/85 hover:text-white text-[14px] header-utility-text" data-header-utility-link>
           <Icon name="mail" size="sm" class="w-[18px] h-[18px]" />
           <span data-header-utility-label>Contact</span>
@@ -206,7 +207,7 @@ const accountItems = [
       </div>
 
       <!-- Mobile actions -->
-      <div class="flex lg:hidden items-center gap-4 ml-auto text-white/80">
+      <div class="flex lg:hidden items-center gap-4 ml-auto text-white/80" data-header-mobile-only>
         <div class="relative" data-mobile-header-lang-menu data-no-translate="true">
           <button
             type="button"
@@ -257,6 +258,7 @@ const accountItems = [
     id="header-mobile-search"
     class="hidden lg:hidden bg-[#1A2335] border-t border-white/10"
     data-mobile-search-panel
+    data-header-mobile-only
   >
     <div class="home-shell py-3">
       <form class="flex items-center gap-2" data-mobile-search-form>
@@ -291,7 +293,7 @@ const accountItems = [
   </div>
 
   <!-- Secondary navigation -->
-  <div class="hidden lg:flex bg-[#FAFAF8] border-b border-[#DCD8CC] header-bottom">
+  <div class="hidden lg:flex bg-[#FAFAF8] border-b border-[#DCD8CC] header-bottom" data-header-desktop-only>
     <div class="home-shell w-full h-[70px] flex items-center">
       <nav class="flex items-center gap-8" aria-label="Navigation principale">
         {navItems.map((item) => (
@@ -344,6 +346,7 @@ const accountItems = [
   <div
     class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"
     data-menu-overlay
+    data-header-mobile-only
     aria-hidden="true"
   ></div>
 
@@ -351,6 +354,7 @@ const accountItems = [
   <aside
     class="fixed inset-y-0 left-0 w-[320px] bg-[#1A2335] text-white transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden z-50"
     data-menu-drawer
+    data-header-mobile-only
     aria-hidden="true"
     inert
   >
@@ -450,6 +454,38 @@ const accountItems = [
 </header>
 
 <style>
+  @media (max-width: 1149px) {
+    :global([data-header-desktop-only]) {
+      display: none !important;
+    }
+
+    :global([data-header-mobile-only]) {
+      display: flex !important;
+    }
+
+    :global([data-mobile-search-panel][data-header-mobile-only]) {
+      display: none;
+    }
+
+    :global([data-mobile-search-panel][data-header-mobile-only].is-open) {
+      display: block !important;
+    }
+  }
+
+  @media (min-width: 1150px) {
+    :global([data-header-desktop-only]) {
+      display: flex !important;
+    }
+
+    :global(.header-bottom[data-header-desktop-only]) {
+      display: flex !important;
+    }
+
+    :global([data-header-mobile-only]) {
+      display: none !important;
+    }
+  }
+
   @media (min-width: 1024px) {
     :global(.header-main [data-header-desktop-search]) {
       font-family: var(--font-maison) !important;
