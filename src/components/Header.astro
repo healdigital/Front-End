@@ -476,6 +476,15 @@ const accountItems = [
     }
   }
 
+  @media (max-width: 767px) {
+    .header-main .home-shell,
+    [data-mobile-search-panel] .home-shell {
+      padding-left: 10px;
+      padding-right: 10px;
+      box-sizing: border-box;
+    }
+  }
+
   @media (min-width: 1150px) {
     :global([data-header-desktop-flex]) {
       display: flex !important;
