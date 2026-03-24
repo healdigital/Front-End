@@ -4041,28 +4041,39 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .lcdb-page-shell.lcdb-page-section-inner {
       width: 100%;
       max-width: 100%;
-      padding-left: 10px;
-      padding-right: 10px;
+      padding-left: 0;
+      padding-right: 0;
       box-sizing: border-box;
       overflow-x: hidden;
     }
 
-    .article-layout,
-    .article-main-column,
-    .article-content-card,
-    .recipe-detail-shell {
+    .article-layout {
+      display: block;
       width: 100%;
       max-width: 100%;
+    }
+
+    .article-main-column {
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
       box-sizing: border-box;
+      overflow-x: hidden;
     }
 
     .article-main-column > .recipe-redesign,
     .article-main-column > .article-newsletter-card,
-    .article-main-column > .comments-card {
-      width: 100%;
-      max-width: 100%;
-      margin-left: 0;
-      margin-right: 0;
+    .article-main-column > .comments-card,
+    .article-main-column > .article-content-card,
+    .article-main-column > .article-related-section,
+    .article-main-column > .recipe-detail-shell {
+      width: calc(100vw - 24px);
+      max-width: calc(100vw - 24px);
+      margin-left: auto;
+      margin-right: auto;
       box-sizing: border-box;
     }
 
@@ -4071,8 +4082,8 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-main-column > article,
     .article-main-column > div,
     .article-main-column > figure {
-      width: 100%;
-      max-width: 100%;
+      width: inherit;
+      max-width: inherit;
       min-width: 0;
       box-sizing: border-box;
     }
