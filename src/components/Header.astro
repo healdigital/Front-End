@@ -468,7 +468,7 @@ const accountItems = [
     }
 
     :global([data-mobile-search-panel][data-header-mobile-block]) {
-      display: none;
+      display: none !important;
     }
 
     :global([data-mobile-search-panel][data-header-mobile-block].is-open) {
@@ -688,6 +688,7 @@ const accountItems = [
   function toggleMobileSearch(show) {
     if (!mobileSearchPanel) return;
     mobileSearchPanel.classList.toggle('hidden', !show);
+    mobileSearchPanel.classList.toggle('is-open', show);
 
     if (mobileSearchButton) {
       mobileSearchButton.setAttribute('aria-expanded', String(show));
