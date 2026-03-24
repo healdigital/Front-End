@@ -44,6 +44,31 @@ export function replaceCdnUrl(url: string): string {
     );
 }
 
+const WP_UPLOAD_PATH_PATTERN = /\/wp-content\/uploads\//i;
+const WP_IMAGE_URL_PATTERN =
+  /^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i;
+
+function normalizeWpUploadBase(base: string): string {
+  return base.replace(/-\d+x\d+$/i, '').replace(/-scaled$/i, '');
+}
+
+export function normalizeWordPressUploadUrl(url: string): string {
+  if (!url || typeof url !== 'string') return '';
+
+  const normalized = replaceCdnUrl(url);
+  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return normalized;
+
+  const match = normalized.match(WP_IMAGE_URL_PATTERN);
+  if (!match) return normalized;
+
+  const base = normalizeWpUploadBase(match[1]);
+  const ext = match[2];
+  const query = match[3] ? `?${match[3]}` : '';
+  const hash = match[4] ? `#${match[4]}` : '';
+
+  return `${base}${ext}${query}${hash}`;
+}
+
 /**
  * Build a smaller square variant URL for WordPress uploads.
  * Many imported assets include generated square derivatives (e.g. -500x500).
@@ -51,10 +76,10 @@ export function replaceCdnUrl(url: string): string {
 export function buildWpSquareVariantUrl(url: string, size = 500): string {
   if (!url || typeof url !== 'string') return '';
 
-  const normalized = replaceCdnUrl(url);
-  if (!/\/wp-content\/uploads\//i.test(normalized)) return normalized;
+  const normalized = normalizeWordPressUploadUrl(url);
+  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return normalized;
 
-  const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+  const match = normalized.match(WP_IMAGE_URL_PATTERN);
   if (!match) return normalized;
 
   const base = match[1];
@@ -62,14 +87,7 @@ export function buildWpSquareVariantUrl(url: string, size = 500): string {
   const query = match[3] ? `?${match[3]}` : '';
   const hash = match[4] ? `#${match[4]}` : '';
 
-  // Keep explicit size variants as-is.
-  if (/-\d+x\d+$/i.test(base)) {
-    return `${base}${ext}${query}${hash}`;
-  }
-
-  // WordPress "-scaled" originals are usually very large; prefer square preview.
-  const withoutScaled = base.replace(/-scaled$/i, '');
-  return `${withoutScaled}-${size}x${size}${ext}${query}${hash}`;
+  return `${base}-${size}x${size}${ext}${query}${hash}`;
 }
 
 /**
@@ -79,10 +97,10 @@ export function buildWpSquareVariantUrl(url: string, size = 500): string {
 export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): string {
   if (!url || typeof url !== 'string') return '';
 
-  const normalized = replaceCdnUrl(url);
-  if (!/\/wp-content\/uploads\//i.test(normalized)) return normalized;
+  const normalized = normalizeWordPressUploadUrl(url);
+  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return normalized;
 
-  const match = normalized.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+  const match = normalized.match(WP_IMAGE_URL_PATTERN);
   if (!match) return normalized;
 
   const base = match[1];
@@ -90,13 +108,7 @@ export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): st
   const query = match[3] ? `?${match[3]}` : '';
   const hash = match[4] ? `#${match[4]}` : '';
 
-  // Keep explicit size variants as-is.
-  if (/-\d+x\d+$/i.test(base)) {
-    return `${base}${ext}${query}${hash}`;
-  }
-
-  const withoutScaled = base.replace(/-scaled$/i, '');
-  return `${withoutScaled}-${variant}${ext}${query}${hash}`;
+  return `${base}-${variant}${ext}${query}${hash}`;
 }
 
 /**
@@ -140,5 +152,5 @@ export function processArticleImageUrl(article: any): string {
   if (!imageUrl) return '';
 
   // Replace CDN URL if needed
-  return replaceCdnUrl(imageUrl);
+  return normalizeWordPressUploadUrl(imageUrl);
 }

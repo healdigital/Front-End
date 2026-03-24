@@ -1,6 +1,7 @@
 ---
 import fs from "node:fs";
 import path from "node:path";
+import { normalizeWordPressUploadUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
 
 interface Props {
   slug: string;
@@ -19,6 +20,18 @@ let html = "";
 
 if (fs.existsSync(filePath)) {
   html = fs.readFileSync(filePath, "utf8").trim();
+}
+
+if (html) {
+  html = html.replace(
+    /https?:\/\/[^"'()\s]+\/wp-content\/uploads\/[^"'()\s]+/gi,
+    (match) => normalizeWordPressUploadUrl(match),
+  );
+
+  html = html.replace(
+    /https?:\/\/cdn\.lacuisinedebernard\.com\/[^"'()\s]+/gi,
+    (match) => replaceCdnUrl(match),
+  );
 }
 
 const hasHtml = html.length > 0;

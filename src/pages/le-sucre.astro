@@ -81,20 +81,6 @@ const formatDifficulty = (article: PreparedArchiveArticle | undefined): string =
   }
 };
 
-const getCategoryLabel = (article: PreparedArchiveArticle | undefined): string => {
-  const categories = Array.isArray(article?.categories) ? article.categories : [];
-  const preferred = categories
-    .map((category) => decodeHtmlEntities(String(category?.name || "").trim()))
-    .find(
-      (name) =>
-        name &&
-        !["recette", "recipe"].includes(name.toLowerCase()) &&
-        !["salé", "sale", "savory", "savoury"].includes(name.toLowerCase()),
-    );
-
-  return preferred || "Sucré";
-};
-
 const sourceEntries = getStaticArchiveEntries("le-sucre");
 const articleMap = new Map(
   getPreparedArchiveArticles()
@@ -107,7 +93,6 @@ const rows = sourceEntries.map((entry) => {
   return {
     href: entry.href,
     title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
-    category: getCategoryLabel(article),
     preparation: formatPreparation(article),
     difficulty: formatDifficulty(article),
   };
@@ -124,7 +109,6 @@ const rows = sourceEntries.map((entry) => {
     <div class="menu-table" role="table" aria-label="Index des recettes sucrées">
       <div class="menu-table-head" role="rowgroup">
         <div class="menu-table-row menu-table-row--head" role="row">
-          <span class="menu-table-cell menu-table-cell--category" role="columnheader">Catégorie</span>
           <span class="menu-table-cell menu-table-cell--recipe" role="columnheader">Recette</span>
           <span class="menu-table-cell menu-table-cell--prep" role="columnheader">Préparation</span>
           <span class="menu-table-cell menu-table-cell--difficulty" role="columnheader">Difficulté</span>
@@ -134,9 +118,6 @@ const rows = sourceEntries.map((entry) => {
       <div class="menu-table-body" role="rowgroup">
         {rows.map((row) => (
           <a class="menu-table-row menu-table-row--item" role="row" href={row.href}>
-            <span class="menu-table-cell menu-table-cell--category" role="cell">
-              <span class="menu-table-pill">{row.category}</span>
-            </span>
             <span class="menu-table-cell menu-table-cell--recipe" role="cell">{row.title}</span>
             <span class="menu-table-cell menu-table-cell--prep" role="cell">{row.preparation}</span>
             <span class="menu-table-cell menu-table-cell--difficulty" role="cell">{row.difficulty}</span>
@@ -159,7 +140,7 @@ const rows = sourceEntries.map((entry) => {
 
   .menu-page--le-sucre .menu-table-row {
     display: grid;
-    grid-template-columns: minmax(110px, 0.85fr) minmax(0, 2.1fr) minmax(120px, 0.9fr) minmax(120px, 0.9fr);
+    grid-template-columns: minmax(0, 2.5fr) minmax(120px, 0.9fr) minmax(120px, 0.9fr);
     gap: 1rem;
     align-items: center;
   }
@@ -214,24 +195,9 @@ const rows = sourceEntries.map((entry) => {
     line-height: 1.4;
   }
 
-  .menu-page--le-sucre .menu-table-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 32px;
-    padding: 0.35rem 0.8rem;
-    border-radius: 999px;
-    background: rgba(46, 196, 182, 0.16);
-    color: #1a2335;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
   @media (max-width: 900px) {
     .menu-page--le-sucre .menu-table-row {
-      grid-template-columns: minmax(92px, 0.85fr) minmax(0, 1.8fr) minmax(100px, 0.9fr) minmax(100px, 0.9fr);
+      grid-template-columns: minmax(0, 1.8fr) minmax(100px, 0.9fr) minmax(100px, 0.9fr);
       gap: 0.75rem;
     }
   }
@@ -252,7 +218,6 @@ const rows = sourceEntries.map((entry) => {
       gap: 0.18rem;
     }
 
-    .menu-page--le-sucre .menu-table-cell--category::before,
     .menu-page--le-sucre .menu-table-cell--prep::before,
     .menu-page--le-sucre .menu-table-cell--difficulty::before {
       color: #6b7280;
@@ -260,10 +225,6 @@ const rows = sourceEntries.map((entry) => {
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }
-
-    .menu-page--le-sucre .menu-table-cell--category::before {
-      content: "Catégorie";
     }
 
     .menu-page--le-sucre .menu-table-cell--prep::before {
