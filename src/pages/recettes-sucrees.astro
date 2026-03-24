@@ -118,9 +118,12 @@ const cards = sourceEntries.map((entry) => {
   const fallbackImage = entry.fallbackImage || "";
   const resolvedImage = processArticleImageUrl(article) || fallbackImage;
   const squareImage = resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "";
-  const imageFallbackCandidates = squareImage
-    ? Array.from(new Set([squareImage, ...buildWordPressImageFallbackCandidates(resolvedImage || squareImage)]))
-    : buildWordPressImageFallbackCandidates(resolvedImage);
+  const imageFallbackCandidates = Array.from(
+    new Set([
+      ...buildWordPressImageFallbackCandidates(resolvedImage),
+      squareImage,
+    ].filter(Boolean)),
+  );
 
   return {
     href: entry.href,
@@ -128,7 +131,7 @@ const cards = sourceEntries.map((entry) => {
     excerpt: getExcerpt(article, entry.fallbackTitle || entry.slug),
     difficulty: formatDifficulty(article),
     time: formatRecipeTime(article),
-    image: squareImage || resolvedImage,
+    image: resolvedImage || squareImage,
     imageFallback: resolvedImage,
     imageFallbackCandidates,
   };
@@ -146,7 +149,7 @@ const cards = sourceEntries.map((entry) => {
       {cards.map((card) => (
         <article class="sweet-card">
           <a href={card.href} class="sweet-card-media-link" aria-label={card.title}>
-            <div class="sweet-card-media">
+            <div class="sweet-card-media" style="position:relative;overflow:hidden;line-height:0;background:#ece5d8;">
               {card.image ? (
                 <img
                   src={card.image}
@@ -154,6 +157,7 @@ const cards = sourceEntries.map((entry) => {
                   loading="lazy"
                   decoding="async"
                   class="sweet-card-image"
+                  style="position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;object-position:center top;"
                   data-fallback-src={card.imageFallback}
                   data-fallback-candidates={card.imageFallbackCandidates.join('|')}
                   onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
@@ -213,20 +217,29 @@ const cards = sourceEntries.map((entry) => {
     display: block;
     color: inherit;
     text-decoration: none;
+    line-height: 0;
   }
 
   .menu-page--sweet-grid .sweet-card-media {
     position: relative;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 4.7;
     overflow: hidden;
     background: #ece5d8;
+    line-height: 0;
   }
 
   .menu-page--sweet-grid .sweet-card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top;
     display: block;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
   }
 
   .menu-page--sweet-grid .sweet-card-image--empty {

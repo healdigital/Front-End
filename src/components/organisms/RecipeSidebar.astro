@@ -101,12 +101,12 @@ const sidebarBooks = [
 
         <p class="text-[16px] text-[#5F6671] mt-5 leading-[1.65] description-data">Apprenez directement a mes cotes dans un atelier intimiste.</p>
 
-        <div class="flex items-end justify-between mt-8 pt-5 border-t border-[#D8D2C2]">
+        <div class="sidebar-workshop-footer flex items-end justify-between gap-4 mt-8 pt-5 border-t border-[#D8D2C2]">
           <div>
             {/* <span class="text-[13px] uppercase tracking-[0.14em] text-[#5F6671]">A partir de</span> */}
             <div class="font-heading text-[44px] leading-none text-[#111111]" data-sidebar-workshop-price>--</div>
           </div>
-          <Button href="/ateliers" class="button-data" variant="primary" size="sm" data-sidebar-workshop-cta>Reserver</Button>
+          <Button href="/ateliers" class="button-data sidebar-workshop-cta-button" variant="primary" size="sm" data-sidebar-workshop-cta>Reserver</Button>
         </div>
       </div>
 
@@ -506,10 +506,20 @@ const sidebarBooks = [
     font-size: 12px;
   }
 
-  .recipe-sidebar--full :global(.button-data),
   .recipe-sidebar--full :global(.button-data-full) {
     width: 100%;
     justify-content: center;
+  }
+
+  .recipe-sidebar :global(.sidebar-workshop-cta-button) {
+    width: auto;
+    min-width: 196px;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .recipe-sidebar :global(.sidebar-workshop-footer) {
+    align-items: end;
   }
 
   .recipe-sidebar--full :global(.date-box) {

@@ -261,8 +261,8 @@ const accountItems = [
     data-header-mobile-block
   >
     <div class="home-shell py-3">
-      <form class="flex items-center gap-2" data-mobile-search-form>
-        <div class="relative flex-1">
+      <form class="flex min-w-0 items-center gap-2" data-mobile-search-form>
+        <div class="relative min-w-0 flex-1">
           <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/50">
             <Icon name="search" size="sm" />
           </div>
@@ -275,14 +275,14 @@ const accountItems = [
         </div>
         <button
           type="submit"
-          class="h-[42px] px-4 rounded-full bg-white text-[#1A2335] text-[12px] font-semibold tracking-wide uppercase"
+          class="h-[42px] shrink-0 px-4 rounded-full bg-white text-[#1A2335] text-[12px] font-semibold tracking-wide uppercase"
           aria-label="Lancer la recherche"
         >
           Go
         </button>
         <button
           type="button"
-          class="h-[42px] w-[42px] rounded-full border border-white/25 text-white/80 hover:text-white flex items-center justify-center"
+          class="h-[42px] w-[42px] shrink-0 rounded-full border border-white/25 text-white/80 hover:text-white flex items-center justify-center"
           aria-label="Fermer la recherche"
           data-mobile-search-close
         >
