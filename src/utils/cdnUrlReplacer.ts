@@ -49,7 +49,10 @@ const WP_IMAGE_URL_PATTERN =
   /^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i;
 
 function normalizeWpUploadBase(base: string): string {
-  return base.replace(/-\d+x\d+$/i, '').replace(/-scaled$/i, '');
+  return base
+    .replace(/-(?:\d+)(?:[^a-z0-9/]|x|X)+(?:\d+)-scaled$/i, '')
+    .replace(/-(?:\d+)(?:[^a-z0-9/]|x|X)+(?:\d+)$/i, '')
+    .replace(/-scaled$/i, '');
 }
 
 export function normalizeWordPressUploadUrl(url: string): string {
