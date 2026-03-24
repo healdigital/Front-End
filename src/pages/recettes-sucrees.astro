@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
-import { buildWpSquareVariantUrl, processArticleImageUrl } from "../utils/cdnUrlReplacer";
+import { buildWordPressImageFallbackCandidates, buildWpSquareVariantUrl, processArticleImageUrl } from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 
 const navLinks = [
@@ -118,6 +118,9 @@ const cards = sourceEntries.map((entry) => {
   const fallbackImage = entry.fallbackImage || "";
   const resolvedImage = processArticleImageUrl(article) || fallbackImage;
   const squareImage = resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "";
+  const imageFallbackCandidates = squareImage
+    ? Array.from(new Set([squareImage, ...buildWordPressImageFallbackCandidates(resolvedImage || squareImage)]))
+    : buildWordPressImageFallbackCandidates(resolvedImage);
 
   return {
     href: entry.href,
@@ -127,6 +130,7 @@ const cards = sourceEntries.map((entry) => {
     time: formatRecipeTime(article),
     image: squareImage || resolvedImage,
     imageFallback: resolvedImage,
+    imageFallbackCandidates,
   };
 });
 ---
@@ -151,7 +155,8 @@ const cards = sourceEntries.map((entry) => {
                   decoding="async"
                   class="sweet-card-image"
                   data-fallback-src={card.imageFallback}
-                  onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
+                  data-fallback-candidates={card.imageFallbackCandidates.join('|')}
+                  onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
                 />
               ) : (
                 <div class="sweet-card-image sweet-card-image--empty">Aucune image</div>

@@ -11,6 +11,16 @@ const DEFAULT_PAYLOAD_API_URL =
 const WP_UPLOAD_PATH_PATTERN = /\/wp-content\/uploads\//i;
 const WP_IMAGE_URL_PATTERN =
   /^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i;
+const COMMON_WP_VARIANTS = [
+  '1920x2468',
+  '1593x2048',
+  '1536x2048',
+  '797x1024',
+  '768x1024',
+  '585x585',
+  '587x587',
+  '500x500',
+];
 const WP_SIZE_SUFFIX_PATTERN = /-(?:\d+)(?:x|X|\*|×)(?:\d+)(?:-scaled)?$/i;
 
 const getPayloadOrigin = (): string => {
@@ -104,14 +114,9 @@ export function buildWordPressImageFallbackCandidates(url: string): string[] {
 
   candidates.add(parts.normalized);
   candidates.add(buildFromParts(strippedBase, parts.ext, parts.query, parts.hash));
-
-  if (!WP_SIZE_SUFFIX_PATTERN.test(parts.base)) {
-    candidates.add(buildFromParts(`${strippedBase}-1593x2048`, parts.ext, parts.query, parts.hash));
-    candidates.add(buildFromParts(`${strippedBase}-797x1024`, parts.ext, parts.query, parts.hash));
-    candidates.add(buildFromParts(`${strippedBase}-585x585`, parts.ext, parts.query, parts.hash));
-    candidates.add(buildFromParts(`${strippedBase}-587x587`, parts.ext, parts.query, parts.hash));
-    candidates.add(buildFromParts(`${strippedBase}-500x500`, parts.ext, parts.query, parts.hash));
-  }
+  COMMON_WP_VARIANTS.forEach((variant) => {
+    candidates.add(buildFromParts(`${strippedBase}-${variant}`, parts.ext, parts.query, parts.hash));
+  });
 
   return Array.from(candidates).filter(Boolean);
 }
