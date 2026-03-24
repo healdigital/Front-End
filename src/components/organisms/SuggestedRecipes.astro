@@ -74,8 +74,8 @@ const totalRecipeCount = totalCount;
       style="background-image: url('/images/noise.webp'); background-size: 180px 180px;"
     ></div>
   )}
-  <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
-    <div class="flex items-center gap-6 mb-10">
+  <div class={embedded ? 'relative z-10 px-4 md:px-8 pt-8 md:pt-10 pb-2' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
+    <div class="flex items-center gap-6 mb-10 recipe-suggested-heading-row">
       <h2 class="font-heading text-3xl lg:text-5xl text-primary-black  typ-section">Ces recettes pourrez vous int&eacute;resser</h2>
       <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
     </div>
@@ -84,10 +84,10 @@ const totalRecipeCount = totalCount;
       <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
     </div>
 
-    <div class={`suggested-grid grid grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
+    <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
       {recipes.map((recipe, index) => (
         <div
-          class:list={['suggested-card-shell', index >= visibleCount && 'hidden']}
+          class:list={['suggested-card-shell h-full', index >= visibleCount && 'hidden']}
           data-suggested-card
           data-suggested-index={index}
           data-category={getFilterValue(recipe)}
@@ -620,6 +620,28 @@ const totalRecipeCount = totalCount;
   scheduleSuggestedRecipes();
   document.addEventListener('astro:page-load', scheduleSuggestedRecipes);
 </script>
+
+<style>
+  .recipe-suggested-heading-row {
+    padding-top: 6px;
+    padding-bottom: 4px;
+  }
+
+  .suggested-grid {
+    justify-content: center;
+  }
+
+  .suggested-card-shell {
+    display: flex;
+  }
+
+  @media (max-width: 1180px) {
+    [data-suggested-recipes] .relative.z-10 {
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+  }
+</style>
 
 <style>
 .suggested-arrow-btn {

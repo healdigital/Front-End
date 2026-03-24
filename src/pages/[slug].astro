@@ -2085,7 +2085,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     width: max-content;
 }
   .article-layout .article-sidebar-column{
-    width: 392px;
+    width: 472px;
   }
 
   .article-layout {
@@ -2098,6 +2098,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     display: flex;
     flex-direction: column;
     gap: 30px;
+    overflow-x: hidden;
   }
 
   .recipe-detail-shell {
@@ -3930,7 +3931,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
   @media (min-width: 1024px) {
     .article-layout {
-      grid-template-columns: minmax(0, 1fr) 392px;
+      grid-template-columns: minmax(0, 1fr) 472px;
       align-items: stretch;
       gap: 20px;
     }
@@ -3938,9 +3939,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-sidebar-column {
       align-self: stretch;
       display: flex;
-      padding-left: 0;
-      border-left: 0;
+      padding-left: 26px;
+      padding-right: 22px;
+      border-left: 1px solid #d8d2c2;
       background: transparent;
+      box-sizing: border-box;
     }
 
     .article-sidebar-column :global(aside) {
@@ -3981,6 +3984,15 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
     .article-content-card {
       padding: 26px;
+    }
+
+    .article-layout,
+    .article-main-column,
+    .article-content-card,
+    .article-content--recipe,
+    .article-content--story {
+      min-width: 0;
+      overflow-x: hidden;
     }
 
     .article-content :global(.wprm-recipe) {

@@ -8,6 +8,11 @@ const DEFAULT_PAYLOAD_API_URL =
     (process.env.PUBLIC_PAYLOAD_API_URL || process.env.PUBLIC_TRANSLATE_API_URL)) ||
   'https://admin.lacuisinedebernard.com/api';
 
+const WP_UPLOAD_PATH_PATTERN = /\/wp-content\/uploads\//i;
+const WP_IMAGE_URL_PATTERN =
+  /^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i;
+const WP_SIZE_SUFFIX_PATTERN = /-(?:\d+)(?:x|X|\*|×)(?:\d+)(?:-scaled)?$/i;
+
 const getPayloadOrigin = (): string => {
   try {
     return new URL(DEFAULT_PAYLOAD_API_URL).origin;
@@ -36,17 +41,29 @@ export function replaceCdnUrl(url: string): string {
   return url
     .replace(
       /^https?:\/\/cdn\.lacuisinedebernard\.com\//i,
-      'https://lcdb.fra1.digitaloceanspaces.com/'
+      'https://lcdb.fra1.digitaloceanspaces.com/',
     )
     .replace(
       /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
-      'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+      'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/',
     );
 }
 
-const WP_UPLOAD_PATH_PATTERN = /\/wp-content\/uploads\//i;
-const WP_IMAGE_URL_PATTERN =
-  /^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i;
+function splitWpUploadUrl(url: string) {
+  const normalized = replaceCdnUrl(url);
+  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return null;
+
+  const match = normalized.match(WP_IMAGE_URL_PATTERN);
+  if (!match) return null;
+
+  return {
+    normalized,
+    base: match[1],
+    ext: match[2],
+    query: match[3] ? `?${match[3]}` : '',
+    hash: match[4] ? `#${match[4]}` : '',
+  };
+}
 
 function normalizeWpUploadBase(base: string): string {
   return base
@@ -55,21 +72,48 @@ function normalizeWpUploadBase(base: string): string {
     .replace(/-scaled$/i, '');
 }
 
+function buildFromParts(base: string, ext: string, query = '', hash = '') {
+  return `${base}${ext}${query}${hash}`;
+}
+
 export function normalizeWordPressUploadUrl(url: string): string {
   if (!url || typeof url !== 'string') return '';
+  return replaceCdnUrl(url);
+}
 
-  const normalized = replaceCdnUrl(url);
-  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return normalized;
+export function stripWordPressImageSizeSuffix(url: string): string {
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return replaceCdnUrl(url);
 
-  const match = normalized.match(WP_IMAGE_URL_PATTERN);
-  if (!match) return normalized;
+  return buildFromParts(
+    normalizeWpUploadBase(parts.base),
+    parts.ext,
+    parts.query,
+    parts.hash,
+  );
+}
 
-  const base = normalizeWpUploadBase(match[1]);
-  const ext = match[2];
-  const query = match[3] ? `?${match[3]}` : '';
-  const hash = match[4] ? `#${match[4]}` : '';
+export function buildWordPressImageFallbackCandidates(url: string): string[] {
+  if (!url || typeof url !== 'string') return [];
 
-  return `${base}${ext}${query}${hash}`;
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return [replaceCdnUrl(url)];
+
+  const strippedBase = normalizeWpUploadBase(parts.base);
+  const candidates = new Set<string>();
+
+  candidates.add(parts.normalized);
+  candidates.add(buildFromParts(strippedBase, parts.ext, parts.query, parts.hash));
+
+  if (!WP_SIZE_SUFFIX_PATTERN.test(parts.base)) {
+    candidates.add(buildFromParts(`${strippedBase}-1593x2048`, parts.ext, parts.query, parts.hash));
+    candidates.add(buildFromParts(`${strippedBase}-797x1024`, parts.ext, parts.query, parts.hash));
+    candidates.add(buildFromParts(`${strippedBase}-585x585`, parts.ext, parts.query, parts.hash));
+    candidates.add(buildFromParts(`${strippedBase}-587x587`, parts.ext, parts.query, parts.hash));
+    candidates.add(buildFromParts(`${strippedBase}-500x500`, parts.ext, parts.query, parts.hash));
+  }
+
+  return Array.from(candidates).filter(Boolean);
 }
 
 /**
@@ -79,18 +123,15 @@ export function normalizeWordPressUploadUrl(url: string): string {
 export function buildWpSquareVariantUrl(url: string, size = 500): string {
   if (!url || typeof url !== 'string') return '';
 
-  const normalized = normalizeWordPressUploadUrl(url);
-  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return normalized;
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return replaceCdnUrl(url);
 
-  const match = normalized.match(WP_IMAGE_URL_PATTERN);
-  if (!match) return normalized;
-
-  const base = match[1];
-  const ext = match[2];
-  const query = match[3] ? `?${match[3]}` : '';
-  const hash = match[4] ? `#${match[4]}` : '';
-
-  return `${base}-${size}x${size}${ext}${query}${hash}`;
+  return buildFromParts(
+    `${normalizeWpUploadBase(parts.base)}-${size}x${size}`,
+    parts.ext,
+    parts.query,
+    parts.hash,
+  );
 }
 
 /**
@@ -100,18 +141,15 @@ export function buildWpSquareVariantUrl(url: string, size = 500): string {
 export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): string {
   if (!url || typeof url !== 'string') return '';
 
-  const normalized = normalizeWordPressUploadUrl(url);
-  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return normalized;
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return replaceCdnUrl(url);
 
-  const match = normalized.match(WP_IMAGE_URL_PATTERN);
-  if (!match) return normalized;
-
-  const base = match[1];
-  const ext = match[2];
-  const query = match[3] ? `?${match[3]}` : '';
-  const hash = match[4] ? `#${match[4]}` : '';
-
-  return `${base}-${variant}${ext}${query}${hash}`;
+  return buildFromParts(
+    `${normalizeWpUploadBase(parts.base)}-${variant}`,
+    parts.ext,
+    parts.query,
+    parts.hash,
+  );
 }
 
 /**
@@ -122,7 +160,6 @@ export function processArticleImageUrl(article: any): string {
 
   const extractFromHtml = (html?: string): string => {
     if (!html || typeof html !== 'string') return '';
-    // Try src or data-src first
     const match =
       html.match(/<img[^>]+src=["']([^"']+)["']/i) ||
       html.match(/<img[^>]+data-src=["']([^"']+)["']/i);
@@ -130,7 +167,6 @@ export function processArticleImageUrl(article: any): string {
     return match[1] || '';
   };
 
-  // Check various possible image URL fields
   const possibleUrls = [
     article.featuredMedia?.sizes?.articleHero?.url,
     article.featuredMedia?.sizes?.gallery?.url,
@@ -146,14 +182,11 @@ export function processArticleImageUrl(article: any): string {
     article.featuredImage?.url,
     article.featuredImageUrl,
     extractFromHtml(article.content),
-    extractFromHtml(article.contentV2)
+    extractFromHtml(article.contentV2),
   ];
 
-  // Find the first valid URL
-  const imageUrl = possibleUrls.find(url => url && typeof url === 'string');
-
+  const imageUrl = possibleUrls.find((url) => url && typeof url === 'string');
   if (!imageUrl) return '';
 
-  // Replace CDN URL if needed
-  return normalizeWordPressUploadUrl(imageUrl);
+  return replaceCdnUrl(imageUrl);
 }

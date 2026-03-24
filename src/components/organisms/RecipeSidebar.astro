@@ -185,16 +185,16 @@ const sidebarBooks = [
   {isFull && (
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Mes livres pour approfondir</h4>
-      <div class="grid grid-cols-2 gap-3 mt-4">
+      <div class="grid grid-cols-3 gap-3 mt-4 sidebar-books-grid">
         {sidebarBooks.map((book, index) => (
           <img
             src={book.src}
             alt={book.alt}
             class:list={[
-              'w-full rounded-[2px] object-cover',
-              index === sidebarBooks.length - 1 && sidebarBooks.length % 2 === 1
-                ? 'col-span-2 h-[226px]'
-                : 'h-[214px]',
+              'w-full rounded-[2px] object-contain bg-[#F7F5EF] p-1',
+              index === sidebarBooks.length - 1 && sidebarBooks.length % 3 === 1
+                ? 'col-span-3 h-[176px]'
+                : 'h-[154px]',
             ]}
             loading="lazy"
             decoding="async"
@@ -487,8 +487,8 @@ const sidebarBooks = [
 
   .recipe-sidebar--full > :global(.sidebar-block),
   .recipe-sidebar--full > .recipe-sidebar-sticky-rail > :global(.sidebar-block) {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   .recipe-sidebar--full :global(.workshop-box),
@@ -556,6 +556,10 @@ const sidebarBooks = [
     justify-content: center;
     min-width: 0;
     white-space: nowrap;
+  }
+
+  .recipe-sidebar :global(.sidebar-books-grid) {
+    align-items: start;
   }
 
   .recipe-sidebar-sticky-rail--enabled {

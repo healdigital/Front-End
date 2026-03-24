@@ -1,5 +1,6 @@
 ---
 import SocialShare from '../molecules/SocialShare.astro';
+import { buildWordPressImageFallbackCandidates } from '../../utils/cdnUrlReplacer';
 
 /**
  * Props for the `RecipeCard` organism.
@@ -41,9 +42,10 @@ const MAX_LENGTH = 200;
 const truncatedDescription = description.length > MAX_LENGTH
   ? description.slice(0, MAX_LENGTH).trim() + '...'
   : description;
+const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
 ---
 
-<article class="group w-full rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
+<article class="group flex h-full w-full flex-col rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
   <!-- Image Container -->
   <div class="relative w-full overflow-hidden aspect-[14/18]">
     <img
@@ -57,7 +59,8 @@ const truncatedDescription = description.length > MAX_LENGTH
       height="643"
       sizes="(min-width: 1280px) 28vw, (min-width: 1024px) 34vw, (min-width: 768px) 44vw, 92vw"
       data-fallback-src={imageFallback}
-      onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
+      data-fallback-candidates={imageFallbackCandidates.join('|')}
+      onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
     />
 
     <!-- Bookmark Button -->
@@ -72,8 +75,8 @@ const truncatedDescription = description.length > MAX_LENGTH
   </div>
 
   <!-- Content -->
-  <div class="px-6 pb-7 pt-5 flex flex-col gap-4">
-    <h3 class="font-heading text-[43px] leading-[1] text-text-primary">
+  <div class="flex flex-1 flex-col gap-4 px-6 pb-7 pt-5">
+    <h3 class="font-heading text-[43px] leading-[1] text-text-primary min-h-[3.2em]">
       <a href={slug} class="hover:text-primary-turquoise transition-colors">
         {title}
       </a>
@@ -86,7 +89,7 @@ const truncatedDescription = description.length > MAX_LENGTH
       <SocialShare url={`${Astro.url.origin}${slug}`} title={title} class="gap-3 text-[14px]" />
     </div>
 
-    <p class="text-text-secondary font-body text-[16px] leading-[1.7] typ-body">
+    <p class="flex-1 text-text-secondary font-body text-[16px] leading-[1.7] typ-body">
       {truncatedDescription}
     </p>
 

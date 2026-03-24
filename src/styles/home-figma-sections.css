@@ -1488,3 +1488,262 @@ figure.recipe-redesign__final-image.bon_img ,
 section.recipe-redesign__recipe-card {
     width: 290px !important;
 } */
+
+
+/*24-mar-26 - 3pm*/
+.bio-section-content-inner {
+    width: 100% !important;
+}
+
+.bio-section-intro {
+    width: 100% !important;
+}
+
+article.group {
+    height: 100% !important;
+}
+
+.home-recipe-card-shell {
+    position: relative;
+    height: 100%;
+}
+
+.home-recipe-card-shell a.inline-flex {
+    position: absolute;
+    bottom: 10px;
+    left: 25px;
+}
+
+.home-sidebar-column {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+
+
+.home-sidebar-sticky p.sidebar-subtitle {
+    color: #9E0606 !important;
+}
+
+.bio-section-content {
+    width: calc(100% - 457px);
+}
+
+.bio-section-title {
+    width: 100%;
+    height: auto;
+}
+
+.bio-section-description {
+    width: 100%;
+    height: auto;
+}
+
+.bio-section-eyebrow {
+    width: 100%;
+
+}
+
+.bio-section-intro {
+    height: auto;
+}
+
+.books-section-content {
+    width: calc(100% - 457px);
+}
+
+.books-section-content .books-section-inner {
+    width: 100%;
+}
+
+.books-section-content {
+    width: calc(100% - 457px);
+}
+
+.books-section-content .books-section-inner {
+    width: 100%;
+}
+
+.home-deferred-block .featured-masterclass-panel {
+    width: calc(100% - 419px) !important;
+    height: auto !important;
+    justify-content: unset;
+}
+
+.featured-masterclass-panel .featured-masterclass-copy {
+    width: 100%;
+    height: auto;
+}
+
+.home-workshops-feature-grid .text-status-success {
+    display: none;
+}
+
+.home-sidebar-column {
+    border-left: 0px !important;
+}
+
+.sidebar-block:last-child {
+    border-bottom: 0px;
+}
+
+.recipe-grid-home>*,
+.suggested-grid>* {
+    height: 100%;
+}
+
+section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-page-section--light.home-render-deferred {
+    padding-top: 0px;
+}
+
+.home-two-column .home-main-column.home-main-column-stack {
+    padding-top: 80px;
+}
+
+.home-sidebar-sticky .pannel-data {
+    width: 100%;
+}
+
+
+
+@media(max-width:1024px) {
+    .recipe-sidebar-sticky-rail--enabled[data-astro-cid-zdfhrfee] {
+        position: static;
+    }
+
+    .home-main-block h3.font-heading {
+        font-size: 33px;
+        line-height: 1.1em;
+    }
+
+    .home-main-block h3.font-heading {
+        font-size: 33px;
+        line-height: 1.1em;
+    }
+
+    .home-deferred-block .bio-section-media {
+        width: 100%;
+    }
+
+    .home-deferred-block .bio-section-content {
+        width: 100%;
+    }
+
+    .home-deferred-block .bio-section-media-image {
+        min-height: auto !important;
+    }
+
+    .home-deferred-block .bio-section-grid {
+        display: block;
+    }
+
+    .home-main-block h3.font-heading {
+        font-size: 33px;
+        line-height: 1.1em;
+    }
+
+    .home-deferred-block .bio-section-media {
+        width: 100%;
+    }
+
+    .home-deferred-block .bio-section-content {
+        width: 100%;
+    }
+
+    .home-deferred-block .bio-section-media-image {
+        min-height: auto !important;
+    }
+
+    .home-deferred-block .bio-section-grid {
+        display: block;
+    }
+
+    .featured-masterclass-card {
+        display: block;
+    }
+
+    .featured-masterclass-card .featured-masterclass-media {
+        width: 100%;
+    }
+
+    .featured-masterclass-card .featured-masterclass-panel {
+        width: 100%;
+    }
+
+    button.hover\:text-text-primary.transition-colors.disabled\:opacity-40,
+    button.hover\:text-text-primary.transition-colors.disabled\:opacity-40 {
+        display: none;
+    }
+
+    .flex.items-center.justify-between.gap-6.flex-wrap.text-\[13px\].text-text-secondary.uppercase.tracking-wider.typ-meta {
+        margin: 0 auto;
+        width: -webkit-max-content;
+        width: -moz-max-content;
+        width: max-content;
+        border-bottom: 0px;
+    }
+
+    .home-workshops-feature-grid.grid.grid-cols-1.lg\:grid-cols-2.gap-7.mb-16 {
+        display: flex;
+    }
+
+    .home-workshops-grid.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3.gap-7.justify-items-center {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .home-workshops-grid article {
+        max-width: 48%;
+    }
+
+    .home-two-column .home-main-column.home-main-column-stack {
+        padding-top: 0px;
+    }
+
+    .home-main-column-stack>.home-main-block {
+        padding-top: 0px;
+    }
+
+    .home-main-column.home-main-column-stack.mes-livres {
+        padding-top: 44px;
+    }
+
+    .mt-10.pt-6.border-t.border-\[\#D8D2C2\].flex.items-center.flex-wrap.justify-between.gap-6.text-\[13px\].text-text-secondary.uppercase.tracking-wider.typ-meta {
+        border-top: 0px;
+    }
+}
+
+@media screen and (max-width:768px) {
+    section.home-page-section {
+        padding-top: 50px !important;
+    }
+
+    .featured-masterclass-card .featured-masterclass-panel {
+        width: 100% !important;
+    }
+
+    .mt-1.md\:mt-4.flex.items-center.gap-3.douted_pagination {
+        text-align: right;
+        position: absolute;
+        right: 0px;
+        bottom: 23px;
+    }
+
+    .home-workshops-feature-grid.grid.grid-cols-1.lg\:grid-cols-2.gap-7.mb-16 {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .home-workshops-grid article {
+        max-width: 100%;
+    }
+
+    .books-section-content {
+        width: 100%;
+    }
+
+    .home-shell {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
