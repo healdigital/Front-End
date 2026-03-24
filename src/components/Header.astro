@@ -89,7 +89,7 @@ const accountItems = [
 
 <header class="sticky top-0 z-50" data-header>
   <!-- Promo bar -->
-  <div class="bg-[#F8F8F8] h-[36px] min-[1150px]:h-[40px] hidden min-[1150px]:flex items-center justify-center relative data-promo-bar" data-promo-bar>
+  <div class="bg-[#F8F8F8] h-[36px] lg:h-[40px] hidden lg:flex items-center justify-center relative data-promo-bar" data-promo-bar>
     <div class="home-shell w-full flex items-center justify-center">
       <p class="font-mono text-[12px] lg:text-[13px] tracking-wide text-text-primary flex items-center gap-2">
         <span aria-hidden="true">&#10024;</span>
@@ -111,7 +111,7 @@ const accountItems = [
     <div class="home-shell h-[64px] lg:h-[72px] flex items-center gap-5">
       <!-- Mobile menu trigger -->
       <button
-        class="max-[1149px]:block hidden text-white/80 hover:text-white transition-colors"
+        class="lg:hidden text-white/80 hover:text-white transition-colors"
         aria-label="Ouvrir le menu"
         data-menu-trigger
       >
@@ -130,7 +130,7 @@ const accountItems = [
       </a>
 
       <!-- Search (desktop) -->
-      <div class="hidden min-[1150px]:flex flex-1 max-w-[640px]">
+      <div class="hidden lg:flex flex-1 max-w-[640px]">
         <div class="relative w-full">
           <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/42">
             <Icon name="search" size="sm" class="w-[18px] h-[18px]" />
@@ -145,10 +145,10 @@ const accountItems = [
         </div>
       </div>
 
-      <div class="hidden min-[1150px]:block w-px h-8 bg-white/25"></div>
+      <div class="hidden lg:block w-px h-8 bg-white/25"></div>
 
       <!-- Desktop actions -->
-      <div class="hidden min-[1150px]:flex items-center gap-[18px] ml-auto">
+      <div class="hidden lg:flex items-center gap-[18px] ml-auto">
         <a href="/contact" class="flex items-center gap-[7px] text-white/85 hover:text-white text-[14px] header-utility-text" data-header-utility-link>
           <Icon name="mail" size="sm" class="w-[18px] h-[18px]" />
           <span data-header-utility-label>Contact</span>
@@ -206,7 +206,7 @@ const accountItems = [
       </div>
 
       <!-- Mobile actions -->
-      <div class="flex max-[1149px]:flex min-[1150px]:hidden items-center gap-4 ml-auto text-white/80">
+      <div class="flex lg:hidden items-center gap-4 ml-auto text-white/80">
         <div class="relative" data-mobile-header-lang-menu data-no-translate="true">
           <button
             type="button"
@@ -255,7 +255,7 @@ const accountItems = [
 
   <div
     id="header-mobile-search"
-    class="hidden max-[1149px]:block min-[1150px]:hidden bg-[#1A2335] border-t border-white/10"
+    class="hidden lg:hidden bg-[#1A2335] border-t border-white/10"
     data-mobile-search-panel
   >
     <div class="home-shell py-3">
@@ -291,7 +291,7 @@ const accountItems = [
   </div>
 
   <!-- Secondary navigation -->
-  <div class="hidden min-[1150px]:flex bg-[#FAFAF8] border-b border-[#DCD8CC] header-bottom">
+  <div class="hidden lg:flex bg-[#FAFAF8] border-b border-[#DCD8CC] header-bottom">
     <div class="home-shell w-full h-[70px] flex items-center">
       <nav class="flex items-center gap-8" aria-label="Navigation principale">
         {navItems.map((item) => (
@@ -342,14 +342,14 @@ const accountItems = [
 
   <!-- Mobile menu overlay -->
   <div
-    class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 max-[1149px]:block min-[1150px]:hidden"
+    class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"
     data-menu-overlay
     aria-hidden="true"
   ></div>
 
   <!-- Mobile menu drawer -->
   <aside
-    class="fixed inset-y-0 left-0 w-[320px] bg-[#1A2335] text-white transform -translate-x-full transition-transform duration-300 ease-in-out max-[1149px]:flex min-[1150px]:hidden z-50"
+    class="fixed inset-y-0 left-0 w-[320px] bg-[#1A2335] text-white transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden z-50"
     data-menu-drawer
     aria-hidden="true"
     inert
@@ -558,12 +558,12 @@ const accountItems = [
   if (promoBar && promoClose) {
     if (localStorage.getItem('promo-bar-hidden') === 'true') {
       promoBar.classList.add('hidden');
-      promoBar.classList.remove('min-[1150px]:flex');
+      promoBar.classList.remove('lg:flex');
     }
 
     promoClose.addEventListener('click', () => {
       promoBar.classList.add('hidden');
-      promoBar.classList.remove('min-[1150px]:flex');
+      promoBar.classList.remove('lg:flex');
       localStorage.setItem('promo-bar-hidden', 'true');
     });
   }
