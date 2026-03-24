@@ -176,6 +176,7 @@ body {
   margin-right: auto;
   padding-left: 16px;
   padding-right: 16px;
+  box-sizing: border-box;
 }
 
 .lcdb-page-hero {
