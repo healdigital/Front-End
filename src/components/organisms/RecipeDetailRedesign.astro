@@ -648,7 +648,7 @@ const printLink = `/print/${slug}/?auto=1`;
     border-radius: 18px;
     align-self: start;
     justify-self: start;
-    width: min(100%, 440px);
+    width: 100%;
     max-width: 100%;
     min-height: auto;
   }
@@ -922,10 +922,13 @@ const printLink = `/print/${slug}/?auto=1`;
     }
 
     .recipe-redesign__hero-image {
-      width: min(100%, 420px);
+      width: 100%;
+      max-width: 100%;
+      justify-self: stretch;
     }
 
     .recipe-redesign__hero-image img {
+      width: 100%;
       height: auto;
       min-height: auto;
       object-fit: contain;
@@ -964,6 +967,11 @@ const printLink = `/print/${slug}/?auto=1`;
 
     .recipe-redesign__title {
       overflow-wrap: anywhere;
+    }
+
+    .recipe-redesign__hero-image {
+      width: 100%;
+      max-width: 100%;
     }
   }
 </style>

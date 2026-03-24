@@ -120,7 +120,7 @@ section.home-page-section {
 .home-main-column-stack {
   display: flex;
   flex-direction: column;
-  /* gap: 48px; */
+  gap: 28px;
 }
 
 .home-main-column-stack>section {
@@ -806,7 +806,6 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   .flex.lg\:hidden.items-center.gap-4.ml-auto.text-white\/80 {
     margin-left: -30px;
   }
-
   img.h-8.lg\:h-9.w-auto {
     max-width: 93px;
     width: 100%;
@@ -1085,7 +1084,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   font-family: Instrument Serif;
   font-weight: 400;
   font-style: Regular;
-  font-size: 43px;
+  font-size: 41px;
   leading-trim: NONE;
   line-height: 43px;
   letter-spacing: 0%;
@@ -1477,6 +1476,33 @@ h2.font-heading.text-3xl.lg\:text-5xl.text-primary-black.whitespace-nowrap.typ-s
     padding-top: 27px;
 }
 
+.home-main-block--browse {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.home-main-block--browse .home-section-heading-row,
+.home-main-block--browse .home-section-heading-row h2.typ-section {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.home-main-block--browse .home-section-heading-row {
+    align-items: center;
+    margin-bottom: 0 !important;
+}
+
+.home-main-block--browse .home-section-heading-row h2.typ-section {
+    line-height: 1.04;
+}
+
+.home-main-block--browse [data-homepage-filters] {
+    margin-bottom: 0 !important;
+}
+
 
 /* section.recipe-redesign__hero-card, 
 section.recipe-redesign__section,
@@ -1499,16 +1525,19 @@ section.recipe-redesign__recipe-card {
     width: 100% !important;
 }
 
-article.group {
+.home-recipe-card-shell article.group,
+.suggested-card-shell article.group {
     height: 100% !important;
 }
 
-.home-recipe-card-shell {
+.home-recipe-card-shell,
+.suggested-card-shell {
     position: relative;
     height: 100%;
 }
 
-.home-recipe-card-shell a.inline-flex {
+.home-recipe-card-shell a.inline-flex,
+.suggested-card-shell a.inline-flex {
     position: absolute;
     bottom: 10px;
     left: 25px;
@@ -1706,6 +1735,20 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
     .home-main-column.home-main-column-stack.mes-livres {
         padding-top: 44px;
+    }
+
+    .home-main-block--browse {
+        gap: 16px;
+        padding-top: 0 !important;
+    }
+
+    .home-main-block--browse .home-section-heading-row {
+        margin-bottom: 0 !important;
+    }
+
+    .home-main-block--browse .home-section-heading-row h2.typ-section {
+        font-size: clamp(44px, 5.2vw, 56px);
+        line-height: 1.02;
     }
 
     .mt-10.pt-6.border-t.border-\[\#D8D2C2\].flex.items-center.flex-wrap.justify-between.gap-6.text-\[13px\].text-text-secondary.uppercase.tracking-wider.typ-meta {
