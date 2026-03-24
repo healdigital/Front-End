@@ -110,13 +110,12 @@ h4.sidebar-title {
 }
 
 section.home-page-section {
-  /* padding-top: 48px !important; */
   padding-bottom: 48px !important;
 }
 
-.home-workshops-section {
+/* .home-workshops-section {
   padding-top: 48px;
-}
+} */
 
 .home-main-column-stack {
   display: flex;
@@ -133,9 +132,8 @@ section.home-page-section {
   margin: 0;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
   section.home-page-section {
-    /* padding-bottom: 48px !important; */
     padding-bottom: 48px !important;
   }
 
@@ -728,7 +726,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 }
 
-@media (max-width: 767px) {
+@media (min-width: 767px) and (max-width: 1024px) {
   .mt-1.md\:mt-4.flex.items-center.gap-3.douted_pagination {
     position: absolute;
     right: 0;
@@ -768,7 +766,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
   .home-shell {
     padding-left: 28px;
     padding-right: 28px;
@@ -777,7 +775,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 .section_2{
   padding-top: 0px !important;
 }
-@media (min-width: 320px) {
+@media (max-width: 320px) and (max-width: 374px) {
   .typ-section {
     font-size: 37px !important;
   }
@@ -787,7 +785,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
   .bio-section-media-image {
     height: 640px;
   }
