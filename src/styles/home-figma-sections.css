@@ -1469,3 +1469,16 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 .section_1 {
   padding-bottom: 48px !important;
 }
+
+
+
+/* section.recipe-redesign__hero-card, 
+section.recipe-redesign__section,
+section.recipe-redesign__section, 
+p.recipe-redesign__bon-appetit, 
+figure.recipe-redesign__final-image.bon_img ,
+.article-newsletter-card,
+.comments-card,
+section.recipe-redesign__recipe-card {
+    width: 290px !important;
+} */
