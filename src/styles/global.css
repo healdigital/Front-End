@@ -1115,30 +1115,30 @@ section.content-v2-block.content-v2-recipe-card ol li {
 
 /* New CSS */
 .lcdb-page-shell.lcdb-page-section-inner {
-    margin: 0 auto;
+    margin: 0 auto !important;
 }
  
 .article-sidebar-column[data-astro-cid-yvbahnfj] {
-    padding-left: 0px;
-    border-left: 0px;
+    padding-left: 0px!important;
+    border-left: 0px!important;
 }
  
 .recipe-redesign__section-head {
-    padding-top: 40px;
-    padding-bottom: 30px;
+    padding-top: 40px!important;
+    padding-bottom: 30px!important;
 }
  
 .recipe-redesign__section h2 {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding-top: 40px!important;
+    padding-bottom: 40px!important;
 }
  
 .recipe-redesign[data-astro-cid-xpob6qz5] {
-    gap: 0px;
+    gap: 0px!important;
 }
  
 .recipe-redesign__section-head h2 {
-    padding: 0px;
+    padding: 0px!important;
 }
  
 section.recipe-redesign__step-group {
@@ -1146,12 +1146,12 @@ section.recipe-redesign__step-group {
 }
  
 section.recipe-redesign__recipe-card {
-    margin-top: 40px;
+    margin-top: 40px!important;
 }
 section.article-related-section.article-related-section--fullwidth {
-    padding-left: 0px;
-    padding-right: 0px;
+    padding-left: 0px!important;
+    padding-right: 0px!important;
 }
 .article-main-column {
-    margin-top: 60px;
+    margin-top: 60px!important;
 }
