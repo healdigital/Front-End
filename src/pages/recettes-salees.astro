@@ -25,6 +25,36 @@ const navLinks = [
   },
 ];
 
+const stripHtml = (value: string) =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value === "string") return decodeHtmlEntities(stripHtml(value));
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(record.children)) {
+      return record.children.map((child) => toText(child)).filter(Boolean).join(" ");
+    }
+  }
+  return "";
+};
+
+const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return `Découvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
+  return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
+};
+
 const sourceEntries = getStaticArchiveEntries("recettes-salees");
 const articleMap = new Map(
   getPreparedArchiveArticles()
@@ -50,6 +80,7 @@ const cards = sourceEntries.map((entry) => {
     title: decodeHtmlEntities(
       String(article?.title || entry.fallbackTitle || entry.slug),
     ),
+    excerpt: getExcerpt(article, entry.fallbackTitle || entry.slug),
     image: resolvedImage,
     imageFallback: fallbackImage || resolvedImage,
     imageFallbackCandidates,
@@ -98,6 +129,8 @@ const cards = sourceEntries.map((entry) => {
             <h2 class="savory-card-title">
               <a href={card.href}>{card.title}</a>
             </h2>
+            <p class="savory-card-excerpt">{card.excerpt}</p>
+            <a href={card.href} class="savory-card-cta">Lire la suite</a>
           </div>
         </article>
       ))}
@@ -192,13 +225,31 @@ const cards = sourceEntries.map((entry) => {
   .menu-page--savory-grid .savory-card-title {
     margin: 0;
     font-family: var(--font-maison);
-    font-size: 1.75rem;
-    line-height: 1.18;
+    font-size: 1.48rem;
+    line-height: 1.14;
     color: #26231c;
   }
 
   .menu-page--savory-grid .savory-card-title a {
     color: inherit;
+    text-decoration: none;
+  }
+
+  .menu-page--savory-grid .savory-card-excerpt {
+    margin: 0.72rem 0 0;
+    color: #655f54;
+    font-size: 0.96rem;
+    line-height: 1.66;
+  }
+
+  .menu-page--savory-grid .savory-card-cta {
+    display: inline-flex;
+    margin-top: 0.9rem;
+    color: #54b6b1;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     text-decoration: none;
   }
 
@@ -216,7 +267,11 @@ const cards = sourceEntries.map((entry) => {
     }
 
     .menu-page--savory-grid .savory-card-title {
-      font-size: 1.45rem;
+      font-size: 1.28rem;
+    }
+
+    .menu-page--savory-grid .savory-card-excerpt {
+      font-size: 0.92rem;
     }
   }
 </style>
