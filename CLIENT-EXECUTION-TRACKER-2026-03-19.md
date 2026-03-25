@@ -27,14 +27,14 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
 - Shared newsletter modal wording aligned
 - Final grep sweep cleared the previously targeted old wording strings
 
-## Latest Active Regressions (2026-03-24)
+## Latest Active Regressions (2026-03-25)
 
-- Detail page mobile layout is still under active fix:
-  right-side cut/overflow persists on phone widths and the target is a centered single-column mobile recipe layout.
-- Detail page desktop/sidebar parity is still being tightened:
-  sidebar should sit further to the right and visually match homepage proportions more closely.
-- `/recettes-sucrees/` still has image-fill edge cases on some cards:
-  portrait treatment is implemented, but top-gap/image-fill cleanup is still being verified card by card.
+- Detail page mobile layout regression resolved:
+  right-side cut/overflow fixed, centered single-column mobile layout now applied.
+- Detail page desktop/sidebar parity regression resolved:
+  sidebar alignment and column proportions updated to match homepage parity.
+- `/recettes-sucrees/` image-fill regression resolved:
+  portrait cards with adjusted image-fill now applied.
 - Mobile header search panel regression has been corrected in code:
   search should stay hidden by default and open only on search-icon click.
 - Homepage `Découvrez mes recettes` overlap regression has been corrected in code:
