@@ -17,14 +17,14 @@
 - [x] Shared newsletter modal wording aligned
 - [x] Final grep cleanup completed for the old targeted homepage/shared wording strings
 
-## Current Active Fixes (2026-03-24)
+## Current Active Fixes (2026-03-25)
 
-- [ ] Detail page mobile responsiveness:
-  right-side cut/overflow still under active fix on phone widths; target is a true single-column mobile layout with equal gutters.
-- [ ] Detail page desktop/sidebar parity:
-  sidebar still needs final right-shift / homepage-like desktop alignment parity after rollback-based rebuilds.
-- [ ] `/recettes-sucrees/` image presentation:
-  portrait cards are in place, but top-gap/image-fill edge cases are still being tightened and rechecked.
+- [x] Detail page mobile responsiveness:
+  right-side cut/overflow fixed; mobile now uses a true single-column layout with balanced gutters.
+- [x] Detail page desktop/sidebar parity:
+  sidebar alignment and column proportions were adjusted to match homepage parity.
+- [x] `/recettes-sucrees/` image presentation:
+  portrait cards are in place with image-fill adjustments applied.
 - [x] Mobile header search panel:
   panel is back to hidden-by-default and should only open when the search icon is clicked.
 - [x] Homepage `Découvrez mes recettes` overlap at desktop/1024:
