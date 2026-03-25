@@ -1111,3 +1111,7 @@ section.content-v2-block.content-v2-recipe-card ol li {
     width: 100%;
     max-width: 100%;
 }
+
+.lcdb-page-shell.lcdb-page-section-inner {
+    margin: auto;
+}
