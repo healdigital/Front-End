@@ -1093,3 +1093,21 @@ section.content-v2-block.content-v2-recipe-card ol li {
 }
 
  
+
+.home-main-block {
+    padding-top: 0px;
+}
+ 
+.home-two-column .home-main-column.home-main-column-stack {
+    padding-top: 40px;
+}
+ 
+ 
+.home-workshops-feature-card {
+    max-width: 100%;
+}
+ 
+.home-workshops-grid article {
+    width: 100%;
+    max-width: 100%;
+}
