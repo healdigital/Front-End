@@ -8,6 +8,21 @@ Primary sources reviewed:
 - [lcb_feedback_tracker.html](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/lcb_feedback_tracker.html)
 - [CLIENT-FEEDBACK-CONSOLIDATED-2026-03-19.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/CLIENT-FEEDBACK-CONSOLIDATED-2026-03-19.md)
 
+## Latest Active Regressions (2026-03-24)
+
+- Detail page mobile layout is still under active fix:
+  right-side cut/overflow persists on phone widths and the target is a centered single-column mobile recipe layout.
+- Detail page desktop/sidebar parity is still being tightened:
+  sidebar should sit further to the right and visually match homepage proportions more closely.
+- `/recettes-sucrees/` still has image-fill edge cases on some cards:
+  portrait treatment is implemented, but top-gap/image-fill cleanup is still being verified card by card.
+- Mobile header search panel regression has been corrected in code:
+  search should stay hidden by default and open only on search-icon click.
+- Homepage `Découvrez mes recettes` overlap regression has been corrected in code:
+  the previous-block overlap was traced to overly broad card-height/CTA CSS.
+- Global WordPress upload image handling has been hardened:
+  fallback candidates now preserve valid filenames and try real generated sizes before failing.
+
 ## Working Rules
 
 - Do not mark anything done without visual verification against staging + original/Figma.
