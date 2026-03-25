@@ -120,7 +120,7 @@ section.home-page-section {
 .home-main-column-stack {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  /* gap: 28px; */
 }
 
 .home-main-column-stack>section {
@@ -1469,24 +1469,30 @@ footer a.hover\:text-primary-turquoise.transition-colors {
   padding-bottom: 48px !important;
 }
 .home-main-block,
-.home-deferred-block ,
 section.relative.overflow-hidden.home-page-section.home-page-section--dark.home-render-deferred.home-workshops-section,
 section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-page-section--light.home-render-deferred,
 h2.font-heading.text-3xl.lg\:text-5xl.text-primary-black.whitespace-nowrap.typ-section {
     padding-top: 27px;
 }
 
+.home-deferred-block {
+    padding-top: 40px !important;
+}
+.remove_padding{
+  padding-top: 0px !important;
+}
 .home-main-block--browse {
     display: flex;
     flex-direction: column;
     gap: 18px;
-    padding-top: 0 !important;
+    padding-top: 40px !important;
     margin-top: 0 !important;
 }
-
-.home-main-block--browse .home-section-heading-row,
-.home-main-block--browse .home-section-heading-row h2.typ-section {
-    padding-top: 0 !important;
+.Ateliers_css{
+  padding-top: 40px !important;
+}
+.home-main-block--browse .home-section-heading-row {
+    padding-top: 40px !important;
     margin-top: 0 !important;
 }
 
@@ -1804,6 +1810,9 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
   .recipe-grid-home{
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+  .home-two-column {
+        grid-template-columns: minmax(0, 1fr) 372px;
+    }
 }
 
 @media (max-width: 1280px) {
