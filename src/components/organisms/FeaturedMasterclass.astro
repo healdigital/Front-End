@@ -8,9 +8,9 @@ interface Props {
 const { embedded = false } = Astro.props as Props;
 
 const features = [
-  { icon: 'video' as const, label: '12 modules vid&eacute;o' },
+  { icon: 'video' as const, label: 'Cours vid&eacute;o pas &agrave; pas' },
   { icon: 'download' as const, label: 'Fiches t&eacute;l&eacute;chargeables' },
-  { icon: 'refresh' as const, label: 'Acc&egrave;s &agrave; vie + mises &agrave; jour gratuites' },
+  { icon: 'refresh' as const, label: 'Acc&egrave;s &agrave; vie et mises &agrave; jour gratuites' },
 ];
 ---
 
@@ -23,7 +23,7 @@ const features = [
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
     <div class="flex items-center gap-6 mb-12">
-      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section">Produit phare Masterclass</h2>
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section">Mes cours vid&eacute;o</h2>
       <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
     </div>
 
@@ -45,12 +45,12 @@ const features = [
 
       <div class="featured-masterclass-panel">
         <div class="featured-masterclass-copy">
-          <p class="featured-masterclass-eyebrow">Vid&eacute;o Masterclass</p>
+              <p class="featured-masterclass-eyebrow">Cours vid&eacute;o</p>
           <h3 class="featured-masterclass-title">
             Les Bases de la P&acirc;tisserie
           </h3>
           <p class="featured-masterclass-description">
-            Ma&icirc;trisez les fondamentaux : p&acirc;te feuillet&eacute;e, p&acirc;te &agrave; choux, cr&egrave;me p&acirc;tissi&egrave;re, meringues... Tout ce dont vous avez besoin pour r&eacute;ussir 90% des recettes classiques.
+            D&eacute;couvrez mes premiers cours vid&eacute;o pour apprendre les bases de la p&acirc;tisserie &agrave; votre rythme depuis chez vous. Cr&egrave;me p&acirc;tissi&egrave;re, chantilly, cr&egrave;me diplomate, millefeuille, p&acirc;te feuillet&eacute;e invers&eacute;e : des techniques essentielles expliqu&eacute;es pas &agrave; pas avec les bons gestes, les bonnes textures et le niveau de d&eacute;tail n&eacute;cessaire pour r&eacute;ussir.
           </p>
           <div class="featured-masterclass-features">
             {features.map((feature) => (
@@ -62,13 +62,18 @@ const features = [
           </div>
         </div>
 
-        <div class="mt-8 flex items-end justify-between">
-         
+        <div class="mt-8 flex items-end justify-between gap-4 flex-wrap">
           <a
             href="/masterclass"
             class="inline-flex items-center justify-center px-8 py-4 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90 typ-button"
           >
-            R&eacute;server
+            Voir les cours vid&eacute;o
+          </a>
+          <a
+            href="/masterclass#bundle"
+            class="inline-flex items-center justify-center px-6 py-4 border border-[#D7D1C2] text-text-primary font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:bg-[#F7F5EF] typ-button"
+          >
+            D&eacute;couvrir le bundle
           </a>
         </div>
       </div>

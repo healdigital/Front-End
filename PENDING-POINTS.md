@@ -1,4 +1,21 @@
-# Pending Points (Updated: 2026-03-24)
+# Pending Points (Updated: 2026-03-25)
+
+## Leo Turbet Doc Content Pass (2026-03-25)
+
+- [x] Homepage hero wording aligned to `Leo Turbet.docx`
+- [x] Homepage featured recipe CTA wording aligned
+- [x] Main homepage recipe-grid wording aligned
+- [x] Workshops wording aligned
+- [x] Video-courses wording aligned
+- [x] Newsletter wording aligned
+- [x] About wording aligned
+- [x] Books wording aligned
+- [x] Inspiration wording aligned
+- [x] Footer wording aligned
+- [x] Shared recipe-card CTA wording aligned
+- [x] Detail-page newsletter wording aligned
+- [x] Shared newsletter modal wording aligned
+- [x] Final grep cleanup completed for the old targeted homepage/shared wording strings
 
 ## Current Active Fixes (2026-03-24)
 
