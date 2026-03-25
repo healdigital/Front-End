@@ -45,12 +45,10 @@ const {
     <div class="newsletter-modal-content">
       <div class="newsletter-modal-copy">
         <h2 id={`${id}-title`} class="newsletter-modal-title">
-          Abonnez-vous
-          <br />
-          à La Cuisine De Bernard!
+          Recevez les nouvelles recettes
         </h2>
         <p id={`${id}-desc`} class="newsletter-modal-description">
-          Recevez toute l'actualité de La Cuisine De Bernard, ses dernières publications et plus encore, directement dans votre boîte de réception.
+          Abonnez-vous à la newsletter mensuelle pour recevoir les nouvelles recettes, les dates d'ateliers, les nouveautés du site, les sorties de livres et bien plus encore.
         </p>
       </div>
 
@@ -68,7 +66,7 @@ const {
             />
           </div>
           <button class="newsletter-modal-submit typ-button" type="submit">
-            S'abonner
+            S'inscrire
           </button>
         </div>
 
@@ -122,7 +120,7 @@ const {
 
     if (!form || !emailInput || !consentCheckbox) return;
 
-    const defaultSubmitText = submitBtn?.innerText || "S'abonner";
+    const defaultSubmitText = submitBtn?.innerText || "S'inscrire";
 
     const textInputErrorClasses = ['newsletter-modal-input--error'];
     const textInputSuccessClasses = ['newsletter-modal-input--success'];

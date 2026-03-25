@@ -681,7 +681,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 </div>
                 <p class="text-[15px] text-text-secondary leading-relaxed mt-4 typ-body">{featuredRecipe.description}</p>
                 <a href={featuredRecipe.slug} class="inline-flex items-center gap-2 text-primary-turquoise text-[12px] uppercase tracking-wider mt-4 typ-button">
-                  Lire la suite
+                  Lire la recette
                 </a>
               </div>
             </article>
@@ -690,7 +690,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           <!-- Decouvrez mes recettes -->
           <div class="home-main-block home-main-block--browse">
             <div class="home-section-heading-row flex items-center gap-4 mb-8">
-              <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section section_2_text">D&eacute;couvrez mes recettes</h2>
+              <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section section_2_text">Explorer les recettes</h2>
               <div class="flex-1 h-px bg-border-primary"></div>
             </div>
 
@@ -811,12 +811,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         <div>
           <div class="flex items-center gap-6">
             <h2 class="font-heading typ-section leading-[1.04]">
-              <span class="text-[#EEF4FF]">Passez au </span><span class="text-[#5EC7C5]">niveau sup&eacute;rieur</span>
+              <span class="text-[#EEF4FF]">Ateliers de </span><span class="text-[#5EC7C5]">cuisine</span>
             </h2>
             <div class="hidden lg:block h-px flex-1 min-w-[260px] bg-[#375776]"></div>
           </div>
           <p class="text-[15px] text-[#D6DEEC] mt-3 max-w-2xl typ-body">
-            Rejoignez notre communaut&eacute; de passionn&eacute;s et ma&icirc;trisez les techniques professionnelles.
+            Je vous accueille dans des ateliers de cuisine et de p&acirc;tisserie dans une ambiance conviviale, avec une approche pr&eacute;cise, g&eacute;n&eacute;reuse et accessible.
           </p>
         </div>
       </div>
@@ -848,13 +848,13 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>{getWorkshopSpotsLabel(featuredWorkshop)}</span></span>
               <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>{featuredWorkshop?.duration || '--'}</span></span>
             </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">Chaque atelier est con&ccedil;u pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}\u20AC` : '--'}</div>
               </div>
-              <Button href={featuredWorkshop?.slug || '/ateliers'} variant="primary" size="sm" data-workshops-feature-cta>R&eacute;server</Button>
+              <Button href={featuredWorkshop?.slug || '/ateliers'} variant="primary" size="sm" data-workshops-feature-cta>Voir les ateliers</Button>
             </div>
           </div>
         </div>
@@ -879,19 +879,19 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
           </div>
           <div class="p-6 lg:p-7">
-            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">Masterclass Vid&eacute;o</h3>
+            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">Mes cours vid&eacute;o</h3>
             <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
               <span class="flex items-center gap-1"><Icon name="video" size="sm" /> 50h</span>
               <span class="flex items-center gap-1"><Icon name="download" size="sm" /> Vid&eacute;o 4K</span>
             </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">Plus de 50h de contenu vid&eacute;o HD, accessible &agrave; vie depuis chez vous.</p>
+            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">D&eacute;couvrez mes premiers cours vid&eacute;o pour apprendre les bases de la p&acirc;tisserie &agrave; votre rythme depuis chez vous.</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
               </div>
               <Button href="/masterclass" class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none" size="sm">
-                Devenir Premium
+                Voir les cours vid&eacute;o
               </Button>
             </div>
           </div>
@@ -902,14 +902,14 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         <div>
           <div class="flex items-center gap-6">
             <h3 class="font-heading typ-section leading-[1.04]">
-              <span class="text-[#EEF4FF]">Prochains </span><span class="text-[#5EC7C5]">Ateliers</span>
+              <span class="text-[#EEF4FF]">Ateliers de </span><span class="text-[#5EC7C5]">cuisine</span>
             </h3>
             <div class="hidden lg:block h-px flex-1 min-w-[260px] bg-[#375776]"></div>
           </div>
-          <p class="text-[15px] text-[#D6DEEC] mt-3 typ-body">Rejoignez-moi en pr&eacute;sentiel pour une exp&eacute;rience immersive et personnalis&eacute;e.</p>
+          <p class="text-[15px] text-[#D6DEEC] mt-3 typ-body">Chaque atelier est pens&eacute; pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p>
         </div>
         <a href="/ateliers" class="inline-flex items-center gap-2 bg-primary-turquoise text-[#EBFAFF] px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm typ-button">
-          <Icon name="clock" size="sm" /> Voir le calendrier complet
+          <Icon name="clock" size="sm" /> Voir les ateliers
         </a>
       </div>
 
@@ -981,12 +981,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           />
         </div>
         <div class="px-6 py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 flex flex-col justify-center">
-          <p class="text-[#8be3de] typ-caption uppercase tracking-[0.16em]">Lettre d’information</p>
+          <p class="text-[#8be3de] typ-caption uppercase tracking-[0.16em]">Newsletter</p>
           <h2 class="mt-4 font-heading text-[40px] md:text-[52px] lg:text-[62px] leading-[0.95] text-white">
-            Recevez les nouvelles recettes directement chez vous
+            Recevez les nouvelles recettes
           </h2>
           <p class="mt-5 max-w-[58ch] text-[16px] leading-[1.75] text-[#d7dfeb] typ-body">
-            Abonnez-vous pour suivre les nouvelles publications, les recettes de saison et les prochains contenus de La Cuisine de Bernard.
+            Abonnez-vous &agrave; la newsletter mensuelle pour recevoir les nouvelles recettes, les dates d&apos;ateliers, les nouveaut&eacute;s du site, les sorties de livres et bien plus encore.
           </p>
           <div class="mt-8 flex flex-col sm:flex-row gap-3">
             <button
@@ -994,7 +994,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               type="button"
               class="inline-flex items-center justify-center bg-primary-turquoise px-6 py-3 text-[12px] uppercase tracking-[0.16em] text-[#13202e] rounded-sm typ-button"
             >
-              S’abonner
+              S&apos;inscrire
             </button>
             <a
               href="/newsletter"
@@ -1003,6 +1003,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               En savoir plus
             </a>
           </div>
+          <p class="mt-4 text-[12px] tracking-[0.02em] text-[#d7dfeb]">
+            Pas de spam, seulement une newsletter par mois&nbsp;!
+          </p>
         </div>
       </div>
     </div>
@@ -1640,7 +1643,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
       const imageSrc = workshop.image || '/images/ateliers-physiques.jpg';
 
-      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async" sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
+      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async" sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Chaque atelier est pensé pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
     };
 
     const updateFeatureCard = (workshopList) => {

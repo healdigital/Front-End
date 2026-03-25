@@ -8,6 +8,25 @@ Primary sources reviewed:
 - [lcb_feedback_tracker.html](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/lcb_feedback_tracker.html)
 - [CLIENT-FEEDBACK-CONSOLIDATED-2026-03-19.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/CLIENT-FEEDBACK-CONSOLIDATED-2026-03-19.md)
 
+## Latest Content Pass (2026-03-25)
+
+Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/Leo%20Turbet.docx) without touching design/CSS.
+
+- Homepage hero wording aligned
+- Featured recipe CTA wording aligned
+- Homepage recipe-grid wording aligned
+- Workshops wording aligned
+- Video-courses wording aligned
+- Newsletter wording aligned
+- About wording aligned
+- Books wording aligned
+- Inspiration wording aligned
+- Footer wording aligned
+- Shared recipe-card CTA wording aligned
+- Detail-page newsletter wording aligned
+- Shared newsletter modal wording aligned
+- Final grep sweep cleared the previously targeted old wording strings
+
 ## Latest Active Regressions (2026-03-24)
 
 - Detail page mobile layout is still under active fix:
@@ -401,6 +420,7 @@ Best sequence:
 
 ## Current Pending Scope
 
+- Leo-doc wording/content pass is `Done` for the current homepage/shared live surfaces
 - Article/detail page recreate is `In progress`
   - latest pass removed the extra story-fed `Bon appétit !` source, tightened the hero/image layout, and cleaned sidebar spacing
   - still pending: final visual parity with the client reference/Figma
