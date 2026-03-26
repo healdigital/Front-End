@@ -1155,3 +1155,12 @@ section.article-related-section.article-related-section--fullwidth {
 .article-main-column {
     margin-top: 60px!important;
 }
+
+
+p.recipe-redesign__bon-appetit {
+    padding-top: 40px;
+    padding-bottom: 20px;
+}
+h3.recipe-redesign__compact-title {
+    padding-bottom: 24px;
+}
