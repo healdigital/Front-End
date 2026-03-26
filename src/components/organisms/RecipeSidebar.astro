@@ -169,10 +169,19 @@ const sidebarBooks = [
   {isFull && (
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Rejoignez mon club</h4>
-      <ul class="mt-4 space-y-4 text-[16px] text-[#2A3543]">
-        <li class="flex items-center gap-2"><Icon name="book" size="sm" /> Echanges passionnes</li>
-        <li class="flex items-center gap-2"><Icon name="refresh" size="sm" /> Recettes avancees</li>
-        <li class="flex items-center gap-2"><Icon name="video" size="sm" /> Conseils exclusifs</li>
+      <ul class="mt-4 space-y-4 text-[16px] text-[#2A3543] recipe-sidebar-club-list">
+        <li class="recipe-sidebar-club-item">
+          <span class="recipe-sidebar-club-icon"><Icon name="book" size="sm" /></span>
+          <span>Echanges passionnes</span>
+        </li>
+        <li class="recipe-sidebar-club-item">
+          <span class="recipe-sidebar-club-icon"><Icon name="refresh" size="sm" /></span>
+          <span>Recettes avancees</span>
+        </li>
+        <li class="recipe-sidebar-club-item">
+          <span class="recipe-sidebar-club-icon"><Icon name="video" size="sm" /></span>
+          <span>Conseils exclusifs</span>
+        </li>
       </ul>
       <a href="/club" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-6 underline underline-offset-2 typ-button label-data">
         Rejoindre le club
@@ -562,6 +571,21 @@ const sidebarBooks = [
 
   .recipe-sidebar :global(.sidebar-books-grid) {
     align-items: start;
+  }
+
+  .recipe-sidebar-club-item {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 10px;
+  }
+
+  .recipe-sidebar-club-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
   }
 
   .recipe-sidebar-sticky-rail--enabled {
