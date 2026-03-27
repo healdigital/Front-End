@@ -3670,6 +3670,20 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     margin-top: 46px;
   }
 
+  @media (max-width: 767px) {
+    .article-related-section {
+      padding-left: clamp(16px, 2.4vw, 28px) !important;
+      padding-right: clamp(16px, 2.4vw, 28px) !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .article-related-section {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
   .article-related-header {
     margin-bottom: 24px;
     display: flex;
