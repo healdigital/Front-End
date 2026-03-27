@@ -851,7 +851,11 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>{getWorkshopSpotsLabel(featuredWorkshop)}</span></span>
               <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>{featuredWorkshop?.duration || '--'}</span></span>
             </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body" data-workshops-feature-description>{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
+            <p
+              class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body"
+              style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+              data-workshops-feature-description
+            >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}\u20AC` : '--'}</div>
