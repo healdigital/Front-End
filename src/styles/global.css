@@ -1151,10 +1151,10 @@ section.recipe-redesign__step-group {
 section.recipe-redesign__recipe-card {
     margin-top: 40px!important;
 }
-section.article-related-section.article-related-section--fullwidth {
+/* section.article-related-section.article-related-section--fullwidth {
     padding-left: 0px!important;
     padding-right: 0px!important;
-}
+} */
 .article-main-column {
     margin-top: 60px!important;
 }
