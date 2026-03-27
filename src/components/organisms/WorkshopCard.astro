@@ -8,6 +8,7 @@ interface Props {
   date: Date;
   price: number;
   duration: string;
+  description?: string;
   maxParticipants: number;
   currentParticipants?: number;
   spotsLeft?: number;
@@ -21,6 +22,7 @@ const {
   date,
   price,
   duration,
+  description = '',
   maxParticipants,
   currentParticipants = 0,
   spotsLeft: spotsLeftProp,
@@ -100,13 +102,10 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
       <span class="flex items-center gap-2"><Icon name="clock" size="sm" /> {duration}</span>
     </div>
 
-    <p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+    <p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">{description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
 
     <div class="flex items-center justify-between mt-8">
-      <div>
-        <span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span>
-        <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>
-      </div>
+      <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>
       <Button href={isFull ? undefined : slug} variant={isFull ? 'disabled' : 'primary'} size="sm">
         {isFull ? 'Complet' : 'R&eacute;server'}
       </Button>
