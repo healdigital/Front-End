@@ -548,19 +548,7 @@ body {
     font-size: 21px;
   }
 }
-@media (min-width: 766px) {
-  .article-related-section[data-astro-cid-yvbahnfj] {
-      padding-left: clamp(16px, 2.4vw, 28px) !important;
-      padding-right: clamp(16px, 2.4vw, 28px) !important;
-  }
-}
 
-@media (min-width: 768px) {
-  section.article-related-section.article-related-section--fullwidth {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-}
 
 
 
