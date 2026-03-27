@@ -241,6 +241,9 @@ const mapWorkshopItem = (item: any, index: number) => {
     maxParticipants,
     currentParticipants,
     spotsLeft,
+    description: decodeEntities(
+      item.description || item.shortDescription || item.excerpt || item.summary || item.content || ''
+    ),
     location: decodeEntities(item.location || ''),
     slug: normalizeWorkshopHref(item.bookingUrl || item.slug || '/ateliers'),
     status: normalizeWorkshopStatus(item.status),
@@ -848,10 +851,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>{getWorkshopSpotsLabel(featuredWorkshop)}</span></span>
               <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>{featuredWorkshop?.duration || '--'}</span></span>
             </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">Chaque atelier est con&ccedil;u pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p>
+            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body" data-workshops-feature-description>{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
-                <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}\u20AC` : '--'}</div>
               </div>
               <Button href={featuredWorkshop?.slug || '/ateliers'} variant="primary" size="sm" data-workshops-feature-cta>Voir les ateliers</Button>
@@ -925,6 +927,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             image={workshop.image}
             price={workshop.price}
             duration={workshop.duration}
+            description={workshop.description}
             maxParticipants={workshop.maxParticipants}
             currentParticipants={workshop.currentParticipants}
             spotsLeft={workshop.spotsLeft}
@@ -1476,6 +1479,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
     const featureCtaEl = document.querySelector('[data-workshops-feature-cta]');
     const featureImageEl = document.querySelector('[data-workshops-feature-image]');
     const featureTitleEl = document.querySelector('[data-workshops-feature-title]');
+    const featureDescriptionEl = document.querySelector('[data-workshops-feature-description]');
     const featureLocationEl = document.querySelector('[data-workshops-feature-location]');
     const featureAvailabilityEl = document.querySelector('[data-workshops-feature-availability]');
 
@@ -1535,6 +1539,16 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
       const title = decodeEntities(item.title || '').replace(/\s+/g, ' ').trim();
       if (!title) return null;
+      const description = decodeEntities(
+        item.description ||
+          item.shortDescription ||
+          item.excerpt ||
+          item.summary ||
+          item.content ||
+          ''
+      )
+        .replace(/\s+/g, ' ')
+        .trim();
 
       const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
       const rawSpotsLeft = toPositiveNumber(item.spotsLeft, Number.NaN);
@@ -1555,6 +1569,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         maxParticipants,
         currentParticipants,
         spotsLeft,
+        description,
         location: decodeEntities(item.location || ''),
         status: normalizeStatus(item.status),
         slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
@@ -1642,8 +1657,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       const capacityLabel = getSpotsLabel(workshop);
       const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
       const imageSrc = workshop.image || '/images/ateliers-physiques.jpg';
+      const description = workshop.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.';
 
-      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async" sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">Chaque atelier est pensé pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p><div class="flex items-center justify-between mt-8"><div><span class="text-[13px] uppercase tracking-[0.14em] text-text-secondary typ-meta">&Agrave; partir de</span><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div></div>${cta}</div></div></article>`;
+      return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async" sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">${escapeHtml(description)}</p><div class="flex items-center justify-between mt-8"><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div>${cta}</div></div></article>`;
     };
 
     const updateFeatureCard = (workshopList) => {
@@ -1669,6 +1685,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         featureAvailabilityEl.textContent = availability.label;
         featureAvailabilityEl.classList.remove('text-status-success', 'text-status-error');
         featureAvailabilityEl.classList.add(availability.tone === 'error' ? 'text-status-error' : 'text-status-success');
+      }
+
+      if (featureDescriptionEl instanceof HTMLElement) {
+        featureDescriptionEl.textContent =
+          firstWorkshop.description ||
+          'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.';
       }
 
       if (featureCtaEl instanceof HTMLAnchorElement && firstWorkshop.slug) {

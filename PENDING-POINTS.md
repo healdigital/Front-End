@@ -1,4 +1,38 @@
-# Pending Points (Updated: 2026-03-25)
+# Pending Points (Updated: 2026-03-26)
+
+## Tomorrow Carry-Forward (2026-03-27)
+
+- [ ] Payload native rating system
+  - create `recipeRatings` collection
+  - add denormalized `ratingAverage` + `ratingCount` on recipes
+  - add vote endpoint / server action
+  - duplicate prevention via cookie + IP hash
+  - update Astro display to use real rating data
+
+- [ ] Shop / community setup on `atelier-lacuisinedebernard.com`
+  - create MemberPress membership for `Le Club`
+  - confirm membership pricing / billing model
+  - confirm whether Club includes community only or community + selected courses/modules
+  - create MemberPress rules for community/course access
+  - configure FluentCommunity access for Club members
+  - test end-to-end member flow
+  - check whether valid MemberPress license key is required to complete setup
+
+- [ ] Shop content note
+  - Leo doc items `11` and `12` should not be duplicated on the main Astro site
+  - current direction: keep only links to the external shop/community where relevant
+
+- [ ] Ingredient archive pages
+
+- [ ] Newsletter / Acumbamail real submit integration
+
+- [ ] Final client confirmation on MemberPress data needed:
+  - exact membership name
+  - price
+  - billing cycle
+  - included courses/modules
+  - redirect/flow preference
+  - license key if restriction/payment features are blocked
 
 ## Leo Turbet Doc Content Pass (2026-03-25)
 
@@ -16,6 +50,7 @@
 - [x] Detail-page newsletter wording aligned
 - [x] Shared newsletter modal wording aligned
 - [x] Final grep cleanup completed for the old targeted homepage/shared wording strings
+- [x] Leo doc items `11` and `12` were clarified as shop/community scope, not main-site duplicated content
 
 ## Current Active Fixes (2026-03-25)
 

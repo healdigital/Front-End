@@ -26,6 +26,28 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
 - Detail-page newsletter wording aligned
 - Shared newsletter modal wording aligned
 - Final grep sweep cleared the previously targeted old wording strings
+- Leo doc items `11` and `12` were clarified as shop/community scope and should not be duplicated on the main Astro site
+
+## Carry-Forward For Tomorrow (2026-03-27)
+
+- Implement native recipe rating system in Payload:
+  - `recipeRatings` collection
+  - denormalized `ratingAverage` / `ratingCount`
+  - vote action/endpoint
+  - duplicate prevention with cookie + IP hash
+- Begin shop/community setup on `atelier-lacuisinedebernard.com`:
+  - MemberPress membership for `Le Club`
+  - MemberPress rules
+  - FluentCommunity access mapping
+  - Creator LMS access review
+- Confirm missing MemberPress setup inputs from client if blocked:
+  - membership price / billing
+  - exact included courses/modules
+  - license key if needed
+- Keep main Astro site limited to shop links only for the shop/community/course sales flow
+- Remaining broader scope:
+  - Ingredient archive pages
+  - Newsletter / Acumbamail real integration
 
 ## Latest Active Regressions (2026-03-25)
 

@@ -97,7 +97,7 @@ const sidebarBooks = [
           <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-sidebar-workshop-duration>--</span></span>
         </div>
 
-        <p class="text-[16px] text-[#5F6671] mt-5 leading-[1.65] description-data">Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.</p>
+        <p class="text-[16px] text-[#5F6671] mt-5 leading-[1.65] description-data" data-sidebar-workshop-description>Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.</p>
 
         <div class="sidebar-workshop-footer flex items-end justify-between gap-4 mt-8 pt-5 border-t border-[#D8D2C2]">
           <div>
@@ -295,6 +295,16 @@ const sidebarBooks = [
 
       const title = decodeEntities(item.title || '').replace(/\s+/g, ' ').trim();
       if (!title) return null;
+      const description = decodeEntities(
+        item.description ||
+          item.shortDescription ||
+          item.excerpt ||
+          item.summary ||
+          item.content ||
+          ''
+      )
+        .replace(/\s+/g, ' ')
+        .trim();
 
       const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
       const rawSpotsLeft = toPositiveNumber(item.spotsLeft, Number.NaN);
@@ -313,6 +323,7 @@ const sidebarBooks = [
         maxParticipants,
         currentParticipants,
         spotsLeft,
+        description,
         status: normalizeStatus(item.status),
         slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
       };
@@ -359,6 +370,7 @@ const sidebarBooks = [
           const capacityEl = block.querySelector('[data-sidebar-workshop-capacity]');
           const durationEl = block.querySelector('[data-sidebar-workshop-duration]');
           const priceEl = block.querySelector('[data-sidebar-workshop-price]');
+          const descriptionEl = block.querySelector('[data-sidebar-workshop-description]');
           const ctaEl = block.querySelector('[data-sidebar-workshop-cta]');
 
           if (titleEl instanceof HTMLElement) {
@@ -419,6 +431,12 @@ const sidebarBooks = [
 
           if (priceEl instanceof HTMLElement) {
             priceEl.textContent = firstWorkshop.price > 0 ? `${Math.round(firstWorkshop.price)}€` : '--';
+          }
+
+          if (descriptionEl instanceof HTMLElement) {
+            descriptionEl.textContent =
+              firstWorkshop.description ||
+              'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.';
           }
 
           if (ctaEl instanceof HTMLAnchorElement) {
