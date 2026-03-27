@@ -102,7 +102,12 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
       <span class="flex items-center gap-2"><Icon name="clock" size="sm" /> {duration}</span>
     </div>
 
-    <p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body">{description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
+    <p
+      class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body"
+      style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+    >
+      {description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}
+    </p>
 
     <div class="flex items-center justify-between mt-8">
       <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>

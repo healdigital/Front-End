@@ -296,8 +296,8 @@ const sidebarBooks = [
       const title = decodeEntities(item.title || '').replace(/\s+/g, ' ').trim();
       if (!title) return null;
       const description = decodeEntities(
-        item.description ||
-          item.shortDescription ||
+        item.shortDescription ||
+          item.description ||
           item.excerpt ||
           item.summary ||
           item.content ||
