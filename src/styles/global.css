@@ -300,6 +300,10 @@ body {
   color: var(--lcdb-copy);
 }
 
+.lcdb-article-card-content .typ-button {
+  margin-top: 8px;
+}
+
 .lcdb-chip {
   display: inline-flex;
   align-items: center;
