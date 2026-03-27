@@ -30,3 +30,36 @@ const navLinks = [
     />
   </StaticPage>
 </BaseLayout>
+
+<style is:global>
+  .static-page.menu-page--books .static-page-content .separator:has(> a > img) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+    justify-items: stretch;
+  }
+
+  .static-page.menu-page--books .static-page-content .separator:has(> a > img) > a {
+    display: block;
+    margin: 0 !important;
+  }
+
+  .static-page.menu-page--books .static-page-content .separator:has(> a > img) > a > img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  @media (max-width: 900px) {
+    .static-page.menu-page--books .static-page-content .separator:has(> a > img) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .static-page.menu-page--books .static-page-content .separator:has(> a > img) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
