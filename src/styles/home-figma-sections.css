@@ -1803,7 +1803,9 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
         padding-top: 0px !important;
     }
 } */
-
+.bio-section-content {
+    width: 100% !important;
+}
 
 
 @media (max-width: 1367px) {
@@ -1818,6 +1820,12 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 @media (max-width: 1280px) {
   .recipe-grid-home{
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .recipe-grid-home {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 }
 

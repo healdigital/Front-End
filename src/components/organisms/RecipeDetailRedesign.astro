@@ -552,7 +552,7 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__hero-copy {
     display: grid;
-    gap: 20px;
+    gap: 22px;
     align-content: start;
     max-width: none;
   }
@@ -571,6 +571,7 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__title {
     font-size: clamp(2.35rem, 4vw, 4rem);
+    padding: 2px 0 8px;
   }
 
   .recipe-redesign__rating {
@@ -679,11 +680,12 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__section {
     display: grid;
-    gap: 14px;
+    gap: 18px;
   }
 
   .recipe-redesign__section h2 {
     font-size: clamp(2rem, 3.2vw, 3rem);
+    padding: 4px 0 6px;
   }
 
   .recipe-redesign__servings {
@@ -725,7 +727,7 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__group-title {
     margin: 0;
-    padding: 8px 0 14px;
+    padding: 10px 0 16px;
     color: #161616;
     font-size: 2rem;
     line-height: 1.1;
@@ -855,14 +857,14 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__quick-info {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
+    gap: 18px 16px;
   }
 
   .recipe-redesign__quick-info-item {
-    padding-top: 14px;
+    padding-top: 16px;
     border-top: 1px solid #e7e0d4;
     display: grid;
-    gap: 4px;
+    gap: 6px;
   }
 
   .recipe-redesign__quick-info-item p,
@@ -872,6 +874,7 @@ const printLink = `/print/${slug}/?auto=1`;
     font-size: 0.82rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    line-height: 1.35;
   }
 
   .recipe-redesign__quick-info-item strong,
@@ -887,6 +890,7 @@ const printLink = `/print/${slug}/?auto=1`;
     font-size: 1.6rem;
     font-family: var(--font-heading), serif;
     font-weight: 500;
+    padding: 4px 0 6px;
   }
 
   .recipe-redesign__nutrition-card {
@@ -917,6 +921,10 @@ const printLink = `/print/${slug}/?auto=1`;
     .recipe-redesign__action {
       flex: 1 1 calc(50% - 10px);
     }
+
+    .recipe-redesign__quick-info {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (max-width: 960px) {
@@ -945,6 +953,7 @@ const printLink = `/print/${slug}/?auto=1`;
   }
   @media (max-width: 767px) {
     .recipe-redesign {
+      gap: 30px;
       padding-left: 10px;
       padding-right: 10px;
       box-sizing: border-box;
@@ -961,6 +970,7 @@ const printLink = `/print/${slug}/?auto=1`;
     .recipe-redesign__section-head {
       align-items: flex-start;
       flex-direction: column;
+      gap: 14px;
     }
 
     .recipe-redesign__servings {
@@ -975,7 +985,17 @@ const printLink = `/print/${slug}/?auto=1`;
       flex: 1 1 100%;
     }
 
+    .recipe-redesign__quick-info {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .recipe-redesign__quick-info-item {
+      padding-top: 14px;
+    }
+
     .recipe-redesign__title {
+      padding: 4px 0 10px;
       overflow-wrap: anywhere;
     }
 

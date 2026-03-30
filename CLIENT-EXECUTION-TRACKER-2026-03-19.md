@@ -49,6 +49,19 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
   - Ingredient archive pages
   - Newsletter / Acumbamail real integration
 
+## Leo Doc New Changes - Carry-Forward
+
+Additional items found in [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/Leo%20Turbet.docx) after the original wording/content pass:
+
+- Mobile vertical spacing is still inconsistent in some screens
+- Title padding still needs cleanup in the areas called out by Leo
+- `Temps de préparation` still has a specific visual issue to review/fix
+- Some English is still visible in the French UI and needs a final cleanup pass
+
+Note:
+- first three items above are design/layout-side carry-forward
+- the remaining-English item is both content and UI QA and should stay on the pending list until verified on staging
+
 ## Latest Active Regressions (2026-03-25)
 
 - Detail page mobile layout regression resolved:

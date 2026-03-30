@@ -34,6 +34,21 @@
   - redirect/flow preference
   - license key if restriction/payment features are blocked
 
+## Leo Turbet Doc - Design Carry-Forward
+
+- [ ] Mobile vertical spacing issues
+  - Leo doc new changes explicitly mention missing vertical space on mobile
+
+- [ ] Title padding issues
+  - review title top/bottom spacing where called out in Leo doc screenshots
+
+- [ ] `Temps de préparation` visual issue
+  - review and fix the specific recipe/detail-page display issue mentioned in Leo doc
+
+- [ ] Final English cleanup in UI
+  - Leo doc also flags remaining English still visible in some screens
+  - includes final recipe/detail-page label sweep and any lingering mixed-language UI
+
 ## Leo Turbet Doc Content Pass (2026-03-25)
 
 - [x] Homepage hero wording aligned to `Leo Turbet.docx`
