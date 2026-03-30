@@ -861,7 +861,15 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               <div>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}\u20AC` : '--'}</div>
               </div>
-              <Button href={featuredWorkshop?.slug || '/ateliers'} variant="primary" size="sm" data-workshops-feature-cta>Voir les ateliers</Button>
+              <Button
+                href={featuredWorkshop?.slug || '/ateliers'}
+                variant="primary"
+                size="sm"
+                class="py-[7px] text-[11px] md:text-[12px]"
+                data-workshops-feature-cta
+              >
+                Voir les ateliers
+              </Button>
             </div>
           </div>
         </div>
@@ -894,10 +902,13 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">D&eacute;couvrez mes premiers cours vid&eacute;o pour apprendre les bases de la p&acirc;tisserie &agrave; votre rythme depuis chez vous.</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
-                <span class="text-[11px] uppercase tracking-[0.2em] text-[#4A5565] typ-meta">&Agrave; partir de</span>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
               </div>
-              <Button href="/masterclass" class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none" size="sm">
+              <Button
+                href="/masterclass"
+                class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none py-[7px] text-[11px] md:text-[12px]"
+                size="sm"
+              >
                 Voir les cours vid&eacute;o
               </Button>
             </div>
