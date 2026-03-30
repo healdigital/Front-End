@@ -533,19 +533,19 @@ const topInfoItems = [
 ].filter((item) => item.value);
 const quickInfoItems = [
   {
-    label: "Preparation Time Minutes",
+    label: "Temps de préparation",
     value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes),
   },
   {
-    label: "Cooking Time Minutes",
+    label: "Temps de cuisson",
     value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes),
   },
-  { label: "Servings Count", value: toText(primaryRecipeBlock?.servingsCount) },
-  { label: "Difficulty", value: toText(primaryRecipeBlock?.difficulty) },
-  { label: "Recipe Type", value: toText(primaryRecipeBlock?.recipeType) },
-  { label: "Dish Type", value: toText(primaryRecipeBlock?.dishType) },
+  { label: "Nombre de portions", value: toText(primaryRecipeBlock?.servingsCount) },
+  { label: "Difficulté", value: toText(primaryRecipeBlock?.difficulty) },
+  { label: "Type de recette", value: toText(primaryRecipeBlock?.recipeType) },
+  { label: "Type de plat", value: toText(primaryRecipeBlock?.dishType) },
   { label: "Cuisine", value: toText(primaryRecipeBlock?.cuisine) },
-  { label: "Servings", value: toText(primaryRecipeBlock?.servings) },
+  { label: "Portions", value: toText(primaryRecipeBlock?.servings) },
 ].filter((item) => item.value);
 const nutritionItems = [
   {
