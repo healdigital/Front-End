@@ -13,10 +13,19 @@ import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.ast
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
+import { loadVideoCourses } from '../lib/videoCourses';
 import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
+const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const videoCourses = await loadVideoCourses();
+const featuredVideoCourse = videoCourses[0] || null;
+const featuredVideoCourseTitle = featuredVideoCourse?.title || 'Mes cours video';
+const featuredVideoCourseDescription =
+  featuredVideoCourse?.shortDescription ||
+  'Découvrez mes premiers cours vidéo pour apprendre les bases de la pâtisserie à votre rythme depuis chez vous.';
+const featuredVideoCourseImage = featuredVideoCourse?.image || '/images/masterclass-video.jpg';
 
 const fallbackImages = [
   '/images/recipe-chocolate-cake.jpg',
@@ -854,7 +863,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
             <p
               class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body"
-              style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+              style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.65em * 3);"
               data-workshops-feature-description
             >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
@@ -877,8 +886,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         <div class="home-workshops-feature-card max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
             <img
-              src="/images/masterclass-video.jpg"
-              alt="Masterclass"
+              src={featuredVideoCourseImage}
+              alt={featuredVideoCourseTitle}
               class="w-full h-full object-cover"
               loading="lazy"
               decoding="async"
@@ -894,18 +903,18 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
           </div>
           <div class="p-6 lg:p-7">
-            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">Mes cours vid&eacute;o</h3>
+            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">{featuredVideoCourseTitle}</h3>
             <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
               <span class="flex items-center gap-1"><Icon name="video" size="sm" /> 50h</span>
               <span class="flex items-center gap-1"><Icon name="download" size="sm" /> Vid&eacute;o 4K</span>
             </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body">D&eacute;couvrez mes premiers cours vid&eacute;o pour apprendre les bases de la p&acirc;tisserie &agrave; votre rythme depuis chez vous.</p>
+            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{featuredVideoCourseDescription}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
               </div>
               <Button
-                href="/masterclass"
+                href={SHOP_VIDEO_URL}
                 class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none py-[7px] text-[11px] md:text-[12px]"
                 size="sm"
               >
@@ -1556,8 +1565,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       const title = decodeEntities(item.title || '').replace(/\s+/g, ' ').trim();
       if (!title) return null;
       const description = decodeEntities(
-        item.description ||
-          item.shortDescription ||
+        item.shortDescription ||
+          item.description ||
           item.excerpt ||
           item.summary ||
           item.content ||
