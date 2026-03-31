@@ -2,6 +2,7 @@
 import Icon from '../atoms/Icon.astro';
 import Button from '../atoms/Button.astro';
 import { getPopularSidebarArticles } from '../../lib/articleDiscovery';
+import { loadVideoCourses } from '../../lib/videoCourses';
 
 interface Props {
   variant?: 'full' | 'popular';
@@ -36,6 +37,8 @@ const fallbackPopularArticles = [
 ];
 const computedPopularArticles = await getPopularSidebarArticles(5, 'fr');
 const popularArticles = computedPopularArticles.length ? computedPopularArticles : fallbackPopularArticles;
+const videoCourses = await loadVideoCourses();
+const featuredVideoCourse = videoCourses[0] || null;
 const sidebarBooks = [
   { src: '/images/book-mes-desserts.jpg', alt: 'Mes desserts de Bernard' },
   { src: '/images/book-mon-grain-de-sel.jpg', alt: 'Mon grain de sel' },
@@ -45,6 +48,13 @@ const sidebarBooks = [
   { src: '/images/book-lacuisinedebernard.jpg', alt: 'La Cuisine de Bernard' },
   { src: '/images/book-scandaleusement-decadent.jpg', alt: 'Scandaleusement Decadent' },
 ];
+const SHOP_CLUB_URL = 'https://atelier-lacuisinedebernard.com/club/';
+const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const sidebarVideoTitle = featuredVideoCourse?.title || 'Mes cours video';
+const sidebarVideoDescription =
+  featuredVideoCourse?.shortDescription ||
+  'Des techniques essentielles expliquees pas a pas pour progresser chez vous a votre rythme.';
+const sidebarVideoImage = featuredVideoCourse?.image || '/images/masterclass-video.jpg';
 ---
 
 <aside class={`recipe-sidebar hidden lg:flex flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
@@ -124,8 +134,8 @@ const sidebarBooks = [
       <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden mt-5 pannel-data">
         <div class="relative">
           <img
-            src="/images/masterclass-video.jpg"
-            alt="Masterclass"
+            src={sidebarVideoImage}
+            alt={sidebarVideoTitle}
             class="w-full h-[184px] object-cover"
             loading="lazy"
             decoding="async"
@@ -152,19 +162,19 @@ const sidebarBooks = [
             </span>
           </div>
 
-          <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111] mt-1">Gateau indien aux carottes !</h5>
+          <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111] mt-1">{sidebarVideoTitle}</h5>
 
           <div class="flex items-center gap-4 text-[#2F3642] text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
             <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 2h</span>
             <span class="flex items-center gap-1"><Icon name="video" size="sm" /> Video 4K</span>
           </div>
 
-          <p class="description-data text-[16px] text-[#5F6671] mt-5 leading-[1.65]">Des techniques essentielles expliquees pas a pas pour progresser chez vous a votre rythme.</p>
-          <Button href="/masterclass" variant="primary" size="sm" class="button-data-full w-full mt-5">Voir les cours video</Button>
+          <p class="description-data text-[16px] text-[#5F6671] mt-5 leading-[1.65]" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{sidebarVideoDescription}</p>
+          <Button href={SHOP_VIDEO_URL} variant="primary" size="sm" class="button-data-full w-full mt-5">Voir les cours video</Button>
         </div>
       </div>
 
-      <a href="/masterclass" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+      <a href={SHOP_VIDEO_URL} class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir les cours video
       </a>
     </div>
@@ -187,7 +197,7 @@ const sidebarBooks = [
           <span>Conseils exclusifs</span>
         </li>
       </ul>
-      <a href="/club" class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-6 underline underline-offset-2 typ-button label-data">
+      <a href={SHOP_CLUB_URL} class="inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-6 underline underline-offset-2 typ-button label-data">
         Rejoindre le club
       </a>
     </div>

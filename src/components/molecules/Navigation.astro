@@ -14,11 +14,12 @@ interface Props {
 }
 
 const { class: className, currentPath = Astro.url.pathname } = Astro.props;
+const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
 
 const links = [
   { label: "Recettes", href: "/recettes" },
   { label: "Ateliers", href: "/ateliers" },
-  { label: "Masterclass", href: "/masterclass" },
+  { label: "Masterclass", href: SHOP_VIDEO_URL },
   { label: "Livres", href: "/livres" },
   { label: "Voyages", href: "/voyages" },
   { label: "Vidéos", href: "/videos" },

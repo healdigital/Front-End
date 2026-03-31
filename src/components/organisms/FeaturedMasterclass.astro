@@ -1,11 +1,20 @@
 ---
 import Icon from '../atoms/Icon.astro';
+import { loadVideoCourses } from '../../lib/videoCourses';
 
 interface Props {
   embedded?: boolean;
 }
 
 const { embedded = false } = Astro.props as Props;
+const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const videoCourses = await loadVideoCourses();
+const featuredCourse = videoCourses[0] || null;
+const featuredCourseTitle = featuredCourse?.title || 'Les Bases de la Patisserie';
+const featuredCourseDescription =
+  featuredCourse?.shortDescription ||
+  "Découvrez mes premiers cours vidéo pour apprendre les bases de la pâtisserie à votre rythme depuis chez vous.";
+const featuredCourseImage = featuredCourse?.image || '/images/masterclass-featured.jpg';
 
 const features = [
   { icon: 'video' as const, label: 'Cours vid&eacute;o pas &agrave; pas' },
@@ -30,8 +39,8 @@ const features = [
     <div class="featured-masterclass-card">
       <div class="featured-masterclass-media">
         <img
-          src="/images/masterclass-featured.jpg"
-          alt="Masterclass p&acirc;tisserie"
+          src={featuredCourseImage}
+          alt={featuredCourseTitle}
           class="featured-masterclass-media-image"
           loading="lazy"
           decoding="async"
@@ -47,10 +56,10 @@ const features = [
         <div class="featured-masterclass-copy">
               <p class="featured-masterclass-eyebrow">Cours vid&eacute;o</p>
           <h3 class="featured-masterclass-title">
-            Les Bases de la P&acirc;tisserie
+            {featuredCourseTitle}
           </h3>
           <p class="featured-masterclass-description">
-            D&eacute;couvrez mes premiers cours vid&eacute;o pour apprendre les bases de la p&acirc;tisserie &agrave; votre rythme depuis chez vous. Cr&egrave;me p&acirc;tissi&egrave;re, chantilly, cr&egrave;me diplomate, millefeuille, p&acirc;te feuillet&eacute;e invers&eacute;e : des techniques essentielles expliqu&eacute;es pas &agrave; pas avec les bons gestes, les bonnes textures et le niveau de d&eacute;tail n&eacute;cessaire pour r&eacute;ussir.
+            {featuredCourseDescription}
           </p>
           <div class="featured-masterclass-features">
             {features.map((feature) => (
@@ -64,13 +73,13 @@ const features = [
 
         <div class="mt-8 flex items-end justify-between gap-4 flex-wrap">
           <a
-            href="/masterclass"
+            href={SHOP_VIDEO_URL}
             class="inline-flex items-center justify-center px-8 py-5 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90 typ-button"
           >
             Voir les cours vid&eacute;o
           </a>
           <a
-            href="/masterclass#bundle"
+            href={SHOP_VIDEO_URL}
             class="inline-flex items-center justify-center px-6 py-4 border border-[#D7D1C2] text-text-primary font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:bg-[#F7F5EF] typ-button"
           >
             D&eacute;couvrir le bundle
