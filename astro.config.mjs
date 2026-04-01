@@ -4,7 +4,7 @@ import { defineConfig } from 'astro/config';
 const isDev = process.env.NODE_ENV === 'development';
 const siteUrl = isDev
   ? 'http://localhost:4321'
-  : 'https://staging.lacuisinedebernard.com/'; // Scaleway bucket/CDN URL
+  : 'https://lacuisinedebernard.com';
 
 export default defineConfig({
   site: siteUrl,
