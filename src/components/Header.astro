@@ -132,18 +132,27 @@ const accountItems = [
 
       <!-- Search (desktop) -->
       <div class="hidden flex-1 max-w-[640px]" data-header-desktop-flex>
-        <div class="relative w-full">
-          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/42">
-            <Icon name="search" size="sm" class="w-[18px] h-[18px]" />
+        <form class="flex items-center gap-3 w-full" data-header-desktop-search-form>
+          <div class="relative min-w-0 flex-1">
+            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/42">
+              <Icon name="search" size="sm" class="w-[18px] h-[18px]" />
+            </div>
+            <input
+              type="search"
+              placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
+              class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/44 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 header-search-text"
+              data-header-search
+              data-header-desktop-search
+            />
           </div>
-          <input
-            type="search"
-            placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
-            class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/44 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 header-search-text"
-            data-header-search
-            data-header-desktop-search
-          />
-        </div>
+          <button
+            type="submit"
+            class="h-[44px] shrink-0 px-5 rounded-full bg-white text-[#1A2335] text-[12px] font-semibold tracking-wide uppercase"
+            aria-label="Lancer la recherche"
+          >
+            Go
+          </button>
+        </form>
       </div>
 
       <div class="hidden w-px h-8 bg-white/25" data-header-desktop-flex></div>
@@ -202,7 +211,6 @@ const accountItems = [
           <span class="header-favorites-icon" aria-hidden="true">
             <img src="/images/client-favorites.svg" alt="" loading="lazy" decoding="async" />
           </span>
-          <span class="header-utility-text text-[17px] leading-none normal-case" data-header-utility-label>3</span>
         </a>
       </div>
 
@@ -624,6 +632,7 @@ const accountItems = [
   const menuDrawer = document.querySelector('[data-menu-drawer]');
   const headerSearchInputs = Array.from(document.querySelectorAll('[data-header-search]'));
   const mobileSearchButton = document.querySelector('[data-mobile-search]');
+  const desktopSearchForm = document.querySelector('[data-header-desktop-search-form]');
   const mobileSearchPanel = document.querySelector('[data-mobile-search-panel]');
   const mobileSearchForm = document.querySelector('[data-mobile-search-form]');
   const mobileSearchInput = document.querySelector('[data-mobile-header-search]');
@@ -848,6 +857,12 @@ const accountItems = [
       event.preventDefault();
       submitHeaderSearch(input.value);
     });
+  });
+  desktopSearchForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const input = desktopSearchForm.querySelector('[data-header-desktop-search]');
+    const query = input instanceof HTMLInputElement ? input.value : '';
+    submitHeaderSearch(query);
   });
   mobileSearchButton?.addEventListener('click', (event) => {
     event.preventDefault();

@@ -32,11 +32,7 @@ const aboutLinks = [
 
 <footer class="bg-[#1C2639] text-text-on-dark pt-16 pb-8 border-t border-border-footer" role="contentinfo">
   <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
-    
-    <!-- Main Footer Content -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-16">
-      
-      <!-- Column 1: Brand & Social -->
       <div class="space-y-6">
         <a href="/" class="inline-block text-2xl font-heading text-primary-white mb-2" aria-label="La Cuisine de Bernard - Accueil">
           La Cuisine de Bernard
@@ -46,9 +42,9 @@ const aboutLinks = [
         </p>
         <div class="flex gap-4">
           {socialLinks.map((link) => (
-            <a 
-              href={link.url} 
-              target="_blank" 
+            <a
+              href={link.url}
+              target="_blank"
               rel="noopener noreferrer"
               class="text-primary-white hover:text-primary-turquoise transition-colors duration-200"
               aria-label={link.label}
@@ -59,14 +55,13 @@ const aboutLinks = [
         </div>
       </div>
 
-      <!-- Column 2: Categories -->
       <div>
         <h3 class="text-primary-white font-heading text-2xl mb-6">Explorer</h3>
         <ul class="space-y-3">
           {categories.map((cat) => (
             <li>
-              <a 
-                href={cat.url} 
+              <a
+                href={cat.url}
                 class="text-text-secondary hover:text-primary-turquoise transition-colors duration-200 font-body text-md"
               >
                 {cat.label}
@@ -76,14 +71,13 @@ const aboutLinks = [
         </ul>
       </div>
 
-      <!-- Column 3: About -->
       <div>
         <h3 class="text-primary-white font-heading text-2xl mb-6">Informations</h3>
         <ul class="space-y-3">
           {aboutLinks.map((link) => (
             <li>
-              <a 
-                href={link.url} 
+              <a
+                href={link.url}
                 class="text-text-secondary hover:text-primary-turquoise transition-colors duration-200 font-body text-md"
               >
                 {link.label}
@@ -93,26 +87,22 @@ const aboutLinks = [
         </ul>
       </div>
 
-      <!-- Column 4: Newsletter -->
       <div>
-         <h3 class="text-primary-white font-heading text-2xl mb-6">Newsletter</h3>
-         <p class="text-text-secondary font-body text-md mb-4">
-           Recevez les nouvelles recettes, les dates d'ateliers et les dernières nouveautés directement par email.
-         </p>
-         <button
-           id="open-newsletter-footer"
-           class="inline-flex items-center justify-center px-6 py-2 border-2 border-primary-turquoise text-primary-turquoise hover:bg-primary-turquoise hover:text-primary-black transition-colors duration-200 rounded font-button font-medium text-md"
-         >
-           S'inscrire
-         </button>
+        <h3 class="text-primary-white font-heading text-2xl mb-6">Newsletter</h3>
+        <p class="text-text-secondary font-body text-md mb-4">
+          Recevez les nouvelles recettes, les dates d'ateliers et les dernières nouveautés directement par email.
+        </p>
+        <button
+          id="open-newsletter-footer"
+          class="inline-flex items-center justify-center rounded-full bg-primary-turquoise px-6 py-3 text-[13px] font-medium uppercase tracking-[0.08em] text-primary-black transition-colors duration-200 hover:bg-[#3aa8a2]"
+        >
+          S'inscrire
+        </button>
       </div>
-      
     </div>
 
-    <!-- Divider -->
     <div class="border-t border-white/10 my-8"></div>
 
-    <!-- Bottom Bar -->
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-tertiary">
       <p>&copy; {currentYear} La Cuisine de Bernard. Tous droits réservés.</p>
       <div class="flex gap-6">
@@ -121,6 +111,5 @@ const aboutLinks = [
         <a href="/cookies" class="hover:text-primary-white transition-colors">Gestion des cookies</a>
       </div>
     </div>
-    
   </div>
 </footer>
