@@ -7,6 +7,56 @@ Primary sources reviewed:
 - [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/Leo%20Turbet.docx)
 - [lcb_feedback_tracker.html](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/lcb_feedback_tracker.html)
 - [CLIENT-FEEDBACK-CONSOLIDATED-2026-03-19.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/CLIENT-FEEDBACK-CONSOLIDATED-2026-03-19.md)
+- [New Client feedback/Chat.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/Chat.md)
+- [New Client feedback/BLOG_AUDIT.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/BLOG_AUDIT.md)
+- [New Client feedback/UX_UI_AUDIT.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/UX_UI_AUDIT.md)
+- [New Client feedback/CLUB_AD_FREE_IMPLEMENTATION (1).md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/CLUB_AD_FREE_IMPLEMENTATION%20%281%29.md)
+- [New Client feedback/google-reviews-astro-brief.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/google-reviews-astro-brief.md)
+- [New Client feedback/video_caption.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/video_caption.md)
+- [New Client feedback/Implementation Spec — La Cuisine de Bernard Blog (1).pdf](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/New%20Client%20feedback/Implementation%20Spec%20%E2%80%94%20La%20Cuisine%20de%20Bernard%20Blog%20%281%29.pdf)
+
+## New Client Feedback Review (2026-04-01)
+
+New items identified after reviewing the `New Client feedback` folder in depth.
+
+### Direct client asks
+
+- Missing image offload/import fix remains open
+  - client reported many slow or missing photos
+  - offload screenshot shows real media offload failures in WordPress
+- Corrected text/accent cleanup remains open in the exact areas Bernard called out
+  - `These are not the texts I corrected`
+  - transcript confirms missing accents in corrected copy
+- One wrong image still needs replacement in the affected homepage/content area
+- Trust/value block still needs the intended content/image arrangement:
+  - move `100% human / 100% original / 100% real photos` upward
+  - remove the unwanted Bernard photo in that area
+- Recipe cards shown after the step-by-step section still need their images reduced drastically
+  - client reference: much smaller, “postage stamp” style images
+
+### Spec-driven implementation items
+
+- Video courses implementation is broader than the current basic API hookup
+  - spec still calls for `User-Agent` handling in `videoCourses.ts`
+  - `lessonCount` / `duration`
+  - dedicated `VideoCourseCard.astro`
+  - dedicated `VideoCoursesSection.astro`
+  - dedicated `/cours-video` page
+- Club ad-free blog flow is separately specified
+  - Club login modal
+  - JWT cookie flow
+  - conditional Mediavine load suppression
+  - header Club state UI
+- Google reviews integration is also specified as a separate feature
+
+### Audit backlog from the new folder
+
+- Remove production test pages
+- Add `404.astro`
+- Fix incomplete hreflang coverage
+- Fix render-blocking font loading
+- Fix public endpoint/security hardening items called out in the audit
+- Fix hardcoded staging URL / broader pre-launch technical backlog
 
 ## Latest Content Pass (2026-03-25)
 
@@ -30,37 +80,58 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
 
 ## Carry-Forward For Tomorrow (2026-03-27)
 
+- Main-site video courses API integration completed:
+  - connected `https://atelier-lacuisinedebernard.com/api/video-courses`
+  - homepage video card now uses live API title/description data
+  - featured video section now uses live API title/description data
+  - sidebar video card now uses live API title/description data
+  - safe local image fallback remains in place when API image is `null`
+
 - Implement native recipe rating system in Payload:
   - `recipeRatings` collection
   - denormalized `ratingAverage` / `ratingCount`
   - vote action/endpoint
   - duplicate prevention with cookie + IP hash
-- Begin shop/community setup on `atelier-lacuisinedebernard.com`:
-  - MemberPress membership for `Le Club`
-  - MemberPress rules
-  - FluentCommunity access mapping
-  - Creator LMS access review
-- Confirm missing MemberPress setup inputs from client if blocked:
-  - membership price / billing
-  - exact included courses/modules
-  - license key if needed
 - Keep main Astro site limited to shop links only for the shop/community/course sales flow
-- Remaining broader scope:
+- Remaining doable scope:
   - Ingredient archive pages
-  - Newsletter / Acumbamail real integration
+  - missing image offload/import fix
+  - corrected copy/accent cleanup in Bernard-flagged areas
+  - wrong-image replacement + trust-block content/photo rearrangement
+  - full video-courses implementation per spec
+  - Google reviews integration
+
+## Blocked / Needs Client
+
+- Newsletter / Acumbamail real integration
+  - needs exact Acumbamail form/list/embed/API details
+- Workshop real descriptions
+  - frontend support is in place
+  - client still needs to populate WooCommerce excerpts/short descriptions
+- Club ad-free blog flow
+  - depends on the Club auth/plugin/shop direction being resumed on the client side
+
+## Deferred Shop / Community Scope
+
+- `Le Club` setup on `atelier-lacuisinedebernard.com` is deferred for now
+- Final access/protection model still pending between:
+  - FluentCommunity
+  - Creator LMS
+  - MemberPress
+- Resume later if/when client wants the club/community flow completed
+- MemberPress / Creator LMS license dependency remains relevant only if protection is resumed and blocked
 
 ## Leo Doc New Changes - Carry-Forward
 
 Additional items found in [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/Leo%20Turbet.docx) after the original wording/content pass:
 
-- Mobile vertical spacing is still inconsistent in some screens
-- Title padding still needs cleanup in the areas called out by Leo
-- `Temps de préparation` still has a specific visual issue to review/fix
-- Some English is still visible in the French UI and needs a final cleanup pass
+- Mobile vertical spacing issue: resolved in the homepage/mobile spacing pass
+- Title padding issue: resolved on the affected screens
+- `Temps de préparation` visual issue: resolved in the recipe/detail quick-info pass
+- Frontend English issue in French UI: resolved on the client-facing screens called out by Leo
 
 Note:
-- first three items above are design/layout-side carry-forward
-- the remaining-English item is both content and UI QA and should stay on the pending list until verified on staging
+- these Leo-doc carry-forward items have now been completed on the relevant frontend screens
 
 ## Latest Active Regressions (2026-03-25)
 

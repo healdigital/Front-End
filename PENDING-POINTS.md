@@ -1,6 +1,8 @@
-# Pending Points (Updated: 2026-03-26)
+# Pending Points (Updated: 2026-04-01)
 
-## Tomorrow Carry-Forward (2026-03-27)
+## New Client Feedback Folder Review (2026-04-01)
+
+### Can Do Now
 
 - [ ] Payload native rating system
   - create `recipeRatings` collection
@@ -9,45 +11,100 @@
   - duplicate prevention via cookie + IP hash
   - update Astro display to use real rating data
 
+- [ ] Ingredient archive pages
+
+- [ ] Missing image offload/import fix
+  - WordPress offload is still failing for some media items
+  - client explicitly asked for help with a script/import path for missing cloud images
+  - screenshot evidence shows offload errors for media items without valid file paths
+
+- [ ] Corrected copy / accent cleanup in the exact areas Bernard flagged
+  - client said: `These are not the texts I corrected`
+  - transcript also confirms missing accents in corrected text
+
+- [ ] Replace wrong image with the correct one in the affected homepage/content area
+  - Bernard called out one specific image that should be removed/replaced
+
+- [ ] Move the `100% human / 100% original / 100% real photos` trust content upward with the intended photo
+  - remove the unwanted Bernard photo in that area
+
+- [ ] Reduce the recipe cards shown after the step-by-step instructions
+  - client asked for much smaller images, closer to “postage stamp” size like the current live site
+
+- [x] Slow staging / delayed photo loading follow-up
+  - root cause is now better understood:
+  - frontend fallback logic was improved earlier
+  - WordPress offload errors were confirmed in the new screenshot
+
+- [ ] Complete video courses implementation per spec
+  - add `User-Agent` header in `src/lib/videoCourses.ts` for Cloudflare
+  - add `lessonCount` / `duration` support
+  - create dedicated `VideoCourseCard.astro`
+  - create `VideoCoursesSection.astro`
+  - create `src/pages/cours-video.astro`
+  - switch homepage fully to the new section pattern if not already complete
+
+- [ ] Google reviews integration
+  - use WordPress reviews endpoint / Cloudflare cache
+  - add Astro reviews component on the chosen page(s)
+
+- [ ] Audit backlog if Leo wants it addressed now
+  - remove production test pages
+  - add `404.astro`
+  - fix hreflang coverage
+  - fix render-blocking font loading
+  - fix hardcoded staging URL / priority audit items
+
+### Blocked / Needs Client
+
+- [ ] Newsletter / Acumbamail real submit integration
+  - needs exact Acumbamail form/list/embed/API details
+
+- [ ] Workshop card real descriptions
+  - frontend support is already added
+  - client still needs to fill WooCommerce excerpts/short descriptions on the source side
+
+- [ ] Club ad-free flow on the blog
+  - implement cookie/JWT gate for Mediavine
+  - add Club login modal
+  - add Club header button/state
+  - suppress ad slots for valid club members
+
+## Tomorrow Carry-Forward (2026-03-27)
+
+- [x] `/api/video-courses` integration
+  - connected `https://atelier-lacuisinedebernard.com/api/video-courses`
+  - homepage video card now uses API title + shortDescription + image fallback
+  - featured video section now uses API title + shortDescription + image fallback
+  - sidebar video card now uses API title + shortDescription + image fallback
+
+- [ ] Continue only from the `Can Do Now` bucket above
+
+## Deferred / Hold For Later
+
 - [ ] Shop / community setup on `atelier-lacuisinedebernard.com`
-  - create MemberPress membership for `Le Club`
-  - confirm membership pricing / billing model
-  - confirm whether Club includes community only or community + selected courses/modules
-  - create MemberPress rules for community/course access
-  - configure FluentCommunity access for Club members
-  - test end-to-end member flow
-  - check whether valid MemberPress license key is required to complete setup
+  - keep deferred for now
+  - `Le Club` access/protection model to be resumed later
+  - FluentCommunity + Creator LMS / shop flow finalization pending
+  - MemberPress / Creator LMS license dependency only if required to make protection actually work
 
 - [ ] Shop content note
   - Leo doc items `11` and `12` should not be duplicated on the main Astro site
   - current direction: keep only links to the external shop/community where relevant
 
-- [ ] Ingredient archive pages
-
-- [ ] Newsletter / Acumbamail real submit integration
-
-- [ ] Final client confirmation on MemberPress data needed:
-  - exact membership name
-  - price
-  - billing cycle
-  - included courses/modules
-  - redirect/flow preference
-  - license key if restriction/payment features are blocked
-
 ## Leo Turbet Doc - Design Carry-Forward
 
-- [ ] Mobile vertical spacing issues
-  - Leo doc new changes explicitly mention missing vertical space on mobile
+- [x] Mobile vertical spacing issues
+  - resolved in the homepage/mobile spacing pass and treated as completed
 
-- [ ] Title padding issues
-  - review title top/bottom spacing where called out in Leo doc screenshots
+- [x] Title padding issues
+  - affected title padding issue was fixed and treated as completed
 
-- [ ] `Temps de préparation` visual issue
-  - review and fix the specific recipe/detail-page display issue mentioned in Leo doc
+- [x] `Temps de préparation` visual issue
+  - recipe/detail quick-info display issue was fixed
 
-- [ ] Final English cleanup in UI
-  - Leo doc also flags remaining English still visible in some screens
-  - includes final recipe/detail-page label sweep and any lingering mixed-language UI
+- [x] Final English cleanup in UI
+  - client-facing/frontend English leftovers called out in Leo doc were converted to French
 
 ## Leo Turbet Doc Content Pass (2026-03-25)
 

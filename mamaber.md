@@ -14,6 +14,16 @@ Create a complete Club setup where a paid member gets:
 - community access
 - access to all current courses/modules in Creator LMS
 
+Current simplified client direction:
+- keep the flow simple for now
+- Bernard is working on the shop/community side
+- replace the old LMS reference with Fluent Community lesson URLs when relevant
+
+Current lesson URLs shared by client:
+- https://atelier-lacuisinedebernard.com/club/course/les-cremes-de-base/lessons
+- https://atelier-lacuisinedebernard.com/club/course/pate-feuilletee-inversee/lessons
+- https://atelier-lacuisinedebernard.com/club/course/millefeuille/lessons
+
 Membership details:
 - Membership name: La Cuisine de Bernard Club
 - Pricing:
@@ -272,6 +282,26 @@ FluentCommunity FluentCRM tag access docs: https://fluentcommunity.co/docs/acces
 Creator LMS course settings/pricing docs: https://getwpfunnels.com/docs/course-management-in-creator-lms/course-settings-and-pricing-setup/
 Creator LMS content protection docs: https://getwpfunnels.com/docs/creator-lms-all-addons/protect-course-content/
 Creator LMS product/licensing feature overview: https://creatorlms.net/
+
+Latest client simplification note:
+
+Leo Turbet-Delof
+2:03 PM
+For the moment, no, let make this simple
+
+Leo Turbet-Delof
+3:59 PM
+Im working on Bernard Shop
+
+Finnaly, maybe we'll use all features from Fluent Community
+
+Replace the LMS by this :
+https://atelier-lacuisinedebernard.com/club/course/module-2/lessons
+
+Updated specific lesson links later shared by client:
+- https://atelier-lacuisinedebernard.com/club/course/les-cremes-de-base/lessons
+- https://atelier-lacuisinedebernard.com/club/course/pate-feuilletee-inversee/lessons
+- https://atelier-lacuisinedebernard.com/club/course/millefeuille/lessons
 
 esme kya kya complete hogya pura bta and kya rhta hai or kyo 
 

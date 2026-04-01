@@ -171,12 +171,24 @@ section.home-page-section {
   flex-shrink: 0;
 }
 
+.bio-section-media-stack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .bio-section-media-image {
   width: 100%;
   height: 520px;
   object-fit: cover;
   object-position: top;
   display: block;
+}
+
+.bio-section-media-panel {
+  padding: 28px 28px 30px;
+  background: #f7f5ef;
+  border-top: 1px solid #d6d0c2;
 }
 
 .bio-section-content {
@@ -235,6 +247,12 @@ section.home-page-section {
   gap: 43px;
   padding-top: 15px;
   border-top: 1px solid #d6d0c2;
+}
+
+.bio-section-features--media {
+  gap: 26px;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .bio-section-feature {
@@ -788,7 +806,10 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
 @media (max-width: 768px) {
   .bio-section-media-image {
-    height: 640px;
+    height: 100%;
+    object-position: top;
+    width: 100%;
+    object-fit: contain;
   }
 
   .bio-section-title,
@@ -881,7 +902,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
     height: 100%;
     min-height: 620px;
     border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
+    border-bottom-left-radius: 0;
   }
 
   .bio-section-content {
@@ -951,14 +972,18 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 
   .bio-section-media {
-    width: 457px;
-    height: auto;
+      width: 457px;
+      height: auto;
   }
 
   .bio-section-media-image {
-    width: 457px;
-    height: 100%;
-    min-height: 0;
+      width: 457px;
+      height: 100%;
+      min-height: 0;
+  }
+
+  .bio-section-media-panel {
+      padding: 28px 24px 32px;
   }
 
   .bio-section-content {
@@ -1002,7 +1027,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
   .bio-section-features {
     width: 343px;
-    height: 332px;
+    height: 100%;
     gap: 43px;
   }
 
@@ -1671,6 +1696,10 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
         display: block;
     }
 
+    .home-deferred-block .bio-section-media-panel {
+        padding: 22px 20px 24px;
+    }
+
     .home-main-block h3.font-heading {
         font-size: 33px;
         line-height: 1.1em;
@@ -1690,6 +1719,10 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
     .home-deferred-block .bio-section-grid {
         display: block;
+    }
+
+    .home-deferred-block .bio-section-media-panel {
+        padding: 20px 18px 22px;
     }
 
     .featured-masterclass-card {

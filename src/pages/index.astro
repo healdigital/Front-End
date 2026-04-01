@@ -9,7 +9,7 @@ import WorkshopCard from '../components/organisms/WorkshopCard.astro';
 import HeroCarousel from '../components/organisms/HeroCarousel.astro';
 import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
 import BioSection from '../components/organisms/BioSection.astro';
-import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.astro';
+import VideoCoursesSection from '../components/organisms/VideoCoursesSection.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
@@ -18,14 +18,19 @@ import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
-const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/';
 const videoCourses = await loadVideoCourses();
 const featuredVideoCourse = videoCourses[0] || null;
-const featuredVideoCourseTitle = featuredVideoCourse?.title || 'Mes cours video';
+const featuredVideoCourseTitle = featuredVideoCourse?.title || 'Mes cours vidéo';
 const featuredVideoCourseDescription =
   featuredVideoCourse?.shortDescription ||
   'Découvrez mes premiers cours vidéo pour apprendre les bases de la pâtisserie à votre rythme depuis chez vous.';
 const featuredVideoCourseImage = featuredVideoCourse?.image || '/images/masterclass-video.jpg';
+const featuredVideoCourseHref = featuredVideoCourse?.courseUrl || SHOP_VIDEO_URL;
+const featuredVideoCourseDisplayTitle = featuredVideoCourse?.title || 'Mes cours vid\u00E9o';
+const featuredVideoCourseDisplayDescription =
+  featuredVideoCourse?.shortDescription ||
+  'D\u00E9couvrez mes premiers cours vid\u00E9o pour apprendre les bases de la p\u00E2tisserie \u00E0 votre rythme depuis chez vous.';
 
 const fallbackImages = [
   '/images/recipe-chocolate-cake.jpg',
@@ -38,10 +43,10 @@ const fallbackImages = [
 
 const fallbackHeroCards = [
   { title: 'Entremet praline dubai, chantilly et ganache lactee', image: '/images/recipe-chocolate-cake.jpg', category: 'SUCRE', slug: '/entremet-praline-dubai' },
-  { title: 'Ateliers cuisine fevrier - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: '/ateliers' },
-  { title: 'Omelette du cure (crepes, pommes de terre, foie gras poele)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
-  { title: 'Brioche tressee aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
-  { title: 'Tarte figue sechee, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
+  { title: 'Ateliers cuisine février - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: '/ateliers' },
+  { title: 'Omelette du curé (crêpes, pommes de terre, foie gras poêlé)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
+  { title: 'Brioche tressée aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
+  { title: 'Tarte figue séchée, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
 ];
 
 const recipeFilters = [
@@ -87,7 +92,7 @@ const fallbackRecipes = [
   {
     id: '4',
     title: 'Lasagnes gratinees maison',
-    description: 'Des lasagnes genereuses a la sauce tomate mijotee et parmesan gratine.',
+    description: 'Des lasagnes généreuses à la sauce tomate mijotée et parmesan gratiné.',
     image: '/images/recipe-lasagnes.jpg',
     category: 'SALE',
     filterKey: 'salees',
@@ -120,7 +125,7 @@ const fallbackRecipes = [
   {
     id: '7',
     title: 'Sable mega pistache',
-    description: 'Une recette simple et rapide, genereusement garnie de pistaches hachees.',
+    description: 'Une recette simple et rapide, généreusement garnie de pistaches hachées.',
     image: '/images/recipe-chocolate-cake.jpg',
     category: 'SUCRE',
     filterKey: 'sucrees',
@@ -342,7 +347,7 @@ const getWorkshopAvailability = (workshop: any) => {
 
   if (String(workshop.status || '').toUpperCase() === 'LIMITED') {
     return {
-      label: 'Dernieres places',
+      label: 'Dernières places',
       className: 'text-status-error',
     };
   }
@@ -378,7 +383,7 @@ const featuredWorkshopAvailability = getWorkshopAvailability(featuredWorkshop);
 
 const fallbackSuggestedRecipes = [
   {
-    title: 'Creme brulees salees au potimarron et chorizo',
+    title: 'Crèmes brûlées salées au potimarron et chorizo',
     description: 'Une version salee et originale de la creme brulee, avec la douceur du potimarron.',
     image: '/images/recipe-chocolate-cake.jpg',
     category: 'SALE',
@@ -631,7 +636,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
 <MainLayout
   title="La Cuisine de Bernard - Accueil"
-  description="Decouvrez des recettes authentiques et savoureuses par Bernard Laurance."
+  description="Découvrez des recettes authentiques et savoureuses par Bernard Laurance."
 >
   <HeroCarousel cards={heroCards} />
 
@@ -759,7 +764,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             <BioSection embedded />
           </div>
           <div class="home-deferred-block">
-            <FeaturedMasterclass embedded />
+            <VideoCoursesSection embedded />
           </div>
         </div>
 
@@ -865,7 +870,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body"
               style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.65em * 3);"
               data-workshops-feature-description
-            >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}</p>
+            >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.'}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}\u20AC` : '--'}</div>
@@ -887,7 +892,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           <div class="relative h-[350px] lg:h-[420px]">
             <img
               src={featuredVideoCourseImage}
-              alt={featuredVideoCourseTitle}
+              alt={featuredVideoCourseDisplayTitle}
               class="w-full h-full object-cover"
               loading="lazy"
               decoding="async"
@@ -903,18 +908,18 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
           </div>
           <div class="p-6 lg:p-7">
-            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">{featuredVideoCourseTitle}</h3>
+            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">{featuredVideoCourseDisplayTitle}</h3>
             <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
               <span class="flex items-center gap-1"><Icon name="video" size="sm" /> 50h</span>
               <span class="flex items-center gap-1"><Icon name="download" size="sm" /> Vid&eacute;o 4K</span>
             </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{featuredVideoCourseDescription}</p>
+            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{featuredVideoCourseDisplayDescription}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
               </div>
               <Button
-                href={SHOP_VIDEO_URL}
+                href={featuredVideoCourseHref}
                 class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none py-[7px] text-[11px] md:text-[12px]"
                 size="sm"
               >
@@ -1643,7 +1648,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       }
 
       if (workshop.status === 'LIMITED') {
-        return { label: 'Dernieres places', tone: 'error' };
+        return { label: 'Dernières places', tone: 'error' };
       }
 
       return { label: 'Places disponibles', tone: 'success' };
@@ -1682,7 +1687,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       const capacityLabel = getSpotsLabel(workshop);
       const priceLabel = workshop.price > 0 ? `${Math.round(workshop.price)}&euro;` : '--';
       const imageSrc = workshop.image || '/images/ateliers-physiques.jpg';
-      const description = workshop.description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.';
+      const description = workshop.description || 'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.';
 
       return `<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]"><div class="relative aspect-[0.98]"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(workshop.title)}" class="w-full h-full object-cover" loading="lazy" decoding="async" sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"><div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm"><span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">${escapeHtml(month)}</span><span class="block text-[50px] leading-none font-heading text-[#111111]">${escapeHtml(day)}</span></div></div><div class="p-6"><p class="text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta">${availability.label}</p><h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">${escapeHtml(workshop.title)}</h3><div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4"><span class="flex items-center gap-2">${usersIcon} ${capacityLabel}</span><span class="flex items-center gap-2">${clockIcon} ${escapeHtml(workshop.duration)}</span></div><p class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(description)}</p><div class="flex items-center justify-between mt-8"><div class="font-heading text-[60px] leading-none text-text-primary">${priceLabel}</div>${cta}</div></div></article>`;
     };
@@ -1715,7 +1720,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       if (featureDescriptionEl instanceof HTMLElement) {
         featureDescriptionEl.textContent =
           firstWorkshop.description ||
-          'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.';
+          'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.';
       }
 
       if (featureCtaEl instanceof HTMLAnchorElement && firstWorkshop.slug) {
