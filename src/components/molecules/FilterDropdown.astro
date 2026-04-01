@@ -20,6 +20,7 @@ const { label, options, class: className } = Astro.props;
     class="inline-flex items-center gap-3 h-[44px] px-5 bg-white rounded-lg text-[14px] font-body text-text-primary"
     aria-expanded="false"
     aria-haspopup="true"
+    aria-controls={`filter-menu-${label.replace(/<[^>]+>/g, '').toLowerCase().replace(/\s+/g, '-')}`}
     data-filter-trigger
   >
     <span data-filter-trigger-label set:html={label} />
@@ -29,6 +30,7 @@ const { label, options, class: className } = Astro.props;
   </button>
 
   <div
+    id={`filter-menu-${label.replace(/<[^>]+>/g, '').toLowerCase().replace(/\s+/g, '-')}`}
     class="absolute left-0 z-10 mt-3 w-[min(640px,calc(100vw-2.5rem))] origin-top-left rounded-lg bg-white shadow-[0_18px_45px_rgba(0,0,0,0.12)] ring-1 ring-black/5 opacity-0 scale-95 invisible transition-all duration-200 ease-out"
     role="menu"
     aria-orientation="vertical"
@@ -76,6 +78,7 @@ const { label, options, class: className } = Astro.props;
       if (!trigger || !menu || items.length === 0) return;
 
       let isOpen = false;
+      let activeIndex = -1;
 
       function setOpen(nextState) {
         isOpen = nextState;
@@ -85,10 +88,13 @@ const { label, options, class: className } = Astro.props;
           menu.classList.remove('opacity-0', 'scale-95', 'invisible');
           menu.classList.add('opacity-100', 'scale-100', 'visible');
           icon?.classList.add('rotate-180');
+          activeIndex = 0;
+          items[0]?.focus();
         } else {
           menu.classList.add('opacity-0', 'scale-95', 'invisible');
           menu.classList.remove('opacity-100', 'scale-100', 'visible');
           icon?.classList.remove('rotate-180');
+          activeIndex = -1;
         }
       }
 
@@ -98,6 +104,7 @@ const { label, options, class: className } = Astro.props;
       });
 
       items.forEach((item) => {
+        item.setAttribute('tabindex', '-1');
         item.addEventListener('click', () => {
           items.forEach((btn) => {
             btn.setAttribute('aria-current', 'false');
@@ -118,7 +125,50 @@ const { label, options, class: className } = Astro.props;
           if (label && labelTarget) labelTarget.innerHTML = label;
 
           setOpen(false);
+          trigger.focus();
         });
+      });
+
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setOpen(true);
+        }
+      });
+
+      menu.addEventListener('keydown', (event) => {
+        if (!isOpen) return;
+
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setOpen(false);
+          trigger.focus();
+          return;
+        }
+
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          activeIndex = (activeIndex + 1) % items.length;
+          items[activeIndex]?.focus();
+        }
+
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          activeIndex = (activeIndex - 1 + items.length) % items.length;
+          items[activeIndex]?.focus();
+        }
+
+        if (event.key === 'Home') {
+          event.preventDefault();
+          activeIndex = 0;
+          items[0]?.focus();
+        }
+
+        if (event.key === 'End') {
+          event.preventDefault();
+          activeIndex = items.length - 1;
+          items[activeIndex]?.focus();
+        }
       });
 
       document.addEventListener('click', (event) => {

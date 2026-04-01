@@ -204,7 +204,10 @@ const paginationItems = (() => {
           )}
         </>
       ) : (
-        <div class="lcdb-empty-state"><p class="typ-body">Aucun article trouv&eacute;.</p></div>
+        <div class="lcdb-empty-state space-y-4">
+          <p class="typ-body">Aucun article trouvé.</p>
+          <a href="/" class="inline-flex text-primary-turquoise typ-button">Retour à l’accueil</a>
+        </div>
       )}
     </div>
   </section>

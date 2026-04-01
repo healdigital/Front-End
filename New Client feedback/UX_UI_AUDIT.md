@@ -656,7 +656,7 @@ Article Detail -> Print Link/Button -> Print Page -> Auto-Print Dialog
 | Page | Mobile | Tablet | Desktop |
 |------|--------|--------|---------|
 | Articles archive | 1 col | 2 col | 3 col |
-| Category/tag | 1 col | 2 col | 3 col |
+| Category/tag | 1 col | 2 col | 3 col |![1775043363593](image/UX_UI_AUDIT/1775043363593.png)![1775043364843](image/UX_UI_AUDIT/1775043364843.png)
 | Search results | 1 col | 2 col | 3 col |
 | Homepage sections | 1 col | 2 col | Custom |
 | Print recipe meta | 2 col | 3 col | 3 col |

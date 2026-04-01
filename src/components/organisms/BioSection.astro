@@ -41,15 +41,7 @@ const features = [
       <div class="bio-section-grid">
         <div class="bio-section-media">
           <div class="bio-section-media-stack">
-            <img
-              src="/images/bernard-blog.png"
-              alt="La Cuisine de Bernard"
-              class="bio-section-media-image"
-              loading="lazy"
-              decoding="async"
-              sizes="(min-width: 1024px) 42vw, 92vw"
-            />
-            <div class="bio-section-media-panel">
+            <div class="bio-section-media-panel hidden" aria-hidden="true">
               <div class="bio-section-features bio-section-features--media">
                 {features.map((feature) => (
                   <div class="bio-section-feature">
@@ -62,6 +54,14 @@ const features = [
                 ))}
               </div>
             </div>
+            <img
+              src="/images/bernard-blog.png"
+              alt="La Cuisine de Bernard"
+              class="bio-section-media-image"
+              loading="lazy"
+              decoding="async"
+              sizes="(min-width: 1024px) 42vw, 92vw"
+            />
           </div>
         </div>
         <div class="bio-section-content">

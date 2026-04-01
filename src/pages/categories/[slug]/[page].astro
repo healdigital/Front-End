@@ -1,0 +1,142 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Pagination from '../../../components/organisms/Pagination.astro';
+import { getAllCategoriesFromMongo, getArticlesFromMongo } from '../../../lib/mongo.server';
+import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
+import { BUILD_ONLY_ARTICLE_PAGES } from '../../../utils/buildFlags';
+
+export const prerender = true;
+const PAGE_SIZE = 12;
+
+const stripHtml = (value: string) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+  }
+  return '';
+};
+
+const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+const articleSlug = (article: any) =>
+  normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+
+const getExcerpt = (article: any) => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return 'Recette à découvrir.';
+  return raw.length > 180 ? `${raw.slice(0, 180).trim()}...` : raw;
+};
+
+const getDate = (article: any) => {
+  const candidate = article?.publishedAt || article?.date || article?.modified;
+  if (!candidate) return '';
+  const parsed = new Date(candidate);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+const mapArticles = (fetchedArticles: any[]) =>
+  (Array.isArray(fetchedArticles) ? fetchedArticles : [])
+    .map((article: any) => {
+      const slug = articleSlug(article);
+      const title = toText(article?.title);
+      if (!slug || !title) return null;
+      return {
+        slug,
+        title,
+        excerpt: getExcerpt(article),
+        date: getDate(article),
+        image: processArticleImageUrl(article),
+      };
+    })
+    .filter(Boolean);
+
+export async function getStaticPaths() {
+  if (BUILD_ONLY_ARTICLE_PAGES) return [];
+  const categories = await getAllCategoriesFromMongo();
+  const paths: any[] = [];
+
+  for (const category of categories) {
+    const slug = normalizeSlug(typeof category?.slug === 'string' ? category.slug : category?.slug?.current);
+    if (!slug) continue;
+    const categoryName = toText(category?.name || category?.title || slug);
+    const count = mapArticles(await getArticlesFromMongo(1, 1000, categoryName)).length;
+    const totalPages = Math.ceil(count / PAGE_SIZE);
+
+    for (let page = 2; page <= totalPages; page++) {
+      paths.push({ params: { slug, page: String(page) }, props: { category, page } });
+    }
+  }
+
+  return paths;
+}
+
+const { category, page } = Astro.props as { category: any; page: number };
+const currentPage = Number(page) || 2;
+const categoryTitle = toText(category?.title || category?.name || category?.label || Astro.params.slug);
+const categoryName = toText(category?.name || category?.title || category?.slug || Astro.params.slug);
+const allArticles = mapArticles(await getArticlesFromMongo(1, 1000, categoryName));
+const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
+const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+---
+
+<BaseLayout title={`${categoryTitle} - page ${currentPage}`} description={`Articles dans la catégorie ${categoryTitle}`}>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <nav class="article-breadcrumb typ-caption mb-4" aria-label="Breadcrumb">
+        <a href="/" class="article-breadcrumb-link">Accueil</a>
+        <span aria-hidden="true">/</span>
+        <a href="/categories/" class="article-breadcrumb-link">Catégories</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/categories/${Astro.params.slug}`} class="article-breadcrumb-link">{categoryTitle}</a>
+        <span aria-hidden="true">/</span>
+        <span class="article-breadcrumb-current">Page {currentPage}</span>
+      </nav>
+      <p class="lcdb-page-eyebrow typ-caption">Catégorie</p>
+      <h1 class="lcdb-page-title typ-h2">{categoryTitle}</h1>
+      <p class="lcdb-page-description typ-body">Page {currentPage} sur {totalPages}</p>
+    </div>
+  </section>
+
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        {articles.map((article: any) => (
+          <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
+            <div class="lcdb-article-card-media">
+              {article.image ? (
+                <img src={article.image} alt={article.title} loading="lazy" class="w-full h-full object-cover" />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center">
+                  <span class="text-[#8A8578] typ-caption">Aucune image</span>
+                </div>
+              )}
+            </div>
+            <div class="lcdb-article-card-content">
+              {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
+              <h2 class="lcdb-article-card-title">{article.title}</h2>
+              <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
+              <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
+            </div>
+          </a>
+        ))}
+      </div>
+      {totalPages > 1 && (
+        <div class="mt-10">
+          <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={`/categories/${Astro.params.slug}`} />
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

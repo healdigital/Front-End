@@ -1,12 +1,11 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Pagination from '../../components/organisms/Pagination.astro';
-import { getAllTagsFromMongo, getArticlesByTagFromMongo } from '../../lib/mongo.server';
-import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
-import { BUILD_ONLY_ARTICLE_PAGES } from '../../utils/buildFlags';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Pagination from '../../../components/organisms/Pagination.astro';
+import { getAllTagsFromMongo, getArticlesByTagFromMongo } from '../../../lib/mongo.server';
+import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
+import { BUILD_ONLY_ARTICLE_PAGES } from '../../../utils/buildFlags';
 
 export const prerender = true;
-
 const PAGE_SIZE = 12;
 
 const stripHtml = (value: string) =>
@@ -44,11 +43,7 @@ const getDate = (article: any) => {
   if (!candidate) return '';
   const parsed = new Date(candidate);
   if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return parsed.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
 const mapArticles = (fetchedArticles: any[]) =>
@@ -57,7 +52,6 @@ const mapArticles = (fetchedArticles: any[]) =>
       const slug = articleSlug(article);
       const title = toText(article?.title);
       if (!slug || !title) return null;
-
       return {
         slug,
         title,
@@ -69,37 +63,35 @@ const mapArticles = (fetchedArticles: any[]) =>
     .filter(Boolean);
 
 export async function getStaticPaths() {
-  if (BUILD_ONLY_ARTICLE_PAGES) {
-    return [];
+  if (BUILD_ONLY_ARTICLE_PAGES) return [];
+  const tags = await getAllTagsFromMongo();
+  const paths: any[] = [];
+
+  for (const tag of tags) {
+    const slug = normalizeSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
+    if (!slug) continue;
+    const tagName = toText(tag?.name || tag?.title || slug);
+    const count = mapArticles(await getArticlesByTagFromMongo(tagName, 1000)).length;
+    const totalPages = Math.ceil(count / PAGE_SIZE);
+
+    for (let page = 2; page <= totalPages; page++) {
+      paths.push({ params: { slug, page: String(page) }, props: { tag, page } });
+    }
   }
 
-  const tags = await getAllTagsFromMongo();
-  return tags
-    .map((tag: any) => {
-      const slug = normalizeSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
-      if (!slug) return null;
-      return { params: { slug }, props: { tag } };
-    })
-    .filter(Boolean);
+  return paths;
 }
 
-interface Props {
-  tag: any;
-}
-
-const { tag } = Astro.props as Props;
-if (!tag) {
-  return new Response('Tag not found', { status: 404 });
-}
-
+const { tag, page } = Astro.props as { tag: any; page: number };
+const currentPage = Number(page) || 2;
 const tagTitle = toText(tag?.title || tag?.name || tag?.label || Astro.params.slug);
 const tagName = toText(tag?.name || tag?.title || tag?.slug || Astro.params.slug);
 const allArticles = mapArticles(await getArticlesByTagFromMongo(tagName, 1000));
 const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
-const articles = allArticles.slice(0, PAGE_SIZE);
+const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 ---
 
-<BaseLayout title={`#${tagTitle}`} description={`Articles associés au mot-clé ${tagTitle}`}>
+<BaseLayout title={`#${tagTitle} - page ${currentPage}`} description={`Articles associés au mot-clé ${tagTitle}`}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <nav class="article-breadcrumb typ-caption mb-4" aria-label="Breadcrumb">
@@ -107,54 +99,42 @@ const articles = allArticles.slice(0, PAGE_SIZE);
         <span aria-hidden="true">/</span>
         <a href="/tags/" class="article-breadcrumb-link">Tags</a>
         <span aria-hidden="true">/</span>
-        <span class="article-breadcrumb-current">#{tagTitle}</span>
+        <a href={`/tags/${Astro.params.slug}`} class="article-breadcrumb-link">#{tagTitle}</a>
+        <span aria-hidden="true">/</span>
+        <span class="article-breadcrumb-current">Page {currentPage}</span>
       </nav>
       <p class="lcdb-page-eyebrow typ-caption">Mot-clé</p>
       <h1 class="lcdb-page-title typ-h2">#{tagTitle}</h1>
-      <p class="lcdb-page-description typ-body">{allArticles.length} article{allArticles.length !== 1 ? 's' : ''} trouvés.</p>
+      <p class="lcdb-page-description typ-body">Page {currentPage} sur {totalPages}</p>
     </div>
   </section>
 
   <section class="lcdb-page-section">
     <div class="lcdb-page-shell lcdb-page-section-inner">
-      {articles.length > 0 ? (
-        <>
-          <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {articles.map((article: any) => (
-              <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
-                <div class="lcdb-article-card-media">
-                  {article.image ? (
-                    <img
-                      src={article.image}
-                      alt={article.title}
-                      loading="lazy"
-                      class="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div class="w-full h-full flex items-center justify-center">
-                      <span class="text-[#8A8578] typ-caption">Aucune image</span>
-                    </div>
-                  )}
+      <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        {articles.map((article: any) => (
+          <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
+            <div class="lcdb-article-card-media">
+              {article.image ? (
+                <img src={article.image} alt={article.title} loading="lazy" class="w-full h-full object-cover" />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center">
+                  <span class="text-[#8A8578] typ-caption">Aucune image</span>
                 </div>
-                <div class="lcdb-article-card-content">
-                  {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
-                  <h2 class="lcdb-article-card-title">{article.title}</h2>
-                  <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
-                  <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
-                </div>
-              </a>
-            ))}
-          </div>
-          {totalPages > 1 && (
-            <div class="mt-10">
-              <Pagination currentPage={1} totalPages={totalPages} baseUrl={`/tags/${Astro.params.slug}`} />
+              )}
             </div>
-          )}
-        </>
-      ) : (
-        <div class="lcdb-empty-state space-y-4">
-          <p class="typ-body">Aucun article trouvé pour ce tag.</p>
-          <a href="/articles/" class="inline-flex text-primary-turquoise typ-button">Parcourir tous les articles</a>
+            <div class="lcdb-article-card-content">
+              {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
+              <h2 class="lcdb-article-card-title">{article.title}</h2>
+              <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
+              <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
+            </div>
+          </a>
+        ))}
+      </div>
+      {totalPages > 1 && (
+        <div class="mt-10">
+          <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={`/tags/${Astro.params.slug}`} />
         </div>
       )}
     </div>
