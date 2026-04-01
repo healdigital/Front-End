@@ -29,7 +29,7 @@ const features = [
 ];
 ---
 
-<section class={`relative ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
+<section class={`relative hidden ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`} aria-hidden="true">
   {!embedded && (
     <div
       class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
