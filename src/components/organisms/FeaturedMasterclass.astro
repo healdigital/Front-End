@@ -7,14 +7,19 @@ interface Props {
 }
 
 const { embedded = false } = Astro.props as Props;
-const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/';
 const videoCourses = await loadVideoCourses();
 const featuredCourse = videoCourses[0] || null;
+const featuredCourseHref = featuredCourse?.courseUrl || SHOP_VIDEO_URL;
 const featuredCourseTitle = featuredCourse?.title || 'Les Bases de la Patisserie';
 const featuredCourseDescription =
   featuredCourse?.shortDescription ||
   "Découvrez mes premiers cours vidéo pour apprendre les bases de la pâtisserie à votre rythme depuis chez vous.";
 const featuredCourseImage = featuredCourse?.image || '/images/masterclass-featured.jpg';
+const featuredCourseDisplayTitle = featuredCourse?.title || 'Les bases de la p\u00E2tisserie';
+const featuredCourseDisplayDescription =
+  featuredCourse?.shortDescription ||
+  'D\u00E9couvrez mes premiers cours vid\u00E9o pour apprendre les bases de la p\u00E2tisserie \u00E0 votre rythme depuis chez vous.';
 
 const features = [
   { icon: 'video' as const, label: 'Cours vid&eacute;o pas &agrave; pas' },
@@ -40,7 +45,7 @@ const features = [
       <div class="featured-masterclass-media">
         <img
           src={featuredCourseImage}
-          alt={featuredCourseTitle}
+          alt={featuredCourseDisplayTitle}
           class="featured-masterclass-media-image"
           loading="lazy"
           decoding="async"
@@ -56,10 +61,10 @@ const features = [
         <div class="featured-masterclass-copy">
               <p class="featured-masterclass-eyebrow">Cours vid&eacute;o</p>
           <h3 class="featured-masterclass-title">
-            {featuredCourseTitle}
+            {featuredCourseDisplayTitle}
           </h3>
           <p class="featured-masterclass-description">
-            {featuredCourseDescription}
+            {featuredCourseDisplayDescription}
           </p>
           <div class="featured-masterclass-features">
             {features.map((feature) => (
@@ -73,7 +78,7 @@ const features = [
 
         <div class="mt-8 flex items-end justify-between gap-4 flex-wrap">
           <a
-            href={SHOP_VIDEO_URL}
+            href={featuredCourseHref}
             class="inline-flex items-center justify-center px-8 py-5 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90 typ-button"
           >
             Voir les cours vid&eacute;o

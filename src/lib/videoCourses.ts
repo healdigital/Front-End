@@ -3,6 +3,38 @@ const VIDEO_COURSES_SOURCE_URL =
   'https://atelier-lacuisinedebernard.com/api/video-courses';
 
 const VIDEO_COURSES_FETCH_TIMEOUT_MS = 5000;
+const VIDEO_COURSES_USER_AGENT =
+  'Mozilla/5.0 (compatible; LCDBAstro/1.0; +https://lacuisinedebernard.com)';
+
+const DEFAULT_CLUB_URL = 'https://atelier-lacuisinedebernard.com/club/';
+
+const LESSON_URL_MAP: Array<{ matcher: RegExp; href: string }> = [
+  {
+    matcher: /millefeuille/i,
+    href: 'https://atelier-lacuisinedebernard.com/club/course/millefeuille/lessons',
+  },
+  {
+    matcher: /pate feuilletee inversee|feuilletee inversee|feuillet[eé]e invers[eé]e/i,
+    href: 'https://atelier-lacuisinedebernard.com/club/course/pate-feuilletee-inversee/lessons',
+  },
+  {
+    matcher: /creme patissiere|creme diplomate|cremes de base|cr[eè]me p[aâ]tissi[eè]re|cr[eè]me diplomate/i,
+    href: 'https://atelier-lacuisinedebernard.com/club/course/les-cremes-de-base/lessons',
+  },
+];
+
+const FALLBACK_IMAGE_MAP: Array<{ matcher: RegExp; src: string }> = [
+  { matcher: /millefeuille/i, src: '/images/masterclass-featured.jpg' },
+  {
+    matcher: /pate feuilletee inversee|feuilletee inversee|feuillet[eé]e invers[eé]e/i,
+    src: '/images/masterclass-patisserie.jpg',
+  },
+  {
+    matcher: /creme patissiere|creme diplomate|cremes de base|cr[eè]me p[aâ]tissi[eè]re|cr[eè]me diplomate/i,
+    src: '/images/masterclass-video.jpg',
+  },
+  { matcher: /chocolat/i, src: '/images/masterclass-featured.jpg' },
+];
 
 export interface VideoCourse {
   id: string;
@@ -13,6 +45,8 @@ export interface VideoCourse {
   price: number;
   image: string | null;
   publishedAt: string;
+  lessonCount: number | null;
+  duration: string | null;
 }
 
 const fallbackVideoCourses: VideoCourse[] = [
@@ -20,12 +54,14 @@ const fallbackVideoCourses: VideoCourse[] = [
     id: 'fallback-video-course',
     title: 'Millefeuille',
     shortDescription:
-      "Le montage d'un grand classique, expliqué pas à pas pour mieux comprendre l'assemblage, l'équilibre et les textures d'un dessert emblématique.",
-    courseUrl: 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons',
+      "Le montage d'un grand classique, explique pas a pas pour mieux comprendre l'assemblage, l'equilibre et les textures d'un dessert emblematique.",
+    courseUrl: 'https://atelier-lacuisinedebernard.com/club/course/millefeuille/lessons',
     priceType: 'free',
     price: 0,
-    image: null,
+    image: '/images/masterclass-featured.jpg',
     publishedAt: '',
+    lessonCount: null,
+    duration: null,
   },
 ];
 
@@ -51,13 +87,16 @@ const normalizeCourseText = (value: unknown): string =>
   decodeEntities(String(value || ''))
     .replace(/\s*\.{3}\s*Lire la suite$/i, '')
     .replace(/\s*Lire la suite$/i, '')
-    .replace(/([.!?])([A-ZÀ-Ý])/g, '$1 $2')
+    .replace(/([.!?])(?=[A-Z0-9\u00c0-\u0178])/g, '$1 ')
     .replace(/\s+/g, ' ')
     .trim();
 
-const normalizeHref = (value: unknown): string => {
+const normalizeHref = (value: unknown, title: string): string => {
+  const mappedHref = LESSON_URL_MAP.find((entry) => entry.matcher.test(title))?.href;
+  if (mappedHref) return mappedHref;
+
   const raw = String(value || '').trim();
-  if (!raw) return 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+  if (!raw) return DEFAULT_CLUB_URL;
   if (/^https?:\/\//i.test(raw)) return raw;
   return raw.startsWith('/') ? `https://atelier-lacuisinedebernard.com${raw}` : raw;
 };
@@ -67,21 +106,40 @@ const toPositiveNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
 };
 
-const mapVideoCourse = (item: any, index: number): VideoCourse | null => {
+const normalizeDuration = (value: unknown): string | null => {
+  const raw = String(value || '').trim();
+  if (raw) return raw;
+  return null;
+};
+
+const getFallbackImage = (title: string): string => {
+  const mappedImage = FALLBACK_IMAGE_MAP.find((entry) => entry.matcher.test(title))?.src;
+  return mappedImage || '/images/masterclass-video.jpg';
+};
+
+const mapVideoCourse = (item: Record<string, unknown>, index: number): VideoCourse | null => {
   if (!item || typeof item !== 'object') return null;
 
   const title = normalizeCourseText(item.title);
   if (!title) return null;
 
+  const normalizedImage =
+    typeof item.image === 'string' && item.image.trim() ? item.image.trim() : getFallbackImage(title);
+
   return {
     id: String(item.id || index + 1),
     title,
     shortDescription: normalizeCourseText(item.shortDescription),
-    courseUrl: normalizeHref(item.courseUrl),
+    courseUrl: normalizeHref(item.courseUrl, title),
     priceType: String(item.priceType || 'free').trim().toLowerCase(),
     price: toPositiveNumber(item.price, 0),
-    image: typeof item.image === 'string' && item.image.trim() ? item.image.trim() : null,
+    image: normalizedImage,
     publishedAt: String(item.publishedAt || ''),
+    lessonCount:
+      item.lessonCount === undefined || item.lessonCount === null
+        ? null
+        : toPositiveNumber(item.lessonCount, 0),
+    duration: normalizeDuration(item.duration),
   };
 };
 
@@ -97,7 +155,10 @@ export const loadVideoCourses = async (): Promise<VideoCourse[]> => {
     try {
       const response = await fetch(VIDEO_COURSES_SOURCE_URL, {
         method: 'GET',
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': VIDEO_COURSES_USER_AGENT,
+        },
         signal: controller.signal,
       });
 
@@ -109,11 +170,11 @@ export const loadVideoCourses = async (): Promise<VideoCourse[]> => {
       const items = Array.isArray(payload?.items)
         ? payload.items
         : Array.isArray(payload)
-        ? payload
-        : [];
+          ? payload
+          : [];
 
       const normalized = items
-        .map((item, index) => mapVideoCourse(item, index))
+        .map((item, index) => mapVideoCourse(item as Record<string, unknown>, index))
         .filter(Boolean) as VideoCourse[];
 
       return normalized.length ? normalized : fallbackVideoCourses;

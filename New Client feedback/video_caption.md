@@ -1,0 +1,5 @@
+Speaker 1 (00:00:00.40)
+Hi, Leo. I’m recording a video for you so I can show you. The site is extremely slow—the staging site I’m testing. The photos weren’t loading. It took about 40 seconds for them to show up. I don’t have everything. There’s a lot of stuff that isn’t displaying. Like here, for example. It’s a little concerning. See this? We need to change that. I told you about this photo—we really need to remove it and replace it with that one. On the other hand, the text here isn’t the one I wrote and sent you the other day because all the accents are missing. And then, what I wanted was for that thing here—100% human, 100% photo, 100% real—I wanted that to go up there with that photo instead, and for us to get rid of this photo of me, which one is it, that one there. That one—I want that photo of me to disappear.
+
+Speaker 1 (00:00:55.50)
+It takes forever to load. There, I think it was But now, nothing is loading. I don’t know what’s going on, but the site, for me, is extremely, extremely slow. It scares me a little bit, I tell you.

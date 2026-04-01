@@ -18,7 +18,12 @@ const features = [
   },
   {
     title: 'Photos 100% r&eacute;elles',
-    description: 'Des &eacute;tapes claires et d&eacute;taill&eacute;es pour vraiment comprendre et r&eacute;ussir',
+    description: 'Tout ce que vous voyez ici est r&eacute;el et vraiment appr&eacute;ci&eacute;',
+    icon: '/images/feature-bowl.png',
+  },
+  {
+    title: '&Eacute;tapes claires et d&eacute;taill&eacute;es',
+    description: 'Des recettes pr&eacute;cises pour vraiment comprendre et r&eacute;ussir',
     icon: '/images/feature-bowl.png',
   },
 ];
@@ -35,14 +40,29 @@ const features = [
     <div class="bio-section-card">
       <div class="bio-section-grid">
         <div class="bio-section-media">
-          <img
-            src="/images/bernard-chef-2010.png"
-            alt="Bernard Laurance"
-            class="bio-section-media-image"
-            loading="lazy"
-            decoding="async"
-            sizes="(min-width: 1024px) 42vw, 92vw"
-          />
+          <div class="bio-section-media-stack">
+            <img
+              src="/images/bernard-blog.png"
+              alt="La Cuisine de Bernard"
+              class="bio-section-media-image"
+              loading="lazy"
+              decoding="async"
+              sizes="(min-width: 1024px) 42vw, 92vw"
+            />
+            <div class="bio-section-media-panel">
+              <div class="bio-section-features bio-section-features--media">
+                {features.map((feature) => (
+                  <div class="bio-section-feature">
+                    <img src={feature.icon} alt="" aria-hidden="true" class="bio-section-feature-icon" />
+                    <div>
+                      <p class="bio-section-feature-title" set:html={feature.title}></p>
+                      <p class="bio-section-feature-description" set:html={feature.description}></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
         <div class="bio-section-content">
           <div class="bio-section-content-inner">
@@ -54,18 +74,6 @@ const features = [
               <p class="bio-section-description">
                 Sur mon site, dans mes livres et lors de mes ateliers, je partage avec passion et g&eacute;n&eacute;rosit&eacute; des recettes sucr&eacute;es et sal&eacute;es, des d&eacute;couvertes, des exp&eacute;riences et des voyages culinaires, toujours avec clart&eacute; et pr&eacute;cision. Passionn&eacute; depuis l&apos;enfance, j&apos;ai construit La Cuisine de Bernard au fil des ann&eacute;es avec des recettes soigneusement test&eacute;es, class&eacute;es et affin&eacute;es. Mon objectif : transmettre une cuisine g&eacute;n&eacute;reuse, fiable et vivante, en pr&eacute;servant les traditions du monde entier tout en laissant place aux plaisirs d&apos;aujourd&apos;hui.
               </p>
-            </div>
-
-            <div class="bio-section-features">
-              {features.map((feature) => (
-                <div class="bio-section-feature">
-                  <img src={feature.icon} alt="" aria-hidden="true" class="bio-section-feature-icon" />
-                  <div>
-                    <p class="bio-section-feature-title" set:html={feature.title}></p>
-                    <p class="bio-section-feature-description" set:html={feature.description}></p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>

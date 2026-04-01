@@ -1,0 +1,100 @@
+---
+import { loadVideoCourses } from '../../lib/videoCourses';
+import VideoCourseCard from './VideoCourseCard.astro';
+
+interface Props {
+  embedded?: boolean;
+  showHeading?: boolean;
+}
+
+const { embedded = false, showHeading = true } = Astro.props as Props;
+const videoCourses = await loadVideoCourses();
+const [featuredCourse, ...otherCourses] = videoCourses;
+const displayCourses = otherCourses.slice(0, 4);
+---
+
+<section class:list={['video-courses-section', embedded && 'video-courses-section--embedded']}>
+  {showHeading && (
+    <div class="video-courses-section-head">
+      <p class="video-courses-section-kicker">Cours vidéo</p>
+      <h2 class="video-courses-section-title">Mes cours vidéo</h2>
+      <p class="video-courses-section-intro">
+        Découvrez mes premiers cours vidéo pour apprendre les bases de la pâtisserie à votre rythme
+        depuis chez vous.
+      </p>
+    </div>
+  )}
+
+  {featuredCourse && (
+    <div class="video-courses-section-featured">
+      <VideoCourseCard course={featuredCourse} featured />
+    </div>
+  )}
+
+  {displayCourses.length > 0 && (
+    <div class="video-courses-section-grid">
+      {displayCourses.map((course) => (
+        <VideoCourseCard course={course} />
+      ))}
+    </div>
+  )}
+</section>
+
+<style>
+  .video-courses-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .video-courses-section--embedded {
+    gap: 1.35rem;
+  }
+
+  .video-courses-section-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .video-courses-section-kicker {
+    margin: 0;
+    color: #5f6671;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .video-courses-section-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.8vw, 3.35rem);
+    line-height: 1.02;
+  }
+
+  .video-courses-section-intro {
+    margin: 0;
+    max-width: 58ch;
+    color: #5f6671;
+    font-size: 0.98rem;
+    line-height: 1.65;
+  }
+
+  .video-courses-section-featured {
+    min-width: 0;
+  }
+
+  .video-courses-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 767px) {
+    .video-courses-section-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
