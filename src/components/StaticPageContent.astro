@@ -32,6 +32,13 @@ if (html) {
     /https?:\/\/cdn\.lacuisinedebernard\.com\/[^"'()\s]+/gi,
     (match) => replaceCdnUrl(match),
   );
+
+  if (slug === "mes-livres") {
+    html = html.replace(
+      /<figure class="wp-block-image size-full"><img[^>]+Capture-de[^"]*18\.55\.23[^"]*"[^>]*><\/figure>/i,
+      '<figure class="wp-block-image size-full"><img fetchpriority="high" decoding="async" width="1018" height="1434" class="wp-image-27645" src="/images/bernard-books.png" alt="Mes livres de recettes" /></figure>',
+    );
+  }
 }
 
 const hasHtml = html.length > 0;
