@@ -14,6 +14,11 @@ export default defineConfig({
 
   vite: {
     cacheDir: './.vite-cache-build',
+    optimizeDeps: {
+      disabled: true,
+      noDiscovery: true,
+      include: [],
+    },
     ssr: {
       external: ['svgo'],
     },

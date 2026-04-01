@@ -14,7 +14,7 @@ interface Props {
 
 const { steps, title = 'Préparation' } = Astro.props;
 
-const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
+const groupedSteps = steps.reduce((acc: Record<string, RecipeStep[]>, step: RecipeStep) => {
   const group = step.group || 'Préparation';
   if (!acc[group]) acc[group] = [];
   acc[group].push(step);
@@ -22,48 +22,64 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
 }, {});
 ---
 
-<div class="recipe-instructions">
-  <h2 class="instructions-title">{title}</h2>
+<div class="recipe-instructions" data-recipe-instructions>
+  <div class="instructions-header">
+    <h2 class="instructions-title">{title}</h2>
+    <button type="button" class="instructions-reset" data-reset-steps hidden>Réinitialiser les étapes</button>
+  </div>
 
-  {Object.entries(groupedSteps).map(([group, groupSteps]: any) => (
-    <section class="instruction-group" aria-labelledby={`instruction-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
-      {group !== 'Préparation' && (
-        <h3 class="group-title" id={`instruction-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
-          {group}
-        </h3>
-      )}
+  {Object.entries(groupedSteps).map(([group, groupSteps]) => {
+    const groupId = `instruction-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`;
+    return (
+      <section class="instruction-group" aria-labelledby={groupId}>
+        {group !== 'Préparation' && (
+          <h3 class="group-title" id={groupId}>{group}</h3>
+        )}
 
-      <ol class="steps-list">
-        {groupSteps.map((step: RecipeStep, index: number) => (
-          <li class="step-item">
-            <div class="step-header">
-              <span class="step-number" aria-label={`Étape ${step.number || index + 1}`}>{step.number || index + 1}</span>
-              <div class="step-content">
-                <p class="step-instruction">{step.instruction}</p>
-                {step.time && (
-                  <div class="step-time" aria-label={`Temps estimé : ${step.time} minutes`}>
-                    <span class="time-label">Temps :</span>
-                    <span>{step.time} min</span>
+        <ol class="steps-list">
+          {groupSteps.map((step, index) => {
+            const stepNumber = step.number || index + 1;
+            return (
+              <li class="step-item" data-step-item>
+                <div class="step-header">
+                  <button
+                    type="button"
+                    class="step-toggle"
+                    data-step-toggle
+                    aria-pressed="false"
+                    aria-label={`Marquer l'étape ${stepNumber} comme terminée`}
+                  >
+                    <span class="step-number" aria-hidden="true">{stepNumber}</span>
+                    <span class="step-check" aria-hidden="true">✓</span>
+                  </button>
+
+                  <div class="step-content">
+                    <p class="step-instruction">{step.instruction}</p>
+                    {step.time && (
+                      <p class="step-time" aria-label={`Temps estimé : ${step.time} minutes`}>
+                        Temps estimé : {step.time} min
+                      </p>
+                    )}
                   </div>
+                </div>
+
+                {step.tips && step.tips.length > 0 && (
+                  <aside class="step-tips" aria-label={`Astuces pour l'étape ${stepNumber}`}>
+                    <p class="step-tips-title">Astuce</p>
+                    <ul class="step-tips-list">
+                      {step.tips.map((tip) => (
+                        <li>{tip}</li>
+                      ))}
+                    </ul>
+                  </aside>
                 )}
-              </div>
-            </div>
-
-            {step.tips && step.tips.length > 0 && (
-              <aside class="step-tips" aria-label="Astuces">
-                {step.tips.map((tip: string) => (
-                  <div class="tip">
-                    <span class="tip-label">Astuce :</span>
-                    <span>{tip}</span>
-                  </div>
-                ))}
-              </aside>
-            )}
-          </li>
-        ))}
-      </ol>
-    </section>
-  ))}
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    );
+  })}
 </div>
 
 <style>
@@ -71,76 +87,121 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     margin: 2.5rem 0;
   }
 
+  .instructions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
   .instructions-title {
-    font-size: 1.8rem;
-    font-weight: 700;
+    margin: 0;
     color: var(--lcdb-heading);
-    margin: 0 0 2rem 0;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.05;
+  }
+
+  .instructions-reset {
+    border: 0;
+    background: transparent;
+    color: var(--lcdb-accent);
+    font-family: var(--font-button);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-decoration: underline;
+    text-underline-offset: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
-  .instruction-group {
-    margin-bottom: 2rem;
-  }
-
-  .instruction-group:last-child {
-    margin-bottom: 0;
+  .instruction-group + .instruction-group {
+    margin-top: 2rem;
   }
 
   .group-title {
-    font-size: 1.2rem;
-    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--lcdb-border);
     color: var(--lcdb-heading);
-    margin: 0 0 1.5rem 0;
-    padding: 0 0 0.75rem 0;
-    text-transform: capitalize;
-    border-bottom: 2px solid var(--lcdb-accent);
+    font-size: 1.12rem;
+    font-weight: 600;
   }
 
   .steps-list {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
   }
 
   .step-item {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-    border-left: 4px solid var(--lcdb-accent);
-    transition: all 0.3s ease;
+    padding: 1.25rem;
+    border: 1px solid var(--lcdb-border);
+    border-radius: 12px;
+    background: #f8f5ee;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .step-item:hover {
-    background: #f0f7f6;
-    box-shadow: 0 4px 8px rgba(84, 182, 177, 0.1);
-  }
-
-  .step-item:last-child {
-    margin-bottom: 0;
+  .step-item.is-complete {
+    background: #eef7f6;
+    border-color: rgba(84, 182, 177, 0.42);
+    box-shadow: 0 10px 24px rgba(84, 182, 177, 0.08);
   }
 
   .step-header {
     display: flex;
-    gap: 1.5rem;
     align-items: flex-start;
+    gap: 1rem;
   }
 
-  .step-number {
+  .step-toggle {
+    position: relative;
+    width: 42px;
+    height: 42px;
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    border: 0;
+    border-radius: 999px;
     background: var(--lcdb-accent);
-    color: white;
-    border-radius: 50%;
-    display: flex;
+    color: #ffffff;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .step-toggle:hover,
+  .step-toggle:focus-visible {
+    transform: translateY(-1px);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(84, 182, 177, 0.2);
+  }
+
+  .step-number,
+  .step-check {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
     font-weight: 700;
-    margin-top: 0.2rem;
+    transition: opacity 0.2s ease;
+  }
+
+  .step-check {
+    opacity: 0;
+  }
+
+  .step-item.is-complete .step-number {
+    opacity: 0;
+  }
+
+  .step-item.is-complete .step-check {
+    opacity: 1;
   }
 
   .step-content {
@@ -148,97 +209,98 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
   }
 
   .step-instruction {
-    font-size: 1.05rem;
-    color: var(--lcdb-heading);
+    margin: 0;
+    color: var(--lcdb-copy);
+    font-size: 1.02rem;
     line-height: 1.7;
-    margin: 0 0 0.75rem 0;
   }
 
   .step-time {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    margin: 0.6rem 0 0;
+    color: var(--lcdb-muted);
     font-size: 0.9rem;
-    color: var(--lcdb-copy);
-    font-weight: 500;
-  }
-
-  .time-label {
-    font-weight: 600;
+    line-height: 1.5;
   }
 
   .step-tips {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid rgba(216, 210, 194, 0.72);
   }
 
-  .tip {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
+  .step-tips-title {
+    margin: 0 0 0.45rem;
+    color: var(--lcdb-heading);
+    font-family: var(--font-button);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .step-tips-list {
+    margin: 0;
+    padding-left: 1rem;
+    color: var(--lcdb-muted);
     font-size: 0.95rem;
-    color: var(--lcdb-copy);
-    margin-bottom: 0.75rem;
-    line-height: 1.5;
-  }
-
-  .tip:last-child {
-    margin-bottom: 0;
-  }
-
-  .tip-label {
-    flex-shrink: 0;
-    font-weight: 600;
-    color: var(--lcdb-accent);
+    line-height: 1.65;
   }
 
   @media (max-width: 768px) {
+    .recipe-instructions {
+      margin: 1.75rem 0;
+    }
+
     .instructions-title {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
+      font-size: 1.65rem;
     }
 
     .step-item {
       padding: 1rem;
-      margin-bottom: 1.5rem;
     }
 
     .step-header {
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
-    .step-number {
-      width: 36px;
-      height: 36px;
-      font-size: 1rem;
-    }
-
-    .step-instruction {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .group-title {
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-    }
-  }
-
-  @media print {
-    .step-item {
-      page-break-inside: avoid;
-      border-left: 2px solid #333;
-      background: #ffffff;
-      box-shadow: none;
-    }
-
-    .step-number {
-      background: #333;
-    }
-
-    .step-item:hover {
-      background: #ffffff;
+    .step-toggle {
+      width: 38px;
+      height: 38px;
     }
   }
 </style>
+
+<script>
+  document.querySelectorAll('[data-recipe-instructions]').forEach((wrapper) => {
+    const stepItems = wrapper.querySelectorAll('[data-step-item]');
+    const toggles = wrapper.querySelectorAll('[data-step-toggle]');
+    const resetButton = wrapper.querySelector('[data-reset-steps]');
+
+    if (toggles.length === 0 || !(resetButton instanceof HTMLButtonElement)) return;
+
+    const syncResetVisibility = () => {
+      const completedCount = wrapper.querySelectorAll('[data-step-item].is-complete').length;
+      resetButton.hidden = completedCount === 0;
+    };
+
+    toggles.forEach((toggle) => {
+      toggle.addEventListener('click', () => {
+        const item = toggle.closest('[data-step-item]');
+        if (!(item instanceof HTMLElement)) return;
+
+        const willComplete = !item.classList.contains('is-complete');
+        item.classList.toggle('is-complete', willComplete);
+        toggle.setAttribute('aria-pressed', String(willComplete));
+        syncResetVisibility();
+      });
+    });
+
+    resetButton.addEventListener('click', () => {
+      stepItems.forEach((item) => item.classList.remove('is-complete'));
+      toggles.forEach((toggle) => toggle.setAttribute('aria-pressed', 'false'));
+      syncResetVisibility();
+    });
+
+    syncResetVisibility();
+  });
+</script>

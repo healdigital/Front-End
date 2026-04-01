@@ -106,7 +106,7 @@ if (!article) {
 
 const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
 const articleLang = String(article.lang || "fr").toLowerCase();
-const title = toText(article.title) || "Recipe";
+const title = toText(article.title) || "Recette";
 const content = renderArticleContent(article);
 const image = processArticleImageUrl(article);
 const imageAlt =
@@ -147,18 +147,6 @@ const servings =
   (toPositiveNumber(primaryRecipe?.servingsCount) ? String(Math.round(Number(primaryRecipe.servingsCount))) : "");
 
 const caloriesKcal = toPositiveNumber(primaryRecipe?.nutrition?.caloriesKcal);
-
-const recipeMetaItems = [
-  { label: "Type", value: recipeType },
-  { label: "Preparation", value: prepTime },
-  { label: "Cuisson", value: cookTime },
-  { label: "Total", value: totalTime },
-  { label: "Portions", value: servings },
-  { label: "Calories", value: caloriesKcal ? `${Math.round(caloriesKcal)} kcal` : "" },
-  { label: "Plat", value: dishType },
-  { label: "Cuisine", value: cuisine },
-  { label: "Difficulte", value: difficulty },
-].filter((item) => Boolean(item.value));
 
 const recipeIngredients = Array.isArray(primaryRecipe?.ingredients)
   ? primaryRecipe.ingredients.reduce((groups: Array<{ heading: string; items: string[] }>, ingredient: any) => {
@@ -225,6 +213,122 @@ const nutritionRows = [
 const recipeTips = toText(primaryRecipe?.tips);
 const recipeNotes = toText(primaryRecipe?.personalNotes);
 
+const printLabels = {
+  fr: {
+    type: "Type",
+    preparation: "Préparation",
+    cooking: "Cuisson",
+    total: "Total",
+    servings: "Portions",
+    calories: "Calories",
+    dish: "Plat",
+    cuisine: "Cuisine",
+    difficulty: "Difficulté",
+    ingredients: "Ingrédients",
+    steps: "Étapes",
+    nutrition: "Nutrition (par portion)",
+    tips: "Astuces",
+    notes: "Notes",
+    source: "Source",
+  },
+  en: {
+    type: "Type",
+    preparation: "Preparation",
+    cooking: "Cooking",
+    total: "Total",
+    servings: "Servings",
+    calories: "Calories",
+    dish: "Dish",
+    cuisine: "Cuisine",
+    difficulty: "Difficulty",
+    ingredients: "Ingredients",
+    steps: "Steps",
+    nutrition: "Nutrition (per serving)",
+    tips: "Tips",
+    notes: "Notes",
+    source: "Source",
+  },
+  es: {
+    type: "Tipo",
+    preparation: "Preparación",
+    cooking: "Cocción",
+    total: "Total",
+    servings: "Porciones",
+    calories: "Calorías",
+    dish: "Plato",
+    cuisine: "Cocina",
+    difficulty: "Dificultad",
+    ingredients: "Ingredientes",
+    steps: "Pasos",
+    nutrition: "Nutrición (por porción)",
+    tips: "Consejos",
+    notes: "Notas",
+    source: "Fuente",
+  },
+  "pt-br": {
+    type: "Tipo",
+    preparation: "Preparo",
+    cooking: "Cozimento",
+    total: "Total",
+    servings: "Porções",
+    calories: "Calorias",
+    dish: "Prato",
+    cuisine: "Cozinha",
+    difficulty: "Dificuldade",
+    ingredients: "Ingredientes",
+    steps: "Etapas",
+    nutrition: "Nutrição (por porção)",
+    tips: "Dicas",
+    notes: "Notas",
+    source: "Fonte",
+  },
+  ar: {
+    type: "النوع",
+    preparation: "التحضير",
+    cooking: "الطهي",
+    total: "الإجمالي",
+    servings: "الحصص",
+    calories: "السعرات",
+    dish: "الطبق",
+    cuisine: "المطبخ",
+    difficulty: "الصعوبة",
+    ingredients: "المكونات",
+    steps: "الخطوات",
+    nutrition: "القيم الغذائية (لكل حصة)",
+    tips: "نصائح",
+    notes: "ملاحظات",
+    source: "المصدر",
+  },
+}[articleLang] || {
+  type: "Type",
+  preparation: "Préparation",
+  cooking: "Cuisson",
+  total: "Total",
+  servings: "Portions",
+  calories: "Calories",
+  dish: "Plat",
+  cuisine: "Cuisine",
+  difficulty: "Difficulté",
+  ingredients: "Ingrédients",
+  steps: "Étapes",
+  nutrition: "Nutrition (par portion)",
+  tips: "Astuces",
+  notes: "Notes",
+  source: "Source",
+};
+
+const recipeMetaItems = [
+  { label: printLabels.type, value: recipeType },
+  { label: printLabels.preparation, value: prepTime },
+  { label: printLabels.cooking, value: cookTime },
+  { label: printLabels.total, value: totalTime },
+  { label: printLabels.servings, value: servings },
+  { label: printLabels.calories, value: caloriesKcal ? `${Math.round(caloriesKcal)} kcal` : "" },
+  { label: printLabels.dish, value: dishType },
+  { label: printLabels.cuisine, value: cuisine },
+  { label: printLabels.difficulty, value: difficulty },
+].filter((item) => Boolean(item.value));
+
 const printUi = {
   fr: { pageTitleSuffix: "Impression recette", back: "Retour à l'article", print: "Imprimer" },
   en: { pageTitleSuffix: "Print recipe", back: "Back to article", print: "Print" },
@@ -235,7 +339,7 @@ const printUi = {
 ---
 
 <!doctype html>
-<html lang="fr">
+<html lang={articleLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -627,7 +731,7 @@ const printUi = {
 
             {recipeIngredients.length > 0 && (
               <section class="print-section">
-                <h3>Ingredients</h3>
+                <h3>{printLabels.ingredients}</h3>
                 {recipeIngredients.map((group) => (
                   <div class="print-ingredient-group">
                     {group.heading && <h4>{group.heading}</h4>}
@@ -643,7 +747,7 @@ const printUi = {
 
             {recipeSteps.length > 0 && (
               <section class="print-section">
-                <h3>Etapes</h3>
+                <h3>{printLabels.steps}</h3>
                 {recipeSteps.map((group) => (
                   <div class="print-step-group">
                     {group.heading && <h4>{group.heading}</h4>}
@@ -659,7 +763,7 @@ const printUi = {
 
             {nutritionRows.length > 0 && (
               <section class="print-section">
-                <h3>Nutrition (par portion)</h3>
+                <h3>{printLabels.nutrition}</h3>
                 <ul class="print-nutrition-grid">
                   {nutritionRows.map((item) => (
                     <li>
@@ -672,14 +776,14 @@ const printUi = {
 
             {recipeTips && (
               <section class="print-section">
-                <h3>Astuces</h3>
+                <h3>{printLabels.tips}</h3>
                 <p>{recipeTips}</p>
               </section>
             )}
 
             {recipeNotes && (
               <section class="print-section">
-                <h3>Notes</h3>
+                <h3>{printLabels.notes}</h3>
                 <p>{recipeNotes}</p>
               </section>
             )}
@@ -690,7 +794,7 @@ const printUi = {
 
         <footer class="print-footer">
           <p>
-            Source:
+            {printLabels.source}:
             <a href={articleUrl}>{articleUrl}</a>
           </p>
         </footer>

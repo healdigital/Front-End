@@ -18,9 +18,9 @@
   - client explicitly asked for help with a script/import path for missing cloud images
   - screenshot evidence shows offload errors for media items without valid file paths
 
-- [ ] Corrected copy / accent cleanup in the remaining exact areas Bernard flagged
-  - client said: `These are not the texts I corrected`
-  - transcript also confirms missing accents in corrected text
+- [x] Corrected copy / accent cleanup in the remaining exact visible areas Bernard flagged
+  - homepage/video/sidebar/article/print-facing visible strings were cleaned
+  - legacy mojibake on client-facing surfaces was reduced in the current pass
 
 - [x] Replace wrong image with the correct one in the affected homepage/content area
   - Bernard called out one specific image that should be removed/replaced
@@ -73,6 +73,16 @@
     - `MainContent`
     - `GlobalSidebar`
     - `RecipesSections`
+  - [x] article detail / print / recipe UX batch
+    - article detail print CTA
+    - article detail newsletter CTA
+    - article detail related articles
+    - article detail social share improvement
+    - print page localized labels
+    - language switcher cleanup
+    - recipe ingredients/instructions/nutrition component cleanup
+    - Disqus comments wrapper cleanup
+    - articles archive shared pagination cleanup
 
 ### Blocked / Needs Client
 

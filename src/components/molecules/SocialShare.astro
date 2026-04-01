@@ -1,17 +1,11 @@
 ---
-/**
- * Props for the `SocialShare` molecule.
- */
 interface Props {
-  /** Canonical URL shared on social platforms. */
   url?: string;
-  /** Message used in social post text and email subject. */
   title?: string;
-  /** Optional utility classes applied to the wrapper. */
   class?: string;
 }
 
-const { url = Astro.url.href, title = 'Check this out!', class: className } = Astro.props;
+const { url = Astro.url.href, title = 'Découvrez cet article', class: className } = Astro.props;
 
 const shareLinks = [
   {
@@ -25,6 +19,16 @@ const shareLinks = [
     href: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title)}`,
   },
   {
+    icon: 'fab fa-whatsapp',
+    label: 'WhatsApp',
+    href: `https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${url}`)}`,
+  },
+  {
+    icon: 'fab fa-linkedin-in',
+    label: 'LinkedIn',
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+  },
+  {
     icon: 'far fa-envelope',
     label: 'Email',
     href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`,
@@ -32,16 +36,80 @@ const shareLinks = [
 ];
 ---
 
-<div class:list={["flex items-center gap-3 text-text-secondary", className]}>
+<div class:list={["social-share", className]} aria-label="Partager cet article">
   {shareLinks.map((link) => (
     <a
       href={link.href}
       target="_blank"
       rel="noopener noreferrer"
-      class="hover:text-primary-turquoise transition-colors"
+      class="social-share-link"
       aria-label={`Partager sur ${link.label}`}
+      title={`Partager sur ${link.label}`}
     >
-      <i class={link.icon}></i>
+      <i class={link.icon} aria-hidden="true"></i>
     </a>
   ))}
+
+  <button
+    type="button"
+    class="social-share-link"
+    data-copy-link
+    data-copy-value={url}
+    aria-label="Copier le lien de l’article"
+    title="Copier le lien"
+  >
+    <i class="far fa-copy" aria-hidden="true"></i>
+  </button>
 </div>
+
+<style>
+  .social-share {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .social-share-link {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #a6a092;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    font-size: 1.15rem;
+    line-height: 1;
+    box-shadow: none;
+    appearance: none;
+  }
+
+  .social-share-link:hover,
+  .social-share-link:focus-visible {
+    color: var(--lcdb-accent);
+    outline: none;
+    transform: translateY(-1px);
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-copy-link]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const value = button.getAttribute('data-copy-value') || '';
+      if (!value) return;
+
+      try {
+        await navigator.clipboard.writeText(value);
+        const previousLabel = button.getAttribute('aria-label') || 'Copier le lien';
+        button.setAttribute('aria-label', 'Lien copié');
+        window.setTimeout(() => {
+          button.setAttribute('aria-label', previousLabel);
+        }, 1500);
+      } catch (error) {
+        console.error('Unable to copy article link:', error);
+      }
+    });
+  });
+</script>

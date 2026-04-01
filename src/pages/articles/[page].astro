@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Pagination from '../../components/Pagination.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { getAllArticlesFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
@@ -39,8 +40,7 @@ const toText = (value: any): string => {
 };
 
 const articleSlug = (article: any) => {
-  if (!article) return '';
-  const raw = typeof article.slug === 'string' ? article.slug : article.slug?.current;
+  const raw = typeof article?.slug === 'string' ? article.slug : article?.slug?.current;
   return String(raw || '').replace(/^\/+|\/+$/g, '');
 };
 
@@ -85,8 +85,8 @@ async function loadAllArticles() {
 }
 
 export async function getStaticPaths() {
-  // Keep this function self-contained so Astro's route module generation
-  // does not miss helper references during static build.
+  const pageSize = 12;
+
   let allArticles = await getAllArticlesFromMongo();
   if (!allArticles || allArticles.length === 0) {
     const result: any = await payloadFetch({
@@ -97,7 +97,7 @@ export async function getStaticPaths() {
   }
 
   const safeArticles = Array.isArray(allArticles) ? allArticles : [];
-  const totalPages = Math.ceil(safeArticles.length / 12);
+  const totalPages = Math.ceil(safeArticles.length / pageSize);
 
   return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
     params: { page: String(index + 2) },
@@ -127,25 +127,7 @@ const normalizedArticles = allArticles
 const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
 const safePage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
 const startIdx = (safePage - 1) * articlesPerPage;
-const endIdx = startIdx + articlesPerPage;
-const paginatedArticles = normalizedArticles.slice(startIdx, endIdx);
-
-const paginationItems = (() => {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
-
-  const items: Array<number | string> = [1];
-  const rangeStart = Math.max(2, safePage - 1);
-  const rangeEnd = Math.min(totalPages - 1, safePage + 1);
-
-  if (rangeStart > 2) items.push('start-ellipsis');
-  for (let page = rangeStart; page <= rangeEnd; page += 1) {
-    items.push(page);
-  }
-  if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
-
-  items.push(totalPages);
-  return items;
-})();
+const paginatedArticles = normalizedArticles.slice(startIdx, startIdx + articlesPerPage);
 ---
 
 <BaseLayout title={`Articles - Page ${safePage}`} lang={lang}>
@@ -163,7 +145,7 @@ const paginationItems = (() => {
         <>
           <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {paginatedArticles.map((article: any) => (
-              <a href={`/${article.slug}`} class="lcdb-article-card">
+              <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
                 <div class="lcdb-article-card-media">
                   {article.image ? (
                     <img
@@ -194,43 +176,13 @@ const paginationItems = (() => {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <nav class="lcdb-pagination">
-              {safePage > 1 ? (
-                <a href={safePage === 2 ? '/articles' : `/articles/${safePage - 1}`} class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
-                  Pr&eacute;c&eacute;dent
-                </a>
-              ) : (
-                <span class="text-[#AAA] typ-caption">Pr&eacute;c&eacute;dent</span>
-              )}
-
-              <div class="flex items-center gap-4">
-                {paginationItems.map((item) =>
-                  typeof item === 'string' ? (
-                    <span class="text-[#999] typ-caption">...</span>
-                  ) : (
-                    <a
-                      href={item === 1 ? '/articles' : `/articles/${item}`}
-                      class={`text-[14px] ${item === safePage ? 'text-[#1A2335] font-semibold' : 'text-[#707070] hover:text-[#1A2335]'}`}
-                    >
-                      {item}
-                    </a>
-                  )
-                )}
-              </div>
-
-              {safePage < totalPages ? (
-                <a href={`/articles/${safePage + 1}`} class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
-                  Suivant
-                </a>
-              ) : (
-                <span class="text-[#AAA] typ-caption">Suivant</span>
-              )}
-            </nav>
-          )}
+          {totalPages > 1 && <Pagination currentPage={safePage} totalPages={totalPages} baseUrl="/articles" routeStyle="direct" />}
         </>
       ) : (
-        <div class="lcdb-empty-state"><p class="typ-body">Aucun article trouv&eacute;.</p></div>
+        <div class="lcdb-empty-state space-y-4">
+          <p class="typ-body">Aucun article trouvé.</p>
+          <a href="/articles" class="inline-flex text-primary-turquoise typ-button">Retour aux articles</a>
+        </div>
       )}
     </div>
   </section>

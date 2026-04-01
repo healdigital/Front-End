@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Pagination from '../../components/Pagination.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { getAllArticlesFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
@@ -38,8 +39,7 @@ const toText = (value: any): string => {
 };
 
 const articleSlug = (article: any) => {
-  if (!article) return '';
-  const raw = typeof article.slug === 'string' ? article.slug : article.slug?.current;
+  const raw = typeof article?.slug === 'string' ? article.slug : article?.slug?.current;
   return String(raw || '').replace(/^\/+|\/+$/g, '');
 };
 
@@ -98,26 +98,7 @@ const normalizedArticles = (Array.isArray(allArticles) ? allArticles : [])
   .filter(Boolean);
 
 const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
-const startIdx = (currentPage - 1) * articlesPerPage;
-const endIdx = startIdx + articlesPerPage;
-const paginatedArticles = normalizedArticles.slice(startIdx, endIdx);
-
-const paginationItems = (() => {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
-
-  const items: Array<number | string> = [1];
-  const rangeStart = Math.max(2, currentPage - 1);
-  const rangeEnd = Math.min(totalPages - 1, currentPage + 1);
-
-  if (rangeStart > 2) items.push('start-ellipsis');
-  for (let page = rangeStart; page <= rangeEnd; page += 1) {
-    items.push(page);
-  }
-  if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
-
-  items.push(totalPages);
-  return items;
-})();
+const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);
 ---
 
 <BaseLayout title="Articles" lang={lang}>
@@ -126,7 +107,7 @@ const paginationItems = (() => {
       <p class="lcdb-page-eyebrow typ-caption">Archive</p>
       <h1 class="lcdb-page-title typ-h2">Articles</h1>
       <p class="lcdb-page-description typ-body">
-        D&eacute;couvrez {normalizedArticles.length} articles publi&eacute;s.
+        Découvrez {normalizedArticles.length} articles publiés.
       </p>
     </div>
   </section>
@@ -137,7 +118,7 @@ const paginationItems = (() => {
         <>
           <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {paginatedArticles.map((article: any) => (
-              <a href={`/${article.slug}`} class="lcdb-article-card">
+              <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
                 <div class="lcdb-article-card-media">
                   {article.image ? (
                     <img
@@ -168,40 +149,7 @@ const paginationItems = (() => {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <nav class="lcdb-pagination">
-              {currentPage > 1 ? (
-                <a href="/articles" class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
-                  Pr&eacute;c&eacute;dent
-                </a>
-              ) : (
-                <span class="text-[#AAA] typ-caption">Pr&eacute;c&eacute;dent</span>
-              )}
-
-              <div class="flex items-center gap-4">
-                {paginationItems.map((item) =>
-                  typeof item === 'string' ? (
-                    <span class="text-[#999] typ-caption">...</span>
-                  ) : (
-                    <a
-                      href={item === 1 ? '/articles' : `/articles/${item}`}
-                      class={`text-[14px] ${item === currentPage ? 'text-[#1A2335] font-semibold' : 'text-[#707070] hover:text-[#1A2335]'}`}
-                    >
-                      {item}
-                    </a>
-                  )
-                )}
-              </div>
-
-              {currentPage < totalPages ? (
-                <a href={`/articles/${currentPage + 1}`} class="text-[#4B5563] hover:text-[#1A2335] typ-caption">
-                  Suivant
-                </a>
-              ) : (
-                <span class="text-[#AAA] typ-caption">Suivant</span>
-              )}
-            </nav>
-          )}
+          {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl="/articles" routeStyle="direct" />}
         </>
       ) : (
         <div class="lcdb-empty-state space-y-4">
@@ -212,4 +160,3 @@ const paginationItems = (() => {
     </div>
   </section>
 </BaseLayout>
-

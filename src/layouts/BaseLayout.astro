@@ -3,6 +3,7 @@ import SEO from "../components/SEO.astro";
 import Header from "../components/Header.astro";
 import GlobalAbout from "../components/GlobalAbout.astro";
 import GlobalFooter from "../components/GlobalFooter.astro";
+import NewsletterModal from "../components/organisms/NewsletterModal.astro";
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -77,6 +78,7 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
     <Header lang={lang} />
     <slot />
     {showGlobalAbout && <GlobalAbout />}
+    <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
     <GlobalFooter currentLang={lang} />
   </body>
 </html>
