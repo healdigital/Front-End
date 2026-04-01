@@ -1,81 +1,153 @@
 ---
+import Icon from './atoms/Icon.astro';
+
+interface Props {
+  currentLang?: string;
+}
+
+const { currentLang = 'fr' } = Astro.props;
+const currentYear = new Date().getFullYear();
 const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
 
 const navigationLinks = [
-  { label: 'Toutes les recettes', url: '/recettes' },
-  { label: 'Techniques', url: '/techniques' },
-  { label: 'Ateliers', url: '/ateliers' },
-  { label: 'Masterclass', url: SHOP_VIDEO_URL },
+  { label: 'Recettes sucrées', url: '/recettes-sucrees/' },
+  { label: 'Recettes salées', url: '/recettes-salees/' },
+  { label: 'Ateliers', url: '/ateliers/' },
+  { label: 'Cours vidéo', url: SHOP_VIDEO_URL, external: true },
+];
+
+const resourceLinks = [
+  { label: 'Mes livres', url: '/mes-livres/' },
+  { label: 'Voyages', url: '/voyages-culinaires/' },
+  { label: 'Reportages', url: '/reportages/' },
+  { label: 'Sélections', url: '/selection/' },
 ];
 
 const legalLinks = [
-  { label: 'Mentions legales', url: '/mentions-legales' },
-  { label: 'Politique de confidentialite', url: '/rgpd' },
-  { label: 'CGV', url: '/cgv' },
+  { label: 'Contact', url: '/contact/' },
+  { label: 'Mentions légales', url: '/mentions-legales/' },
+  { label: 'Politique de confidentialité', url: '/politique-confidentialite/' },
+  { label: 'CGU', url: '/cgu/' },
 ];
 
 const socialLinks = [
-  { icon: 'fab fa-facebook-f', label: 'Facebook', url: 'https://www.facebook.com/lacuisinedebernard' },
-  { icon: 'fab fa-youtube', label: 'YouTube', url: 'https://www.youtube.com/@lacuisinedebernard' },
-  { icon: 'fab fa-twitch', label: 'Twitch', url: 'https://www.twitch.tv/' },
-  { icon: 'fab fa-pinterest', label: 'Pinterest', url: 'https://www.pinterest.com/lacuisinedebernard' },
-  { icon: 'far fa-envelope', label: 'Email', url: 'mailto:contact@lacuisinedebernard.com' },
-];
+  { icon: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/lacuisinedebernard' },
+  { icon: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/lacuisinedebernard' },
+  { icon: 'pinterest', label: 'Pinterest', url: 'https://www.pinterest.com/lacuisinedebernard' },
+  { icon: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@lacuisinedebernard' },
+] as const;
+
+const newsletterCopy =
+  currentLang === 'fr'
+    ? {
+        title: 'Newsletter',
+        body: 'Recevez les nouvelles recettes, les dates d’ateliers et les dernières nouveautés directement par email.',
+        cta: 'S’inscrire',
+      }
+    : {
+        title: 'Newsletter',
+        body: 'Get new recipes, workshop dates, and the latest updates directly by email.',
+        cta: 'Subscribe',
+      };
 ---
 
-<footer class="bg-[#071C36] text-white border-t border-white/10" role="contentinfo">
-  <div class="home-shell pt-14 pb-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-      <div>
-        <h3 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">La Cuisine de Bernard</h3>
-        <p class="text-white/70 text-[16px] leading-relaxed mt-4 max-w-[320px]">
-          Des recettes authentiques et des techniques professionnelles pour tous les passionnes de patisserie depuis 2010.
+<footer class="border-t border-white/10 bg-[#1C2639] text-white" role="contentinfo">
+  <div class="home-shell py-14 lg:py-16">
+    <div class="grid grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-4 xl:gap-12">
+      <section aria-labelledby="footer-brand-heading">
+        <h2 id="footer-brand-heading" class="font-heading text-[38px] leading-[1.02] text-white md:text-[44px]">
+          La Cuisine de Bernard
+        </h2>
+        <p class="mt-4 max-w-[320px] text-[16px] leading-relaxed text-white/72">
+          Pour tous les amoureux de cuisine, de pâtisserie et de gourmandise.
         </p>
-      </div>
 
-      <div>
-        <h4 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">Navigation</h4>
-        <ul class="mt-4 space-y-3 text-[16px] text-white/70">
+        <ul class="mt-6 flex flex-wrap items-center gap-4" aria-label="Réseaux sociaux">
+          {socialLinks.map((link) => (
+            <li>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Suivez-nous sur ${link.label}`}
+                class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-white/80 transition-colors duration-200 hover:border-primary-turquoise hover:text-primary-turquoise focus:outline-none focus:ring-2 focus:ring-primary-turquoise focus:ring-offset-2 focus:ring-offset-[#1C2639]"
+              >
+                <Icon name={link.icon} size="sm" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="footer-navigation-heading">
+        <h3 id="footer-navigation-heading" class="font-heading text-[28px] leading-none text-white">Explorer</h3>
+        <ul class="mt-5 space-y-3 text-[16px] leading-relaxed text-white/72">
           {navigationLinks.map((link) => (
             <li>
-              <a href={link.url} class="hover:text-primary-turquoise transition-colors">{link.label}</a>
+              <a
+                href={link.url}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noopener noreferrer' : undefined}
+                class="transition-colors duration-200 hover:text-primary-turquoise focus:outline-none focus:ring-2 focus:ring-primary-turquoise focus:ring-offset-2 focus:ring-offset-[#1C2639]"
+              >
+                {link.label}
+              </a>
             </li>
           ))}
         </ul>
-      </div>
+      </section>
 
-      <div>
-        <h4 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">Legal</h4>
-        <ul class="mt-4 space-y-3 text-[16px] text-white/70">
+      <section aria-labelledby="footer-resources-heading">
+        <h3 id="footer-resources-heading" class="font-heading text-[28px] leading-none text-white">Découvrir</h3>
+        <ul class="mt-5 space-y-3 text-[16px] leading-relaxed text-white/72">
+          {resourceLinks.map((link) => (
+            <li>
+              <a
+                href={link.url}
+                class="transition-colors duration-200 hover:text-primary-turquoise focus:outline-none focus:ring-2 focus:ring-primary-turquoise focus:ring-offset-2 focus:ring-offset-[#1C2639]"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <ul class="mt-8 space-y-3 text-[15px] leading-relaxed text-white/60">
           {legalLinks.map((link) => (
             <li>
-              <a href={link.url} class="hover:text-primary-turquoise transition-colors">{link.label}</a>
+              <a
+                href={link.url}
+                class="transition-colors duration-200 hover:text-primary-turquoise focus:outline-none focus:ring-2 focus:ring-primary-turquoise focus:ring-offset-2 focus:ring-offset-[#1C2639]"
+              >
+                {link.label}
+              </a>
             </li>
           ))}
         </ul>
-      </div>
+      </section>
 
-      <div>
-        <h4 class="text-primary-turquoise text-[40px] leading-[1.02] font-body">Suivez-moi</h4>
-        <div class="flex items-center gap-6 mt-4 text-primary-turquoise text-[22px]">
-          {socialLinks.map((link) => (
-            <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.label} class="hover:text-white transition-colors">
-              <i class={link.icon}></i>
-            </a>
-          ))}
-        </div>
-        <a href="/contact"
-          class="footer-btn inline-flex items-center gap-4 justify-center mt-6 px-7 py-4 bg-primary-turquoise text-primary-black font-button font-medium text-[18px] leading-none rounded-[2px] tracking-[0.2em] uppercase"
+      <section aria-labelledby="footer-newsletter-heading">
+        <h3 id="footer-newsletter-heading" class="font-heading text-[28px] leading-none text-white">
+          {newsletterCopy.title}
+        </h3>
+        <p class="mt-5 max-w-[320px] text-[16px] leading-relaxed text-white/72">
+          {newsletterCopy.body}
+        </p>
+        <button
+          id="open-newsletter-footer"
+          type="button"
+          class="mt-6 inline-flex items-center justify-center text-[13px] font-medium uppercase tracking-[0.08em] text-primary-turquoise underline underline-offset-4 transition-colors duration-200 hover:text-[#3f9f9a] focus:outline-none focus:ring-2 focus:ring-primary-turquoise focus:ring-offset-2 focus:ring-offset-[#1C2639]"
         >
-          <span>Contactez-moi</span>
-        </a>
-      </div>
+          {newsletterCopy.cta}
+        </button>
+      </section>
     </div>
   </div>
 
   <div class="border-t border-white/10">
-    <div class="home-shell py-6 text-center text-white/65 text-[14px]">
-      &copy; {new Date().getFullYear()} La Cuisine de Bernard. Tous droits reserves. Fait avec passion a Paris.
+    <div class="home-shell flex flex-col gap-2 py-6 text-[14px] text-white/60 md:flex-row md:items-center md:justify-between">
+      <p>&copy; {currentYear} La Cuisine de Bernard. Tous droits réservés.</p>
+      <p class="md:text-right">Cuisine, pâtisserie et gourmandise au quotidien.</p>
     </div>
   </div>
 </footer>

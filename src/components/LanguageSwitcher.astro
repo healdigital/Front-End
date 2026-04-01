@@ -1,5 +1,4 @@
 ---
-// LanguageSwitcher.astro - Reusable language switcher component
 import { getSupportedLanguages } from '../i18n';
 
 interface Props {
@@ -8,34 +7,29 @@ interface Props {
   className?: string;
 }
 
-const {
-  currentLang = 'fr',
-  showLabel = true,
-  className = ''
-} = Astro.props;
+const { currentLang = 'fr', showLabel = true, className = '' } = Astro.props;
 
 const supportedLanguages = getSupportedLanguages();
 
 const languageNames: Record<string, string> = {
-  en: '🇺🇸 English',
-  fr: '🇫🇷 Français',
-  es: '🇪🇸 Español',
-  'pt-br': '🇧🇷 Português',
-  ar: '🇸🇦 العربية'
+  en: 'English',
+  fr: 'Français',
+  es: 'Español',
+  'pt-br': 'Português',
+  ar: 'العربية',
 };
 ---
 
 <div class={`language-switcher ${className}`} data-no-translate="true">
-  {showLabel && (
-    <span class="lang-label">Language:</span>
-  )}
-  <div class="lang-buttons">
+  {showLabel && <span class="lang-label">Langue :</span>}
+  <div class="lang-buttons" role="group" aria-label="Changer de langue">
     {supportedLanguages.map((lang) => (
       <button
+        type="button"
         class={`lang-btn ${lang === currentLang ? 'active' : 'inactive'}`}
         data-lang={lang}
         aria-pressed={lang === currentLang}
-        aria-label={`Switch to ${languageNames[lang] || lang}`}
+        aria-label={`Passer en ${languageNames[lang] || lang}`}
       >
         {languageNames[lang] || lang.toUpperCase()}
       </button>
@@ -53,7 +47,7 @@ const languageNames: Record<string, string> = {
 
   .lang-label {
     font-weight: 600;
-    color: #333;
+    color: var(--lcdb-heading);
     font-size: 0.95rem;
     white-space: nowrap;
   }
@@ -69,34 +63,31 @@ const languageNames: Record<string, string> = {
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 500;
-    border: none;
+    border: 1px solid var(--lcdb-border);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-family: inherit;
+    background: #f5f1e8;
+    color: var(--lcdb-copy);
   }
 
   .lang-btn.active {
-    background: #0066cc;
-    color: white;
-    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+    background: var(--lcdb-accent);
+    border-color: var(--lcdb-accent);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(84, 182, 177, 0.25);
   }
 
-  .lang-btn.inactive {
-    background: #f0f0f0;
-    color: #666;
-  }
-
-  .lang-btn.inactive:hover {
-    background: #e8e8e8;
-    color: #333;
+  .lang-btn.inactive:hover,
+  .lang-btn.inactive:focus-visible {
+    background: #ebe6d8;
+    color: var(--lcdb-heading);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(84, 182, 177, 0.2);
   }
 </style>
 
 <script>
-  // Language button clicks are now handled by dynamicTranslate.ts
-  // This script just manages button state display
-  
-  // On page load, check for saved language preference and highlight the button
   document.addEventListener('DOMContentLoaded', () => {
     const htmlLang = document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr';
     const savedLang = htmlLang || localStorage.getItem('preferred-language');
@@ -116,7 +107,6 @@ const languageNames: Record<string, string> = {
     }
   });
 
-  // Listen for language change events from dynamicTranslate.ts
   window.addEventListener('page-translated', (e: any) => {
     const newLang = e.detail?.lang;
     if (newLang) {

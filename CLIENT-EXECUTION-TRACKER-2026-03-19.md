@@ -54,10 +54,37 @@ New items identified after reviewing the `New Client feedback` folder in depth.
 - Remove production test pages: done
 - Add `404.astro`: done
 - Contact page frontend cleanup: done
-- Fix incomplete hreflang coverage
-- Fix render-blocking font loading
+- Fix incomplete hreflang coverage: done
+- Fix render-blocking font loading: done
 - Fix public endpoint/security hardening items called out in the audit
-- Fix hardcoded staging URL / broader pre-launch technical backlog
+- Fix hardcoded staging URL / broader pre-launch technical backlog: done
+- Footer audit batch: done on the live footer component
+  - dark background
+  - 4-column desktop grid
+  - newsletter CTA
+  - social aria-labels
+  - auto current year
+  - no duplicated legal/nav structure
+- Pagination audit batch: done
+  - root + organism variants now aligned
+  - ellipsis labeled for assistive tech
+  - keyboard left/right support retained
+- Search UX audit batch: done
+  - visible submit button
+  - autocomplete suggestions
+  - category filter
+  - sorting
+  - live status/loading handling
+- Shared accessibility batch: done
+  - contextual `Lire la suite` labels
+  - card focus styles
+  - accessible star rating state/keyboard support
+  - dropdown keyboard navigation
+  - mobile menu focus trap / expanded state
+- Legacy archive/page-2+ UX cleanup: done
+  - `MainContent`
+  - `GlobalSidebar`
+  - `RecipesSections`
 
 ## Latest Content Pass (2026-03-25)
 

@@ -60,7 +60,9 @@ const pages = getPageNumbers(currentPage, totalPages);
     {pages.map((page) => (
       <li>
         {page === '...' ? (
-          <span class="px-2 text-text-tertiary select-none" aria-label="Autres pages" role="img">...</span>
+          <span class="inline-flex items-center px-2 text-text-tertiary select-none" aria-label="Autres pages" role="img">
+            <span aria-hidden="true">...</span>
+          </span>
         ) : (
           <a
             href={`${baseUrl}/${page}`}

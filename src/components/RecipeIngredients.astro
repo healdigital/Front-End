@@ -1,20 +1,4 @@
 ---
-/**
- * RecipeIngredients Component
- * 
- * Displays recipe ingredients in a formatted list with serving adjuster
- * Features:
- * - Clean ingredient presentation
- * - Serving size adjuster (increases/decreases quantities)
- * - Ingredient grouping (e.g., "For the crust", "For the filling")
- * - Responsive design
- * 
- * Props:
- * - ingredients (Ingredient[]): Array of ingredients
- * - servings (number): Base serving size
- * - onServingChange (function): Callback when servings change (optional)
- */
-
 interface Ingredient {
   group?: string;
   amount: string;
@@ -29,11 +13,10 @@ interface Props {
   title?: string;
 }
 
-const { ingredients, servings = 4, title = "Ingredients" } = Astro.props;
+const { ingredients, servings = 4, title = 'Ingrédients' } = Astro.props;
 
-// Group ingredients by category
 const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
-  const group = ing.group || 'Main';
+  const group = ing.group || 'Principal';
   if (!acc[group]) acc[group] = [];
   acc[group].push(ing);
   return acc;
@@ -42,28 +25,34 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
 
 <div class="recipe-ingredients">
   <h2 class="ingredients-title">{title}</h2>
-  
-  <div class="servings-adjuster">
+
+  <div class="servings-adjuster" data-servings-adjuster>
     <label for="servings">Portions :</label>
     <div class="servings-input-group">
-      <button class="servings-btn" aria-label="Decrease servings" data-action="decrease">−</button>
-      <input 
-        type="number" 
-        id="servings" 
-        name="servings" 
-        value={servings} 
-        min="1" 
+      <button class="servings-btn" aria-label="Diminuer les portions" data-action="decrease" type="button">−</button>
+      <input
+        type="number"
+        id="servings"
+        name="servings"
+        value={servings}
+        min="1"
         max="20"
         class="servings-input"
+        aria-label="Nombre de portions"
       />
-      <button class="servings-btn" aria-label="Increase servings" data-action="increase">+</button>
+      <button class="servings-btn" aria-label="Augmenter les portions" data-action="increase" type="button">+</button>
     </div>
+    <span class="servings-status" role="status" aria-live="polite"></span>
   </div>
 
   {Object.entries(groupedIngredients).map(([group, items]: any) => (
-    <div class="ingredient-group">
-      {group !== 'Main' && <h3 class="group-title">{group}</h3>}
-      
+    <section class="ingredient-group" aria-labelledby={`ingredient-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
+      {group !== 'Principal' && (
+        <h3 class="group-title" id={`ingredient-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
+          {group}
+        </h3>
+      )}
+
       <ul class="ingredients-list">
         {items.map((ingredient: Ingredient) => (
           <li class="ingredient-item">
@@ -80,7 +69,7 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   ))}
 </div>
 
@@ -96,18 +85,17 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
   .ingredients-title {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--lcdb-heading);
     margin: 0 0 1.5rem 0;
-    padding: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  /* Servings Adjuster */
   .servings-adjuster {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
     margin-bottom: 2rem;
     padding: 1.5rem;
     background: #ffffff;
@@ -117,7 +105,7 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
 
   .servings-adjuster label {
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--lcdb-heading);
     font-size: 0.95rem;
   }
 
@@ -125,7 +113,7 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border: 2px solid #0066cc;
+    border: 2px solid var(--lcdb-accent);
     border-radius: 6px;
     background: #ffffff;
   }
@@ -137,7 +125,7 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
     height: 36px;
     font-size: 1.2rem;
     cursor: pointer;
-    color: #0066cc;
+    color: var(--lcdb-accent);
     font-weight: 600;
     transition: all 0.2s ease;
     display: flex;
@@ -145,12 +133,14 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
     justify-content: center;
   }
 
-  .servings-btn:hover {
-    background: #f0f7ff;
+  .servings-btn:hover,
+  .servings-btn:focus-visible {
+    background: #f0f7f6;
+    outline: none;
   }
 
   .servings-btn:active {
-    background: #0066cc;
+    background: var(--lcdb-accent);
     color: #ffffff;
   }
 
@@ -162,14 +152,18 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
     text-align: center;
     font-size: 1rem;
     font-weight: 600;
-    color: #0066cc;
+    color: var(--lcdb-accent);
   }
 
   .servings-input:focus {
     outline: none;
   }
 
-  /* Ingredient Groups */
+  .servings-status {
+    color: var(--lcdb-copy);
+    font-size: 0.9rem;
+  }
+
   .ingredient-group {
     margin-bottom: 2rem;
   }
@@ -181,15 +175,13 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
   .group-title {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--lcdb-heading);
     margin: 0 0 1rem 0;
-    padding: 0;
     text-transform: capitalize;
-    border-bottom: 2px solid #0066cc;
+    border-bottom: 2px solid var(--lcdb-accent);
     padding-bottom: 0.5rem;
   }
 
-  /* Ingredients List */
   .ingredients-list {
     list-style: none;
     padding: 0;
@@ -219,12 +211,12 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
   }
 
   .ingredient-amount .amount {
-    color: #0066cc;
+    color: var(--lcdb-accent);
     font-size: 1.1rem;
   }
 
   .ingredient-amount .unit {
-    color: #666;
+    color: var(--lcdb-copy);
     font-size: 0.9rem;
     font-weight: 400;
   }
@@ -237,12 +229,12 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
   }
 
   .ingredient-details .name {
-    color: #1a1a1a;
+    color: var(--lcdb-heading);
     font-weight: 500;
   }
 
   .ingredient-details .name a {
-    color: #0066cc;
+    color: var(--lcdb-accent);
     text-decoration: none;
   }
 
@@ -251,13 +243,12 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
   }
 
   .ingredient-details .notes {
-    color: #999;
+    color: var(--lcdb-muted);
     font-size: 0.9rem;
     font-style: italic;
     font-weight: 400;
   }
 
-  /* Mobile Responsive */
   @media (max-width: 768px) {
     .recipe-ingredients {
       padding: 1.5rem;
@@ -287,56 +278,60 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
 </style>
 
 <script>
-  // Serving size adjuster functionality
-  const adjusters = document.querySelectorAll('.servings-adjuster');
-  
-  adjusters.forEach(adjuster => {
-    const input = adjuster.querySelector('.servings-input') as HTMLInputElement;
+  const adjusters = document.querySelectorAll('[data-servings-adjuster]');
+
+  adjusters.forEach((adjuster) => {
+    const input = adjuster.querySelector('.servings-input');
     const decreaseBtn = adjuster.querySelector('[data-action="decrease"]');
     const increaseBtn = adjuster.querySelector('[data-action="increase"]');
-    
-    if (!input) return;
-    
-    const baseServings = parseInt(input.value);
-    
-    const updateAmounts = (newServings: number) => {
+    const status = adjuster.querySelector('.servings-status');
+
+    if (!(input instanceof HTMLInputElement)) return;
+
+    const baseServings = parseInt(input.value, 10);
+
+    const updateAmounts = (newServings) => {
       const multiplier = newServings / baseServings;
-      
       const amounts = document.querySelectorAll('.ingredient-amount .amount');
-      amounts.forEach(amount => {
+      amounts.forEach((amount) => {
         const baseAmount = amount.getAttribute('data-amount');
-        if (baseAmount) {
-          const parsedAmount = parseFloat(baseAmount);
-          if (!isNaN(parsedAmount)) {
-            const newAmount = (parsedAmount * multiplier).toFixed(2);
-            amount.textContent = parseFloat(newAmount).toString();
-          }
+        if (!baseAmount) return;
+        const parsedAmount = parseFloat(baseAmount);
+        if (!isNaN(parsedAmount)) {
+          const nextAmount = (parsedAmount * multiplier).toFixed(2);
+          amount.textContent = parseFloat(nextAmount).toString();
         }
       });
+
+      if (status) {
+        status.textContent = `${newServings} portion${newServings > 1 ? 's' : ''}`;
+      }
     };
-    
+
     decreaseBtn?.addEventListener('click', () => {
-      const current = parseInt(input.value);
+      const current = parseInt(input.value, 10);
       if (current > 1) {
-        input.value = (current - 1).toString();
+        input.value = String(current - 1);
         updateAmounts(current - 1);
       }
     });
-    
+
     increaseBtn?.addEventListener('click', () => {
-      const current = parseInt(input.value);
+      const current = parseInt(input.value, 10);
       if (current < 20) {
-        input.value = (current + 1).toString();
+        input.value = String(current + 1);
         updateAmounts(current + 1);
       }
     });
-    
+
     input.addEventListener('change', () => {
-      let value = parseInt(input.value) || baseServings;
+      let value = parseInt(input.value, 10) || baseServings;
       if (value < 1) value = 1;
       if (value > 20) value = 20;
-      input.value = value.toString();
+      input.value = String(value);
       updateAmounts(value);
     });
+
+    updateAmounts(baseServings);
   });
 </script>

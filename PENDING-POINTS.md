@@ -52,9 +52,27 @@
   - [x] remove production test pages
   - [x] add `404.astro`
   - [x] clean contact page placeholder copy on the frontend
-  - fix hreflang coverage
-  - fix render-blocking font loading
-  - fix hardcoded staging URL / priority audit items
+  - [x] fix hreflang coverage
+  - [x] fix render-blocking font loading
+  - [x] fix hardcoded staging URL / priority audit items
+  - [x] footer UX/UI pass on the live footer component
+  - [x] root + organism pagination parity/accessibility pass
+  - [x] search UX batch
+    - visible submit button
+    - autocomplete suggestions
+    - sort
+    - category filter
+    - live status/loading state
+  - [x] keyboard/accessibility batch
+    - filter dropdown arrows/escape/home/end
+    - card contextual aria labels
+    - card focus states
+    - star rating accessibility
+    - mobile menu focus trap / expanded state
+  - [x] archive/page-2+ legacy UX cleanup
+    - `MainContent`
+    - `GlobalSidebar`
+    - `RecipesSections`
 
 ### Blocked / Needs Client
 
