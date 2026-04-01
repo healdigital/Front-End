@@ -2,39 +2,41 @@
 import Icon from '../atoms/Icon.astro';
 import Input from '../atoms/Input.astro';
 
-/**
- * Props for the `SearchField` molecule.
- */
 interface Props {
-  /** Input id used for accessibility and validation feedback. */
   id?: string;
-  /** Optional utility classes applied to the wrapper. */
   class?: string;
-  /** Placeholder text displayed when the field is empty. */
   placeholder?: string;
 }
 
-const { 
-  id = 'site-search', 
+const {
+  id = 'site-search',
   class: className,
   placeholder = 'Rechercher...'
 } = Astro.props;
 ---
 
-<div class={`relative w-full max-w-xs group ${className || ''}`}>
-
-  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-    <Icon name="search" class="text-text-secondary group-focus-within:text-primary-turquoise transition-colors" />
+<form class={`relative flex w-full max-w-sm items-center gap-2 group ${className || ''}`} data-search-form>
+  <div class="relative min-w-0 flex-1">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+      <Icon name="search" class="text-text-secondary group-focus-within:text-primary-turquoise transition-colors" />
+    </div>
+    <Input
+      type="search"
+      class="pl-10 pr-4 py-2 w-full bg-white/18 border-none rounded-full text-sm focus:ring-2 focus:ring-primary-turquoise placeholder:text-text-secondary/70 transition-all font-body"
+      placeholder={placeholder}
+      data-search-input
+      id={id}
+      name="q"
+    />
   </div>
-  <Input 
-    type="search" 
-    class="pl-10 pr-4 py-2 w-full bg-white/18 border-none rounded-full text-sm focus:ring-2 focus:ring-primary-turquoise placeholder:text-text-secondary/70 transition-all font-body"
-    placeholder={placeholder}
-    data-search-input
-    id={id}
-    name="q"
-  />
-</div>
+  <button
+    type="submit"
+    class="shrink-0 rounded-full bg-primary-turquoise px-4 py-2 text-sm font-medium text-primary-black transition-colors hover:bg-[#3aa8a2]"
+    aria-label="Lancer la recherche"
+  >
+    Rechercher
+  </button>
+</form>
 
 <script>
   import { searchSchema } from '../../lib/validation/schemas';
@@ -43,6 +45,7 @@ const {
   const searchInputs = document.querySelectorAll<HTMLInputElement>('[data-search-input]');
 
   searchInputs.forEach((input) => {
+    const form = input.closest('[data-search-form]');
     const errorClasses = ['ring-status-error', 'focus:ring-status-error', 'border', 'border-status-error'];
     const successClasses = ['ring-status-success', 'focus:ring-status-success', 'border', 'border-status-success'];
 
@@ -83,22 +86,29 @@ const {
       input.classList.add(...successClasses);
     };
 
-    input.addEventListener('keydown', (e) => {
-      if ((e as KeyboardEvent).key === 'Enter') {
-        const query = (e.target as HTMLInputElement).value;
-        const result = validateForm(searchSchema, { query });
+    const submitSearch = () => {
+      const result = validateForm(searchSchema, { query: input.value });
 
-        if (!result.success && result.errors?.query) {
-          showError(result.errors.query);
-          e.preventDefault();
-          return;
-        }
-
-        if (result.success && result.data.query) {
-          setSuccess();
-          window.location.href = `/search/?q=${encodeURIComponent(result.data.query)}`;
-        }
+      if (!result.success && result.errors?.query) {
+        showError(result.errors.query);
+        return;
       }
+
+      if (result.success && result.data.query) {
+        setSuccess();
+        window.location.href = `/search/?q=${encodeURIComponent(result.data.query)}`;
+      }
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key !== 'Enter') return;
+      e.preventDefault();
+      submitSearch();
+    });
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitSearch();
     });
 
     input.addEventListener('input', () => {
