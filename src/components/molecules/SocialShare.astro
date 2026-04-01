@@ -5,46 +5,37 @@ interface Props {
   class?: string;
 }
 
-const { url = Astro.url.href, title = 'Découvrez cet article', class: className } = Astro.props;
+const {
+  url = Astro.url.href,
+  title = 'Découvrez cet article',
+  class: className,
+} = Astro.props;
 
 const shareLinks = [
-  {
-    icon: 'fab fa-facebook-f',
-    label: 'Facebook',
-    href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-  },
-  {
-    icon: 'fab fa-pinterest-p',
-    label: 'Pinterest',
-    href: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title)}`,
-  },
-  {
-    icon: 'fab fa-whatsapp',
-    label: 'WhatsApp',
-    href: `https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${url}`)}`,
-  },
-  {
-    icon: 'fab fa-linkedin-in',
-    label: 'LinkedIn',
-    href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-  },
-  {
-    icon: 'far fa-envelope',
-    label: 'Email',
-    href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`,
-  },
+  { icon: 'fab fa-facebook-f', label: 'Facebook', platform: 'facebook' },
+  { icon: 'fab fa-pinterest-p', label: 'Pinterest', platform: 'pinterest' },
+  { icon: 'fab fa-whatsapp', label: 'WhatsApp', platform: 'whatsapp' },
+  { icon: 'fab fa-linkedin-in', label: 'LinkedIn', platform: 'linkedin' },
+  { icon: 'far fa-envelope', label: 'Email', platform: 'email' },
 ];
 ---
 
-<div class:list={["social-share", className]} aria-label="Partager cet article">
+<div
+  class:list={['social-share', className]}
+  aria-label="Partager cet article"
+  data-social-share
+  data-share-url={url}
+  data-share-title={title}
+>
   {shareLinks.map((link) => (
     <a
-      href={link.href}
+      href="#"
       target="_blank"
       rel="noopener noreferrer"
       class="social-share-link"
       aria-label={`Partager sur ${link.label}`}
       title={`Partager sur ${link.label}`}
+      data-share-platform={link.platform}
     >
       <i class={link.icon} aria-hidden="true"></i>
     </a>
@@ -74,7 +65,7 @@ const shareLinks = [
     border: 0;
     padding: 0;
     background: transparent;
-    color: #a6a092;
+    color: #7b7365;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -95,21 +86,65 @@ const shareLinks = [
 </style>
 
 <script>
-  document.querySelectorAll('[data-copy-link]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const value = button.getAttribute('data-copy-value') || '';
-      if (!value) return;
+  const buildShareHref = (platform, currentUrl, currentTitle) => {
+    switch (platform) {
+      case 'facebook':
+        return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+      case 'pinterest':
+        return `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(currentUrl)}&description=${encodeURIComponent(currentTitle)}`;
+      case 'whatsapp':
+        return `https://api.whatsapp.com/send?text=${encodeURIComponent(`${currentTitle} ${currentUrl}`)}`;
+      case 'linkedin':
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
+      case 'email':
+        return `mailto:?subject=${encodeURIComponent(currentTitle)}&body=${encodeURIComponent(currentUrl)}`;
+      default:
+        return currentUrl;
+    }
+  };
 
-      try {
-        await navigator.clipboard.writeText(value);
-        const previousLabel = button.getAttribute('aria-label') || 'Copier le lien';
-        button.setAttribute('aria-label', 'Lien copié');
-        window.setTimeout(() => {
-          button.setAttribute('aria-label', previousLabel);
-        }, 1500);
-      } catch (error) {
-        console.error('Unable to copy article link:', error);
+  const setupSocialShare = () => {
+    document.querySelectorAll('[data-social-share]').forEach((root) => {
+      const rawShareUrl = root.getAttribute('data-share-url') || '';
+      const currentUrl = rawShareUrl
+        ? new URL(rawShareUrl, window.location.origin).toString()
+        : window.location.href;
+      const currentTitle =
+        root.getAttribute('data-share-title') ||
+        document.title ||
+        'Découvrez cet article';
+
+      root.querySelectorAll('[data-share-platform]').forEach((link) => {
+        if (!(link instanceof HTMLAnchorElement)) return;
+        const platform = link.getAttribute('data-share-platform') || '';
+        link.href = buildShareHref(platform, currentUrl, currentTitle);
+      });
+
+      const copyButton = root.querySelector('[data-copy-link]');
+      if (!(copyButton instanceof HTMLButtonElement) || copyButton.dataset.shareReady === 'true') {
+        return;
       }
+
+      copyButton.dataset.shareReady = 'true';
+      copyButton.setAttribute('data-copy-value', currentUrl);
+      copyButton.addEventListener('click', async () => {
+        const value = copyButton.getAttribute('data-copy-value') || currentUrl;
+        if (!value) return;
+
+        try {
+          await navigator.clipboard.writeText(value);
+          const previousLabel = copyButton.getAttribute('aria-label') || 'Copier le lien';
+          copyButton.setAttribute('aria-label', 'Lien copié');
+          window.setTimeout(() => {
+            copyButton.setAttribute('aria-label', previousLabel);
+          }, 1500);
+        } catch (error) {
+          console.error('Unable to copy article link:', error);
+        }
+      });
     });
-  });
+  };
+
+  setupSocialShare();
+  document.addEventListener('astro:page-load', setupSocialShare);
 </script>

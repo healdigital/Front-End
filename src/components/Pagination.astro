@@ -1,4 +1,6 @@
 ---
+import OrganismPagination from './organisms/Pagination.astro';
+
 interface Props {
   currentPage: number;
   totalPages: number;
@@ -7,134 +9,13 @@ interface Props {
 }
 
 const { currentPage, totalPages, baseUrl = '', routeStyle = 'nested' } = Astro.props;
-
-const getPageNumbers = () => {
-  const pages: (number | string)[] = [];
-  const maxButtons = 7;
-
-  if (totalPages <= maxButtons) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-
-  pages.push(1);
-
-  let startPage = Math.max(2, currentPage - 2);
-  let endPage = Math.min(totalPages - 1, currentPage + 2);
-
-  if (startPage > 2) pages.push('...');
-
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
-
-  if (endPage < totalPages - 1) pages.push('...');
-
-  pages.push(totalPages);
-  return pages;
-};
-
-const getPageUrl = (page: number) => {
-  if (baseUrl) {
-    const clean = baseUrl.replace(/\/$/, '');
-    if (routeStyle === 'direct') {
-      return page === 1 ? clean || '/' : `${clean}/${page}`;
-    }
-    return page === 1 ? clean || '/' : `${clean}/page/${page}`;
-  }
-
-  return page === 1 ? '/' : `/page/${page}`;
-};
-
-const pageNumbers = getPageNumbers();
-const prevUrl = currentPage > 1 ? getPageUrl(currentPage - 1) : null;
-const nextUrl = currentPage < totalPages ? getPageUrl(currentPage + 1) : null;
 ---
 
-<nav aria-label="Pagination" class="flex flex-wrap items-center justify-center gap-2 mt-12 mb-8" id="root-pagination-nav">
-  {prevUrl ? (
-    <a
-      href={prevUrl}
-      aria-label="Page précédente"
-      class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-full border border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise text-primary-black hover:bg-gray-100 active:bg-gray-200"
-    >
-      <span class="sr-only">Précédent</span>
-      <span aria-hidden="true">‹</span>
-    </a>
-  ) : (
-    <span
-      aria-hidden="true"
-      class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-full border border-transparent text-text-tertiary cursor-not-allowed opacity-50"
-    >
-      <span aria-hidden="true">‹</span>
-    </span>
-  )}
-
-  <ul class="flex flex-wrap items-center gap-1 justify-center">
-    {pageNumbers.map((page) => (
-      <li>
-        {page === '...' ? (
-          <span class="inline-flex items-center px-2 text-text-tertiary select-none" aria-label="Autres pages" role="img">
-            <span aria-hidden="true">...</span>
-          </span>
-        ) : (
-          <a
-            href={getPageUrl(page as number)}
-            class={`inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-full font-mono text-base font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise ${
-              currentPage === page
-                ? 'bg-primary-black text-primary-white'
-                : 'text-text-primary hover:bg-gray-100 active:bg-gray-200'
-            }`}
-            title={`Aller à la page ${page}`}
-            aria-label={`Page ${page}`}
-            aria-current={currentPage === page ? 'page' : undefined}
-          >
-            {page}
-          </a>
-        )}
-      </li>
-    ))}
-  </ul>
-
-  {nextUrl ? (
-    <a
-      href={nextUrl}
-      aria-label="Page suivante"
-      class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-full border border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise text-primary-black hover:bg-gray-100 active:bg-gray-200"
-    >
-      <span class="sr-only">Suivant</span>
-      <span aria-hidden="true">›</span>
-    </a>
-  ) : (
-    <span
-      aria-hidden="true"
-      class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-full border border-transparent text-text-tertiary cursor-not-allowed opacity-50"
-    >
-      <span aria-hidden="true">›</span>
-    </span>
-  )}
-</nav>
-
-<script>
-  const rootPaginationNav = document.getElementById('root-pagination-nav');
-  if (rootPaginationNav) {
-    const links = rootPaginationNav.querySelectorAll('a');
-
-    rootPaginationNav.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const activeElement = document.activeElement;
-        const linksArray = Array.from(links);
-        const currentIndex = linksArray.indexOf(activeElement);
-
-        if (currentIndex !== -1) {
-          e.preventDefault();
-          const nextIndex =
-            e.key === 'ArrowLeft'
-              ? Math.max(0, currentIndex - 1)
-              : Math.min(linksArray.length - 1, currentIndex + 1);
-
-          linksArray[nextIndex]?.focus();
-        }
-      }
-    });
-  }
-</script>
+<div class="mt-12 mb-8">
+  <OrganismPagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    baseUrl={baseUrl}
+    routeStyle={routeStyle}
+  />
+</div>

@@ -42,8 +42,8 @@
   --lcdb-border: #d8d2c2;
   --lcdb-heading: #111111;
   --lcdb-copy: #5b5b5b;
-  --lcdb-muted: #7b7b6f;
-  --lcdb-accent: #54b6b1;
+  --lcdb-muted: #615d54;
+  --lcdb-accent: #1a9e8f;
   --lcdb-hero: #f5f1e8;
 }
 
@@ -518,7 +518,9 @@ body {
   font-size: 0.92rem;
   line-height: 1.4;
 }
-
+div#search-controls {
+    padding-top: 40px;
+}
 @media (min-width: 768px) {
   .lcdb-page-shell {
     padding-left: 28px;

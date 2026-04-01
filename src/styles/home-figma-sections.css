@@ -954,6 +954,12 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1359px) {
+  .books-section-content {
+    width: 100% !important;
+  }
+}
+
 @media (min-width: 1360px) {
   .home-shell {
     padding-left: 88px;

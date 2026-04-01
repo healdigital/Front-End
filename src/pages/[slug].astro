@@ -368,20 +368,21 @@ const breadcrumbJsonLd = buildBreadcrumbJsonLd(
 const recipeJsonLd = buildRecipeJsonLd(article);
 
 const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
+const shareUrl = `/${slug}/`;
 const articleShareLinks = [
   {
+    platform: "facebook",
     label: "Facebook",
-    href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`,
     icon: "fab fa-facebook-f",
   },
   {
+    platform: "pinterest",
     label: "Pinterest",
-    href: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(articleUrl)}&description=${encodeURIComponent(title)}`,
     icon: "fab fa-pinterest-p",
   },
   {
+    platform: "email",
     label: "Email",
-    href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(articleUrl)}`,
     icon: "far fa-envelope",
   },
 ];
@@ -727,7 +728,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
         <div class="article-hero-actions">
           <SocialShare
-            url={articleUrl}
+            url={shareUrl}
             title={title}
             class="article-share-inline"
           />

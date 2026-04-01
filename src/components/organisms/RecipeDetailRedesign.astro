@@ -67,7 +67,7 @@ const quickInfoItems = [
 const printLink = `/print/${slug}/?auto=1`;
 ---
 
-<div class="recipe-redesign" data-recipe-redesign>
+<div class="recipe-redesign" data-recipe-redesign data-recipe-redesign-slug={slug}>
   <section class="recipe-redesign__hero-card">
     <div class="recipe-redesign__topline">
       <nav class="recipe-redesign__breadcrumb" aria-label="Breadcrumb">
@@ -82,11 +82,12 @@ const printLink = `/print/${slug}/?auto=1`;
         {
           articleShareLinks.map((link: any) => (
             <a
-              href={link.href}
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               class="recipe-redesign__share-link"
               aria-label={`Partager sur ${link.label}`}
+              data-share-platform={link.platform}
             >
               <i class={link.icon} aria-hidden="true" />
             </a>
@@ -147,6 +148,10 @@ const printLink = `/print/${slug}/?auto=1`;
             alt={imageAlt || title}
             loading="eager"
             decoding="async"
+            fetchpriority="high"
+            width="797"
+            height="1024"
+            sizes="(min-width: 1280px) 38vw, (min-width: 960px) 46vw, 100vw"
             data-fallback-candidates={heroImageFallbackCandidates.join('|')}
             onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
           />
@@ -217,6 +222,9 @@ const printLink = `/print/${slug}/?auto=1`;
                       alt={step.media.alt || step.instruction}
                       loading="lazy"
                       decoding="async"
+                      width="512"
+                      height="512"
+                      sizes="(min-width: 960px) 420px, (min-width: 768px) 60vw, 92vw"
                     />
                   </figure>
                 )}
@@ -238,6 +246,9 @@ const printLink = `/print/${slug}/?auto=1`;
           alt={imageAlt || title}
           loading="lazy"
           decoding="async"
+          width="1200"
+          height="1200"
+          sizes="(min-width: 1280px) 980px, (min-width: 768px) 88vw, 100vw"
           data-fallback-candidates={recipeImageFallbackCandidates.join('|')}
           onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
         />
@@ -270,6 +281,9 @@ const printLink = `/print/${slug}/?auto=1`;
               alt={imageAlt || title}
               loading="lazy"
               decoding="async"
+              width="720"
+              height="720"
+              sizes="(min-width: 960px) 240px, 72vw"
               data-fallback-candidates={recipeImageFallbackCandidates.join('|')}
               onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
             />
@@ -462,6 +476,30 @@ const printLink = `/print/${slug}/?auto=1`;
     };
 
     roots.forEach((root) => {
+      const shareSlug = String(root.getAttribute("data-recipe-redesign-slug") || "").replace(/^\/+|\/+$/g, "");
+      const currentArticleUrl = shareSlug
+        ? new URL(`/${shareSlug}/`, window.location.origin).toString()
+        : window.location.href;
+      const shareTitle =
+        root.querySelector(".recipe-redesign__title")?.textContent?.trim() ||
+        document.title ||
+        "Découvrez cette recette";
+
+      root
+        .querySelectorAll(".recipe-redesign__share-link[data-share-platform]")
+        .forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          const platform = link.dataset.sharePlatform || "";
+
+          if (platform === "facebook") {
+            link.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentArticleUrl)}`;
+          } else if (platform === "pinterest") {
+            link.href = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(currentArticleUrl)}&description=${encodeURIComponent(shareTitle)}`;
+          } else if (platform === "email") {
+            link.href = `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(currentArticleUrl)}`;
+          }
+        });
+
       root
         .querySelectorAll(".recipe-redesign__servings button")
         .forEach((button) => {
@@ -521,7 +559,7 @@ const printLink = `/print/${slug}/?auto=1`;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    color: #706a60;
+    color: var(--lcdb-muted);
     font-size: 12px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -578,7 +616,7 @@ const printLink = `/print/${slug}/?auto=1`;
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    color: #4a463f;
+    color: var(--lcdb-copy);
     font-size: 0.95rem;
     flex-wrap: wrap;
   }
@@ -586,7 +624,7 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__stars {
     display: inline-flex;
     gap: 4px;
-    color: #87c84f;
+    color: #7baa43;
   }
 
   .recipe-redesign__meta {
@@ -609,7 +647,7 @@ const printLink = `/print/${slug}/?auto=1`;
     padding: 7px 12px;
     border-radius: 999px;
     background: #f4efe6;
-    color: #5d564d;
+    color: var(--lcdb-copy);
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -626,14 +664,14 @@ const printLink = `/print/${slug}/?auto=1`;
     white-space: nowrap;
     border: 1px solid #cfc6b6;
     border-radius: 12px;
-    color: #2f2a24;
+    color: var(--lcdb-heading);
     text-decoration: none;
     background: #faf8f2;
   }
 
   .recipe-redesign__action--primary {
-    background: #69cfd0;
-    border-color: #69cfd0;
+    background: var(--lcdb-accent);
+    border-color: var(--lcdb-accent);
     color: #fff;
   }
 
@@ -701,7 +739,7 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__servings button {
     border: 0;
     background: transparent;
-    color: #8b857c;
+    color: var(--lcdb-muted);
     padding: 8px 13px;
     border-radius: 999px;
     font: inherit;
@@ -709,7 +747,7 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__servings .is-active {
-    background: #67c8c8;
+    background: var(--lcdb-accent);
     color: #fff;
   }
 
@@ -771,12 +809,12 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__amount {
-    color: #2aa7aa;
+    color: var(--lcdb-accent);
     font-weight: 600;
   }
 
   .recipe-redesign__note {
-    color: #666057;
+    color: var(--lcdb-muted);
   }
 
   .recipe-redesign__steps {

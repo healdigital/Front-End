@@ -12,7 +12,7 @@ export default {
           cream: '#f5f1e8',
           'black-deep': '#0f172a',
           black: '#1a2335',
-          turquoise: '#2ec4b6',
+          turquoise: '#1a9e8f',
         },
         secondary: {
           'beige-light': '#f8f5ee',
@@ -29,7 +29,7 @@ export default {
         text: {
           primary: '#1a2335',
           secondary: '#4b5563',
-          tertiary: '#9ca3af',
+          tertiary: '#6b7280',
           'on-dark': '#f8fafc',
         },
         border: {

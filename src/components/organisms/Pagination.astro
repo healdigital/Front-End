@@ -28,12 +28,28 @@ function getPageNumbers(current: number, total: number): (number | string)[] {
 interface Props {
   currentPage: number;
   totalPages: number;
-  baseUrl: string;
+  baseUrl?: string;
+  routeStyle?: 'nested' | 'direct';
 }
 
-const { currentPage, totalPages, baseUrl } = Astro.props;
-const prevUrl = currentPage > 1 ? `${baseUrl}/${currentPage - 1}` : null;
-const nextUrl = currentPage < totalPages ? `${baseUrl}/${currentPage + 1}` : null;
+const { currentPage, totalPages, baseUrl = '', routeStyle = 'nested' } = Astro.props;
+
+const getPageUrl = (page: number) => {
+  const clean = baseUrl.replace(/\/$/, '');
+
+  if (clean) {
+    if (routeStyle === 'direct') {
+      return page === 1 ? clean || '/' : `${clean}/${page}`;
+    }
+
+    return page === 1 ? clean || '/' : `${clean}/page/${page}`;
+  }
+
+  return page === 1 ? '/' : `/page/${page}`;
+};
+
+const prevUrl = currentPage > 1 ? getPageUrl(currentPage - 1) : null;
+const nextUrl = currentPage < totalPages ? getPageUrl(currentPage + 1) : null;
 const pages = getPageNumbers(currentPage, totalPages);
 ---
 
@@ -65,7 +81,7 @@ const pages = getPageNumbers(currentPage, totalPages);
           </span>
         ) : (
           <a
-            href={`${baseUrl}/${page}`}
+            href={getPageUrl(page as number)}
             class={`inline-flex items-center justify-center w-10 h-10 rounded-full font-mono text-base font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-turquoise ${
               currentPage === page
                 ? 'bg-primary-black text-primary-white'
