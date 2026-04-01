@@ -4,15 +4,19 @@ import { t as translate } from "../i18n";
 
 export const prerender = true;
 
-const lang = 'fr';
-const title = translate('nav.search', lang);
-const fixedPageSubtitle = "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
-const fixedNoResultsMessage = "Aucun résultat trouvé. Essayez un autre terme de recherche.";
-const pageEyebrow = 'Recherche';
-const pageHeading = 'Rechercher des articles';
-const pageSubtitle = "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
-const noResultsMessage = "Aucun résultat trouvé. Essayez un autre terme de recherche.";
-const noImageLabel = 'Aucune image';
+const lang = "fr";
+const title = translate("nav.search", lang);
+const fixedPageSubtitle =
+  "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
+const fixedNoResultsMessage =
+  "Aucun résultat trouvé. Essayez un autre terme de recherche.";
+const pageEyebrow = "Recherche";
+const pageHeading = "Rechercher des articles";
+const noImageLabel = "Aucune image";
+const loadingMessage = "Recherche en cours...";
+const filterLabel = "Filtrer par catégorie";
+const filterAllLabel = "Toutes les catégories";
+const sortLabel = "Trier";
 ---
 
 <BaseLayout title={title} lang={lang}>
@@ -20,7 +24,12 @@ const noImageLabel = 'Aucune image';
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <p class="lcdb-page-eyebrow typ-caption">{pageEyebrow}</p>
       <h1 class="lcdb-page-title typ-h2">{pageHeading}</h1>
-      <p id="search-subtitle" class="lcdb-page-description typ-body">
+      <p
+        id="search-subtitle"
+        class="lcdb-page-description typ-body"
+        role="status"
+        aria-live="polite"
+      >
         {fixedPageSubtitle}
       </p>
     </div>
@@ -28,9 +37,45 @@ const noImageLabel = 'Aucune image';
 
   <section class="lcdb-page-section">
     <div class="lcdb-page-shell lcdb-page-section-inner">
+      <div id="search-controls" class="hidden mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div class="flex flex-col gap-2">
+          <label for="search-category-filter" class="typ-caption">{filterLabel}</label>
+          <select
+            id="search-category-filter"
+            class="min-w-[220px] rounded border border-[#D8D2C2] bg-[#FAF8F2] px-4 py-3 text-[14px] text-[#111111] focus:outline-none focus:ring-2 focus:ring-primary-turquoise/50"
+          >
+            <option value="">{filterAllLabel}</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="search-sort-order" class="typ-caption">{sortLabel}</label>
+          <select
+            id="search-sort-order"
+            class="min-w-[220px] rounded border border-[#D8D2C2] bg-[#FAF8F2] px-4 py-3 text-[14px] text-[#111111] focus:outline-none focus:ring-2 focus:ring-primary-turquoise/50"
+          >
+            <option value="relevance">Pertinence</option>
+            <option value="newest">Plus récents</option>
+            <option value="oldest">Plus anciens</option>
+            <option value="title">Titre A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div
+        id="search-loading"
+        class="hidden lcdb-empty-state space-y-3"
+        role="status"
+        aria-live="polite"
+      >
+        <p class="text-lg font-medium">{loadingMessage}</p>
+      </div>
+
       <div id="no-results" class="hidden lcdb-empty-state space-y-4">
         <p class="text-lg font-medium">{fixedNoResultsMessage}</p>
-        <a href="/articles/" class="inline-flex text-primary-turquoise typ-button">Parcourir tous les articles</a>
+        <a href="/articles/" class="inline-flex text-primary-turquoise typ-button"
+          >Parcourir tous les articles</a
+        >
       </div>
 
       <div id="results-grid" class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,43 +85,57 @@ const noImageLabel = 'Aucune image';
   </section>
 </BaseLayout>
 
-<script type="module" is:inline define:vars={{
-  algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
-  algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
-  algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || 'lcdb_recipes',
-  defaultSubtitle: fixedPageSubtitle,
-  noImageLabelText: noImageLabel,
-  payloadAssetOrigin: (() => {
-    try {
-      return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
-    } catch {
-      return 'https://admin.lacuisinedebernard.com';
-    }
-  })(),
-}}>
-  // Inline module scripts in Astro pages are not bundled, so we must use a fully
-// resolved URL for the Algolia client to avoid runtime resolution errors.
-import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algoliasearch-lite.esm.browser.js';
+<script
+  type="module"
+  is:inline
+  define:vars={{
+    algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
+    algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
+    algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || "lcdb_recipes",
+    defaultSubtitle: fixedPageSubtitle,
+    filterAllLabelText: filterAllLabel,
+    noImageLabelText: noImageLabel,
+    payloadAssetOrigin: (() => {
+      try {
+        return new URL(
+          import.meta.env.PUBLIC_PAYLOAD_API_URL ||
+            "https://admin.lacuisinedebernard.com/api",
+        ).origin;
+      } catch {
+        return "https://admin.lacuisinedebernard.com";
+      }
+    })(),
+  }}
+>
+  import algoliasearch from "https://cdn.jsdelivr.net/npm/algoliasearch/dist/algoliasearch-lite.esm.browser.js";
 
-  const subtitleEl = document.getElementById('search-subtitle');
-  const resultsGrid = document.getElementById('results-grid');
-  const noResultsEl = document.getElementById('no-results');
+  const subtitleEl = document.getElementById("search-subtitle");
+  const resultsGrid = document.getElementById("results-grid");
+  const noResultsEl = document.getElementById("no-results");
+  const loadingEl = document.getElementById("search-loading");
+  const controlsEl = document.getElementById("search-controls");
+  const categoryFilterEl = document.getElementById("search-category-filter");
+  const sortOrderEl = document.getElementById("search-sort-order");
+  const filterAllLabel = filterAllLabelText;
   const noImageLabel = noImageLabelText;
-  const entityDecoder = document.createElement('textarea');
+  const entityDecoder = document.createElement("textarea");
+  let latestHits = [];
+  let latestQuery = "";
 
   const urlParams = new URLSearchParams(window.location.search);
-  const searchQuery = urlParams.get('q') || '';
+  const searchQuery = urlParams.get("q") || "";
 
   const normalizeLang = (value) =>
-    String(value || 'fr')
+    String(value || "fr")
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '') || 'fr';
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "fr";
 
   const getCurrentLanguage = () => {
-    const htmlLang = document.documentElement.getAttribute('data-lang') || document.documentElement.lang;
-    const stored = localStorage.getItem('preferred-language');
-    return htmlLang || stored || 'fr';
+    const htmlLang =
+      document.documentElement.getAttribute("data-lang") || document.documentElement.lang;
+    const stored = localStorage.getItem("preferred-language");
+    return htmlLang || stored || "fr";
   };
 
   const getCurrentIndexName = () => {
@@ -84,43 +143,49 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return `${algoliaIndexPrefix}_${preferred}`;
   };
 
-  const resolveHitLanguage = (hit) => normalizeLang(hit?.language || hit?.lang || '');
+  const resolveHitLanguage = (hit) => normalizeLang(hit?.language || hit?.lang || "");
 
   const repairMojibake = (value) => {
-    const text = String(value || '');
-    if (!/(Ã.|Â.|â€|â€™|â€œ|â€|â€“|â€”|â€¦)/.test(text)) return text;
+    const text = String(value || "");
+    if (
+      !/(Ãƒ.|Ã‚.|Ã¢â‚¬|Ã¢â‚¬â„¢|Ã¢â‚¬Å“|Ã¢â‚¬Â|Ã¢â‚¬â€œ|Ã¢â‚¬â€|Ã¢â‚¬Â¦)/.test(text)
+    ) {
+      return text;
+    }
 
     try {
       const bytes = Uint8Array.from(text, (char) => char.charCodeAt(0) & 0xff);
-      const repaired = new TextDecoder('utf-8').decode(bytes);
-      return repaired.includes('\uFFFD') ? text : repaired;
+      const repaired = new TextDecoder("utf-8").decode(bytes);
+      return repaired.includes("\uFFFD") ? text : repaired;
     } catch {
       return text;
     }
   };
 
   const decodeHtmlEntities = (value) => {
-    entityDecoder.innerHTML = String(value || '');
+    entityDecoder.innerHTML = String(value || "");
     return entityDecoder.value;
   };
 
   const stripMarkup = (value) =>
     repairMojibake(
-      decodeHtmlEntities(String(value || '').replace(/<[^>]*>/g, ' ')),
-    ).replace(/\s+/g, ' ').trim();
+      decodeHtmlEntities(String(value || "").replace(/<[^>]*>/g, " ")),
+    )
+      .replace(/\s+/g, " ")
+      .trim();
 
   const toText = (value) => {
-    if (!value) return '';
-    if (typeof value === 'string') return stripMarkup(value);
-    if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
-    if (typeof value === 'object') {
+    if (!value) return "";
+    if (typeof value === "string") return stripMarkup(value);
+    if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+    if (typeof value === "object") {
       const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
       for (const candidate of directCandidates) {
         const text = toText(candidate);
         if (text) return text;
       }
       if (Array.isArray(value.children)) {
-        return value.children.map((child) => toText(child)).filter(Boolean).join(' ');
+        return value.children.map((child) => toText(child)).filter(Boolean).join(" ");
       }
       const objectValues = Object.values(value);
       for (const nested of objectValues) {
@@ -128,16 +193,76 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
         if (text) return text;
       }
     }
-    return '';
+    return "";
   };
 
   const escapeHtml = (value) =>
-    String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const setLoadingState = (isLoading) => {
+    if (!resultsGrid || !noResultsEl || !loadingEl) return;
+    loadingEl.classList.toggle("hidden", !isLoading);
+    if (isLoading) {
+      controlsEl?.classList.add("hidden");
+      noResultsEl.classList.add("hidden");
+      resultsGrid.innerHTML = "";
+    }
+  };
+
+  const parsePublishedAt = (hit) => {
+    const raw = hit?.publishedAt || hit?.date || hit?.createdAt || "";
+    const timestamp = raw ? new Date(raw).getTime() : NaN;
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
+
+  const getCategoryValue = (hit) => resolveCategory(hit);
+
+  const applyClientFilters = (hits) => {
+    const selectedCategory =
+      categoryFilterEl instanceof HTMLSelectElement ? categoryFilterEl.value : "";
+    const sortValue =
+      sortOrderEl instanceof HTMLSelectElement ? sortOrderEl.value : "relevance";
+
+    let filteredHits = Array.isArray(hits) ? [...hits] : [];
+
+    if (selectedCategory) {
+      filteredHits = filteredHits.filter(
+        (hit) => getCategoryValue(hit) === selectedCategory,
+      );
+    }
+
+    if (sortValue === "newest") {
+      filteredHits.sort((a, b) => parsePublishedAt(b) - parsePublishedAt(a));
+    } else if (sortValue === "oldest") {
+      filteredHits.sort((a, b) => parsePublishedAt(a) - parsePublishedAt(b));
+    } else if (sortValue === "title") {
+      filteredHits.sort((a, b) =>
+        resolveTitle(a).localeCompare(resolveTitle(b), "fr", { sensitivity: "base" }),
+      );
+    }
+
+    return filteredHits;
+  };
+
+  const syncControls = (hits) => {
+    if (!(categoryFilterEl instanceof HTMLSelectElement)) return;
+    const categories = [...new Set((Array.isArray(hits) ? hits : []).map(getCategoryValue).filter(Boolean))].sort(
+      (a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }),
+    );
+    const previousValue = categoryFilterEl.value;
+    categoryFilterEl.innerHTML = `<option value="">${escapeHtml(filterAllLabel)}</option>${categories
+      .map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`)
+      .join("")}`;
+    if (previousValue && categories.includes(previousValue)) {
+      categoryFilterEl.value = previousValue;
+    }
+    controlsEl?.classList.toggle("hidden", categories.length === 0 && !latestQuery.trim());
+  };
 
   const resolveTitle = (hit) => {
     const options = [
@@ -148,33 +273,37 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       toText(hit?._highlightResult?.post_title?.value),
       toText(hit?._highlightResult?.name?.value),
     ];
-    return options.find((value) => value.length > 0) || 'Article sans titre';
+    return options.find((value) => value.length > 0) || "Article sans titre";
   };
 
   const normalizeImageUrl = (value) => {
-    if (!value) return '';
-    if (typeof value === 'object') {
+    if (!value) return "";
+    if (typeof value === "object") {
       const nestedOptions = [value.url, value.src, value.href, value.value, value.original];
       for (const candidate of nestedOptions) {
         const nested = normalizeImageUrl(candidate);
         if (nested) return nested;
       }
-      return '';
+      return "";
     }
-    if (typeof value !== 'string') return '';
+    if (typeof value !== "string") return "";
     const normalized = value.trim();
-    if (!normalized) return '';
-    if (normalized.startsWith('//')) return `https:${normalized}`;
-    if (normalized.startsWith('/api/') || normalized.startsWith('/media/')) {
+    if (!normalized) return "";
+    if (normalized.startsWith("//")) return `https:${normalized}`;
+    if (normalized.startsWith("/api/") || normalized.startsWith("/media/")) {
       return `${payloadAssetOrigin}${normalized}`;
     }
-    if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('/')) {
+    if (
+      normalized.startsWith("http://") ||
+      normalized.startsWith("https://") ||
+      normalized.startsWith("/")
+    ) {
       return normalized;
     }
-    if (normalized.startsWith('images/') || normalized.startsWith('uploads/')) {
-      return `/${normalized.replace(/^\/+/, '')}`;
+    if (normalized.startsWith("images/") || normalized.startsWith("uploads/")) {
+      return `/${normalized.replace(/^\/+/, "")}`;
     }
-    return '';
+    return "";
   };
 
   const resolveImageUrl = (hit) => {
@@ -221,34 +350,34 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       const url = normalizeImageUrl(candidate);
       if (url) return url;
     }
-    return '';
+    return "";
   };
 
   const resolveCategory = (hit) => {
     const options = [toText(hit?.category), toText(hit?.categories), toText(hit?.tags), toText(hit?.cuisine)];
-    return options.find((value) => value.length > 0) || '';
+    return options.find((value) => value.length > 0) || "";
   };
 
   const normalizeArticlePath = (path) => {
-    if (!path) return '';
+    if (!path) return "";
     const clean = String(path).trim();
-    if (!clean.startsWith('/')) return clean;
+    if (!clean.startsWith("/")) return clean;
 
-    const normalized = clean.replace(/^\/articles\/+/i, '/');
+    const normalized = clean.replace(/^\/articles\/+/i, "/");
     const match = normalized.match(/^([^?#]*)(.*)$/);
     const pathname = match ? match[1] : normalized;
-    const suffix = match ? match[2] : '';
+    const suffix = match ? match[2] : "";
 
-    if (!pathname || pathname === '/' || pathname.endsWith('/')) return normalized;
+    if (!pathname || pathname === "/" || pathname.endsWith("/")) return normalized;
     if (/\.[a-z0-9]+$/i.test(pathname)) return normalized;
     return `${pathname}/${suffix}`;
   };
 
   const resolveHref = (hit) => {
-    const directUrl = typeof hit?.url === 'string' ? hit.url.trim() : '';
+    const directUrl = typeof hit?.url === "string" ? hit.url.trim() : "";
     if (directUrl) {
-      if (directUrl.startsWith('/')) return normalizeArticlePath(directUrl);
-      if (directUrl.startsWith('http://') || directUrl.startsWith('https://')) {
+      if (directUrl.startsWith("/")) return normalizeArticlePath(directUrl);
+      if (directUrl.startsWith("http://") || directUrl.startsWith("https://")) {
         try {
           const parsed = new URL(directUrl);
           const normalizedPath = normalizeArticlePath(parsed.pathname);
@@ -259,18 +388,18 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       }
     }
 
-    const slugRaw = typeof hit?.slug === 'string' ? hit.slug : '';
-    const slug = slugRaw.trim().replace(/^\/+|\/+$/g, '').replace(/^articles\/+/i, '');
-    return slug ? `/${slug}/` : '#';
+    const slugRaw = typeof hit?.slug === "string" ? hit.slug : "";
+    const slug = slugRaw.trim().replace(/^\/+|\/+$/g, "").replace(/^articles\/+/i, "");
+    return slug ? `/${slug}/` : "#";
   };
 
   const renderCard = (hit) => {
     const imageUrl = resolveImageUrl(hit);
-    const title = resolveTitle(hit);
-    const imageAlt = toText(hit?.featured_image?.alt) || title || 'Article';
+    const titleValue = resolveTitle(hit);
+    const imageAlt = toText(hit?.featured_image?.alt) || titleValue || "Article";
     const category = resolveCategory(hit);
     const href = resolveHref(hit);
-    const safeTitle = escapeHtml(title);
+    const safeTitle = escapeHtml(titleValue);
     const safeAlt = escapeHtml(imageAlt);
     const safeCategory = escapeHtml(category);
     const safeHref = escapeHtml(href);
@@ -279,13 +408,15 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     return `
       <a href="${safeHref}" class="lcdb-article-card">
         <div class="lcdb-article-card-media">
-          ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeAlt}" loading="lazy" />` : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">${escapeHtml(noImageLabel)}</span></div>`}
+          ${
+            safeImageUrl
+              ? `<img src="${safeImageUrl}" alt="${safeAlt}" loading="lazy" />`
+              : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">${escapeHtml(noImageLabel)}</span></div>`
+          }
         </div>
         <div class="lcdb-article-card-content">
-          ${safeCategory ? `<span class="lcdb-chip">${safeCategory}</span>` : ''}
-          <h3 class="lcdb-article-card-title">
-            ${safeTitle}
-          </h3>
+          ${safeCategory ? `<span class="lcdb-chip">${safeCategory}</span>` : ""}
+          <h3 class="lcdb-article-card-title">${safeTitle}</h3>
         </div>
       </a>
     `;
@@ -293,38 +424,56 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
 
   const updateUI = (query, hits) => {
     if (!subtitleEl || !resultsGrid || !noResultsEl) return;
+    setLoadingState(false);
+    latestHits = Array.isArray(hits) ? [...hits] : [];
+    latestQuery = query;
+    syncControls(latestHits);
+    const displayedHits = applyClientFilters(latestHits);
 
     if (!query.trim()) {
       subtitleEl.textContent = defaultSubtitle;
-      resultsGrid.innerHTML = '';
-      noResultsEl.classList.add('hidden');
+      resultsGrid.innerHTML = "";
+      noResultsEl.classList.add("hidden");
+      controlsEl?.classList.add("hidden");
       return;
     }
 
-    subtitleEl.innerHTML = hits.length
-      ? `${hits.length} article${hits.length !== 1 ? 's' : ''} trouvé${hits.length !== 1 ? 's' : ''} pour "<strong>${escapeHtml(query)}</strong>"`
+    controlsEl?.classList.remove("hidden");
+
+    subtitleEl.innerHTML = displayedHits.length
+      ? `${displayedHits.length} article${displayedHits.length !== 1 ? "s" : ""} trouvé${displayedHits.length !== 1 ? "s" : ""} pour "<strong>${escapeHtml(query)}</strong>"`
       : `Aucun résultat trouvé pour "<strong>${escapeHtml(query)}</strong>"`;
 
-    if (hits.length === 0) {
-      noResultsEl.classList.remove('hidden');
-      resultsGrid.innerHTML = '';
+    if (displayedHits.length === 0) {
+      noResultsEl.classList.remove("hidden");
+      resultsGrid.innerHTML = "";
       return;
     }
 
-    noResultsEl.classList.add('hidden');
-    resultsGrid.innerHTML = hits.map(renderCard).join('');
+    noResultsEl.classList.add("hidden");
+    resultsGrid.innerHTML = displayedHits.map(renderCard).join("");
+  };
+
+  const setErrorState = () => {
+    setLoadingState(false);
+    if (subtitleEl) {
+      subtitleEl.textContent =
+        "La recherche est temporairement indisponible. Veuillez réessayer plus tard.";
+    }
   };
 
   const runLocalSearch = async (query) => {
     const currentLangKey = normalizeLang(getCurrentLanguage());
-    const normalizedQuery = String(query || '').trim().toLowerCase();
+    const normalizedQuery = String(query || "").trim().toLowerCase();
     if (!normalizedQuery) {
-      updateUI('', []);
+      updateUI("", []);
       return;
     }
 
+    setLoadingState(true);
+
     try {
-      const response = await fetch('/search-index.json', { cache: 'force-cache' });
+      const response = await fetch("/search-index.json", { cache: "force-cache" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const records = await response.json();
       if (!Array.isArray(records)) {
@@ -343,7 +492,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
             toText(hit?.category),
             toText(hit?.tags),
           ]
-            .join(' ')
+            .join(" ")
             .toLowerCase();
           return searchable.includes(normalizedQuery);
         })
@@ -351,31 +500,30 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
 
       updateUI(query, hits);
     } catch (error) {
-      console.error('Local search fallback failed:', error);
-      if (subtitleEl) {
-        subtitleEl.textContent = "La recherche est temporairement indisponible. Veuillez réessayer plus tard.";
-      }
+      console.error("Local search fallback failed:", error);
+      setErrorState();
     }
   };
 
   const runAlgoliaSearch = async (query) => {
     if (!algoliaAppId || !algoliaSearchKey) {
-      console.warn('Algolia keys missing at build-time; using local search-index fallback.');
+      console.warn("Algolia keys missing at build-time; using local search-index fallback.");
       await runLocalSearch(query);
       return;
     }
 
     const client = algoliasearch(algoliaAppId, algoliaSearchKey);
+    setLoadingState(true);
 
     try {
       const searchInIndex = async (indexName) => {
-        if (typeof client.initIndex === 'function') {
+        if (typeof client.initIndex === "function") {
           const index = client.initIndex(indexName);
           const result = await index.search(query, { hitsPerPage: 50 });
           return result?.hits || [];
         }
 
-        if (typeof client.searchSingleIndex === 'function') {
+        if (typeof client.searchSingleIndex === "function") {
           const result = await client.searchSingleIndex({
             indexName,
             searchParams: { query, hitsPerPage: 50 },
@@ -383,7 +531,7 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
           return result?.hits || [];
         }
 
-        if (typeof client.search === 'function') {
+        if (typeof client.search === "function") {
           const result = await client.search([
             {
               indexName,
@@ -404,10 +552,8 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
       );
       updateUI(query, hits);
     } catch (error) {
-      console.error('Algolia search failed:', error);
-      if (subtitleEl) {
-        subtitleEl.textContent = "La recherche est temporairement indisponible. Veuillez réessayer plus tard.";
-      }
+      console.error("Algolia search failed:", error);
+      setErrorState();
     }
   };
 
@@ -415,26 +561,31 @@ import algoliasearch from 'https://cdn.jsdelivr.net/npm/algoliasearch/dist/algol
     if (searchQuery.trim()) {
       runAlgoliaSearch(searchQuery.trim());
     } else {
-      updateUI('', []);
+      updateUI("", []);
     }
   };
 
   performSearch();
 
-  window.addEventListener('page-translated', () => {
+  categoryFilterEl?.addEventListener("change", () => {
+    updateUI(latestQuery, latestHits);
+  });
+
+  sortOrderEl?.addEventListener("change", () => {
+    updateUI(latestQuery, latestHits);
+  });
+
+  window.addEventListener("page-translated", () => {
     if (searchQuery.trim()) runAlgoliaSearch(searchQuery.trim());
   });
 
-  window.addEventListener('language-changed', () => {
+  window.addEventListener("language-changed", () => {
     if (searchQuery.trim()) runAlgoliaSearch(searchQuery.trim());
   });
 
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'preferred-language' && searchQuery.trim()) {
+  window.addEventListener("storage", (e) => {
+    if (e.key === "preferred-language" && searchQuery.trim()) {
       runAlgoliaSearch(searchQuery.trim());
     }
   });
 </script>
-
-
-
