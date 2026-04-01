@@ -75,6 +75,16 @@ New items identified after reviewing the `New Client feedback` folder in depth.
   - category filter
   - sorting
   - live status/loading handling
+- Article/detail + print + recipe UX batch: done
+  - article detail print CTA added
+  - article detail newsletter CTA added
+  - article detail related articles added
+  - article detail share block improved
+  - print page labels localized
+  - language switcher cleaned
+  - recipe ingredients/instructions/nutrition components cleaned
+  - Disqus wrapper cleaned
+  - article archive pagination unified with shared component
 - Shared accessibility batch: done
   - contextual `Lire la suite` labels
   - card focus styles

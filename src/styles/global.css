@@ -531,7 +531,8 @@ body {
   }
 
   .lcdb-page-section-inner {
-    padding-top: 56px;
+    /* padding-top: 56px; */
+    padding-top: 0px !important;
     padding-bottom: 72px;
   }
 

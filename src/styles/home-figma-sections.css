@@ -1663,7 +1663,9 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
     width: 100%;
 }
 
-
+.home-deferred-block:empty {
+  display: none;
+}
 
 @media(max-width:1024px) {
     .recipe-sidebar-sticky-rail--enabled[data-astro-cid-zdfhrfee] {
@@ -1679,6 +1681,7 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
         font-size: 33px;
         line-height: 1.1em;
     }
+    
 
     .home-deferred-block .bio-section-media {
         width: 100%;

@@ -3,6 +3,7 @@ import Icon from '../atoms/Icon.astro';
 
 const currentYear = new Date().getFullYear();
 const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const SHOP_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 
 const socialLinks = [
   { name: 'facebook', url: 'https://facebook.com', label: 'Suivez-nous sur Facebook' },
@@ -15,7 +16,7 @@ const categories = [
   { label: 'Recettes sucrées', url: '/recettes-sucrees' },
   { label: 'Recettes salées', url: '/recettes-salees' },
   { label: 'Livres', url: '/mes-livres' },
-  { label: 'Ateliers', url: '/ateliers' },
+  { label: 'Ateliers', url: SHOP_WORKSHOP_URL },
   { label: 'Cours vidéo', url: SHOP_VIDEO_URL },
   { label: 'Voyages', url: '/voyages' },
   { label: 'Reportages', url: '/reportages' },

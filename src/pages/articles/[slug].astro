@@ -6,6 +6,8 @@ import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 import { renderArticleContent } from '../../utils/renderArticleContent';
 import DisqusComments from '../../components/DisqusComments.astro';
 import MediavineSlot from '../../components/MediavineSlot.astro';
+import SocialShare from '../../components/molecules/SocialShare.astro';
+import NewsletterModal from '../../components/organisms/NewsletterModal.astro';
 
 export const prerender = !import.meta.env.DEV;
 
@@ -157,6 +159,76 @@ const normalizePageLanguage = (value: any) => {
 const pageLang = normalizePageLanguage(
   article?.lang || article?.language || article?.locale,
 );
+
+const normalizeValue = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const relatedArticlesSource = (() => {
+  try {
+    return getAllArticlesFromMongo();
+  } catch (error) {
+    console.error('related:getAllArticlesFromMongo failed:', error);
+    return Promise.resolve([]);
+  }
+})();
+
+let relatedArticlesRaw = await relatedArticlesSource;
+if (!relatedArticlesRaw || relatedArticlesRaw.length === 0) {
+  const fallback: any = await payloadFetch({
+    collection: 'articles',
+    query: { depth: 2, limit: getBuildLimit() },
+  });
+  relatedArticlesRaw = fallback?.docs || fallback || [];
+}
+
+const currentCategoryKeys = new Set(
+  categoryItems.map((item: any) => normalizeValue(item.slug || item.title)).filter(Boolean),
+);
+const currentTagKeys = new Set(
+  tagItems.map((item: any) => normalizeValue(item.slug || item.title)).filter(Boolean),
+);
+
+const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : [])
+  .map((entry: any) => {
+    const entrySlug = normalizeSlug(typeof entry?.slug === 'string' ? entry.slug : entry?.slug?.current);
+    const entryTitle = toText(entry?.title);
+    if (!entrySlug || !entryTitle || entrySlug === slug) return null;
+
+    const entryCategoryKeys = new Set(
+      (Array.isArray(entry?.categories) ? entry.categories : [])
+        .map((item: any) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
+        .filter(Boolean),
+    );
+    const entryTagKeys = new Set(
+      (Array.isArray(entry?.tags) ? entry.tags : [])
+        .map((item: any) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
+        .filter(Boolean),
+    );
+
+    let score = 0;
+    currentCategoryKeys.forEach((value) => {
+      if (entryCategoryKeys.has(value)) score += 3;
+    });
+    currentTagKeys.forEach((value) => {
+      if (entryTagKeys.has(value)) score += 2;
+    });
+    if (score === 0) return null;
+
+    return {
+      slug: entrySlug,
+      title: entryTitle,
+      excerpt: (toText(entry?.excerpt) || toText(entry?.content)).slice(0, 150).trim(),
+      image: processArticleImageUrl(entry),
+      date: formatDate(entry?.publishedAt || entry?.date || entry?.modified),
+      score,
+    };
+  })
+  .filter(Boolean)
+  .sort((a: any, b: any) => b.score - a.score)
+  .slice(0, 3);
 ---
 
 <BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl} lang={pageLang} loadAds={true}>
@@ -169,6 +241,15 @@ const pageLang = normalizePageLanguage(
       </nav>
       <h1 class="lcdb-page-title typ-h2">{title}</h1>
       {publishedDate && <p class="lcdb-page-description typ-body">{publishedDate}</p>}
+      <div class="article-actions">
+        <a href={`/print/${slug}?auto=0`} class="article-action-link" target="_blank" rel="noopener noreferrer">
+          Imprimer l’article
+        </a>
+        <button type="button" class="article-action-link" id="open-newsletter-article-content">
+          Recevoir les nouvelles recettes
+        </button>
+      </div>
+      <SocialShare url={articleUrl} title={title} class="article-share-row" />
     </div>
   </section>
 
@@ -210,6 +291,47 @@ const pageLang = normalizePageLanguage(
             <MediavineSlot slot="article-bottom" minHeight={280} />
           </div>
 
+          <section class="article-newsletter-cta">
+            <div>
+              <p class="article-newsletter-kicker typ-caption">Newsletter</p>
+              <h2 class="article-newsletter-title">Ne manquez pas les prochaines publications</h2>
+              <p class="article-newsletter-copy typ-body">
+                Recevez les nouvelles recettes, les dates d’ateliers et les actualités du site directement dans votre boîte mail.
+              </p>
+            </div>
+            <button type="button" class="article-action-button" id="open-newsletter-article-inline">
+              S’inscrire
+            </button>
+          </section>
+
+          {relatedArticles.length > 0 && (
+            <section class="article-related-section">
+              <div class="article-related-header">
+                <p class="typ-caption">À lire aussi</p>
+                <h2 class="typ-h2">Articles liés</h2>
+              </div>
+              <div class="article-related-grid">
+                {relatedArticles.map((related: any) => (
+                  <a href={`/${related.slug}/`} class="article-related-card" aria-label={`Lire l’article : ${related.title}`}>
+                    <div class="article-related-media">
+                      {related.image ? (
+                        <img src={related.image} alt={related.title} loading="lazy" />
+                      ) : (
+                        <div class="article-related-placeholder">Aucune image</div>
+                      )}
+                    </div>
+                    <div class="article-related-content">
+                      {related.date && <p class="typ-caption article-related-date">{related.date}</p>}
+                      <h3>{related.title}</h3>
+                      {related.excerpt && <p class="typ-body">{related.excerpt}...</p>}
+                      <span class="article-action-link">Lire la suite</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
           <div class="pt-8 border-t border-[#D8D2C2]">
             <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
           </div>
@@ -217,9 +339,33 @@ const pageLang = normalizePageLanguage(
       </article>
     </div>
   </section>
+  <NewsletterModal triggerId="open-newsletter-article-content" id="newsletter-modal-article-content" />
+  <NewsletterModal triggerId="open-newsletter-article-inline" id="newsletter-modal-article-inline" />
 </BaseLayout>
 
 <style>
+  .article-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+
+  .article-action-link {
+    border: 0;
+    background: transparent;
+    color: #54b6b1;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    margin: 0;
+  }
+
+  .article-share-row {
+    margin-top: 1rem;
+  }
+
   .article-content :global(h2),
   .article-content :global(h3),
   .article-content :global(h4) {
@@ -253,5 +399,150 @@ const pageLang = normalizePageLanguage(
   .article-content :global(a) {
     color: #2ec4b6;
     text-decoration: underline;
+  }
+
+  .article-newsletter-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    margin: 2.5rem 0;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    background: #f8f5ee;
+  }
+
+  .article-newsletter-kicker {
+    margin-bottom: 0.5rem;
+  }
+
+  .article-newsletter-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1.02;
+  }
+
+  .article-newsletter-copy {
+    margin-top: 0.8rem;
+    max-width: 42rem;
+  }
+
+  .article-action-button {
+    min-height: 46px;
+    padding: 0 28px;
+    border: 0;
+    background: #54b6b1;
+    color: #ffffff;
+    font-family: var(--font-button);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .article-action-button:hover {
+    background: #49aaa5;
+  }
+
+  .article-related-section {
+    margin: 2.75rem 0;
+  }
+
+  .article-related-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .article-related-header p {
+    margin-bottom: 0.5rem;
+  }
+
+  .article-related-header h2 {
+    margin: 0;
+  }
+
+  .article-related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .article-related-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    background: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .article-related-card:hover,
+  .article-related-card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(17, 17, 17, 0.08);
+    outline: none;
+  }
+
+  .article-related-media {
+    aspect-ratio: 4 / 3;
+    background: #ece9dd;
+    overflow: hidden;
+  }
+
+  .article-related-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .article-related-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a8578;
+    font-size: 0.8rem;
+  }
+
+  .article-related-content {
+    padding: 1.1rem 1.1rem 1.25rem;
+  }
+
+  .article-related-date {
+    margin-bottom: 0.45rem;
+  }
+
+  .article-related-content h3 {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 0.98;
+  }
+
+  .article-related-content p {
+    margin-top: 0.75rem;
+  }
+
+  .article-related-content .article-action-link {
+    display: inline-flex;
+    margin-top: 0.85rem;
+  }
+
+  @media (max-width: 900px) {
+    .article-related-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .article-newsletter-cta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>

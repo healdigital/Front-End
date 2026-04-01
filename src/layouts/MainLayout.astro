@@ -2,6 +2,7 @@
 import SEO from '../components/SEO.astro';
 import Header from '../components/Header.astro';
 import GlobalFooter from '../components/GlobalFooter.astro';
+import NewsletterModal from '../components/organisms/NewsletterModal.astro';
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -33,6 +34,7 @@ const { title, description, image, lang = 'fr' } = Astro.props;
     <main id="main-content" class="flex-1">
       <slot />
     </main>
+    <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
     <GlobalFooter currentLang={lang} />
   </body>
 </html>

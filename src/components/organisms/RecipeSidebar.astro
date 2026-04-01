@@ -12,6 +12,7 @@ interface Props {
 
 const { variant = 'full', className = '', stickyPopularRail = false } = Astro.props as Props;
 const isFull = variant === 'full';
+const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 const workshopsApiUrl =
   process.env.WORKSHOPS_CACHE_URL ||
   'https://lacuisinedebernard.com/api/workshops-cache';
@@ -123,11 +124,11 @@ const sidebarVideoDisplayDescription =
             {/* <span class="text-[13px] uppercase tracking-[0.14em] text-[#5F6671]">A partir de</span> */}
             <div class="font-heading text-[44px] leading-none text-[#111111]" data-sidebar-workshop-price>--</div>
           </div>
-          <Button href="/ateliers" class="button-data sidebar-workshop-cta-button" variant="primary" size="sm" data-sidebar-workshop-cta>Voir les ateliers</Button>
+          <Button href={SIDEBAR_WORKSHOP_URL} class="button-data sidebar-workshop-cta-button" variant="primary" size="sm" data-sidebar-workshop-cta>Voir les ateliers</Button>
         </div>
       </div>
 
-      <a href="/ateliers" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+      <a href={SIDEBAR_WORKSHOP_URL} class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
         Voir les ateliers
       </a>
     </div>
@@ -302,7 +303,7 @@ const sidebarVideoDisplayDescription =
 
     const normalizeHref = (value = '') => {
       const raw = String(value || '').trim();
-      if (!raw) return '/ateliers';
+      if (!raw) return SIDEBAR_WORKSHOP_URL;
       if (/^https?:\/\//i.test(raw)) return raw;
       return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
     };
@@ -344,7 +345,7 @@ const sidebarVideoDisplayDescription =
         spotsLeft,
         description,
         status: normalizeStatus(item.status),
-        slug: normalizeHref(item.bookingUrl || item.slug || '/ateliers'),
+        slug: normalizeHref(item.bookingUrl || item.slug || SIDEBAR_WORKSHOP_URL),
       };
     };
 
@@ -459,7 +460,7 @@ const sidebarVideoDisplayDescription =
           }
 
           if (ctaEl instanceof HTMLAnchorElement) {
-            ctaEl.href = firstWorkshop.slug || '/ateliers';
+            ctaEl.href = firstWorkshop.slug || SIDEBAR_WORKSHOP_URL;
             if (/^https?:\/\//i.test(firstWorkshop.slug || '')) {
               ctaEl.target = '_blank';
               ctaEl.rel = 'noopener noreferrer';

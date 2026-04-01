@@ -3,9 +3,10 @@ interface Props {
   currentPage: number;
   totalPages: number;
   baseUrl?: string;
+  routeStyle?: 'nested' | 'direct';
 }
 
-const { currentPage, totalPages, baseUrl = '' } = Astro.props;
+const { currentPage, totalPages, baseUrl = '', routeStyle = 'nested' } = Astro.props;
 
 const getPageNumbers = () => {
   const pages: (number | string)[] = [];
@@ -35,6 +36,9 @@ const getPageNumbers = () => {
 const getPageUrl = (page: number) => {
   if (baseUrl) {
     const clean = baseUrl.replace(/\/$/, '');
+    if (routeStyle === 'direct') {
+      return page === 1 ? clean || '/' : `${clean}/${page}`;
+    }
     return page === 1 ? clean || '/' : `${clean}/page/${page}`;
   }
 

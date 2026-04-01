@@ -15,7 +15,7 @@ interface Props {
 
 const { ingredients, servings = 4, title = 'Ingrédients' } = Astro.props;
 
-const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
+const groupedIngredients = ingredients.reduce((acc: Record<string, Ingredient[]>, ing: Ingredient) => {
   const group = ing.group || 'Principal';
   if (!acc[group]) acc[group] = [];
   acc[group].push(ing);
@@ -23,163 +23,168 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
 }, {});
 ---
 
-<div class="recipe-ingredients">
-  <h2 class="ingredients-title">{title}</h2>
+<div class="recipe-ingredients" data-recipe-ingredients>
+  <div class="recipe-ingredients-header">
+    <h2 class="ingredients-title">{title}</h2>
 
-  <div class="servings-adjuster" data-servings-adjuster>
-    <label for="servings">Portions :</label>
-    <div class="servings-input-group">
-      <button class="servings-btn" aria-label="Diminuer les portions" data-action="decrease" type="button">−</button>
-      <input
-        type="number"
-        id="servings"
-        name="servings"
-        value={servings}
-        min="1"
-        max="20"
-        class="servings-input"
-        aria-label="Nombre de portions"
-      />
-      <button class="servings-btn" aria-label="Augmenter les portions" data-action="increase" type="button">+</button>
+    <div class="servings-adjuster" data-servings-adjuster>
+      <label for="recipe-servings">Portions</label>
+      <div class="servings-input-group">
+        <button class="servings-btn" aria-label="Diminuer les portions" data-action="decrease" type="button">−</button>
+        <input
+          type="number"
+          id="recipe-servings"
+          name="servings"
+          value={servings}
+          min="1"
+          max="20"
+          step="1"
+          class="servings-input"
+          aria-label="Nombre de portions"
+        />
+        <button class="servings-btn" aria-label="Augmenter les portions" data-action="increase" type="button">+</button>
+      </div>
+      <span class="servings-status" role="status" aria-live="polite"></span>
     </div>
-    <span class="servings-status" role="status" aria-live="polite"></span>
   </div>
 
-  {Object.entries(groupedIngredients).map(([group, items]: any) => (
-    <section class="ingredient-group" aria-labelledby={`ingredient-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
-      {group !== 'Principal' && (
-        <h3 class="group-title" id={`ingredient-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
-          {group}
-        </h3>
-      )}
+  {Object.entries(groupedIngredients).map(([group, items]) => {
+    const groupId = `ingredient-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`;
+    return (
+      <section class="ingredient-group" aria-labelledby={groupId}>
+        {group !== 'Principal' && (
+          <h3 class="group-title" id={groupId}>{group}</h3>
+        )}
 
-      <ul class="ingredients-list">
-        {items.map((ingredient: Ingredient) => (
-          <li class="ingredient-item">
-            <div class="ingredient-amount">
-              <span class="amount" data-amount={ingredient.amount}>
-                {ingredient.amount}
-              </span>
-              {ingredient.unit && <span class="unit">{ingredient.unit}</span>}
-            </div>
-            <div class="ingredient-details">
-              <span class="name">{ingredient.name}</span>
-              {ingredient.notes && <span class="notes">{ingredient.notes}</span>}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  ))}
+        <ul class="ingredients-list">
+          {items.map((ingredient) => (
+            <li class="ingredient-item">
+              <div class="ingredient-amount">
+                <span class="amount" data-amount={ingredient.amount}>
+                  {ingredient.amount}
+                </span>
+                {ingredient.unit && <span class="unit">{ingredient.unit}</span>}
+              </div>
+              <div class="ingredient-details">
+                <span class="name">{ingredient.name}</span>
+                {ingredient.notes && <span class="notes">{ingredient.notes}</span>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
 </div>
 
 <style>
   .recipe-ingredients {
-    background: #f9f9f9;
-    border-radius: 12px;
-    padding: 2rem;
     margin: 2.5rem 0;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--lcdb-border);
+    border-radius: 12px;
+    background: #f8f5ee;
+    padding: 2rem;
+    transition: opacity 0.2s ease;
+  }
+
+  .recipe-ingredients.is-updating {
+    opacity: 0.8;
+  }
+
+  .recipe-ingredients-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
   }
 
   .ingredients-title {
-    font-size: 1.8rem;
-    font-weight: 700;
+    margin: 0;
     color: var(--lcdb-heading);
-    margin: 0 0 1.5rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.05;
   }
 
   .servings-adjuster {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: #ffffff;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
   }
 
   .servings-adjuster label {
-    font-weight: 600;
     color: var(--lcdb-heading);
-    font-size: 0.95rem;
+    font-family: var(--font-button);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .servings-input-group {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    border: 2px solid var(--lcdb-accent);
-    border-radius: 6px;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--lcdb-border);
+    border-radius: 999px;
     background: #ffffff;
   }
 
+  .servings-btn,
+  .servings-input {
+    min-height: 40px;
+  }
+
   .servings-btn {
+    width: 40px;
+    border: 0;
     background: transparent;
-    border: none;
-    width: 36px;
-    height: 36px;
-    font-size: 1.2rem;
-    cursor: pointer;
     color: var(--lcdb-accent);
+    cursor: pointer;
+    font-size: 1.1rem;
     font-weight: 600;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   .servings-btn:hover,
   .servings-btn:focus-visible {
-    background: #f0f7f6;
+    background: #f0ece1;
+    color: var(--lcdb-heading);
     outline: none;
   }
 
-  .servings-btn:active {
-    background: var(--lcdb-accent);
-    color: #ffffff;
-  }
-
   .servings-input {
-    width: 50px;
-    height: 36px;
-    border: none;
+    width: 54px;
+    border: 0;
     background: transparent;
+    color: var(--lcdb-heading);
     text-align: center;
     font-size: 1rem;
     font-weight: 600;
-    color: var(--lcdb-accent);
-  }
-
-  .servings-input:focus {
     outline: none;
   }
 
   .servings-status {
-    color: var(--lcdb-copy);
-    font-size: 0.9rem;
+    min-width: 120px;
+    color: var(--lcdb-muted);
+    font-size: 0.88rem;
   }
 
-  .ingredient-group {
-    margin-bottom: 2rem;
-  }
-
-  .ingredient-group:last-child {
-    margin-bottom: 0;
+  .ingredient-group + .ingredient-group {
+    margin-top: 1.75rem;
   }
 
   .group-title {
-    font-size: 1.2rem;
-    font-weight: 600;
+    margin: 0 0 0.9rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--lcdb-border);
     color: var(--lcdb-heading);
-    margin: 0 0 1rem 0;
-    text-transform: capitalize;
-    border-bottom: 2px solid var(--lcdb-accent);
-    padding-bottom: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
   }
 
   .ingredients-list {
@@ -189,147 +194,160 @@ const groupedIngredients = ingredients.reduce((acc: any, ing: Ingredient) => {
   }
 
   .ingredient-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
     gap: 1rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #e9ecef;
+    align-items: start;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(216, 210, 194, 0.7);
+  }
+
+  .ingredient-item:last-child {
+    border-bottom: 0;
+  }
+
+  .ingredient-amount {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .amount {
+    color: var(--lcdb-heading);
+    font-family: var(--font-button);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .unit {
+    color: var(--lcdb-muted);
+    font-size: 0.84rem;
+  }
+
+  .ingredient-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .name {
+    color: var(--lcdb-copy);
     font-size: 1rem;
     line-height: 1.6;
   }
 
-  .ingredient-item:last-child {
-    border-bottom: none;
-  }
-
-  .ingredient-amount {
-    flex-shrink: 0;
-    min-width: 70px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .ingredient-amount .amount {
-    color: var(--lcdb-accent);
-    font-size: 1.1rem;
-  }
-
-  .ingredient-amount .unit {
-    color: var(--lcdb-copy);
-    font-size: 0.9rem;
-    font-weight: 400;
-  }
-
-  .ingredient-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .ingredient-details .name {
-    color: var(--lcdb-heading);
-    font-weight: 500;
-  }
-
-  .ingredient-details .name a {
-    color: var(--lcdb-accent);
-    text-decoration: none;
-  }
-
-  .ingredient-details .name a:hover {
-    text-decoration: underline;
-  }
-
-  .ingredient-details .notes {
+  .notes {
     color: var(--lcdb-muted);
     font-size: 0.9rem;
+    line-height: 1.5;
     font-style: italic;
-    font-weight: 400;
   }
 
   @media (max-width: 768px) {
     .recipe-ingredients {
-      padding: 1.5rem;
-      margin: 1.5rem 0;
+      padding: 1.35rem;
+      margin: 1.75rem 0;
     }
 
     .ingredients-title {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .servings-adjuster {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-      padding: 1rem;
+      font-size: 1.65rem;
     }
 
     .ingredient-item {
-      font-size: 0.95rem;
-    }
-
-    .ingredient-amount {
-      min-width: 60px;
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
     }
   }
 </style>
 
 <script>
-  const adjusters = document.querySelectorAll('[data-servings-adjuster]');
+  const parseFractionalAmount = (rawValue) => {
+    const value = String(rawValue || '').trim().replace(',', '.');
+    if (!value) return null;
 
-  adjusters.forEach((adjuster) => {
+    if (/^\d+(\.\d+)?$/.test(value)) {
+      return Number(value);
+    }
+
+    const mixedMatch = value.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    if (mixedMatch) {
+      const whole = Number(mixedMatch[1]);
+      const numerator = Number(mixedMatch[2]);
+      const denominator = Number(mixedMatch[3]);
+      if (denominator) return whole + numerator / denominator;
+    }
+
+    const fractionMatch = value.match(/^(\d+)\/(\d+)$/);
+    if (fractionMatch) {
+      const numerator = Number(fractionMatch[1]);
+      const denominator = Number(fractionMatch[2]);
+      if (denominator) return numerator / denominator;
+    }
+
+    return null;
+  };
+
+  const formatScaledAmount = (value) => {
+    if (!Number.isFinite(value)) return '';
+    if (value >= 10) return Math.round(value).toString();
+    if (value >= 1) return value.toFixed(1).replace(/\.0$/, '');
+    return value.toFixed(2).replace(/0$/, '').replace(/\.0$/, '');
+  };
+
+  document.querySelectorAll('[data-servings-adjuster]').forEach((adjuster) => {
+    const wrapper = adjuster.closest('[data-recipe-ingredients]');
     const input = adjuster.querySelector('.servings-input');
     const decreaseBtn = adjuster.querySelector('[data-action="decrease"]');
     const increaseBtn = adjuster.querySelector('[data-action="increase"]');
     const status = adjuster.querySelector('.servings-status');
 
-    if (!(input instanceof HTMLInputElement)) return;
+    if (!(input instanceof HTMLInputElement) || !(wrapper instanceof HTMLElement)) return;
 
-    const baseServings = parseInt(input.value, 10);
+    const baseServings = parseInt(input.value, 10) || 4;
+    const amountNodes = wrapper.querySelectorAll('.ingredient-amount .amount');
 
-    const updateAmounts = (newServings) => {
-      const multiplier = newServings / baseServings;
-      const amounts = document.querySelectorAll('.ingredient-amount .amount');
-      amounts.forEach((amount) => {
-        const baseAmount = amount.getAttribute('data-amount');
-        if (!baseAmount) return;
-        const parsedAmount = parseFloat(baseAmount);
-        if (!isNaN(parsedAmount)) {
-          const nextAmount = (parsedAmount * multiplier).toFixed(2);
-          amount.textContent = parseFloat(nextAmount).toString();
-        }
+    const updateAmounts = (nextServings) => {
+      wrapper.classList.add('is-updating');
+      const multiplier = nextServings / baseServings;
+
+      amountNodes.forEach((amountNode) => {
+        const rawAmount = amountNode.getAttribute('data-amount');
+        const parsedAmount = parseFractionalAmount(rawAmount);
+        if (parsedAmount === null) return;
+        amountNode.textContent = formatScaledAmount(parsedAmount * multiplier);
       });
 
       if (status) {
-        status.textContent = `${newServings} portion${newServings > 1 ? 's' : ''}`;
+        status.textContent = `${nextServings} portion${nextServings > 1 ? 's' : ''}`;
       }
+
+      window.setTimeout(() => {
+        wrapper.classList.remove('is-updating');
+      }, 120);
     };
 
+    const clampServings = (value) => Math.min(20, Math.max(1, value || baseServings));
+
     decreaseBtn?.addEventListener('click', () => {
-      const current = parseInt(input.value, 10);
-      if (current > 1) {
-        input.value = String(current - 1);
-        updateAmounts(current - 1);
-      }
+      const current = clampServings(parseInt(input.value, 10));
+      const next = clampServings(current - 1);
+      input.value = String(next);
+      updateAmounts(next);
     });
 
     increaseBtn?.addEventListener('click', () => {
-      const current = parseInt(input.value, 10);
-      if (current < 20) {
-        input.value = String(current + 1);
-        updateAmounts(current + 1);
-      }
+      const current = clampServings(parseInt(input.value, 10));
+      const next = clampServings(current + 1);
+      input.value = String(next);
+      updateAmounts(next);
     });
 
     input.addEventListener('change', () => {
-      let value = parseInt(input.value, 10) || baseServings;
-      if (value < 1) value = 1;
-      if (value > 20) value = 20;
-      input.value = String(value);
-      updateAmounts(value);
+      const next = clampServings(parseInt(input.value, 10));
+      input.value = String(next);
+      updateAmounts(next);
     });
 
     updateAmounts(baseServings);

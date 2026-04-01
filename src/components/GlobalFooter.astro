@@ -8,11 +8,12 @@ interface Props {
 const { currentLang = 'fr' } = Astro.props;
 const currentYear = new Date().getFullYear();
 const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/course/module-2/lessons';
+const SHOP_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 
 const navigationLinks = [
   { label: 'Recettes sucrées', url: '/recettes-sucrees/' },
   { label: 'Recettes salées', url: '/recettes-salees/' },
-  { label: 'Ateliers', url: '/ateliers/' },
+  { label: 'Ateliers', url: SHOP_WORKSHOP_URL, external: true },
   { label: 'Cours vidéo', url: SHOP_VIDEO_URL, external: true },
 ];
 
