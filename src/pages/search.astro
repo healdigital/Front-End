@@ -69,6 +69,22 @@ const sortLabel = "Trier";
         aria-live="polite"
       >
         <p class="text-lg font-medium">{loadingMessage}</p>
+        <div class="grid grid-cols-1 gap-6 pt-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 6 }).map(() => (
+            <div class="overflow-hidden rounded-[10px] border border-border-primary bg-primary-white p-5 shadow-[0_6px_18px_rgba(17,17,17,0.04)]">
+              <div class="animate-pulse-slow space-y-4">
+                <div class="h-40 rounded-[8px] bg-[#ece6d8]"></div>
+                <div class="h-4 w-20 rounded bg-[#ece6d8]"></div>
+                <div class="h-7 w-4/5 rounded bg-[#ece6d8]"></div>
+                <div class="space-y-2">
+                  <div class="h-4 rounded bg-[#f1ece0]"></div>
+                  <div class="h-4 rounded bg-[#f1ece0]"></div>
+                  <div class="h-4 w-2/3 rounded bg-[#f1ece0]"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div id="no-results" class="hidden lcdb-empty-state space-y-4">

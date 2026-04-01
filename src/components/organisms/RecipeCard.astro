@@ -46,6 +46,7 @@ const truncatedDescription = description.length > MAX_LENGTH
   ? description.slice(0, MAX_LENGTH).trim() + '...'
   : description;
 const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
+const shareUrl = slug;
 ---
 
 <article class="group flex h-full w-full flex-col rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
@@ -89,7 +90,7 @@ const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
       <div class="flex items-center gap-2">
         <span data-recipe-meta-time>{prepTime}</span>
       </div>
-      <SocialShare url={`${Astro.url.origin}${slug}`} title={title} class="gap-3 text-[14px]" />
+      <SocialShare url={shareUrl} title={title} class="gap-3 text-[14px]" />
     </div>
 
     <p class="flex-1 text-text-secondary font-body text-[16px] leading-[1.7] typ-body">

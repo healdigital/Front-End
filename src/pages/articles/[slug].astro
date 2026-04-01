@@ -146,6 +146,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
 const publishedDate = formatDate(article?.publishedAt || article?.date || article?.modified);
 const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
+const shareUrl = `/articles/${slug}/`;
 const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
@@ -234,10 +235,10 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
 <BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl} lang={pageLang} loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
-      <nav class="flex items-center gap-2 text-[#6B7280] mb-5 typ-caption">
-        <a href="/" class="hover:text-[#1A2335]">Accueil</a>
+      <nav class="flex items-center gap-2 text-[var(--lcdb-muted)] mb-5 typ-caption">
+        <a href="/" class="hover:text-text-primary">Accueil</a>
         <span>/</span>
-        <a href="/articles" class="hover:text-[#1A2335]">Articles</a>
+        <a href="/articles" class="hover:text-text-primary">Articles</a>
       </nav>
       <h1 class="lcdb-page-title typ-h2">{title}</h1>
       {publishedDate && <p class="lcdb-page-description typ-body">{publishedDate}</p>}
@@ -249,7 +250,7 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
           Recevoir les nouvelles recettes
         </button>
       </div>
-      <SocialShare url={articleUrl} title={title} class="article-share-row" />
+      <SocialShare url={shareUrl} title={title} class="article-share-row" />
     </div>
   </section>
 
@@ -257,7 +258,17 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <article class="lcdb-surface-card overflow-hidden">
         {imageUrl && (
-          <img src={imageUrl} alt={imageAlt} class="w-full h-auto max-h-[560px] object-contain bg-[#ECE9DD]" loading="eager" />
+          <img
+            src={imageUrl}
+            alt={imageAlt}
+            class="w-full h-auto max-h-[560px] object-contain bg-primary-cream"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            width="1280"
+            height="960"
+            sizes="(min-width: 1280px) 980px, (min-width: 768px) 88vw, 100vw"
+          />
         )}
 
         <div class="p-6 md:p-8">
@@ -285,7 +296,7 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
             </div>
           )}
 
-          <div class="article-content text-[#2F3441] typ-body" set:html={content}></div>
+          <div class="article-content text-text-primary typ-body" set:html={content}></div>
 
           <div class="my-8">
             <MediavineSlot slot="article-bottom" minHeight={280} />
@@ -315,7 +326,15 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
                   <a href={`/${related.slug}/`} class="article-related-card" aria-label={`Lire l’article : ${related.title}`}>
                     <div class="article-related-media">
                       {related.image ? (
-                        <img src={related.image} alt={related.title} loading="lazy" />
+                        <img
+                          src={related.image}
+                          alt={related.title}
+                          loading="lazy"
+                          decoding="async"
+                          width="320"
+                          height="240"
+                          sizes="96px"
+                        />
                       ) : (
                         <div class="article-related-placeholder">Aucune image</div>
                       )}
@@ -397,7 +416,7 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
   }
 
   .article-content :global(a) {
-    color: #2ec4b6;
+    color: var(--lcdb-accent);
     text-decoration: underline;
   }
 
@@ -516,6 +535,7 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
 
   .article-related-date {
     margin-bottom: 0.45rem;
+    color: var(--lcdb-muted);
   }
 
   .article-related-content h3 {

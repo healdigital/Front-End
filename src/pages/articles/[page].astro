@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Pagination from '../../components/Pagination.astro';
+import Pagination from '../../components/organisms/Pagination.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { getAllArticlesFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
@@ -152,6 +152,10 @@ const paginatedArticles = normalizedArticles.slice(startIdx, startIdx + articles
                       src={article.image}
                       alt={article.title}
                       loading="lazy"
+                      decoding="async"
+                      width="640"
+                      height="800"
+                      sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
                       class="w-full h-full object-cover"
                     />
                   ) : (
@@ -167,7 +171,7 @@ const paginatedArticles = normalizedArticles.slice(startIdx, startIdx + articles
                   )}
                 </div>
                 <div class="lcdb-article-card-content">
-                  {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
+                  {article.date && <p class="mb-2 text-text-secondary typ-caption">{article.date}</p>}
                   <h2 class="lcdb-article-card-title">{article.title}</h2>
                   <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
                   <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>

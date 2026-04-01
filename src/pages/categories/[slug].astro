@@ -136,12 +136,12 @@ const articles = allArticles.slice(0, PAGE_SIZE);
                     />
                   ) : (
                     <div class="w-full h-full flex items-center justify-center">
-                      <span class="text-[#8A8578] typ-caption">Aucune image</span>
+                      <span class="text-[var(--lcdb-muted)] typ-caption">Aucune image</span>
                     </div>
                   )}
                 </div>
                 <div class="lcdb-article-card-content">
-                  {article.date && <p class="text-[#777] mb-2 typ-caption">{article.date}</p>}
+                  {article.date && <p class="mb-2 text-text-secondary typ-caption">{article.date}</p>}
                   <h2 class="lcdb-article-card-title">{article.title}</h2>
                   <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
                   <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>

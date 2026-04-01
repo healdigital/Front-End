@@ -7,7 +7,7 @@ interface Props {
   language?: string;
 }
 
-const { limit = 12, language = 'en' } = Astro.props;
+const { limit = 12, language = 'fr' } = Astro.props;
 
 // Fetch articles from PayloadCMS
 let articles = [];
@@ -30,7 +30,7 @@ try {
 
 <div class="articles-grid">
   {articles.length === 0 ? (
-    <p class="no-articles">No articles found</p>
+    <p class="no-articles">Aucun article trouvé</p>
   ) : (
     articles.map((article: any) => {
       const imageSrc = processArticleImageUrl(article);
@@ -47,6 +47,10 @@ try {
               src={imageSrc} 
               alt={article.featured_image_alt || articleTitle}
               loading="lazy"
+              decoding="async"
+              width="640"
+              height="400"
+              sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
             />
           </div>
         )}
@@ -63,7 +67,7 @@ try {
           </p>
           
           <div class="article-meta">
-            <span class="article-author">By {article.author}</span>
+            <span class="article-author">Par {article.author}</span>
             <span class="article-date">
               {new Date(article.date).toLocaleDateString()}
             </span>
@@ -72,8 +76,8 @@ try {
             </span>
           </div>
           
-          <a href={`/articles/${article.slug}`} class="read-more">
-            Read More →
+          <a href={`/articles/${article.slug}`} class="read-more" aria-label={`Lire l’article : ${articleTitle}`}>
+            Lire la suite →
           </a>
         </div>
       </article>
@@ -90,7 +94,7 @@ try {
   }
   
   .article-card {
-    background: white;
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -106,7 +110,7 @@ try {
     width: 100%;
     height: 200px;
     overflow: hidden;
-    background: #f0f0f0;
+    background: var(--lcdb-surface);
   }
   
   .article-image img {
@@ -126,16 +130,16 @@ try {
   }
   
   .article-title a {
-    color: #333;
+    color: var(--lcdb-heading);
     text-decoration: none;
   }
   
   .article-title a:hover {
-    color: #0066cc;
+    color: var(--lcdb-accent);
   }
   
   .article-excerpt {
-    color: #666;
+    color: var(--lcdb-copy);
     margin: 1rem 0;
     line-height: 1.6;
   }
@@ -144,7 +148,7 @@ try {
     display: flex;
     gap: 1rem;
     font-size: 0.875rem;
-    color: #999;
+    color: var(--lcdb-muted);
     margin: 1rem 0;
     flex-wrap: wrap;
   }
@@ -152,27 +156,27 @@ try {
   .article-lang {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    background: #f0f0f0;
+    background: var(--lcdb-surface);
     border-radius: 4px;
     font-weight: 600;
   }
   
   .read-more {
     display: inline-block;
-    color: #0066cc;
+    color: var(--lcdb-accent);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s;
   }
   
   .read-more:hover {
-    color: #0052a3;
+    color: #137f74;
   }
   
   .no-articles {
     grid-column: 1 / -1;
     text-align: center;
     padding: 2rem;
-    color: #999;
+    color: var(--lcdb-muted);
   }
 </style>

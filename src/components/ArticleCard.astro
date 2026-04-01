@@ -1,4 +1,5 @@
 ---
+import SocialShare from './molecules/SocialShare.astro';
 import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
 
 interface Props {
@@ -36,28 +37,10 @@ const formattedDate = article.date
       day: 'numeric',
     })
   : '';
-const shareUrl = Astro.site ? new URL(articleUrl, Astro.site).toString() : articleUrl;
-const shareLinks = [
-  {
-    icon: 'fab fa-facebook-f',
-    label: 'Partager sur Facebook',
-    href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-  },
-  {
-    icon: 'fab fa-pinterest-p',
-    label: 'Partager sur Pinterest',
-    href: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(articleTitle)}`,
-  },
-  {
-    icon: 'far fa-envelope',
-    label: 'Partager par email',
-    href: `mailto:?subject=${encodeURIComponent(articleTitle)}&body=${encodeURIComponent(shareUrl)}`,
-  },
-];
 ---
 
 <article class="overflow-hidden rounded-[10px] border border-border-primary bg-primary-white shadow-[0_6px_18px_rgba(17,17,17,0.04)] transition duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(17,17,17,0.08)] focus-within:-translate-y-[2px] focus-within:shadow-[0_10px_24px_rgba(17,17,17,0.08)] focus-within:ring-2 focus-within:ring-primary-turquoise/40">
-  <div class="relative h-48 overflow-hidden bg-[#efe9dc]">
+  <div class="relative h-48 overflow-hidden bg-primary-cream">
     <img
       src={imageSrc}
       alt={articleTitle}
@@ -88,20 +71,7 @@ const shareLinks = [
           <span class="author-meta">{authorName}</span>
         </div>
 
-        <div class="flex items-center gap-4 text-[18px] text-[#a6a092]">
-          {shareLinks.map((link) => (
-            <a
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center transition-colors duration-200 hover:text-primary-turquoise focus:outline-none focus-visible:text-primary-turquoise"
-              aria-label={link.label}
-              title={link.label}
-            >
-              <i class={link.icon} aria-hidden="true"></i>
-            </a>
-          ))}
-        </div>
+        <SocialShare url={articleUrl} title={articleTitle} class="text-[18px]" />
       </div>
     </div>
 
@@ -111,7 +81,7 @@ const shareLinks = [
 
     <a
       href={articleUrl}
-      class="inline-flex items-center text-[13px] font-medium text-primary-turquoise underline underline-offset-4 transition-colors duration-200 hover:text-[#3f9f9a]"
+      class="inline-flex items-center text-[13px] font-medium text-primary-turquoise underline underline-offset-4 transition-colors duration-200 hover:text-[#137f74]"
       aria-label={`Lire l’article : ${articleTitle}`}
     >
       Lire la suite
