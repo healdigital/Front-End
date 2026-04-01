@@ -1,4 +1,4 @@
-# Pending Points (Updated: 2026-04-01)
+# Pending Points (Updated: 2026-04-01, late)
 
 ## New Client Feedback Folder Review (2026-04-01)
 
@@ -12,6 +12,14 @@
   - update Astro display to use real rating data
 
 - [ ] Ingredient archive pages
+
+- [ ] Final UX/UI audit carry-forward that can be done without client input
+  - broader site-wide loading states / skeletons
+  - remaining image optimization pass on live surfaces
+  - broader color / contrast cleanup on remaining legacy surfaces
+  - translation UX polish
+  - richer search UX polish
+  - duplicate legacy component consolidation
 
 - [ ] Missing image offload/import fix
   - WordPress offload is still failing for some media items
@@ -83,6 +91,14 @@
     - recipe ingredients/instructions/nutrition component cleanup
     - Disqus comments wrapper cleanup
     - articles archive shared pagination cleanup
+  - [x] footer/link parity fixes
+    - footer `Ateliers` external link
+    - footer newsletter CTA opens modal
+  - [x] social share fixes
+    - icon-only share style
+    - current-domain share/copy behavior
+  - [x] books section responsive fix
+    - `.books-section-content` width forced to `100%` on the 1024 desktop/tablet range
 
 ### Blocked / Needs Client
 
@@ -92,6 +108,10 @@
 - [ ] Workshop card real descriptions
   - frontend support is already added
   - client still needs to fill WooCommerce excerpts/short descriptions on the source side
+
+- [ ] Contact form actual integration
+  - frontend cleanup is done
+  - real form destination/tool still needs final client direction
 
 - [ ] Club ad-free flow on the blog
   - implement cookie/JWT gate for Mediavine
@@ -120,6 +140,10 @@
 - [ ] Shop content note
   - Leo doc items `11` and `12` should not be duplicated on the main Astro site
   - current direction: keep only links to the external shop/community where relevant
+
+- [ ] Media/offload import script
+  - explicitly held for later
+  - will be handled separately from the current frontend/UI pass
 
 ## Leo Turbet Doc - Design Carry-Forward
 
