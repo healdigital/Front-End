@@ -5,6 +5,7 @@ const {
   canonical,
   slug,
   image,
+  lang = 'fr',
   author = 'La Cuisine De Bernard',
   publishDate,
   modifiedDate,
@@ -34,6 +35,9 @@ const fullImage = image || `${siteUrl}/og-image.png`;
   <>
     <link rel="alternate" hreflang="fr" href={`${siteUrl}/fr/recettes/${slug}`} />
     <link rel="alternate" hreflang="en" href={`${siteUrl}/en/recettes/${slug}`} />
+    <link rel="alternate" hreflang="es" href={`${siteUrl}/es/recettes/${slug}`} />
+    <link rel="alternate" hreflang="pt-br" href={`${siteUrl}/pt-br/recettes/${slug}`} />
+    <link rel="alternate" hreflang="ar" href={`${siteUrl}/ar/recettes/${slug}`} />
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}/fr/recettes/${slug}`} />
   </>
 )}
@@ -63,7 +67,7 @@ const fullImage = image || `${siteUrl}/og-image.png`;
 <!-- Additional SEO Tags -->
 <meta name="robots" content="index, follow" />
 <meta name="googlebot" content="index, follow" />
-<meta name="language" content="English" />
+<meta name="language" content={lang} />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
 <!-- Favicon & Icons -->
@@ -79,11 +83,6 @@ const fullImage = image || `${siteUrl}/og-image.png`;
 <link
   href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Jost:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap"
   rel="stylesheet"
-/>
-<link
-  href="https://db.onlinewebfonts.com/c/2173dceabf0710a335c0bca178efc162?family=Maison+Neue"
-  rel="stylesheet"
-  type="text/css"
 />
 
 <!-- Mobile Web App -->

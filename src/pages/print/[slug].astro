@@ -105,6 +105,7 @@ if (!article) {
 }
 
 const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
+const articleLang = String(article.lang || "fr").toLowerCase();
 const title = toText(article.title) || "Recipe";
 const content = renderArticleContent(article);
 const image = processArticleImageUrl(article);
@@ -223,6 +224,14 @@ const nutritionRows = [
 
 const recipeTips = toText(primaryRecipe?.tips);
 const recipeNotes = toText(primaryRecipe?.personalNotes);
+
+const printUi = {
+  fr: { pageTitleSuffix: "Impression recette", back: "Retour à l'article", print: "Imprimer" },
+  en: { pageTitleSuffix: "Print recipe", back: "Back to article", print: "Print" },
+  es: { pageTitleSuffix: "Imprimir receta", back: "Volver al artículo", print: "Imprimir" },
+  "pt-br": { pageTitleSuffix: "Imprimir receita", back: "Voltar ao artigo", print: "Imprimir" },
+  ar: { pageTitleSuffix: "طباعة الوصفة", back: "العودة إلى المقال", print: "طباعة" },
+}[articleLang] || { pageTitleSuffix: "Impression recette", back: "Retour à l'article", print: "Imprimer" };
 ---
 
 <!doctype html>
@@ -232,7 +241,7 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href={articleUrl} />
-    <title>{title} | Impression recette</title>
+    <title>{title} | {printUi.pageTitleSuffix}</title>
     <style is:global>
       :root {
         color-scheme: light;
@@ -585,8 +594,8 @@ const recipeNotes = toText(primaryRecipe?.personalNotes);
   <body>
     <main class="print-root">
       <nav class="print-toolbar" data-no-print>
-        <a class="print-toolbar-link" href={`/${slug}/`}>Retour a l'article</a>
-        <button type="button" class="print-toolbar-button" onclick="window.print()">Imprimer</button>
+        <a class="print-toolbar-link" href={`/${slug}/`}>{printUi.back}</a>
+        <button type="button" class="print-toolbar-button" onclick="window.print()">{printUi.print}</button>
       </nav>
 
       <article class="print-sheet">
