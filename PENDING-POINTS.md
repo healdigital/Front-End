@@ -18,17 +18,17 @@
   - client explicitly asked for help with a script/import path for missing cloud images
   - screenshot evidence shows offload errors for media items without valid file paths
 
-- [ ] Corrected copy / accent cleanup in the exact areas Bernard flagged
+- [ ] Corrected copy / accent cleanup in the remaining exact areas Bernard flagged
   - client said: `These are not the texts I corrected`
   - transcript also confirms missing accents in corrected text
 
-- [ ] Replace wrong image with the correct one in the affected homepage/content area
+- [x] Replace wrong image with the correct one in the affected homepage/content area
   - Bernard called out one specific image that should be removed/replaced
 
-- [ ] Move the `100% human / 100% original / 100% real photos` trust content upward with the intended photo
+- [x] Move the `100% human / 100% original / 100% real photos` trust content upward with the intended photo
   - remove the unwanted Bernard photo in that area
 
-- [ ] Reduce the recipe cards shown after the step-by-step instructions
+- [x] Reduce the recipe cards shown after the step-by-step instructions
   - client asked for much smaller images, closer to “postage stamp” size like the current live site
 
 - [x] Slow staging / delayed photo loading follow-up
@@ -36,7 +36,7 @@
   - frontend fallback logic was improved earlier
   - WordPress offload errors were confirmed in the new screenshot
 
-- [ ] Complete video courses implementation per spec
+- [x] Complete video courses implementation per spec
   - add `User-Agent` header in `src/lib/videoCourses.ts` for Cloudflare
   - add `lessonCount` / `duration` support
   - create dedicated `VideoCourseCard.astro`
@@ -49,8 +49,9 @@
   - add Astro reviews component on the chosen page(s)
 
 - [ ] Audit backlog if Leo wants it addressed now
-  - remove production test pages
-  - add `404.astro`
+  - [x] remove production test pages
+  - [x] add `404.astro`
+  - [x] clean contact page placeholder copy on the frontend
   - fix hreflang coverage
   - fix render-blocking font loading
   - fix hardcoded staging URL / priority audit items

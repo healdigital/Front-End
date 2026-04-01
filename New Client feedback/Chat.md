@@ -88,11 +88,7 @@ I was using this plugin but seems it's not importing all
 
 Im sending you credentials
 
-https://lcdb.fra1.digitaloceanspaces.com
 
-Secret key : YdO46xg+ABN3z6r+BAeBxzFUofGbNBR/58w5o0F/Wik
-
-Access id : DO00EXZD6XR66J7CJZCH
 
 LT
 Leo Turbet-Delof
