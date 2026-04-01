@@ -24,19 +24,19 @@ New items identified after reviewing the `New Client feedback` folder in depth.
 - Missing image offload/import fix remains open
   - client reported many slow or missing photos
   - offload screenshot shows real media offload failures in WordPress
-- Corrected text/accent cleanup remains open in the exact areas Bernard called out
+- Corrected text/accent cleanup is mostly done on the touched frontend surfaces
   - `These are not the texts I corrected`
   - transcript confirms missing accents in corrected copy
-- One wrong image still needs replacement in the affected homepage/content area
-- Trust/value block still needs the intended content/image arrangement:
+- Wrong image replacement completed in the client-flagged homepage/content area
+- Trust/value block now uses the intended content/image arrangement
   - move `100% human / 100% original / 100% real photos` upward
   - remove the unwanted Bernard photo in that area
-- Recipe cards shown after the step-by-step section still need their images reduced drastically
+- Recipe cards shown after the step-by-step section now use the smaller compact thumbnail style requested by the client
   - client reference: much smaller, “postage stamp” style images
 
 ### Spec-driven implementation items
 
-- Video courses implementation is broader than the current basic API hookup
+- Video courses implementation is completed on the main site
   - spec still calls for `User-Agent` handling in `videoCourses.ts`
   - `lessonCount` / `duration`
   - dedicated `VideoCourseCard.astro`
@@ -51,8 +51,9 @@ New items identified after reviewing the `New Client feedback` folder in depth.
 
 ### Audit backlog from the new folder
 
-- Remove production test pages
-- Add `404.astro`
+- Remove production test pages: done
+- Add `404.astro`: done
+- Contact page frontend cleanup: done
 - Fix incomplete hreflang coverage
 - Fix render-blocking font loading
 - Fix public endpoint/security hardening items called out in the audit
