@@ -1,5 +1,4 @@
 ---
-// CommentForm.astro - Comment submission form
 interface Props {
   slug: string;
 }
@@ -8,71 +7,76 @@ const { slug } = Astro.props;
 ---
 
 <div class="comment-section">
-  <h2>Leave a Comment & Rating</h2>
-  
-  <form id="comment-form" class="comment-form">
+  <h2>Laisser un commentaire et une note</h2>
+
+  <form id="comment-form" class="comment-form" method="post" novalidate>
     <div class="form-group">
-      <label for="author">Your Name *</label>
-      <input 
-        type="text" 
-        id="author" 
-        name="author" 
-        required 
+      <label for="author">Votre nom *</label>
+      <input
+        type="text"
+        id="author"
+        name="author"
+        required
         minlength="2"
         maxlength="50"
-        placeholder="Your name"
+        placeholder="Votre nom"
+        autocomplete="name"
       />
     </div>
 
     <div class="form-group">
-      <label for="email">Your Email *</label>
-      <input 
-        type="email" 
-        id="email" 
-        name="email" 
-        required 
-        placeholder="your@email.com"
+      <label for="email">Votre email *</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        placeholder="vous@email.com"
+        autocomplete="email"
       />
     </div>
 
     <div class="form-group">
-      <label for="rating">Rating *</label>
+      <label id="rating-group-label">Note *</label>
       <div class="rating-input">
         <input type="hidden" id="rating" name="rating" value="5" required />
-        <div class="stars">
+        <div class="stars" role="group" aria-labelledby="rating-group-label">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               type="button"
               class={`star star-${star}`}
               data-rating={star}
-              title={`${star} stars`}
+              title={`${star} sur 5`}
+              aria-label={`${star} étoile${star > 1 ? 's' : ''} sur 5`}
+              aria-pressed={star === 5 ? 'true' : 'false'}
             >
-              ★
+              <span aria-hidden="true">&#9733;</span>
             </button>
           ))}
         </div>
-        <span id="rating-text">Excellent (5/5)</span>
+        <span id="rating-text" role="status" aria-live="polite">Excellent (5/5)</span>
       </div>
     </div>
 
     <div class="form-group">
-      <label for="text">Your Comment *</label>
-      <textarea 
-        id="text" 
-        name="text" 
-        required 
+      <label for="text">Votre commentaire *</label>
+      <textarea
+        id="text"
+        name="text"
+        required
         minlength="3"
         maxlength="1000"
         rows="5"
-        placeholder="Share your thoughts about this article..."
+        placeholder="Partagez votre avis sur cette recette..."
+        aria-describedby="char-count"
       ></textarea>
-      <small id="char-count">0 / 1000 characters</small>
+      <small id="char-count" role="status" aria-live="polite">0 / 1000 caractères</small>
     </div>
 
-    <div id="form-message" class="form-message"></div>
+    <div id="form-message" class="form-message" role="status" aria-live="polite"></div>
 
     <button type="submit" class="submit-btn">
-      Post Comment & Rating
+      Publier le commentaire et la note
     </button>
   </form>
 </div>
@@ -89,10 +93,7 @@ const { slug } = Astro.props;
 
   .comment-section h2 {
     margin-top: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #1a2335;
     font-size: 1.75rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
@@ -114,10 +115,6 @@ const { slug } = Astro.props;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   .form-group input[type="text"],
@@ -138,9 +135,9 @@ const { slug } = Astro.props;
   .form-group input[type="email"]:focus,
   .form-group textarea:focus {
     outline: none;
-    border-color: #667eea;
-    background-color: #f8f9ff;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    border-color: #54b6b1;
+    background-color: #f8fffe;
+    box-shadow: 0 0 0 4px rgba(84, 182, 177, 0.15);
   }
 
   .form-group textarea {
@@ -152,12 +149,11 @@ const { slug } = Astro.props;
   #char-count {
     display: block;
     margin-top: 0.5rem;
-    color: #667eea;
+    color: #5b5b5b;
     font-size: 0.85rem;
     font-weight: 600;
   }
 
-  /* Rating Stars */
   .rating-input {
     display: flex;
     align-items: center;
@@ -172,7 +168,6 @@ const { slug } = Astro.props;
     display: flex;
     gap: 0.25rem;
   }
-  
 
   .star {
     background: none;
@@ -187,12 +182,15 @@ const { slug } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 0.5rem;
   }
 
-  .star:hover {
+  .star:hover,
+  .star:focus-visible {
     color: #fbbf24;
-    transform: scale(1.15);
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+    transform: scale(1.08);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(84, 182, 177, 0.25);
   }
 
   .star.active {
@@ -202,14 +200,13 @@ const { slug } = Astro.props;
 
   #rating-text {
     font-weight: 700;
-    color: #764ba2;
-    min-width: 120px;
+    color: #5b5b5b;
+    min-width: 140px;
     font-size: 0.95rem;
   }
 
-  /* Submit Button */
   .submit-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #54b6b1;
     color: white;
     padding: 0.95rem 2.5rem;
     border: none;
@@ -217,28 +214,20 @@ const { slug } = Astro.props;
     font-weight: 700;
     cursor: pointer;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    letter-spacing: 0.08em;
   }
 
   .submit-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-  }
-
-  .submit-btn:active {
-    transform: translateY(-1px);
+    background: #3aa8a2;
   }
 
   .submit-btn:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-    transform: none;
   }
 
-  /* Form Message */
   .form-message {
     margin-bottom: 1rem;
     padding: 1rem 1.25rem;
@@ -246,18 +235,6 @@ const { slug } = Astro.props;
     display: none;
     font-weight: 600;
     border-left: 4px solid transparent;
-    animation: slideIn 0.3s ease;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   .form-message.error {
@@ -284,100 +261,79 @@ const { slug } = Astro.props;
   const ratingText = document.getElementById('rating-text');
   const charCount = document.getElementById('char-count');
   const textArea = document.getElementById('text');
-  const submitBtn = form.querySelector('.submit-btn');
+  const submitBtn = form?.querySelector('.submit-btn');
 
-  // Add delay to ensure DOM is fully loaded
   setTimeout(() => {
-    if (!textArea) {
-      console.error('Textarea not found!');
+    if (!form || !textArea || !ratingInput || !ratingText || !submitBtn || !messageDiv || !charCount) {
       return;
     }
 
+    const stars = Array.from(document.querySelectorAll('.star'));
     const ratingLabels = {
-      1: 'Poor (1/5)',
-      2: 'Fair (2/5)',
-      3: 'Good (3/5)',
-      4: 'Very Good (4/5)',
+      1: 'Faible (1/5)',
+      2: 'Moyen (2/5)',
+      3: 'Bien (3/5)',
+      4: 'Très bien (4/5)',
       5: 'Excellent (5/5)',
     };
 
-    // Star rating handler
-    document.querySelectorAll('.star').forEach((star) => {
-      star.addEventListener('click', (e) => {
-        e.preventDefault();
-        const rating = star.dataset.rating;
-        ratingInput.value = rating;
+    const syncStars = (rating) => {
+      stars.forEach((star) => {
+        const starValue = Number(star.dataset.rating || 0);
+        const isActive = starValue <= rating;
+        star.classList.toggle('active', isActive);
+        star.setAttribute('aria-pressed', String(starValue === rating));
+      });
+      ratingText.textContent = ratingLabels[rating] || ratingLabels[5];
+      ratingInput.value = String(rating);
+    };
 
-        // Update active stars
-        document.querySelectorAll('.star').forEach((s) => {
-          if (parseInt(s.dataset.rating) <= rating) {
-            s.classList.add('active');
-          } else {
-            s.classList.remove('active');
-          }
-        });
-
-        // Update text
-        ratingText.textContent = ratingLabels[rating];
+    stars.forEach((star) => {
+      star.addEventListener('click', () => {
+        syncStars(Number(star.dataset.rating || 5));
       });
 
-      star.addEventListener('mouseenter', () => {
-        const rating = star.dataset.rating;
-        document.querySelectorAll('.star').forEach((s) => {
-          if (parseInt(s.dataset.rating) <= rating) {
-            s.style.color = '#fbbf24';
-          } else {
-            s.style.color = '#d1d5db';
-          }
-        });
+      star.addEventListener('keydown', (event) => {
+        const current = Number(ratingInput.value || 5);
+        if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          syncStars(Math.min(5, current + 1));
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+          event.preventDefault();
+          syncStars(Math.max(1, current - 1));
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          syncStars(1);
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          syncStars(5);
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          syncStars(Number(star.dataset.rating || 5));
+        }
       });
     });
 
-    const starsContainer = document.querySelector('.stars');
-    if (starsContainer) {
-      starsContainer.addEventListener('mouseleave', () => {
-        const currentRating = ratingInput.value;
-        document.querySelectorAll('.star').forEach((s) => {
-          if (parseInt(s.dataset.rating) <= currentRating) {
-            s.classList.add('active');
-            s.style.color = '#fbbf24';
-          } else {
-            s.classList.remove('active');
-            s.style.color = '#d1d5db';
-          }
-        });
-      });
-    }
-
-    // Character counter
-    textArea.addEventListener('input', (e) => {
-      const count = e.target.value.length;
-      charCount.textContent = `${count} / 1000 characters`;
+    textArea.addEventListener('input', (event) => {
+      const count = event.target.value.length;
+      charCount.textContent = `${count} / 1000 caractères`;
     }, true);
 
-    // Set initial star rating
-    document.querySelectorAll('.star').forEach((s) => {
-      if (parseInt(s.dataset.rating) <= 5) {
-        s.classList.add('active');
-      }
-    });
+    syncStars(5);
 
-    // Form submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const author = document.getElementById('author').value;
-      const email = document.getElementById('email').value;
+      const author = document.getElementById('author')?.value || '';
+      const email = document.getElementById('email')?.value || '';
       const text = textArea.value;
       const rating = ratingInput.value;
 
-      // Clear previous message
       messageDiv.textContent = '';
       messageDiv.className = 'form-message';
 
-      // Disable submit button
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Posting...';
+      submitBtn.textContent = 'Publication...';
 
       try {
         const response = await fetch('/api/comments', {
@@ -390,48 +346,32 @@ const { slug } = Astro.props;
             author,
             email,
             text,
-            rating: parseInt(rating),
+            rating: parseInt(rating, 10),
           }),
         });
 
         const data = await response.json();
-        
+
         if (response.ok) {
           messageDiv.className = 'form-message success';
           messageDiv.textContent =
-            '✅ Thank you! Your comment has been posted and will appear after moderation.';
+            'Merci. Votre commentaire a bien été envoyé et apparaîtra après modération.';
 
-          // Reset form
           form.reset();
-          ratingInput.value = '5';
-          ratingText.textContent = 'Excellent (5/5)';
-          charCount.textContent = '0 / 1000 characters';
-
-          // Reset stars
-          document.querySelectorAll('.star').forEach((s) => {
-            if (parseInt(s.dataset.rating) <= 5) {
-              s.classList.add('active');
-            }
-          });
-
-          // Reload comments after 2 seconds
-          setTimeout(() => {
-            window.location.hash = '#comments';
-            window.location.reload();
-          }, 2000);
+          charCount.textContent = '0 / 1000 caractères';
+          syncStars(5);
         } else {
           messageDiv.className = 'form-message error';
-          messageDiv.textContent =
-            `❌ Error: ${data.error || 'Failed to post comment'}`;
+          messageDiv.textContent = `Erreur : ${data.error || 'Impossible de publier le commentaire.'}`;
         }
       } catch (error) {
         console.error('Error submitting comment:', error);
         messageDiv.className = 'form-message error';
         messageDiv.textContent =
-          '❌ Error: Failed to submit comment. Please try again.';
+          'Erreur : impossible d’envoyer le commentaire pour le moment.';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Post Comment & Rating';
+        submitBtn.textContent = 'Publier le commentaire et la note';
       }
     });
   }, 100);

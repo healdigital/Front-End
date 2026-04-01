@@ -22,11 +22,12 @@ const categories = [
   { label: 'Sélections', url: '/selections' },
 ];
 
-const aboutLinks = [
+const informationLinks = [
   { label: 'Contact', url: '/contact' },
   { label: 'Mentions légales', url: '/mentions-legales' },
   { label: 'Politique de confidentialité', url: '/politique-confidentialite' },
   { label: 'CGU', url: '/cgu' },
+  { label: 'Gestion des cookies', url: '/cookies' },
 ];
 ---
 
@@ -34,7 +35,11 @@ const aboutLinks = [
   <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-16">
       <div class="space-y-6">
-        <a href="/" class="inline-block text-2xl font-heading text-primary-white mb-2" aria-label="La Cuisine de Bernard - Accueil">
+        <a
+          href="/"
+          class="inline-block text-2xl font-heading text-primary-white mb-2"
+          aria-label="La Cuisine de Bernard - Accueil"
+        >
           La Cuisine de Bernard
         </a>
         <p class="text-text-secondary font-body text-md leading-relaxed max-w-xs">
@@ -74,7 +79,7 @@ const aboutLinks = [
       <div>
         <h3 class="text-primary-white font-heading text-2xl mb-6">Informations</h3>
         <ul class="space-y-3">
-          {aboutLinks.map((link) => (
+          {informationLinks.map((link) => (
             <li>
               <a
                 href={link.url}
@@ -105,11 +110,7 @@ const aboutLinks = [
 
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-tertiary">
       <p>&copy; {currentYear} La Cuisine de Bernard. Tous droits réservés.</p>
-      <div class="flex gap-6">
-        <a href="/politique-confidentialite" class="hover:text-primary-white transition-colors">Politique de confidentialité</a>
-        <a href="/cgu" class="hover:text-primary-white transition-colors">CGU</a>
-        <a href="/cookies" class="hover:text-primary-white transition-colors">Gestion des cookies</a>
-      </div>
+      <p class="text-center md:text-right">Cuisine, pâtisserie et gourmandise au quotidien.</p>
     </div>
   </div>
 </footer>

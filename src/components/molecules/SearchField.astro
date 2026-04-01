@@ -27,7 +27,19 @@ const {
       data-search-input
       id={id}
       name="q"
-    />
+      autocomplete="off"
+      role="combobox"
+      aria-autocomplete="list"
+      aria-expanded="false"
+      aria-controls={`${id}-suggestions`}
+      />
+    <div
+      id={`${id}-suggestions`}
+      class="hidden absolute left-0 right-0 top-[calc(100%+8px)] z-30 rounded-2xl border border-[#D8D2C2] bg-[#FAF8F2] p-2 shadow-[0_18px_40px_rgba(17,17,17,0.08)]"
+      data-search-suggestions
+      role="listbox"
+      aria-label="Suggestions de recherche"
+    ></div>
   </div>
   <button
     type="submit"
@@ -43,11 +55,101 @@ const {
   import { validateForm } from '../../lib/validation/client';
 
   const searchInputs = document.querySelectorAll<HTMLInputElement>('[data-search-input]');
+  let cachedSuggestions: Array<{ title?: string; slug?: string }> | null = null;
+
+  const loadSuggestions = async () => {
+    if (cachedSuggestions) return cachedSuggestions;
+
+    try {
+      const response = await fetch('/home-recipes-index.json', { cache: 'force-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      cachedSuggestions = Array.isArray(data) ? data : [];
+      return cachedSuggestions;
+    } catch (error) {
+      console.error('Failed to load search suggestions:', error);
+      cachedSuggestions = [];
+      return cachedSuggestions;
+    }
+  };
 
   searchInputs.forEach((input) => {
     const form = input.closest('[data-search-form]');
+    const suggestionsPanel = form?.querySelector<HTMLElement>('[data-search-suggestions]');
     const errorClasses = ['ring-status-error', 'focus:ring-status-error', 'border', 'border-status-error'];
     const successClasses = ['ring-status-success', 'focus:ring-status-success', 'border', 'border-status-success'];
+    let activeSuggestionIndex = -1;
+
+    const closeSuggestions = () => {
+      activeSuggestionIndex = -1;
+      input.setAttribute('aria-expanded', 'false');
+      suggestionsPanel?.classList.add('hidden');
+      if (suggestionsPanel) suggestionsPanel.innerHTML = '';
+    };
+
+    const setActiveSuggestion = (index: number) => {
+      if (!suggestionsPanel) return;
+      const items = Array.from(suggestionsPanel.querySelectorAll<HTMLButtonElement>('[data-search-suggestion-item]'));
+      items.forEach((item, itemIndex) => {
+        const isActive = itemIndex === index;
+        item.classList.toggle('bg-[#F0ECE1]', isActive);
+        item.setAttribute('aria-selected', String(isActive));
+      });
+      activeSuggestionIndex = index;
+    };
+
+    const renderSuggestions = async (query: string) => {
+      if (!suggestionsPanel) return;
+      const normalizedQuery = query.trim().toLowerCase();
+      if (normalizedQuery.length < 2) {
+        closeSuggestions();
+        return;
+      }
+
+      const suggestionSource = await loadSuggestions();
+      const matches = suggestionSource
+        .filter((item) => typeof item?.title === 'string' && typeof item?.slug === 'string')
+        .filter((item) => item.title!.toLowerCase().includes(normalizedQuery))
+        .slice(0, 6);
+
+      if (matches.length === 0) {
+        closeSuggestions();
+        return;
+      }
+
+      suggestionsPanel.innerHTML = matches
+        .map(
+          (item, index) => `
+            <button
+              type="button"
+              class="flex w-full items-start rounded-xl px-3 py-2 text-left text-[14px] text-[#111111] transition-colors hover:bg-[#F0ECE1]"
+              data-search-suggestion-item
+              data-search-suggestion-slug="${item.slug}"
+              data-search-suggestion-title="${item.title?.replace(/"/g, '&quot;')}"
+              role="option"
+              aria-selected="false"
+            >
+              <span>${item.title}</span>
+            </button>
+          `,
+        )
+        .join('');
+
+      suggestionsPanel.classList.remove('hidden');
+      input.setAttribute('aria-expanded', 'true');
+      setActiveSuggestion(0);
+
+      const suggestionButtons = suggestionsPanel.querySelectorAll<HTMLButtonElement>('[data-search-suggestion-item]');
+      suggestionButtons.forEach((button, index) => {
+        button.addEventListener('mouseenter', () => setActiveSuggestion(index));
+        button.addEventListener('click', () => {
+          const slug = button.dataset.searchSuggestionSlug;
+          if (slug) {
+            window.location.href = `/${slug.replace(/^\/+|\/+$/g, '')}/`;
+          }
+        });
+      });
+    };
 
     const clearVisualState = () => {
       input.classList.remove(...errorClasses, ...successClasses);
@@ -101,8 +203,38 @@ const {
     };
 
     input.addEventListener('keydown', (e) => {
-      if ((e as KeyboardEvent).key !== 'Enter') return;
-      e.preventDefault();
+      const event = e as KeyboardEvent;
+      const suggestionItems = suggestionsPanel
+        ? Array.from(suggestionsPanel.querySelectorAll<HTMLButtonElement>('[data-search-suggestion-item]'))
+        : [];
+
+      if (event.key === 'ArrowDown' && suggestionItems.length > 0) {
+        event.preventDefault();
+        const nextIndex = Math.min(suggestionItems.length - 1, activeSuggestionIndex + 1);
+        setActiveSuggestion(nextIndex);
+        return;
+      }
+
+      if (event.key === 'ArrowUp' && suggestionItems.length > 0) {
+        event.preventDefault();
+        const nextIndex = Math.max(0, activeSuggestionIndex - 1);
+        setActiveSuggestion(nextIndex);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        closeSuggestions();
+        return;
+      }
+
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+
+      if (activeSuggestionIndex >= 0 && suggestionItems[activeSuggestionIndex]) {
+        suggestionItems[activeSuggestionIndex].click();
+        return;
+      }
+
       submitSearch();
     });
 
@@ -124,9 +256,15 @@ const {
 
       if (result.data.query.length > 0) {
         setSuccess();
+        renderSuggestions(result.data.query);
       } else {
         clearError();
+        closeSuggestions();
       }
+    });
+
+    input.addEventListener('blur', () => {
+      window.setTimeout(() => closeSuggestions(), 120);
     });
   });
 </script>

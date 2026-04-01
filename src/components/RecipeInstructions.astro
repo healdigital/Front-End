@@ -1,20 +1,4 @@
 ---
-/**
- * RecipeInstructions Component
- * 
- * Displays step-by-step recipe instructions
- * Features:
- * - Numbered steps with visual feedback
- * - Step grouping by category
- * - Time estimates per step
- * - Tip/note support for each step
- * - Print-friendly styling
- * 
- * Props:
- * - steps (RecipeStep[]): Array of instruction steps
- * - title (string): Section title
- */
-
 interface RecipeStep {
   group?: string;
   number: number;
@@ -28,11 +12,10 @@ interface Props {
   title?: string;
 }
 
-const { steps, title = "Instructions" } = Astro.props;
+const { steps, title = 'Préparation' } = Astro.props;
 
-// Group steps by category
 const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
-  const group = step.group || 'Preparation';
+  const group = step.group || 'Préparation';
   if (!acc[group]) acc[group] = [];
   acc[group].push(step);
   return acc;
@@ -43,39 +26,43 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
   <h2 class="instructions-title">{title}</h2>
 
   {Object.entries(groupedSteps).map(([group, groupSteps]: any) => (
-    <div class="instruction-group">
-      {group !== 'Preparation' && <h3 class="group-title">{group}</h3>}
-      
+    <section class="instruction-group" aria-labelledby={`instruction-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
+      {group !== 'Préparation' && (
+        <h3 class="group-title" id={`instruction-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`}>
+          {group}
+        </h3>
+      )}
+
       <ol class="steps-list">
         {groupSteps.map((step: RecipeStep, index: number) => (
           <li class="step-item">
             <div class="step-header">
-              <span class="step-number">{step.number || index + 1}</span>
+              <span class="step-number" aria-label={`Étape ${step.number || index + 1}`}>{step.number || index + 1}</span>
               <div class="step-content">
                 <p class="step-instruction">{step.instruction}</p>
                 {step.time && (
-                  <div class="step-time">
-                    <span class="icon">⏱️</span>
+                  <div class="step-time" aria-label={`Temps estimé : ${step.time} minutes`}>
+                    <span class="time-label">Temps :</span>
                     <span>{step.time} min</span>
                   </div>
                 )}
               </div>
             </div>
-            
+
             {step.tips && step.tips.length > 0 && (
-              <div class="step-tips">
+              <aside class="step-tips" aria-label="Astuces">
                 {step.tips.map((tip: string) => (
                   <div class="tip">
-                    <span class="tip-icon">💡</span>
+                    <span class="tip-label">Astuce :</span>
                     <span>{tip}</span>
                   </div>
                 ))}
-              </div>
+              </aside>
             )}
           </li>
         ))}
       </ol>
-    </div>
+    </section>
   ))}
 </div>
 
@@ -87,14 +74,12 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
   .instructions-title {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--lcdb-heading);
     margin: 0 0 2rem 0;
-    padding: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  /* Instruction Groups */
   .instruction-group {
     margin-bottom: 2rem;
   }
@@ -106,14 +91,13 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
   .group-title {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--lcdb-heading);
     margin: 0 0 1.5rem 0;
     padding: 0 0 0.75rem 0;
     text-transform: capitalize;
-    border-bottom: 2px solid #0066cc;
+    border-bottom: 2px solid var(--lcdb-accent);
   }
 
-  /* Steps List */
   .steps-list {
     list-style: none;
     padding: 0;
@@ -125,20 +109,19 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     padding: 1.5rem;
     background: #f9f9f9;
     border-radius: 8px;
-    border-left: 4px solid #0066cc;
+    border-left: 4px solid var(--lcdb-accent);
     transition: all 0.3s ease;
   }
 
   .step-item:hover {
-    background: #f0f7ff;
-    box-shadow: 0 4px 8px rgba(0, 102, 204, 0.1);
+    background: #f0f7f6;
+    box-shadow: 0 4px 8px rgba(84, 182, 177, 0.1);
   }
 
   .step-item:last-child {
     margin-bottom: 0;
   }
 
-  /* Step Header */
   .step-header {
     display: flex;
     gap: 1.5rem;
@@ -149,7 +132,7 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
-    background: #0066cc;
+    background: var(--lcdb-accent);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -166,7 +149,7 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
 
   .step-instruction {
     font-size: 1.05rem;
-    color: #333;
+    color: var(--lcdb-heading);
     line-height: 1.7;
     margin: 0 0 0.75rem 0;
   }
@@ -176,15 +159,14 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--lcdb-copy);
     font-weight: 500;
   }
 
-  .step-time .icon {
-    font-size: 1rem;
+  .time-label {
+    font-weight: 600;
   }
 
-  /* Step Tips */
   .step-tips {
     margin-top: 1rem;
     padding-top: 1rem;
@@ -196,7 +178,7 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     gap: 0.75rem;
     align-items: flex-start;
     font-size: 0.95rem;
-    color: #666;
+    color: var(--lcdb-copy);
     margin-bottom: 0.75rem;
     line-height: 1.5;
   }
@@ -205,13 +187,12 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     margin-bottom: 0;
   }
 
-  .tip-icon {
+  .tip-label {
     flex-shrink: 0;
-    font-size: 1rem;
-    margin-top: 0.1rem;
+    font-weight: 600;
+    color: var(--lcdb-accent);
   }
 
-  /* Mobile Responsive */
   @media (max-width: 768px) {
     .instructions-title {
       font-size: 1.5rem;
@@ -244,7 +225,6 @@ const groupedSteps = steps.reduce((acc: any, step: RecipeStep) => {
     }
   }
 
-  /* Print Styles */
   @media print {
     .step-item {
       page-break-inside: avoid;
