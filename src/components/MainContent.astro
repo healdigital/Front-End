@@ -79,7 +79,7 @@ const shareLinks = {
           {latestArticles.map((article) => {
             const title = getArticleTitle(article);
             const slug = getArticleSlug(article);
-            const url = `https://lacuisinedebernard.com/${slug}`;
+            const url = `/${String(slug || '').replace(/^\/+|\/+$/g, '')}/`;
             const imageSrc = processArticleImageUrl(article);
 
             return (
@@ -92,6 +92,10 @@ const shareLinks = {
                         alt={title}
                         class="h-40 w-full object-cover transition-transform duration-300 hover:scale-[1.04] sm:h-full"
                         loading="lazy"
+                        decoding="async"
+                        width="320"
+                        height="320"
+                        sizes="160px"
                       />
                     ) : (
                       <div class="flex h-40 w-full items-center justify-center text-text-tertiary sm:h-full">
@@ -103,7 +107,7 @@ const shareLinks = {
                   <div class="flex flex-1 flex-col">
                     <h3 class="mb-2 text-lg font-semibold text-text-primary">
                       <a
-                        href={`/${slug}`}
+                        href={url}
                         class="rounded-sm transition-colors duration-200 hover:text-primary-turquoise focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-turquoise/60"
                       >
                         {title}
@@ -119,7 +123,7 @@ const shareLinks = {
                     </p>
 
                     <a
-                      href={`/${slug}`}
+                      href={url}
                       class="mb-4 inline-flex items-center text-[13px] font-medium text-primary-turquoise underline underline-offset-4 transition-colors duration-200 hover:text-[#3f9f9a]"
                       aria-label={`Lire l’article : ${title}`}
                     >

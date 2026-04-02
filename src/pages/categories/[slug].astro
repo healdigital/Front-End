@@ -132,6 +132,10 @@ const articles = allArticles.slice(0, PAGE_SIZE);
                       src={article.image}
                       alt={article.title}
                       loading="lazy"
+                      decoding="async"
+                      width="640"
+                      height="800"
+                      sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
                       class="w-full h-full object-cover"
                     />
                   ) : (

@@ -1,132 +1,94 @@
 ---
-interface Props {}
+const introText =
+  "Bernard partage une cuisine exigeante mais accessible, nourrie par les voyages, les traditions et le goût des recettes fiables. Pâtisserie, cuisine du monde et grands classiques y sont transmis avec clarté et précision.";
 
-const welcomeText = `A traveler and passionate about cooking, I share all my culinary secrets with you, without holding back. I try to pay homage to traditions, from the canelé of Bordeaux to the dim sum of Hong Kong. "Bernard's Recipes" includes dozens of recipes for pastries, appetizers, and various main dishes.`;
-
-const bookLinks = [
-    "https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d",
-    "https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21",
-    "https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F",
-    "https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88",
-    "https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd",
-    "https://www.amazon.fr/gp/product/2080253492/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2080253492&linkCode=as2&tag=lacuisidebern-21&linkId=16638a390ee02cd4cdd339dea4ee9dfc",
+const books = [
+  { image: "/images/book-2.jpg", url: "https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d" },
+  { image: "/images/book-3.png", url: "https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21" },
+  { image: "/images/book-4.jpg", url: "https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F" },
+  { image: "/images/book-5.jpg", url: "https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88" },
+  { image: "/images/book-1.png", url: "https://lacuisinedebernard.com/produit/je-fais-mon-chocolat-maison/" },
+  { image: "/images/book-6.jpg", url: "https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd" },
 ];
 ---
 
-<section
-    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-purple-200 dark:border-purple-800"
->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Left: Welcome Image & Text -->
-        <div class="md:col-span-1">
-            <div class="text-center">
-                {/* Image placeholder - replace with actual image */}
-                <div
-                    class="mb-6 rounded-lg overflow-hidden shadow-lg bg-gradient-to-br from-orange-200 to-pink-200"
-                >
-                    <img
-                        src="/images/bernard-blog.png"
-                        alt="Bernard Laurance"
-                        class="w-full h-64 object-cover"
-                    />
-                </div>
+<section class="border-t border-border-primary bg-secondary-cream/45">
+  <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)_minmax(280px,0.85fr)] lg:px-8">
+    <article class="rounded-[14px] border border-border-primary bg-primary-white p-6 shadow-[0_12px_30px_rgba(17,17,17,0.05)]">
+      <div class="overflow-hidden rounded-[12px] bg-secondary-beige-light">
+        <img
+          src="/images/bernard-blog.png"
+          alt="Bernard Laurance"
+          class="h-[320px] w-full object-cover"
+          loading="lazy"
+          decoding="async"
+          width="640"
+          height="760"
+          sizes="(min-width: 1024px) 26vw, 92vw"
+        />
+      </div>
+      <p class="mt-5 text-[13px] uppercase tracking-[0.14em] text-text-tertiary">La Cuisine de Bernard</p>
+      <h2 class="mt-2 font-heading text-[34px] leading-none text-text-primary">Cuisine réelle et transmission généreuse</h2>
+      <p class="mt-4 text-[16px] leading-[1.7] text-text-secondary">{introText}</p>
+      <a
+        href="/a-propos/"
+        class="mt-6 inline-flex items-center text-[13px] font-medium uppercase tracking-[0.08em] text-primary-turquoise underline underline-offset-4 transition-colors duration-200 hover:text-[#137f74]"
+      >
+        Lire l’histoire
+      </a>
+    </article>
 
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                    <h3
-                        class="text-2xl font-bold text-gray-900 dark:text-white mb-4"
-                    >
-                        Welcome
-                    </h3>
-                    <p
-                        class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed"
-                    >
-                        {welcomeText}
-                    </p>
-                </div>
-            </div>
-        </div>
+    <article class="rounded-[14px] border border-border-primary bg-primary-white p-6 shadow-[0_12px_30px_rgba(17,17,17,0.05)]">
+      <p class="text-[13px] uppercase tracking-[0.14em] text-text-tertiary">Bibliothèque</p>
+      <h2 class="mt-2 font-heading text-[34px] leading-none text-text-primary">Les livres de Bernard</h2>
+      <p class="mt-4 text-[16px] leading-[1.7] text-text-secondary">
+        Des livres dédiés à la pâtisserie, aux classiques et aux saveurs du monde pour continuer à cuisiner avec méthode.
+      </p>
 
-        <!-- Middle: Books Section -->
-        <div class="md:col-span-1">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                <h3
-                    class="text-2xl font-bold text-gray-900 dark:text-white mb-2"
-                >
-                    Discover
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    My recipe books and culinary guides
-                </p>
+      <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {books.map((book, index) => (
+          <a
+            href={book.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group overflow-hidden rounded-[10px] border border-border-primary bg-secondary-beige-light transition-transform duration-200 hover:-translate-y-[2px]"
+            aria-label={`Découvrir le livre ${index + 1}`}
+          >
+            <img
+              src={book.image}
+              alt={`Livre ${index + 1}`}
+              class="h-[168px] w-full object-cover transition-opacity duration-200 group-hover:opacity-90"
+              loading="lazy"
+              decoding="async"
+              width="420"
+              height="540"
+              sizes="(min-width: 1024px) 14vw, (min-width: 640px) 22vw, 42vw"
+            />
+          </a>
+        ))}
+      </div>
+    </article>
 
-                <div class="space-y-3">
-                    <div class="grid grid-cols-3 gap-3">
-                        {
-                            [
-                                {
-                                    image: "/images/book-2.jpg",
-                                    url: "https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d",
-                                },
-                                {
-                                    image: "/images/book-3.png",
-                                    url: "https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21",
-                                },
-                                {
-                                    image: "/images/book-4.jpg",
-                                    url: "https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F",
-                                },
-                                {
-                                    image: "/images/book-5.jpg",
-                                    url: "https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88",
-                                },
-                                {
-                                    image: "/images/book-1.png",
-                                    url: "https://lacuisinedebernard.com/produit/je-fais-mon-chocolat-maison/",
-                                },
-                                {
-                                    image: "/images/book-6.jpg",
-                                    url: "https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd",
-                                },
-                                {
-                                    image: "/images/book-7.jpg",
-                                    url: "https://amzn.to/3iWsQAw",
-                                },
-                            ].map((book) => (
-                                <a
-                                    href={book.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
-                                >
-                                    <img
-                                        src={book.image}
-                                        alt="Book"
-                                        class="w-full h-48 object-cover group-hover:opacity-80 transition-opacity"
-                                    />
-                                </a>
-                            ))
-                        }
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Right: Facebook Embed -->
-        <div class="md:col-span-1">
-            <div
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
-            >
-                <iframe
-                    src="https://www.facebook.com/v9.0/plugins/page.php?adapt_container_width=true&app_id=&channel=https%3A%2F%2Fstaticxx.facebook.com%2Fx%2Fconnect%2Fxd_arbiter%2F%3Fversion%3D46%23cb%3Dfe77393b8306eb300%26domain%3Dlacuisinedebernard.com%26is_canvas%3Dfalse%26origin%3Dhttps%253A%252F%252Flacuisinedebernard.com%252Ff78c1a27da79a4709%26relation%3Dparent.parent&container_width=291&hide_cover=false&href=https%3A%2F%2Fwww.facebook.com%2Flacuisinedebernard%2F&locale=fr_FR&sdk=joey&show_facepile=true&show_posts=false&small_header=false"
-                    width="100%"
-                    height="500"
-                    style="border:none;overflow:hidden"
-                    scrolling="no"
-                    frameborder="0"
-                    allowfullscreen="true"
-                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                    loading="lazy"></iframe>
-            </div>
-        </div>
-    </div>
+    <aside class="rounded-[14px] border border-border-primary bg-primary-white p-6 shadow-[0_12px_30px_rgba(17,17,17,0.05)]">
+      <p class="text-[13px] uppercase tracking-[0.14em] text-text-tertiary">Suivre</p>
+      <h2 class="mt-2 font-heading text-[34px] leading-none text-text-primary">Facebook</h2>
+      <p class="mt-4 text-[16px] leading-[1.7] text-text-secondary">
+        Retrouvez les dernières publications et les nouveautés directement depuis la page officielle.
+      </p>
+      <div class="mt-6 overflow-hidden rounded-[12px] border border-border-primary bg-secondary-beige-light">
+        <iframe
+          src="https://www.facebook.com/v9.0/plugins/page.php?adapt_container_width=true&app_id=&channel=https%3A%2F%2Fstaticxx.facebook.com%2Fx%2Fconnect%2Fxd_arbiter%2F%3Fversion%3D46%23cb%3Dfe77393b8306eb300%26domain%3Dlacuisinedebernard.com%26is_canvas%3Dfalse%26origin%3Dhttps%253A%252F%252Flacuisinedebernard.com%252Ff78c1a27da79a4709%26relation%3Dparent.parent&container_width=291&hide_cover=false&href=https%3A%2F%2Fwww.facebook.com%2Flacuisinedebernard%2F&locale=fr_FR&sdk=joey&show_facepile=true&show_posts=false&small_header=false"
+          title="Page Facebook La Cuisine de Bernard"
+          width="100%"
+          height="420"
+          style="border:none;overflow:hidden"
+          scrolling="no"
+          frameborder="0"
+          allowfullscreen="true"
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </aside>
+  </div>
 </section>

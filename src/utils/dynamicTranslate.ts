@@ -1,4 +1,4 @@
-// Dynamic client-side translation system
+﻿// Dynamic client-side translation system
 // This allows instant page translation without reload
 
 export interface TranslationsData {
@@ -145,6 +145,23 @@ const deeplLanguageMap: Record<string, string> = {
 const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
 const supportedLanguageSet = new Set(supportedLanguages);
 const LANGUAGE_STORAGE_KEY = 'preferred-language';
+
+type TranslationStatusState = 'loading' | 'success' | 'warning' | 'error';
+
+const emitTranslationStatus = (
+  state: TranslationStatusState,
+  detail: { lang?: string; message?: string } = {},
+): void => {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(
+    new CustomEvent('lcdb:translation-status', {
+      detail: {
+        state,
+        ...detail,
+      },
+    }),
+  );
+};
 
 const normalizeLanguageCode = (lang: string): string => {
   const raw = String(lang || '').trim().toLowerCase();
@@ -297,7 +314,6 @@ export async function initializeTranslations(): Promise<void> {
       // Ignore storage write failures (private mode / blocked storage).
     }
 
-    console.log('Translations initialized for languages:', Object.keys(translationsData).join(', '));
   } catch (error) {
     console.error('Failed to initialize translations:', error);
   }
@@ -490,7 +506,6 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     const successIndex = deeplEndpoints.indexOf(endpoint);
     if (successIndex >= 0 && successIndex !== activeDeeplEndpointIndex) {
       activeDeeplEndpointIndex = successIndex;
-      console.info(`[translate] Switched to active endpoint: ${endpoint}`);
     }
     resetDeepLFailureState();
   }
@@ -725,6 +740,14 @@ export async function changeLanguage(newLang: string): Promise<void> {
         return;
       }
 
+      const switchingToSourceLanguage = normalizedLang === sourceLanguage;
+      emitTranslationStatus('loading', {
+        lang: normalizedLang,
+        message: switchingToSourceLanguage
+          ? 'Retour à la version originale en cours...'
+          : 'Traduction de la page en cours...',
+      });
+
       currentLanguage = normalizedLang;
       localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizedLang);
 
@@ -747,9 +770,28 @@ export async function changeLanguage(newLang: string): Promise<void> {
       translatePageContent();
       appliedLanguage = normalizedLang;
 
-      console.log(`Language changed to: ${normalizedLang}`);
+      if (switchingToSourceLanguage) {
+        emitTranslationStatus('success', {
+          lang: normalizedLang,
+          message: 'Version originale affichée.',
+        });
+      } else if (deeplUnavailable || !hasDeeplEndpoint()) {
+        emitTranslationStatus('warning', {
+          lang: normalizedLang,
+          message: 'Certaines traductions automatiques sont temporairement indisponibles.',
+        });
+      } else {
+        emitTranslationStatus('success', {
+          lang: normalizedLang,
+          message: 'Traduction terminée.',
+        });
+      }
     })
     .catch((error) => {
+      emitTranslationStatus('error', {
+        lang: normalizeLanguageCode(newLang),
+        message: 'La traduction a rencontré une erreur. Veuillez réessayer.',
+      });
       console.error('[translate] Failed to apply language change:', error);
     });
 
@@ -866,3 +908,5 @@ export function watchLanguageChanges(): void {
     }
   });
 }
+
+

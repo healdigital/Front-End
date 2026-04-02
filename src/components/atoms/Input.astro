@@ -15,6 +15,9 @@ interface Props extends HTMLAttributes<'input'> {
   labelClass?: string;
   /** Inline style string applied to the label element. */
   labelStyle?: string;
+  isLoading?: boolean;
+  showCharCount?: boolean;
+  showClearButton?: boolean;
 }
 
 const { 
@@ -23,11 +26,18 @@ const {
   id = `input-${Math.random().toString(36).substr(2, 9)}`,
   labelClass,
   labelStyle,
+  isLoading = false,
+  showCharCount = false,
+  showClearButton = false,
   class: className,
   type = 'text',
   disabled,
   ...rest 
 } = Astro.props;
+
+const maxLengthValue = Number((rest as any).maxLength ?? (rest as any).maxlength ?? 0);
+const hasCharCount = showCharCount && maxLengthValue > 0;
+const canClear = showClearButton && type !== 'password' && type !== 'hidden' && !disabled;
 
 const baseStyles = "w-full rounded-md border text-base shadow-sm placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-text-tertiary transition-colors duration-200";
 
@@ -46,20 +56,83 @@ const classes = [
   {label && <label for={id} class={["text-sm font-medium text-text-primary", labelClass].filter(Boolean).join(" ")} style={labelStyle}>
     {label}
   </label>}
-  
-  <input
-    id={id}
-    type={type}
-    disabled={disabled}
-    class={classes}
-    aria-invalid={!!error}
-    aria-describedby={error ? `${id}-error` : undefined}
-    {...rest}
-  />
-  
-  {error && (
-    <span id={`${id}-error`} class="text-xs text-status-error animate-pulse">
-      {error}
-    </span>
-  )}
+
+  <div class="relative w-full">
+    <input
+      id={id}
+      type={type}
+      disabled={disabled}
+      class:list={[classes, (isLoading || canClear) ? 'pr-12' : '', hasCharCount ? 'pr-16' : '']}
+      aria-invalid={!!error}
+      aria-describedby={[
+        error ? `${id}-error` : '',
+        hasCharCount ? `${id}-count` : '',
+      ].filter(Boolean).join(' ') || undefined}
+      aria-busy={isLoading || undefined}
+      data-input-field
+      data-input-id={id}
+      {...rest}
+    />
+    {isLoading && (
+      <span class="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center text-text-secondary" aria-hidden="true">
+        <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"></span>
+      </span>
+    )}
+    {canClear && (
+      <button
+        type="button"
+        class="hidden absolute inset-y-0 right-3 items-center text-text-secondary transition-colors hover:text-text-primary"
+        data-input-clear
+        data-input-target={id}
+        aria-label="Effacer le champ"
+      >
+        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border-primary text-[13px] leading-none">×</span>
+      </button>
+    )}
+  </div>
+
+  <div class="flex items-center justify-between gap-3">
+    {error ? (
+      <span id={`${id}-error`} class="text-xs text-status-error animate-pulse">
+        {error}
+      </span>
+    ) : <span />}
+
+    {hasCharCount && (
+      <span id={`${id}-count`} class="text-xs text-text-secondary" data-input-count data-input-target={id}>
+        0 / {maxLengthValue}
+      </span>
+    )}
+  </div>
 </div>
+
+<script>
+  document.querySelectorAll('[data-input-field]').forEach((field) => {
+    if (!(field instanceof HTMLInputElement)) return;
+    const inputId = field.dataset.inputId || field.id;
+    const countEl = document.querySelector(`[data-input-count][data-input-target="${inputId}"]`);
+    const clearButton = document.querySelector(`[data-input-clear][data-input-target="${inputId}"]`);
+    const maxLength = Number(field.maxLength || 0);
+
+    const syncState = () => {
+      if (countEl instanceof HTMLElement && maxLength > 0) {
+        countEl.textContent = `${field.value.length} / ${maxLength}`;
+      }
+      if (clearButton instanceof HTMLElement) {
+        clearButton.classList.toggle('hidden', !field.value);
+        clearButton.classList.toggle('inline-flex', Boolean(field.value));
+      }
+    };
+
+    syncState();
+    field.addEventListener('input', syncState);
+
+    if (clearButton instanceof HTMLButtonElement) {
+      clearButton.addEventListener('click', () => {
+        field.value = '';
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.focus();
+      });
+    }
+  });
+</script>

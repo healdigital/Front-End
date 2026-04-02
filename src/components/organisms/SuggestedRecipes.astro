@@ -84,7 +84,7 @@ const totalRecipeCount = totalCount;
       <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
     </div>
 
-    <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid>
+    <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid aria-busy="false">
       {recipes.map((recipe, index) => (
         <div
           class:list={['suggested-card-shell h-full', index >= visibleCount && 'hidden']}
@@ -111,6 +111,31 @@ const totalRecipeCount = totalCount;
       ))}
     </div>
 
+    <div
+      class={`hidden suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6 mt-6`}
+      data-suggested-skeleton
+      aria-hidden="true"
+    >
+      {Array.from({ length: visibleCount }).map(() => (
+        <div class="overflow-hidden rounded-[12px] border border-border-primary bg-[#F7F5EF] shadow-[0_16px_40px_rgba(6,18,40,0.08)] animate-pulse">
+          <div class="aspect-[0.88] bg-[#E6E0D2]"></div>
+          <div class="p-6">
+            <div class="h-4 w-20 rounded bg-[#E6E0D2]"></div>
+            <div class="mt-5 h-10 w-4/5 rounded bg-[#E6E0D2]"></div>
+            <div class="mt-6 flex gap-3">
+              <div class="h-4 w-16 rounded bg-[#E6E0D2]"></div>
+              <div class="h-4 w-14 rounded bg-[#E6E0D2]"></div>
+            </div>
+            <div class="mt-6 space-y-3">
+              <div class="h-4 rounded bg-[#E6E0D2]"></div>
+              <div class="h-4 rounded bg-[#E6E0D2]"></div>
+              <div class="h-4 w-2/3 rounded bg-[#E6E0D2]"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
     <div class="mt-10 pt-6 border-t border-[#D8D2C2] flex items-center flex-wrap justify-between gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-suggested-pagination>
       <button type="button" class="suggested-arrow-btn" data-suggested-prev aria-label="Précédent">
         <img
@@ -119,6 +144,8 @@ const totalRecipeCount = totalCount;
           class="suggested-arrow-btn-icon suggested-arrow-btn-icon--prev"
           loading="lazy"
           decoding="async"
+          width="48"
+          height="48"
         />
       </button>
       <div class="flex items-center gap-4" data-suggested-pages>
@@ -131,6 +158,8 @@ const totalRecipeCount = totalCount;
           class="suggested-arrow-btn-icon suggested-arrow-btn-icon--next"
           loading="lazy"
           decoding="async"
+          width="48"
+          height="48"
         />
       </button>
     </div>
@@ -155,6 +184,7 @@ const totalRecipeCount = totalCount;
       const paginationPrev = paginationRoot?.querySelector('[data-suggested-prev]');
       const paginationNext = paginationRoot?.querySelector('[data-suggested-next]');
       const grid = section.querySelector('[data-suggested-grid]');
+      const skeleton = section.querySelector('[data-suggested-skeleton]');
       let activeFilter = 'toutes';
       let activePage = 1;
       const cardsPerPage = 4;
@@ -371,6 +401,15 @@ const totalRecipeCount = totalCount;
 
       let hydrationPromise = null;
 
+      const setSuggestedLoading = (isLoading) => {
+        if (grid instanceof HTMLElement) {
+          grid.setAttribute('aria-busy', String(isLoading));
+        }
+        if (skeleton instanceof HTMLElement) {
+          skeleton.classList.toggle('hidden', !isLoading);
+        }
+      };
+
       const hydrateSuggestedFromSearchIndex = async () => {
         if (!(grid instanceof HTMLElement)) return;
         if (grid.dataset.suggestedHydrated === 'true') return;
@@ -384,11 +423,13 @@ const totalRecipeCount = totalCount;
 
         hydrationPromise = (async () => {
           grid.dataset.suggestedHydrated = 'loading';
+          setSuggestedLoading(true);
 
           try {
             const records = await loadCachedIndexRecords(source);
             if (!Array.isArray(records) || records.length === 0) {
               grid.dataset.suggestedHydrated = 'true';
+              setSuggestedLoading(false);
               return;
             }
 
@@ -440,6 +481,7 @@ const totalRecipeCount = totalCount;
 
             if (recipes.length === 0) {
               grid.dataset.suggestedHydrated = 'true';
+              setSuggestedLoading(false);
               return;
             }
 
@@ -482,10 +524,12 @@ const totalRecipeCount = totalCount;
             });
 
             grid.dataset.suggestedHydrated = 'true';
+            setSuggestedLoading(false);
             applyFilters();
           } catch (error) {
             console.warn('[SUGGESTED] Failed to hydrate additional recipes:', error);
             grid.dataset.suggestedHydrated = 'error';
+            setSuggestedLoading(false);
           }
         })();
 

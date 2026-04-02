@@ -13,13 +13,15 @@
 
 - [ ] Ingredient archive pages
 
-- [ ] Final UX/UI audit carry-forward that can be done without client input
+- [x] Final UX/UI audit carry-forward that can be done without client input
   - broader site-wide loading states / skeletons
   - remaining image optimization pass on live surfaces
   - broader color / contrast cleanup on remaining legacy surfaces
   - translation UX polish
   - richer search UX polish
   - duplicate legacy component consolidation
+  - major live/frontend-facing UX/UI items from `UX_UI_AUDIT.md` are now completed
+  - any deeper leftover legacy cleanup is now non-blocking polish, not an active carry-forward
 
 - [ ] Missing image offload/import fix
   - WordPress offload is still failing for some media items

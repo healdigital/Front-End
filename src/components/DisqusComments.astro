@@ -11,33 +11,33 @@ const { identifier, url, title, showTitle = true, showComposerPreview = false } 
 const shortname = String(
   import.meta.env.PUBLIC_DISQUS_SHORTNAME ||
     import.meta.env.DISQUS_SHORTNAME ||
-    'lcdb',
+    "lcdb",
 ).trim();
 
 const normalizedUrl = (() => {
-  const raw = String(url || '').trim();
-  if (!raw) return '';
+  const raw = String(url || "").trim();
+  if (!raw) return "";
 
   try {
     const parsed = new URL(raw);
-    parsed.hash = '';
-    parsed.search = '';
-    parsed.pathname = `${parsed.pathname.replace(/\/+$/, '')}/`;
+    parsed.hash = "";
+    parsed.search = "";
+    parsed.pathname = `${parsed.pathname.replace(/\/+$/, "")}/`;
     return parsed.toString();
   } catch {
-    return raw.replace(/[?#].*$/, '').replace(/\/+$/, '') + '/';
+    return raw.replace(/[?#].*$/, "").replace(/\/+$/, "") + "/";
   }
 })();
 
 const normalizedIdentifier = (() => {
-  const raw = String(identifier || '').trim();
+  const raw = String(identifier || "").trim();
   if (raw) return raw;
 
   try {
     const parsed = new URL(normalizedUrl);
-    return parsed.pathname.replace(/^\/+|\/+$/g, '') || 'article';
+    return parsed.pathname.replace(/^\/+|\/+$/g, "") || "article";
   } catch {
-    return 'article';
+    return "article";
   }
 })();
 
@@ -61,6 +61,14 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
 
   {isConfigured ? (
     <>
+      <div
+        class="comments-loading"
+        data-disqus-loading
+        role="status"
+        aria-live="polite"
+      >
+        Chargement des commentaires...
+      </div>
       <div id="disqus_thread"></div>
       <script
         is:inline
@@ -89,6 +97,10 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
 
         var commentsSection = document.getElementById('comments-section');
         var composeTrigger = commentsSection ? commentsSection.querySelector('[data-disqus-compose-trigger]') : null;
+        var loadingState = commentsSection ? commentsSection.querySelector('[data-disqus-loading]') : null;
+        var hideLoading = function () {
+          if (loadingState) loadingState.setAttribute('hidden', 'hidden');
+        };
 
         if (composeTrigger) {
           composeTrigger.addEventListener('click', function () {
@@ -101,6 +113,7 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
                 var thread = document.getElementById('disqus_thread');
                 if (thread) thread.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
+              hideLoading();
             }, 650);
           });
         }
@@ -120,6 +133,8 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
         } else {
           loadDisqusEmbed();
         }
+
+        window.setTimeout(hideLoading, 2200);
       </script>
       <noscript>
         Activez JavaScript pour afficher les commentaires propulsés par Disqus.
@@ -193,6 +208,12 @@ const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl)
     background: #f6f2e9;
     border-color: #cfc7b6;
     outline: none;
+  }
+
+  .comments-loading {
+    margin: 0 0 1rem;
+    color: var(--lcdb-muted);
+    font-size: 0.92rem;
   }
 
   #disqus_thread {

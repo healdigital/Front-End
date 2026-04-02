@@ -9,7 +9,7 @@ const { class: className, currentPath = Astro.url.pathname } = Astro.props;
 const links = [
   { label: 'Recettes', href: '/recettes' },
   { label: 'Ateliers', href: '/ateliers' },
-  { label: 'Masterclass', href: 'https://atelier-lacuisinedebernard.com/club/' },
+  { label: 'Masterclass', href: 'https://atelier-lacuisinedebernard.com/club/', external: true },
   { label: 'Livres', href: '/livres' },
   { label: 'Voyages', href: '/voyages' },
   { label: 'Vidéos', href: '/cours-video' },
@@ -22,6 +22,8 @@ const links = [
   {links.map((link) => (
     <a
       href={link.href}
+      target={link.external ? '_blank' : undefined}
+      rel={link.external ? 'noopener noreferrer' : undefined}
       class:list={[
         'font-body font-medium text-[15px] uppercase tracking-wide transition-colors duration-200 rounded-lg px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-turquoise',
         currentPath === link.href

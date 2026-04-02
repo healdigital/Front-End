@@ -116,12 +116,9 @@ function formatTime(minutes: string | number): string {
  */
 export function switchRecipeLanguage(lang: string): void {
   if (!window.langVersions || !window.langVersions[lang]) {
-    console.warn(`❌ Recipe content for language "${lang}" not available`);
-    console.warn('Available languages:', window.langVersions ? Object.keys(window.langVersions) : 'none');
+    console.warn(`Recipe content for language "${lang}" not available`);
     return;
   }
-
-  console.log(`✅ Switching recipe content to: ${lang}`);
 
   const recipeData: RecipeData = window.langVersions[lang];
   const recipe = recipeData.recipe;
@@ -203,8 +200,6 @@ export function switchRecipeLanguage(lang: string): void {
 
   // Dispatch event so other systems know content has changed
   window.dispatchEvent(new CustomEvent('recipe-content-switched', { detail: { lang } }));
-  
-  console.log(`✅ Recipe content switched to ${lang} - Updated: title, ingredients, instructions, notes, categories`);
 }
 
 /**
@@ -212,13 +207,9 @@ export function switchRecipeLanguage(lang: string): void {
  * Must be called after window.langVersions is set
  */
 export function initializeRecipeContentSwitcher(): void {
-  console.log('📖 Recipe content switcher initialized');
-  console.log('   Available languages:', window.langVersions ? Object.keys(window.langVersions) : 'none');
-  
   // Listen for language change events
   window.addEventListener('page-translated', (e: any) => {
     const newLang = e.detail?.lang;
-    console.log(`📖 page-translated event received for language: ${newLang}`);
     if (newLang && window.langVersions && window.langVersions[newLang]) {
       switchRecipeLanguage(newLang);
     }

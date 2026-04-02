@@ -51,6 +51,7 @@ const shareLinks = [
   >
     <i class="far fa-copy" aria-hidden="true"></i>
   </button>
+  <span class="social-share-feedback sr-only" data-copy-feedback aria-live="polite"></span>
 </div>
 
 <style>
@@ -113,6 +114,7 @@ const shareLinks = [
         root.getAttribute('data-share-title') ||
         document.title ||
         'Découvrez cet article';
+      const feedback = root.querySelector('[data-copy-feedback]');
 
       root.querySelectorAll('[data-share-platform]').forEach((link) => {
         if (!(link instanceof HTMLAnchorElement)) return;
@@ -135,8 +137,14 @@ const shareLinks = [
           await navigator.clipboard.writeText(value);
           const previousLabel = copyButton.getAttribute('aria-label') || 'Copier le lien';
           copyButton.setAttribute('aria-label', 'Lien copié');
+          if (feedback instanceof HTMLElement) {
+            feedback.textContent = 'Lien copié';
+          }
           window.setTimeout(() => {
             copyButton.setAttribute('aria-label', previousLabel);
+            if (feedback instanceof HTMLElement) {
+              feedback.textContent = '';
+            }
           }, 1500);
         } catch (error) {
           console.error('Unable to copy article link:', error);
