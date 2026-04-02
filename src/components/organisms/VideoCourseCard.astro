@@ -32,6 +32,9 @@ const metaItems = [
       class="video-course-card-media-image"
       loading="lazy"
       decoding="async"
+      width={featured ? 960 : 640}
+      height={featured ? 720 : 480}
+      sizes={featured ? "(min-width: 1200px) 48vw, (min-width: 900px) 52vw, 100vw" : "(min-width: 1200px) 28vw, (min-width: 768px) 44vw, 92vw"}
     />
   </div>
 

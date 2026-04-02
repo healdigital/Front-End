@@ -60,6 +60,10 @@ const getExcerpt = (article: any, fallback: string) =>
                 alt={getArticleTitle(article)}
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                 loading="lazy"
+                decoding="async"
+                width="640"
+                height="384"
+                sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
               />
             ) : (
               <div class="flex h-full w-full items-center justify-center text-primary-turquoise">
@@ -98,6 +102,10 @@ const getExcerpt = (article: any, fallback: string) =>
                 alt={getArticleTitle(article)}
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                 loading="lazy"
+                decoding="async"
+                width="640"
+                height="384"
+                sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
               />
             ) : (
               <div class="flex h-full w-full items-center justify-center text-primary-turquoise">

@@ -32,9 +32,7 @@ const groupedSteps = steps.reduce((acc: Record<string, RecipeStep[]>, step: Reci
     const groupId = `instruction-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`;
     return (
       <section class="instruction-group" aria-labelledby={groupId}>
-        {group !== 'Préparation' && (
-          <h3 class="group-title" id={groupId}>{group}</h3>
-        )}
+        {group !== 'Préparation' && <h3 class="group-title" id={groupId}>{group}</h3>}
 
         <ol class="steps-list">
           {groupSteps.map((step, index) => {
@@ -47,7 +45,7 @@ const groupedSteps = steps.reduce((acc: Record<string, RecipeStep[]>, step: Reci
                     class="step-toggle"
                     data-step-toggle
                     aria-pressed="false"
-                    aria-label={`Marquer l'étape ${stepNumber} comme terminée`}
+                    aria-label={`Marquer l’étape ${stepNumber} comme terminée`}
                   >
                     <span class="step-number" aria-hidden="true">{stepNumber}</span>
                     <span class="step-check" aria-hidden="true">✓</span>
@@ -64,7 +62,7 @@ const groupedSteps = steps.reduce((acc: Record<string, RecipeStep[]>, step: Reci
                 </div>
 
                 {step.tips && step.tips.length > 0 && (
-                  <aside class="step-tips" aria-label={`Astuces pour l'étape ${stepNumber}`}>
+                  <aside class="step-tips" aria-label={`Astuces pour l’étape ${stepNumber}`}>
                     <p class="step-tips-title">Astuce</p>
                     <ul class="step-tips-list">
                       {step.tips.map((tip) => (

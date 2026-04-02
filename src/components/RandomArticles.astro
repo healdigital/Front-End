@@ -42,6 +42,11 @@ const randomArticles = shuffleArray(articles).slice(0, limit);
               src={processArticleImageUrl(article)}
               alt={article.title}
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              loading="lazy"
+              decoding="async"
+              width="640"
+              height="384"
+              sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
             />
           ) : (
             <div class="w-full h-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center">

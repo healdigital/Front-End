@@ -56,7 +56,7 @@ New items identified after reviewing the `New Client feedback` folder in depth.
 - Contact page frontend cleanup: done
 - Fix incomplete hreflang coverage: done
 - Fix render-blocking font loading: done
-- Fix public endpoint/security hardening items called out in the audit
+- Fix public endpoint/security hardening items called out in the audit: still pending separately
 - Fix hardcoded staging URL / broader pre-launch technical backlog: done
 - Footer audit batch: done on the live footer component
   - dark background
@@ -95,6 +95,14 @@ New items identified after reviewing the `New Client feedback` folder in depth.
   - `MainContent`
   - `GlobalSidebar`
   - `RecipesSections`
+- Footer / utility parity follow-ups: done
+  - footer `Ateliers` now points to `https://atelier-lacuisinedebernard.com/latelier/`
+  - footer newsletter CTA now opens the shared modal
+- Share UX fixes: done
+  - article/share surfaces now use current-domain URLs at runtime
+  - share icons switched to icon-only style
+- Books section responsive fix: done
+  - `.books-section-content` forced to `100%` on the 1024-range layout
 
 ## Latest Content Pass (2026-03-25)
 
@@ -116,28 +124,61 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
 - Final grep sweep cleared the previously targeted old wording strings
 - Leo doc items `11` and `12` were clarified as shop/community scope and should not be duplicated on the main Astro site
 
-## Carry-Forward For Tomorrow (2026-03-27)
-
-- Main-site video courses API integration completed:
-  - connected `https://atelier-lacuisinedebernard.com/api/video-courses`
-  - homepage video card now uses live API title/description data
-  - featured video section now uses live API title/description data
-  - sidebar video card now uses live API title/description data
-  - safe local image fallback remains in place when API image is `null`
+## Current Active Pending
 
 - Implement native recipe rating system in Payload:
   - `recipeRatings` collection
   - denormalized `ratingAverage` / `ratingCount`
   - vote action/endpoint
   - duplicate prevention with cookie + IP hash
+- Ingredient archive pages
+- Google reviews integration
+- Remaining UX/UI audit items that do not need client confirmation:
+  - completed on the major live/frontend-facing surfaces
+  - search UX polish completed
+  - translation status/loading polish completed
+  - broader live loading/skeleton pass completed
+  - major live image-optimization pass completed
+  - broader color/contrast cleanup completed on active client-facing surfaces
+  - duplicate legacy component cleanup reduced to non-blocking polish
+- Missing image offload/import fix
+  - still open but intentionally separate from the current UI pass
+
+## Current Blocked / Needs Client
+
+- Newsletter / Acumbamail real integration
+  - exact Acumbamail form/list/embed/API details still needed
+- Workshop real descriptions
+  - frontend support is already live
+  - source excerpts/short descriptions still need to be filled on the client side
+- Contact form actual integration
+  - page cleanup is done
+  - final form destination/tool still needs client confirmation
+- Club ad-free blog flow
+  - depends on the Club auth/plugin/shop direction being resumed on the client side
+
+## UX/UI Audit Status
+
+- `UX_UI_AUDIT.md` major live/frontend-facing items are now completed
+  - footer
+  - pagination
+  - search
+  - article/detail
+  - print
+  - category/tag archive
+  - accessibility batch
+  - loading states
+  - image sizing/CLS improvements on major visible surfaces
+  - contrast cleanup on active user-facing screens
+- remaining UX/UI work is now mainly:
+  - contact form integration once client confirms the destination/tool
+  - optional deeper legacy polish that is not a launch blocker
+
+## On Hold / Later
+
 - Keep main Astro site limited to shop links only for the shop/community/course sales flow
-- Remaining doable scope:
-  - Ingredient archive pages
-  - missing image offload/import fix
-  - corrected copy/accent cleanup in Bernard-flagged areas
-  - wrong-image replacement + trust-block content/photo rearrangement
-  - full video-courses implementation per spec
-  - Google reviews integration
+- Media/offload import script
+- Shop/community `Le Club` implementation and protection model
 
 ## Blocked / Needs Client
 

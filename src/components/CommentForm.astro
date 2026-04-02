@@ -75,7 +75,7 @@ const { slug } = Astro.props;
 
     <div id="form-message" class="form-message" role="status" aria-live="polite"></div>
 
-    <button type="submit" class="submit-btn">
+    <button type="submit" class="submit-btn" aria-busy="false">
       Publier le commentaire et la note
     </button>
   </form>
@@ -117,8 +117,8 @@ const { slug } = Astro.props;
     letter-spacing: 0.5px;
   }
 
-  .form-group input[type="text"],
-  .form-group input[type="email"],
+  .form-group input[type='text'],
+  .form-group input[type='email'],
   .form-group textarea {
     width: 100%;
     padding: 0.85rem 1rem;
@@ -131,8 +131,8 @@ const { slug } = Astro.props;
     transition: all 0.3s ease;
   }
 
-  .form-group input[type="text"]:focus,
-  .form-group input[type="email"]:focus,
+  .form-group input[type='text']:focus,
+  .form-group input[type='email']:focus,
   .form-group textarea:focus {
     outline: none;
     border-color: #54b6b1;
@@ -228,6 +228,21 @@ const { slug } = Astro.props;
     cursor: not-allowed;
   }
 
+  .submit-btn.is-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .submit-btn-spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #ffffff;
+    border-radius: 999px;
+    animation: comment-submit-spin 0.8s linear infinite;
+  }
+
   .form-message {
     margin-bottom: 1rem;
     padding: 1rem 1.25rem;
@@ -251,6 +266,12 @@ const { slug } = Astro.props;
     border: 2px solid #bbf7d0;
     border-left-color: #16a34a;
     display: block;
+  }
+
+  @keyframes comment-submit-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 </style>
 
@@ -314,26 +335,36 @@ const { slug } = Astro.props;
       });
     });
 
-    textArea.addEventListener('input', (event) => {
-      const count = event.target.value.length;
-      charCount.textContent = `${count} / 1000 caractères`;
-    }, true);
+    textArea.addEventListener(
+      'input',
+      (event) => {
+        const target = event.target;
+        const count = target instanceof HTMLTextAreaElement ? target.value.length : 0;
+        charCount.textContent = `${count} / 1000 caractères`;
+      },
+      true,
+    );
 
     syncStars(5);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const author = document.getElementById('author')?.value || '';
-      const email = document.getElementById('email')?.value || '';
-      const text = textArea.value;
-      const rating = ratingInput.value;
+      const authorInput = document.getElementById('author');
+      const emailInput = document.getElementById('email');
+      const author = authorInput instanceof HTMLInputElement ? authorInput.value : '';
+      const email = emailInput instanceof HTMLInputElement ? emailInput.value : '';
+      const text = textArea instanceof HTMLTextAreaElement ? textArea.value : '';
+      const rating = ratingInput instanceof HTMLInputElement ? ratingInput.value : '5';
 
       messageDiv.textContent = '';
       messageDiv.className = 'form-message';
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Publication...';
+      submitBtn.setAttribute('aria-busy', 'true');
+      submitBtn.classList.add('is-loading');
+      submitBtn.innerHTML =
+        '<span class="submit-btn-spinner" aria-hidden="true"></span><span>Publication...</span>';
 
       try {
         const response = await fetch('/api/comments', {
@@ -367,10 +398,11 @@ const { slug } = Astro.props;
       } catch (error) {
         console.error('Error submitting comment:', error);
         messageDiv.className = 'form-message error';
-        messageDiv.textContent =
-          'Erreur : impossible d’envoyer le commentaire pour le moment.';
+        messageDiv.textContent = 'Erreur : impossible d’envoyer le commentaire pour le moment.';
       } finally {
         submitBtn.disabled = false;
+        submitBtn.setAttribute('aria-busy', 'false');
+        submitBtn.classList.remove('is-loading');
         submitBtn.textContent = 'Publier le commentaire et la note';
       }
     });

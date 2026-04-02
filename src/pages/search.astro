@@ -1,4 +1,4 @@
----
+﻿---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { t as translate } from "../i18n";
 
@@ -17,6 +17,11 @@ const loadingMessage = "Recherche en cours...";
 const filterLabel = "Filtrer par catégorie";
 const filterAllLabel = "Toutes les catégories";
 const sortLabel = "Trier";
+const pageSubtitle = "Utilisez la barre de recherche dans l'en-tête pour trouver des articles.";
+const noResultsMessage = "Aucun résultat trouvé. Essayez un autre terme de recherche.";
+const categoryFilterLabel = "Filtrer par catégorie";
+const allCategoriesLabel = "Toutes les catégories";
+const paginationLabel = "Pagination des résultats";
 ---
 
 <BaseLayout title={title} lang={lang}>
@@ -30,7 +35,7 @@ const sortLabel = "Trier";
         role="status"
         aria-live="polite"
       >
-        {fixedPageSubtitle}
+        {pageSubtitle}
       </p>
     </div>
   </section>
@@ -39,12 +44,12 @@ const sortLabel = "Trier";
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div id="search-controls" class="hidden mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div class="flex flex-col gap-2">
-          <label for="search-category-filter" class="typ-caption">{filterLabel}</label>
+          <label for="search-category-filter" class="typ-caption">{categoryFilterLabel}</label>
           <select
             id="search-category-filter"
             class="min-w-[220px] rounded border border-[#D8D2C2] bg-[#FAF8F2] px-4 py-3 text-[14px] text-[#111111] focus:outline-none focus:ring-2 focus:ring-primary-turquoise/50"
           >
-            <option value="">{filterAllLabel}</option>
+            <option value="">{allCategoriesLabel}</option>
           </select>
         </div>
 
@@ -88,7 +93,7 @@ const sortLabel = "Trier";
       </div>
 
       <div id="no-results" class="hidden lcdb-empty-state space-y-4">
-        <p class="text-lg font-medium">{fixedNoResultsMessage}</p>
+        <p class="text-lg font-medium">{noResultsMessage}</p>
         <a href="/articles/" class="inline-flex text-primary-turquoise typ-button"
           >Parcourir tous les articles</a
         >
@@ -97,6 +102,7 @@ const sortLabel = "Trier";
       <div id="results-grid" class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Results populated by JS -->
       </div>
+      <div id="search-pagination" class="mt-10 hidden"></div>
     </div>
   </section>
 </BaseLayout>
@@ -108,9 +114,10 @@ const sortLabel = "Trier";
     algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_APP_ID,
     algoliaSearchKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY,
     algoliaIndexPrefix: import.meta.env.PUBLIC_ALGOLIA_INDEX_PREFIX || "lcdb_recipes",
-    defaultSubtitle: fixedPageSubtitle,
-    filterAllLabelText: filterAllLabel,
+    defaultSubtitle: pageSubtitle,
+    filterAllLabelText: allCategoriesLabel,
     noImageLabelText: noImageLabel,
+    paginationLabelText: paginationLabel,
     payloadAssetOrigin: (() => {
       try {
         return new URL(
@@ -130,13 +137,17 @@ const sortLabel = "Trier";
   const noResultsEl = document.getElementById("no-results");
   const loadingEl = document.getElementById("search-loading");
   const controlsEl = document.getElementById("search-controls");
+  const paginationEl = document.getElementById("search-pagination");
   const categoryFilterEl = document.getElementById("search-category-filter");
   const sortOrderEl = document.getElementById("search-sort-order");
   const filterAllLabel = filterAllLabelText;
   const noImageLabel = noImageLabelText;
+  const paginationLabel = paginationLabelText;
   const entityDecoder = document.createElement("textarea");
   let latestHits = [];
   let latestQuery = "";
+  let activePage = 1;
+  const resultsPerPage = 12;
 
   const urlParams = new URLSearchParams(window.location.search);
   const searchQuery = urlParams.get("q") || "";
@@ -164,7 +175,7 @@ const sortLabel = "Trier";
   const repairMojibake = (value) => {
     const text = String(value || "");
     if (
-      !/(Ãƒ.|Ã‚.|Ã¢â‚¬|Ã¢â‚¬â„¢|Ã¢â‚¬Å“|Ã¢â‚¬Â|Ã¢â‚¬â€œ|Ã¢â‚¬â€|Ã¢â‚¬Â¦)/.test(text)
+      !/(ÃƒÆ’.|Ãƒâ€š.|ÃƒÂ¢Ã¢â€šÂ¬|ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢|ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ|ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â|ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“|ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â|ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦)/.test(text)
     ) {
       return text;
     }
@@ -226,8 +237,71 @@ const sortLabel = "Trier";
     if (isLoading) {
       controlsEl?.classList.add("hidden");
       noResultsEl.classList.add("hidden");
+      paginationEl?.classList.add("hidden");
       resultsGrid.innerHTML = "";
     }
+  };
+
+  const buildPageWindow = (currentPage, totalPages) => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
+    if (currentPage <= 3) {
+      pages.add(2);
+      pages.add(3);
+      pages.add(4);
+    }
+    if (currentPage >= totalPages - 2) {
+      pages.add(totalPages - 1);
+      pages.add(totalPages - 2);
+      pages.add(totalPages - 3);
+    }
+
+    return Array.from(pages)
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((a, b) => a - b);
+  };
+
+  const renderPagination = (totalPages) => {
+    if (!(paginationEl instanceof HTMLElement)) return;
+    if (totalPages <= 1) {
+      paginationEl.classList.add("hidden");
+      paginationEl.innerHTML = "";
+      return;
+    }
+
+    const pages = buildPageWindow(activePage, totalPages);
+    const parts = [];
+
+    parts.push(`
+      <button type="button" class="lcdb-page-btn" data-search-page="${Math.max(1, activePage - 1)}" aria-label="Page précédente" ${activePage === 1 ? "disabled" : ""}>
+        Précédent
+      </button>
+    `);
+
+    pages.forEach((page, index) => {
+      const previousPage = pages[index - 1];
+      if (typeof previousPage === "number" && page - previousPage > 1) {
+        parts.push(`<span class="lcdb-page-ellipsis" aria-label="Autres pages">…</span>`);
+      }
+
+      parts.push(`
+        <button type="button" class="lcdb-page-btn ${page === activePage ? "is-active" : ""}" data-search-page="${page}" aria-label="Page ${page}" ${page === activePage ? 'aria-current="page"' : ""}>
+          ${page}
+        </button>
+      `);
+    });
+
+    parts.push(`
+      <button type="button" class="lcdb-page-btn" data-search-page="${Math.min(totalPages, activePage + 1)}" aria-label="Page suivante" ${activePage === totalPages ? "disabled" : ""}>
+        Suivant
+      </button>
+    `);
+
+    paginationEl.innerHTML = `<nav class="lcdb-pagination" aria-label="${paginationLabel}"><div class="lcdb-pagination__inner">${parts.join("")}</div></nav>`;
+    paginationEl.classList.remove("hidden");
   };
 
   const parsePublishedAt = (hit) => {
@@ -426,7 +500,7 @@ const sortLabel = "Trier";
         <div class="lcdb-article-card-media">
           ${
             safeImageUrl
-              ? `<img src="${safeImageUrl}" alt="${safeAlt}" loading="lazy" />`
+              ? `<img src="${safeImageUrl}" alt="${safeAlt}" loading="lazy" decoding="async" width="640" height="800" sizes="(min-width: 1280px) 30vw, (min-width: 640px) 46vw, 92vw" />`
               : `<div class="w-full h-full bg-[#ECEBE4] flex items-center justify-center"><span class="font-mono text-[11px] tracking-[0.18em] uppercase text-[#7B7B6F]">${escapeHtml(noImageLabel)}</span></div>`
           }
         </div>
@@ -451,6 +525,7 @@ const sortLabel = "Trier";
       resultsGrid.innerHTML = "";
       noResultsEl.classList.add("hidden");
       controlsEl?.classList.add("hidden");
+      paginationEl?.classList.add("hidden");
       return;
     }
 
@@ -463,11 +538,17 @@ const sortLabel = "Trier";
     if (displayedHits.length === 0) {
       noResultsEl.classList.remove("hidden");
       resultsGrid.innerHTML = "";
+      paginationEl?.classList.add("hidden");
       return;
     }
 
     noResultsEl.classList.add("hidden");
-    resultsGrid.innerHTML = displayedHits.map(renderCard).join("");
+    const totalPages = Math.max(1, Math.ceil(displayedHits.length / resultsPerPage));
+    activePage = Math.min(activePage, totalPages);
+    const start = (activePage - 1) * resultsPerPage;
+    const pagedHits = displayedHits.slice(start, start + resultsPerPage);
+    resultsGrid.innerHTML = pagedHits.map(renderCard).join("");
+    renderPagination(totalPages);
   };
 
   const setErrorState = () => {
@@ -512,8 +593,9 @@ const sortLabel = "Trier";
             .toLowerCase();
           return searchable.includes(normalizedQuery);
         })
-        .slice(0, 50);
+        .slice(0, 120);
 
+      activePage = 1;
       updateUI(query, hits);
     } catch (error) {
       console.error("Local search fallback failed:", error);
@@ -535,14 +617,14 @@ const sortLabel = "Trier";
       const searchInIndex = async (indexName) => {
         if (typeof client.initIndex === "function") {
           const index = client.initIndex(indexName);
-          const result = await index.search(query, { hitsPerPage: 50 });
+          const result = await index.search(query, { hitsPerPage: 120 });
           return result?.hits || [];
         }
 
         if (typeof client.searchSingleIndex === "function") {
           const result = await client.searchSingleIndex({
             indexName,
-            searchParams: { query, hitsPerPage: 50 },
+            searchParams: { query, hitsPerPage: 120 },
           });
           return result?.hits || [];
         }
@@ -552,7 +634,7 @@ const sortLabel = "Trier";
             {
               indexName,
               query,
-              params: { hitsPerPage: 50 },
+              params: { hitsPerPage: 120 },
             },
           ]);
           return result?.results?.[0]?.hits || [];
@@ -566,6 +648,7 @@ const sortLabel = "Trier";
       const hits = (await searchInIndex(indexName)).filter(
         (hit) => resolveHitLanguage(hit) === currentLangKey,
       );
+      activePage = 1;
       updateUI(query, hits);
     } catch (error) {
       console.error("Algolia search failed:", error);
@@ -584,10 +667,23 @@ const sortLabel = "Trier";
   performSearch();
 
   categoryFilterEl?.addEventListener("change", () => {
+    activePage = 1;
     updateUI(latestQuery, latestHits);
   });
 
   sortOrderEl?.addEventListener("change", () => {
+    activePage = 1;
+    updateUI(latestQuery, latestHits);
+  });
+
+  paginationEl?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const button = target.closest("[data-search-page]");
+    if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+    const requestedPage = Number(button.dataset.searchPage || "");
+    if (!Number.isFinite(requestedPage) || requestedPage <= 0 || requestedPage === activePage) return;
+    activePage = requestedPage;
     updateUI(latestQuery, latestHits);
   });
 
@@ -605,3 +701,4 @@ const sortLabel = "Trier";
     }
   });
 </script>
+

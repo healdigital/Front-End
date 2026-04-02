@@ -109,6 +109,10 @@ const books = [
             alt={`Livre ${index + 1}`}
             class="h-40 w-full object-cover transition-opacity duration-200 group-hover:opacity-80"
             loading="lazy"
+            decoding="async"
+            width="240"
+            height="320"
+            sizes="(min-width: 1024px) 96px, 30vw"
           />
           <div class="absolute inset-0 flex items-end justify-center bg-black/0 pb-2 transition-colors duration-200 group-hover:bg-black/25">
             <span class="text-[11px] font-medium uppercase tracking-[0.08em] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">

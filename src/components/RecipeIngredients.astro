@@ -52,17 +52,13 @@ const groupedIngredients = ingredients.reduce((acc: Record<string, Ingredient[]>
     const groupId = `ingredient-group-${String(group).replace(/\s+/g, '-').toLowerCase()}`;
     return (
       <section class="ingredient-group" aria-labelledby={groupId}>
-        {group !== 'Principal' && (
-          <h3 class="group-title" id={groupId}>{group}</h3>
-        )}
+        {group !== 'Principal' && <h3 class="group-title" id={groupId}>{group}</h3>}
 
         <ul class="ingredients-list">
           {items.map((ingredient) => (
             <li class="ingredient-item">
               <div class="ingredient-amount">
-                <span class="amount" data-amount={ingredient.amount}>
-                  {ingredient.amount}
-                </span>
+                <span class="amount" data-amount={ingredient.amount}>{ingredient.amount}</span>
                 {ingredient.unit && <span class="unit">{ingredient.unit}</span>}
               </div>
               <div class="ingredient-details">

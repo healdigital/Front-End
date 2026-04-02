@@ -116,7 +116,16 @@ const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * 
           <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
             <div class="lcdb-article-card-media">
               {article.image ? (
-                <img src={article.image} alt={article.title} loading="lazy" class="w-full h-full object-cover" />
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  loading="lazy"
+                  decoding="async"
+                  width="640"
+                  height="800"
+                  sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
+                  class="w-full h-full object-cover"
+                />
               ) : (
                 <div class="w-full h-full flex items-center justify-center">
                   <span class="text-[#8A8578] typ-caption">Aucune image</span>

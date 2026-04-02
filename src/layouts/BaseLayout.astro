@@ -76,6 +76,12 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
   </head>
   <body>
     <Header lang={lang} />
+    <div class="lcdb-translation-status" data-translation-status hidden role="status" aria-live="polite" aria-atomic="true">
+      <div class="lcdb-translation-status__inner">
+        <span class="lcdb-translation-status__dot" aria-hidden="true"></span>
+        <p class="lcdb-translation-status__text" data-translation-status-text></p>
+      </div>
+    </div>
     <slot />
     {showGlobalAbout && <GlobalAbout />}
     <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
@@ -124,6 +130,36 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 
   const startTranslationInit = () =>
     init().catch(error => console.error('Failed to initialize translations:', error));
+
+  const translationStatusEl = document.querySelector<HTMLElement>('[data-translation-status]');
+  const translationStatusTextEl = translationStatusEl?.querySelector<HTMLElement>('[data-translation-status-text]');
+  let translationStatusTimeout: number | null = null;
+
+  const showTranslationStatus = (state: 'loading' | 'success' | 'warning' | 'error', message: string) => {
+    if (!translationStatusEl || !translationStatusTextEl || !message) return;
+    if (translationStatusTimeout) {
+      window.clearTimeout(translationStatusTimeout);
+      translationStatusTimeout = null;
+    }
+
+    translationStatusEl.hidden = false;
+    translationStatusEl.dataset.state = state;
+    translationStatusTextEl.textContent = message;
+
+    if (state !== 'loading') {
+      translationStatusTimeout = window.setTimeout(() => {
+        translationStatusEl.hidden = true;
+      }, state === 'error' ? 5200 : 3200);
+    }
+  };
+
+  window.addEventListener('lcdb:translation-status', ((event: Event) => {
+    const customEvent = event as CustomEvent<{ state?: 'loading' | 'success' | 'warning' | 'error'; message?: string }>;
+    const state = customEvent?.detail?.state;
+    const message = customEvent?.detail?.message;
+    if (!state || !message) return;
+    showTranslationStatus(state, message);
+  }) as EventListener);
 
   if (needsImmediateTranslationBoot) {
     startTranslationInit();

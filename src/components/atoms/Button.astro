@@ -1,10 +1,15 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
 
 interface Props extends HTMLAttributes<'button'> {
   variant?: 'primary' | 'secondary' | 'disabled';
   size?: 'sm' | 'md' | 'lg';
   isDisabled?: boolean;
+  isLoading?: boolean;
+  loadingLabel?: string;
+  icon?: 'arrow-right' | 'download' | 'mail' | 'search' | 'refresh';
+  iconPosition?: 'left' | 'right';
   href?: string;
 }
 
@@ -12,6 +17,10 @@ const {
   variant = 'primary',
   size = 'md',
   isDisabled = false,
+  isLoading = false,
+  loadingLabel = 'Chargement...',
+  icon,
+  iconPosition = 'left',
   href,
   class: className,
   type = 'button',
@@ -36,23 +45,49 @@ const classes = [
   baseStyles,
   variants[variant],
   sizes[size],
+  (isDisabled || isLoading || variant === 'disabled') ? 'pointer-events-none opacity-70' : '',
   className
 ].join(" ");
+
+const isActuallyDisabled = isDisabled || isLoading || variant === 'disabled';
 ---
 
-{href && variant !== 'disabled' ? (
+{href && !isActuallyDisabled ? (
   <a href={href} class={classes} {...rest}>
-    <slot />
+    {isLoading ? (
+      <>
+        <Icon name="loading" size="sm" class="w-4 h-4 animate-spin" aria-hidden="true" />
+        <span>{loadingLabel}</span>
+      </>
+    ) : (
+      <>
+        {icon && iconPosition === 'left' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+        <slot />
+        {icon && iconPosition === 'right' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+      </>
+    )}
   </a>
 ) : (
   <button
     type={type}
     class={classes}
-    disabled={isDisabled || variant === 'disabled'}
-    aria-disabled={isDisabled || variant === 'disabled'}
+    disabled={isActuallyDisabled}
+    aria-disabled={isActuallyDisabled}
+    aria-busy={isLoading || undefined}
     {...rest}
   >
-    <slot />
+    {isLoading ? (
+      <>
+        <Icon name="loading" size="sm" class="w-4 h-4 animate-spin" aria-hidden="true" />
+        <span>{loadingLabel}</span>
+      </>
+    ) : (
+      <>
+        {icon && iconPosition === 'left' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+        <slot />
+        {icon && iconPosition === 'right' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+      </>
+    )}
   </button>
 )}
 
