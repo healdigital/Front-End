@@ -52,6 +52,8 @@ dev_error.txt
 *.log
 
 # Import and migration files
+*.md
+_*.md
 IMPORT_*.md
 *_IMPORT.md
 SETUP_*.md
@@ -88,3 +90,10 @@ test-results/
 
 .vercel
 .env*.local
+
+
+scripts/audit-articles-images.mjs
+scripts/audit-articles-images.js
+scripts/audit-articles-images.txt
+scripts/import-all-wp-images-to-spaces.mjs
+scripts/remediate-spaces-images.mjs
