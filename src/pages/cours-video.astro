@@ -1,14 +1,192 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import StaticPage from '../components/StaticPage.astro';
-import VideoCoursesSection from '../components/organisms/VideoCoursesSection.astro';
+import Button from '../components/atoms/Button.astro';
+import { loadVideoCourses } from '../lib/videoCourses';
+
+const videoCourses = await loadVideoCourses();
+
+const VIDEO_PRIORITY = [
+  /p[aâ]te feuillet[eé]e invers[eé]e/i,
+  /cr[eè]mes? de base/i,
+  /millefeuille/i,
+];
+
+const getVideoPriorityIndex = (title: string) => {
+  const index = VIDEO_PRIORITY.findIndex((pattern) => pattern.test(title));
+  return index === -1 ? Number.POSITIVE_INFINITY : index;
+};
+
+const sortedVideoCourses = [...videoCourses].sort((a, b) => {
+  const aPriority = getVideoPriorityIndex(a.title);
+  const bPriority = getVideoPriorityIndex(b.title);
+  if (aPriority !== bPriority) return aPriority - bPriority;
+  const aPaid = a.priceType === 'paid' || a.price > 0 ? 1 : 0;
+  const bPaid = b.priceType === 'paid' || b.price > 0 ? 1 : 0;
+  if (aPaid !== bPaid) return bPaid - aPaid;
+  return a.title.localeCompare(b.title, 'fr');
+});
+
+const paidCourses = sortedVideoCourses.filter((course) => course.priceType === 'paid' || course.price > 0);
+const freeCourses = sortedVideoCourses.filter((course) => !(course.priceType === 'paid' || course.price > 0));
+
+const libraryBooks = [
+  { src: '/images/book-vege.png', alt: 'Végé-Terrien' },
+  { src: '/images/book-bouchee.jpg', alt: "Je n'en ferai qu'une bouchée" },
+  { src: '/images/book-mes-desserts.jpg', alt: 'Mes desserts' },
+  { src: '/images/book-mon-grain-de-sel.jpg', alt: 'Mon grain de sel' },
+  { src: '/images/book-je-fais-mon-chocolat-maison.png', alt: 'Je fais mon chocolat maison' },
+  { src: '/images/book-scandaleusement-decadent.jpg', alt: 'Scandaleusement décadent' },
+];
 ---
 
 <BaseLayout title="Cours vidéo" loadAds={true}>
-  <StaticPage
-    title="Cours vidéo"
-    subtitle="Retrouvez ici les cours vidéo disponibles, alimentés automatiquement depuis Bernard Shop."
-  >
-    <VideoCoursesSection showHeading={false} />
-  </StaticPage>
+  <section class="bg-secondary-cream px-4 pb-8 pt-10">
+    <div class="home-shell-width">
+      <div class="rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] px-6 py-8 shadow-[0_18px_42px_rgba(8,18,34,0.08)] md:px-8 md:py-10">
+        <p class="font-mono text-[12px] uppercase tracking-[0.18em] text-[#5F6671]">Cours vidéo</p>
+        <h1 class="mt-4 font-heading text-[42px] leading-[0.96] text-[#151F2B] md:text-[58px]">
+          Mes cours vidéo
+        </h1>
+        <p class="mt-5 max-w-[62ch] text-[16px] leading-[1.8] text-[#5B6270] typ-body">
+          Retrouvez d'abord les cours payants, puis les vidéos gratuites, avec une présentation plus claire et plus régulière.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {paidCourses.length > 0 && (
+    <section class="bg-secondary-cream px-4 pb-6 pt-2">
+      <div class="home-shell-width">
+        <div class="flex items-center gap-5">
+          <h2 class="font-heading text-[34px] leading-[1.02] text-[#151F2B] md:text-[46px]">Cours payants</h2>
+          <div class="hidden h-px flex-1 bg-[#D8D2C2] md:block"></div>
+        </div>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {paidCourses.map((course) => (
+            <article class="flex h-full min-h-[430px] flex-col overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_16px_34px_rgba(8,18,34,0.08)]">
+              <img
+                src={course.image || '/images/masterclass-video.jpg'}
+                alt={course.title}
+                class="aspect-[1.72] w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                width="720"
+                height="420"
+                sizes="(min-width: 1280px) 27vw, (min-width: 768px) 42vw, 92vw"
+              />
+              <div class="flex flex-1 flex-col justify-between gap-6 p-5">
+                <div>
+                  <div class="flex items-center justify-between gap-3">
+                    <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5F6671]">Cours payant</p>
+                    <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#B28E39]">
+                      {course.price > 0 ? `${Math.round(course.price)}€` : 'Premium'}
+                    </p>
+                  </div>
+                  <h3 class="mt-4 font-heading text-[30px] leading-[1.04] text-[#151F2B]">{course.title}</h3>
+                </div>
+                <Button href={course.courseUrl} variant="primary" size="sm" class="w-full py-[11px] text-[12px] uppercase tracking-[0.14em]">
+                  Voir le cours
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="bg-secondary-cream px-4 py-8">
+    <div class="home-shell-width">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+        <article class="overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_16px_34px_rgba(8,18,34,0.08)]">
+          <div class="px-6 pb-7 pt-7 md:px-8">
+            <div class="mx-auto aspect-square max-w-[330px] overflow-hidden rounded-full bg-[#9EDDE0] p-0">
+              <img
+                src="/images/image.png"
+                alt="Bernard Laurance"
+                class="h-full w-full object-cover object-top"
+                loading="lazy"
+                decoding="async"
+                width="660"
+                height="660"
+                sizes="(min-width: 1280px) 23vw, (min-width: 768px) 40vw, 80vw"
+              />
+            </div>
+            <p class="mt-7 font-mono text-[12px] uppercase tracking-[0.16em] text-[#5F6671]">La Cuisine de Bernard</p>
+            <h2 class="mt-3 font-heading text-[42px] leading-[0.98] text-[#151F2B] md:text-[54px]">
+              Cuisine réelle et transmission généreuse
+            </h2>
+            <p class="mt-5 max-w-[42ch] text-[18px] leading-[1.7] text-[#394251] typ-body">
+              Bernard partage une cuisine exigeante mais accessible, nourrie par les voyages, les traditions et le goût des recettes fiables.
+            </p>
+          </div>
+        </article>
+
+        <article class="overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_16px_34px_rgba(8,18,34,0.08)]">
+          <div class="px-6 pb-7 pt-7 md:px-8">
+            <p class="font-mono text-[12px] uppercase tracking-[0.18em] text-[#5F6671]">Bibliothèque</p>
+            <h2 class="mt-3 font-heading text-[42px] leading-[0.98] text-[#151F2B] md:text-[54px]">
+              Les livres de Bernard
+            </h2>
+            <p class="mt-5 max-w-[34ch] text-[18px] leading-[1.7] text-[#394251] typ-body">
+              Des livres dédiés à la pâtisserie, aux classiques et aux saveurs du monde pour continuer à cuisiner avec méthode.
+            </p>
+
+            <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {libraryBooks.map((book) => (
+                <div class="overflow-hidden rounded-[14px] border border-[#CFC7B6] bg-white shadow-[0_10px_24px_rgba(8,18,34,0.08)]">
+                  <img
+                    src={book.src}
+                    alt={book.alt}
+                    class="aspect-[0.72] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    width="420"
+                    height="580"
+                    sizes="(min-width: 1280px) 12vw, (min-width: 640px) 18vw, 40vw"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  {freeCourses.length > 0 && (
+    <section class="bg-secondary-cream px-4 pb-12 pt-2">
+      <div class="home-shell-width">
+        <div class="flex items-center gap-5">
+          <h2 class="font-heading text-[34px] leading-[1.02] text-[#151F2B] md:text-[46px]">Vidéos gratuites</h2>
+          <div class="hidden h-px flex-1 bg-[#D8D2C2] md:block"></div>
+        </div>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {freeCourses.map((course) => (
+            <article class="flex h-full min-h-[430px] flex-col overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-white shadow-[0_14px_32px_rgba(8,18,34,0.06)]">
+              <img
+                src={course.image || '/images/masterclass-video.jpg'}
+                alt={course.title}
+                class="aspect-[1.72] w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                width="720"
+                height="420"
+                sizes="(min-width: 1280px) 27vw, (min-width: 768px) 42vw, 92vw"
+              />
+              <div class="flex flex-1 flex-col justify-between gap-6 p-5">
+                <div>
+                  <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5F6671]">Vidéo gratuite</p>
+                  <h3 class="mt-4 font-heading text-[30px] leading-[1.04] text-[#151F2B]">{course.title}</h3>
+                </div>
+                <Button href={course.courseUrl} variant="secondary" size="sm" class="w-full py-[11px] text-[12px] uppercase tracking-[0.14em]">
+                  Voir la vidéo
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </BaseLayout>

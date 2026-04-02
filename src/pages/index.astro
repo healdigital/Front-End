@@ -8,7 +8,6 @@ import RecipeCard from '../components/organisms/RecipeCard.astro';
 import WorkshopCard from '../components/organisms/WorkshopCard.astro';
 import HeroCarousel from '../components/organisms/HeroCarousel.astro';
 import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
-import VideoCoursesSection from '../components/organisms/VideoCoursesSection.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
@@ -19,6 +18,25 @@ import { stripHtml } from '../utils/stripHtml.js';
 export const prerender = true;
 const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/';
 const videoCourses = await loadVideoCourses();
+const HOMEPAGE_VIDEO_PRIORITY = [
+  /p[aâ]te feuillet[eé]e invers[eé]e/i,
+  /cr[eè]mes? de base/i,
+  /millefeuille/i,
+];
+const getVideoPriorityIndex = (title: string) => {
+  const index = HOMEPAGE_VIDEO_PRIORITY.findIndex((pattern) => pattern.test(title));
+  return index === -1 ? Number.POSITIVE_INFINITY : index;
+};
+const prioritizedVideoCourses = [...videoCourses].sort((a, b) => {
+  const aPriority = getVideoPriorityIndex(a.title);
+  const bPriority = getVideoPriorityIndex(b.title);
+  if (aPriority !== bPriority) return aPriority - bPriority;
+  const aPaid = a.priceType === 'paid' || a.price > 0 ? 1 : 0;
+  const bPaid = b.priceType === 'paid' || b.price > 0 ? 1 : 0;
+  if (aPaid !== bPaid) return bPaid - aPaid;
+  return a.title.localeCompare(b.title, 'fr');
+});
+const homepageVideoCourses = prioritizedVideoCourses.filter((course) => getVideoPriorityIndex(course.title) !== Number.POSITIVE_INFINITY).slice(0, 3);
 const featuredVideoCourse = videoCourses[0] || null;
 const featuredVideoCourseTitle = featuredVideoCourse?.title || 'Mes cours vidéo';
 const featuredVideoCourseDescription =
@@ -638,6 +656,63 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   description="Découvrez des recettes authentiques et savoureuses par Bernard Laurance."
 >
   <HeroCarousel cards={heroCards} />
+  <h1 class="sr-only">La Cuisine de Bernard</h1>
+
+  {false && (
+  <section class="relative overflow-hidden bg-secondary-cream px-4 pb-4 pt-8 home-page-section home-page-section--light">
+    <div class="home-shell-width relative z-10 space-y-6">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div class="rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 shadow-[0_18px_42px_rgba(8,18,34,0.08)] md:p-8 xl:p-10">
+          <p class="font-mono text-[12px] uppercase tracking-[0.18em] text-[#5F6671]">Depuis 2010</p>
+          <h1 class="mt-4 font-heading text-[42px] leading-[0.96] text-[#151F2B] md:text-[58px] xl:text-[72px]">
+            La Cuisine de Bernard
+          </h1>
+          <p class="mt-6 max-w-[68ch] text-[16px] leading-[1.82] text-[#425061] typ-body">
+            Depuis 2010, je publie sur mon site une cuisine &agrave; la fois rigoureuse et accessible, inspir&eacute;e des p&acirc;tisseries et des saveurs du monde entier, m&ecirc;lant grands classiques et recettes plus confidentielles, enrichie par les voyages, les traditions, les d&eacute;couvertes et le plaisir de partager. Plus de 1300 recettes mises au point, test&eacute;es et valid&eacute;es dans ma cuisine, avec passion et gourmandise.
+          </p>
+          <p class="mt-5 max-w-[68ch] text-[16px] leading-[1.82] text-[#425061] typ-body">
+            Chaque recette est travaill&eacute;e, test&eacute;e plusieurs fois si n&eacute;cessaire, photographi&eacute;e en pas &agrave; pas et r&eacute;dig&eacute;e par mes soins, pour que vous puissiez la refaire chez vous et vous r&eacute;galer avec ceux que vous aimez !
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <Button href="/recettes-sucrees/" variant="primary" size="md" class="px-6 py-3 text-[12px] uppercase tracking-[0.14em]">
+              D&eacute;couvrir les recettes
+            </Button>
+            <Button href="/articles/" variant="secondary" size="md" class="px-6 py-3 text-[12px] uppercase tracking-[0.14em]">
+              Voir les derni&egrave;res publications
+            </Button>
+          </div>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+          {[
+            {
+              title: 'Recettes 100% humaines, testées dans mon atelier',
+              body: 'Chaque recette est réellement préparée, goûtée et ajustée avant d’être publiée.',
+            },
+            {
+              title: 'Contenu 100 % original',
+              body: 'Photos, explications, astuces, techniques : tout est pensé pour une vraie transmission.',
+            },
+            {
+              title: 'Photos 100% réelles',
+              body: 'Tout ce que vous voyez ici est vrai et dévoré avec voracité !',
+            },
+            {
+              title: 'Pas à pas clairs et détaillés',
+              body: 'Des recettes précises, pour comprendre ce que l’on fait et réussir vraiment.',
+            },
+          ].map((item) => (
+            <article class="rounded-[18px] border border-[#D8D2C2] bg-white p-5 shadow-[0_14px_32px_rgba(8,18,34,0.06)]">
+              <p class="font-mono text-[12px] uppercase tracking-[0.16em] text-[#54B6B1]">R&eacute;assurance</p>
+              <h2 class="mt-3 font-heading text-[28px] leading-[1.02] text-[#151F2B]">{item.title}</h2>
+              <p class="mt-4 text-[15px] leading-[1.75] text-[#5B6270] typ-body">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+  )}
 
   <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light section_2">
     <div
@@ -793,7 +868,47 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           <div class="home-deferred-block">
           </div>
           <div class="home-deferred-block">
-            <VideoCoursesSection embedded />
+            <section class="overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-[#1C2639] shadow-[0_20px_52px_rgba(8,18,34,0.18)]">
+              <div class="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div class="hidden lg:block">
+                  <img
+                    src="/images/bernard-blog.png"
+                    alt=""
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    width="840"
+                    height="720"
+                  />
+                </div>
+                <div class="px-6 py-8 md:px-10 md:py-10">
+                  <p class="font-mono text-[12px] uppercase tracking-[0.18em] text-[#8BE3DE]">Newsletter</p>
+                  <h2 class="mt-4 font-heading text-[40px] leading-[0.96] text-white md:text-[52px]">
+                    Recevez les nouvelles recettes
+                  </h2>
+                  <p class="mt-5 max-w-[58ch] text-[16px] leading-[1.8] text-[#D7DFEB] typ-body">
+                    Abonnez-vous &agrave; la newsletter mensuelle pour recevoir les nouvelles recettes, les dates d&apos;ateliers, les nouveaut&eacute;s du site, les sorties de livres et bien plus encore.
+                  </p>
+                  <form class="mt-8 flex flex-col gap-3 sm:flex-row" onsubmit="event.preventDefault(); document.getElementById('open-newsletter-home')?.click();">
+                    <input
+                      type="email"
+                      placeholder="Votre adresse email"
+                      class="h-[52px] min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-5 text-white placeholder:text-white/55 focus:outline-none focus:ring-2 focus:ring-[#8BE3DE]/70"
+                    />
+                    <button
+                      id="open-newsletter-home"
+                      type="submit"
+                      class="inline-flex h-[52px] items-center justify-center rounded-full bg-primary-turquoise px-6 text-[12px] uppercase tracking-[0.16em] text-[#13202E] typ-button"
+                    >
+                      S&apos;inscrire
+                    </button>
+                  </form>
+                  <p class="mt-4 text-[12px] leading-[1.7] text-[#D7DFEB]">
+                    Pas de spam, seulement une newsletter par mois&nbsp;!
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -919,47 +1034,56 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           </div>
         </div>
 
-        <div class="home-workshops-feature-card max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
-          <div class="relative h-[350px] lg:h-[420px]">
-            <img
-              src={featuredVideoCourseImage}
-              alt={featuredVideoCourseDisplayTitle}
-              class="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-              width="960"
-              height="960"
-              sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
-            />
-            <div class="absolute bottom-4 left-4 flex items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
-                <Icon name="lock" size="sm" /> Acc&egrave;s illimit&eacute;
-              </span>
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-[#BBA86B] px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-white">
-                R&eacute;serv&eacute; Premium
-              </span>
-            </div>
-          </div>
-          <div class="p-6 lg:p-7">
-            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3">{featuredVideoCourseDisplayTitle}</h3>
-            <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
-              <span class="flex items-center gap-1"><Icon name="video" size="sm" /> 50h</span>
-              <span class="flex items-center gap-1"><Icon name="download" size="sm" /> Vid&eacute;o 4K</span>
-            </div>
-            <p class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{featuredVideoCourseDisplayDescription}</p>
-            <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
+        <div class="grid gap-5">
+          {homepageVideoCourses.map((course) => (
+            <article class="overflow-hidden rounded-[16px] border border-[#D9D4C6] bg-[#F7F5EF] shadow-[0_16px_44px_rgba(6,18,40,0.22)]">
               <div>
-                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]">145&euro;</div>
+                <div class="relative">
+                  <img
+                    src={course.image || '/images/masterclass-video.jpg'}
+                    alt={course.title}
+                    class="aspect-[2.05] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    width="960"
+                    height="468"
+                    sizes="(min-width: 1280px) 28vw, (min-width: 768px) 42vw, 92vw"
+                  />
+                </div>
+                <div class="flex min-h-[188px] flex-col justify-between gap-5 p-5">
+                  <div>
+                    <div class="flex flex-wrap gap-2">
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
+                        <Icon name="video" size="sm" /> Cours vid&eacute;o
+                      </span>
+                      <span class:list={[
+                        'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-mono uppercase tracking-[0.12em]',
+                        course.priceType === 'paid' || course.price > 0
+                          ? 'bg-[#BBA86B] text-white'
+                          : 'bg-[#ECEBE4] text-[#1E2B3A]',
+                      ]}>
+                        {course.priceType === 'paid' || course.price > 0 ? 'Cours payant' : 'Vid&eacute;o gratuite'}
+                      </span>
+                    </div>
+                    <h3 class="mt-4 font-heading text-[27px] leading-[1.02] text-[#151F2B] md:text-[31px]">{course.title}</h3>
+                  </div>
+                  <div class="border-t border-[#D6D0C2] pt-4">
+                    <p class="hidden font-mono text-[12px] uppercase tracking-[0.16em] text-[#5B6270]">
+                      {course.priceType === 'paid' || course.price > 0 ? `${Math.round(course.price)}€` : 'Acc&egrave;s gratuit'}
+                    </p>
+                    <Button
+                      href={course.courseUrl || SHOP_VIDEO_URL}
+                      variant="primary"
+                      class="w-full py-[10px] text-[12px] uppercase tracking-[0.14em]"
+                      size="sm"
+                    >
+                      Voir le cours
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <Button
-                href={featuredVideoCourseHref}
-                class="bg-[#BBA86B] hover:bg-[#A89558] !text-white border-none py-[7px] text-[11px] md:text-[12px]"
-                size="sm"
-              >
-                Voir les cours vid&eacute;o
-              </Button>
-            </div>
-          </div>
+            </article>
+          ))}
         </div>
       </div>
 
@@ -1056,55 +1180,6 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           <div class="home-sidebar-sticky">
             <RecipeSidebar variant="popular" />
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="relative bg-[#1c2639] overflow-hidden p-4 home-page-section home-page-section--dark">
-    <div
-      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-20"
-      aria-hidden="true"
-    ></div>
-    <div class="home-shell-width relative z-10">
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] rounded-[18px] overflow-hidden border border-[#314154] bg-[#1c2639] shadow-[0_20px_60px_rgba(8,16,30,0.28)]">
-        <div class="min-h-[300px] lg:min-h-[360px]">
-          <img
-            src="/images/bernard-blog.png"
-            alt=""
-            class="w-full h-full object-cover"
-            loading="lazy"
-            decoding="async"
-            width="840"
-            height="720"
-          />
-        </div>
-        <div class="px-6 py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 flex flex-col justify-center">
-          <p class="text-[#8be3de] typ-caption uppercase tracking-[0.16em]">Newsletter</p>
-          <h2 class="mt-4 font-heading text-[40px] md:text-[52px] lg:text-[62px] leading-[0.95] text-white">
-            Recevez les nouvelles recettes
-          </h2>
-          <p class="mt-5 max-w-[58ch] text-[16px] leading-[1.75] text-[#d7dfeb] typ-body">
-            Abonnez-vous &agrave; la newsletter mensuelle pour recevoir les nouvelles recettes, les dates d&apos;ateliers, les nouveaut&eacute;s du site, les sorties de livres et bien plus encore.
-          </p>
-          <div class="mt-8 flex flex-col sm:flex-row gap-3">
-            <button
-              id="open-newsletter-home"
-              type="button"
-              class="inline-flex items-center justify-center bg-primary-turquoise px-6 py-3 text-[12px] uppercase tracking-[0.16em] text-[#13202e] rounded-sm typ-button"
-            >
-              S&apos;inscrire
-            </button>
-            <a
-              href="/newsletter"
-              class="inline-flex items-center justify-center border border-[#5d7088] px-6 py-3 text-[12px] uppercase tracking-[0.16em] text-white rounded-sm typ-button"
-            >
-              En savoir plus
-            </a>
-          </div>
-          <p class="mt-4 text-[12px] tracking-[0.02em] text-[#d7dfeb]">
-            Pas de spam, seulement une newsletter par mois&nbsp;!
-          </p>
         </div>
       </div>
     </div>

@@ -24,6 +24,8 @@ New items identified after reviewing the `New Client feedback` folder in depth.
 - Missing image offload/import fix remains open
   - client reported many slow or missing photos
   - offload screenshot shows real media offload failures in WordPress
+  - image audit + remediation scripts are now in place
+  - current image-import status is tracked in [IMAGE-IMPORT-STATUS-2026-04-02.md](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/IMAGE-IMPORT-STATUS-2026-04-02.md)
 - Corrected text/accent cleanup is mostly done on the touched frontend surfaces
   - `These are not the texts I corrected`
   - transcript confirms missing accents in corrected copy
@@ -104,6 +106,25 @@ New items identified after reviewing the `New Client feedback` folder in depth.
 - Books section responsive fix: done
   - `.books-section-content` forced to `100%` on the 1024-range layout
 
+## Leo Follow-Up Batch (2026-04-02)
+
+Completed from Leo's latest chat + desktop screenshots:
+
+- Homepage main hero block was removed and the sidebar/profile area now uses Leo's latest profile text + bullet points
+- Top homepage workshop/video area now shows the `3` real video courses with the updated desktop card layout
+- Large homepage `Mes cours vidéo` section replaced by the newsletter block with email field
+- Header search `Go` buttons removed
+- `Rédigé le ...` date prefix removed from the affected surfaced article lists
+- `/cours-video` reworked:
+  - paid courses first
+  - free videos after
+  - uniform same-size cards without descriptions
+  - screenshot-style two-panel books library section
+
+Remaining from that follow-up:
+
+- final visual QA on staging against Leo's desktop screenshots after deploy
+
 ## Latest Content Pass (2026-03-25)
 
 Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desktop/PEter/15%20Jan/astro/lcdb-astro/Leo%20Turbet.docx) without touching design/CSS.
@@ -143,6 +164,12 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
   - duplicate legacy component cleanup reduced to non-blocking polish
 - Missing image offload/import fix
   - still open but intentionally separate from the current UI pass
+  - current state:
+    - `5992` broken images recovered
+    - `22` fallback-only images cleared
+    - `21795` unique images remain hard-missing from public sources
+  - next step:
+    - stricter broken-URL extraction and normalized source-path recovery
 
 ## Current Blocked / Needs Client
 
@@ -177,7 +204,6 @@ Content-only pass completed from [Leo Turbet.docx](/c:/Users/navee/OneDrive/Desk
 ## On Hold / Later
 
 - Keep main Astro site limited to shop links only for the shop/community/course sales flow
-- Media/offload import script
 - Shop/community `Le Club` implementation and protection model
 
 ## Blocked / Needs Client

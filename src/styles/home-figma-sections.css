@@ -1508,6 +1508,7 @@ h2.font-heading.text-3xl.lg\:text-5xl.text-primary-black.whitespace-nowrap.typ-s
 
 .home-deferred-block {
     padding-top: 15px !important;
+    /* display: none !important; */
 }
 .remove_padding{
   padding-top: 0px !important;

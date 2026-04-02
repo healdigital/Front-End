@@ -40,6 +40,24 @@ const computedPopularArticles = await getPopularSidebarArticles(5, 'fr');
 const popularArticles = computedPopularArticles.length ? computedPopularArticles : fallbackPopularArticles;
 const videoCourses = await loadVideoCourses();
 const featuredVideoCourse = videoCourses[0] || null;
+const sidebarProfileBullets = [
+  {
+    title: 'Recettes 100% humaines, testées dans mon atelier',
+    body: 'Chaque recette est réellement préparée, goûtée et ajustée avant d’être publiée.',
+  },
+  {
+    title: 'Contenu 100 % original',
+    body: 'Photos, explications, astuces, techniques : tout est pensé pour une vraie transmission.',
+  },
+  {
+    title: 'Photos 100% réelles',
+    body: 'Tout ce que vous voyez ici est vrai et dévoré avec voracité !',
+  },
+  {
+    title: 'Pas à pas clairs et détaillés',
+    body: 'Des recettes précises, pour comprendre ce que l’on fait et réussir vraiment.',
+  },
+];
 const sidebarBooks = [
   { src: '/images/book-mes-desserts.jpg', alt: 'Mes desserts de Bernard' },
   { src: '/images/book-mon-grain-de-sel.jpg', alt: 'Mon grain de sel' },
@@ -75,13 +93,30 @@ const sidebarVideoDisplayDescription =
         width="130"
         height="130"
       />
-      <h3 class="font-body text-[28px] leading-[1.05] text-[#1A2335] mt-6">Bernard Laurance</h3>
-      <p class="font-mono text-[13px] uppercase tracking-[0.15em] text-[#3E4652] mt-3">
+      <h3 class="mt-6 font-heading text-primary-black">Bernard Laurance</h3>
+      <p class="mt-3 font-mono text-[13px] uppercase tracking-[0.15em] text-text-secondary">
         Cuisine réelle, recettes testées depuis 2010
       </p>
-      <p class="text-[16px] text-[#2F3B4A] leading-[1.65] mt-5">
-        Je partage avec passion des recettes sucrées et salées, des découvertes, des expériences et des voyages culinaires, toujours avec clarté et précision. Mon objectif est de transmettre une cuisine généreuse, fiable et vivante.
-      </p>
+      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[16px] leading-[1.7] text-text-secondary typ-body">
+        <p>
+          Depuis 2010, je publie sur mon site une cuisine à la fois rigoureuse et accessible, inspirée des pâtisseries et des saveurs du monde entier, mêlant grands classiques et recettes plus confidentielles, enrichie par les voyages, les traditions, les découvertes et le plaisir de partager. Plus de 1300 recettes mises au point, testées et validées dans ma cuisine, avec passion et gourmandise.
+        </p>
+        <p>
+          Chaque recette est travaillée, testée plusieurs fois si nécessaire, photographiée en pas à pas et rédigée par mes soins, pour que vous puissiez la refaire chez vous et vous régaler avec ceux que vous aimez !
+        </p>
+      </div>
+
+      <ul class="mt-6 space-y-4 text-left recipe-sidebar-bullets">
+        {sidebarProfileBullets.map((item) => (
+          <li class="recipe-sidebar-bullet-item">
+            <span class="recipe-sidebar-bullet-dot" aria-hidden="true"></span>
+            <div>
+              <h4 class="recipe-sidebar-bullet-title font-heading text-primary-black">{item.title}</h4>
+              <p class="mt-2 text-[14px] leading-[1.65] text-text-secondary">{item.body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
 
       <div class="mt-8">
         <div class="flex items-center justify-center gap-5 text-[#121C28]">
@@ -256,7 +291,9 @@ const sidebarVideoDisplayDescription =
               height="72"
             />
             <div class="min-w-0 flex-1">
-              <p class="text-[11px] uppercase tracking-[0.12em] text-[#2D3643] font-mono article-date">{article.date}</p>
+              {article.date && (
+                <p class="text-[11px] uppercase tracking-[0.12em] text-[#2D3643] font-mono article-date">{article.date}</p>
+              )}
               <p class="text-[17px] leading-[1.18] text-[#111111] mt-2 font-heading article-title break-words">{article.title}</p>
             </div>
           </a>
@@ -617,6 +654,26 @@ const sidebarVideoDisplayDescription =
 
   .recipe-sidebar :global(.sidebar-books-grid) {
     align-items: start;
+  }
+
+  .recipe-sidebar-bullet-item {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr);
+    align-items: start;
+    column-gap: 12px;
+  }
+
+  .recipe-sidebar-bullet-title {
+    font-size: 22px;
+    line-height: normal;
+  }
+
+  .recipe-sidebar-bullet-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #54b6b1;
+    margin-top: 9px;
   }
 
   .recipe-sidebar-club-item {

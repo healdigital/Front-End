@@ -1,4 +1,4 @@
-# Pending Points (Updated: 2026-04-01, late)
+# Pending Points (Updated: 2026-04-02, evening)
 
 ## New Client Feedback Folder Review (2026-04-01)
 
@@ -23,10 +23,12 @@
   - major live/frontend-facing UX/UI items from `UX_UI_AUDIT.md` are now completed
   - any deeper leftover legacy cleanup is now non-blocking polish, not an active carry-forward
 
-- [ ] Missing image offload/import fix
-  - WordPress offload is still failing for some media items
-  - client explicitly asked for help with a script/import path for missing cloud images
-  - screenshot evidence shows offload errors for media items without valid file paths
+- [~] Missing image offload/import fix
+  - audit + remediation scripts are now in place
+  - `5992` previously broken images recovered
+  - `22` fallback-only cases cleared
+  - `21795` unique images still remain hard-missing
+  - next step is stricter URL/path recovery for the remaining broken set
 
 - [x] Corrected copy / accent cleanup in the remaining exact visible areas Bernard flagged
   - homepage/video/sidebar/article/print-facing visible strings were cleaned
@@ -53,6 +55,16 @@
   - create `VideoCoursesSection.astro`
   - create `src/pages/cours-video.astro`
   - switch homepage fully to the new section pattern if not already complete
+
+- [x] Leo 2026-04-02 homepage / video library batch
+  - homepage main hero block removed and the sidebar/profile area now uses Leo's latest profile text + bullet points
+  - upper homepage dark section now shows the `3` real priority video courses with the updated desktop card layout
+  - large homepage video block replaced with newsletter block + email form
+  - header `Go` search buttons removed
+  - `Rédigé le ...` metadata removed from the affected surfaced lists
+  - `/cours-video` now shows paid courses first, then free videos
+  - `/cours-video` cards were rebuilt to a uniform same-size design without descriptions
+  - `/cours-video` books section was redesigned to the screenshot-style two-panel library layout
 
 - [ ] Google reviews integration
   - use WordPress reviews endpoint / Cloudflare cache
@@ -142,10 +154,6 @@
 - [ ] Shop content note
   - Leo doc items `11` and `12` should not be duplicated on the main Astro site
   - current direction: keep only links to the external shop/community where relevant
-
-- [ ] Media/offload import script
-  - explicitly held for later
-  - will be handled separately from the current frontend/UI pass
 
 ## Leo Turbet Doc - Design Carry-Forward
 

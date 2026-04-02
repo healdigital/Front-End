@@ -8,6 +8,35 @@ const VIDEO_COURSES_USER_AGENT =
 
 const DEFAULT_CLUB_URL = 'https://atelier-lacuisinedebernard.com/club/';
 
+const COURSE_OVERRIDES: Array<{
+  matcher: RegExp;
+  title?: string;
+  href: string;
+  image: string;
+}> = [
+  {
+    matcher: /millefeuille/i,
+    title: 'Millefeuille',
+    href: 'https://atelier-lacuisinedebernard.com/club/course/millefeuille/lessons',
+    image:
+      'https://atelier-lacuisinedebernard.com/wp-content/uploads/fluent-community/fluentcom-5ESxvDoe6eY88sOtUNMsiMhVUbvsOG1q-fluentcom-IMG_8120-2.jpg',
+  },
+  {
+    matcher: /pate feuilletee inversee|feuilletee inversee|feuillet[eÃ©]e invers[eÃ©]e/i,
+    title: 'La pâte feuilletée inversée',
+    href: 'https://atelier-lacuisinedebernard.com/club/course/pate-feuilletee-inversee/lessons',
+    image:
+      'https://atelier-lacuisinedebernard.com/wp-content/uploads/fluent-community/fluentcom-JDg2G8Pr8b5t7FDLhdbw3HTJDfxsUo9p-fluentcom-Capture-decran-2026-03-26-a-18.16.24.png',
+  },
+  {
+    matcher: /creme patissiere|creme diplomate|cremes de base|cr[eÃ¨]me p[aÃ¢]tissi[eÃ¨]re|cr[eÃ¨]me diplomate/i,
+    title: 'Les Crèmes de Base',
+    href: 'https://atelier-lacuisinedebernard.com/club/course/les-cremes-de-base/lessons',
+    image:
+      'https://atelier-lacuisinedebernard.com/wp-content/uploads/fluent-community/fluentcom-wXu5Bo0LxL1HJHwS16cOnKEkBQVrRvqX-fluentcom-IMG_8113-2.jpg',
+  },
+];
+
 const LESSON_URL_MAP: Array<{ matcher: RegExp; href: string }> = [
   {
     matcher: /millefeuille/i,
@@ -113,6 +142,8 @@ const normalizeDuration = (value: unknown): string | null => {
 };
 
 const getFallbackImage = (title: string): string => {
+  const courseOverride = COURSE_OVERRIDES.find((entry) => entry.matcher.test(title));
+  if (courseOverride?.image) return courseOverride.image;
   const mappedImage = FALLBACK_IMAGE_MAP.find((entry) => entry.matcher.test(title))?.src;
   return mappedImage || '/images/masterclass-video.jpg';
 };
@@ -120,17 +151,22 @@ const getFallbackImage = (title: string): string => {
 const mapVideoCourse = (item: Record<string, unknown>, index: number): VideoCourse | null => {
   if (!item || typeof item !== 'object') return null;
 
-  const title = normalizeCourseText(item.title);
-  if (!title) return null;
+  const rawTitle = normalizeCourseText(item.title);
+  if (!rawTitle) return null;
+
+  const courseOverride = COURSE_OVERRIDES.find((entry) => entry.matcher.test(rawTitle));
+  const title = courseOverride?.title || rawTitle;
 
   const normalizedImage =
-    typeof item.image === 'string' && item.image.trim() ? item.image.trim() : getFallbackImage(title);
+    typeof item.image === 'string' && item.image.trim()
+      ? item.image.trim()
+      : courseOverride?.image || getFallbackImage(title);
 
   return {
     id: String(item.id || index + 1),
     title,
     shortDescription: normalizeCourseText(item.shortDescription),
-    courseUrl: normalizeHref(item.courseUrl, title),
+    courseUrl: courseOverride?.href || normalizeHref(item.courseUrl, title),
     priceType: String(item.priceType || 'free').trim().toLowerCase(),
     price: toPositiveNumber(item.price, 0),
     image: normalizedImage,
@@ -177,7 +213,11 @@ export const loadVideoCourses = async (): Promise<VideoCourse[]> => {
         .map((item, index) => mapVideoCourse(item as Record<string, unknown>, index))
         .filter(Boolean) as VideoCourse[];
 
-      return normalized.length ? normalized : fallbackVideoCourses;
+      const deduped = normalized.filter(
+        (course, index, list) => list.findIndex((item) => item.title === course.title) === index,
+      );
+
+      return deduped.length ? deduped : fallbackVideoCourses;
     } catch (error) {
       console.warn('[VIDEO] Video courses fetch failed:', error);
       return fallbackVideoCourses;
