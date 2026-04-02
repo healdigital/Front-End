@@ -68,6 +68,11 @@ UPDATED_*.md
 COMPLETE_*.md
 wp_pages/
 
+# Local tracker / handoff markdown files
+PENDING-POINTS.md
+CLIENT-EXECUTION-TRACKER-2026-03-19.md
+IMAGE-IMPORT-STATUS-2026-04-02.md
+
 # Generated files
 *.output.txt
 *_output.txt
