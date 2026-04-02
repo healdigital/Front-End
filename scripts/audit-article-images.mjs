@@ -290,6 +290,7 @@ async function listBucketKeys() {
 async function main() {
   const concurrencyArg = process.argv.find((arg) => arg.startsWith('--concurrency='));
   const concurrency = concurrencyArg ? Number(concurrencyArg.split('=')[1]) || 8 : 8;
+  const summaryOnly = process.argv.includes('--summary-only');
 
   console.log('[AUDIT] Loading article exports...');
   const rawRecords = loadExportRecords();
@@ -335,9 +336,11 @@ async function main() {
   const fallbackWorking = audited.filter((item) => item.classification === 'working-via-fallback');
   const broken = audited.filter((item) => item.classification === 'broken');
 
-  writeJson('working-direct-images.json', workingDirect);
-  writeJson('fallback-images.json', fallbackWorking);
-  writeJson('broken-images.json', broken);
+  if (!summaryOnly) {
+    writeJson('working-direct-images.json', workingDirect);
+    writeJson('fallback-images.json', fallbackWorking);
+    writeJson('broken-images.json', broken);
+  }
   writeJson(
     'unique-working-direct-images.json',
     uniqueBy(workingDirect, (item) => item.originalUrl, (item) => ({

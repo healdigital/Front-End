@@ -10,6 +10,7 @@ import {
 
 const ROOT = process.cwd();
 const TMP_DIR = path.join(ROOT, 'tmp');
+const ARTICLES_DIR = path.join(ROOT, 'All Articles');
 const FALLBACK_FILE = path.join(TMP_DIR, 'unique-fallback-image-map.json');
 const BROKEN_FILE = path.join(TMP_DIR, 'unique-broken-images.json');
 const REPORT_FILE = path.join(TMP_DIR, 'spaces-remediation-report.json');
@@ -25,6 +26,8 @@ const REQUEST_HEADERS = {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0 Safari/537.36',
   Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
 };
+const EXPORT_URL_REGEX =
+  /https?:\/\/(?:cdn\.lacuisinedebernard\.com|(?:www\.)?lacuisinedebernard\.com)\/wp-content\/uploads\/[^"')\s<]+/gi;
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
@@ -73,6 +76,14 @@ function stripSizeSuffixFromKey(key) {
     .replace(/-(?:\d+)(?:x|X|\*|Ã—)(?:\d+)-scaled(?=\.[a-z0-9]+$)/i, '')
     .replace(/-(?:\d+)(?:x|X|\*|Ã—)(?:\d+)(?=\.[a-z0-9]+$)/i, '')
     .replace(/-scaled(?=\.[a-z0-9]+$)/i, '');
+}
+
+function basenameFromUrlOrKey(value) {
+  if (!value || typeof value !== 'string') return '';
+  const key = value.includes('://') ? toObjectKey(value) : value;
+  if (!key) return '';
+  const parts = key.split('/');
+  return parts[parts.length - 1] || '';
 }
 
 function objectKeyToWpUrl(key) {
@@ -167,6 +178,14 @@ async function uploadObject(targetKey, payload) {
 
 function buildBrokenSourceCandidates(entry) {
   const urls = new Set();
+  const exactBasename = basenameFromUrlOrKey(entry.normalizedOriginalUrl);
+  const strippedBasename = basenameFromUrlOrKey(stripSizeSuffixFromKey(toObjectKey(entry.normalizedOriginalUrl)));
+
+  for (const basename of [exactBasename, strippedBasename]) {
+    if (!basename) continue;
+    const relatedUrls = exportUrlIndex.get(basename) || [];
+    for (const relatedUrl of relatedUrls) urls.add(relatedUrl);
+  }
 
   const seedUrls = [entry.originalUrl, entry.normalizedOriginalUrl, ...(entry.fallbackCandidates || [])];
 
@@ -191,6 +210,23 @@ function buildBrokenSourceCandidates(entry) {
   }
 
   return Array.from(urls);
+}
+
+const exportUrlIndex = new Map();
+
+function buildExportUrlIndex() {
+  const files = fs.readdirSync(ARTICLES_DIR).filter((file) => file.endsWith('.json'));
+  for (const file of files) {
+    const raw = fs.readFileSync(path.join(ARTICLES_DIR, file), 'utf8');
+    const matches = raw.match(EXPORT_URL_REGEX) || [];
+    for (const match of matches) {
+      const basename = basenameFromUrlOrKey(match);
+      if (!basename) continue;
+      const list = exportUrlIndex.get(basename) || [];
+      if (!list.includes(match)) list.push(match);
+      exportUrlIndex.set(basename, list);
+    }
+  }
 }
 
 async function mapWithConcurrency(items, task, size) {
@@ -307,6 +343,10 @@ async function main() {
 
   const selectedFallback = sliceEntries(fallbackEntries);
   const selectedBroken = sliceEntries(brokenEntries);
+
+  console.log('[REMEDIATE] Building export URL index...');
+  buildExportUrlIndex();
+  console.log(`[REMEDIATE] Indexed ${exportUrlIndex.size} unique filenames from article exports.`);
 
   report.fallback.total = selectedFallback.length;
   report.broken.total = selectedBroken.length;

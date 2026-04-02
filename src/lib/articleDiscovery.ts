@@ -78,7 +78,7 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
           title,
           slug: slug ? `/${slug}` : '',
           image,
-          date: formattedDate ? `Rédigé le ${formattedDate}` : 'Rédigé récemment',
+          date: formattedDate,
         },
       };
     })
