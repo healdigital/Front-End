@@ -13,7 +13,6 @@ const TMP_DIR = path.join(ROOT, 'tmp');
 const ARTICLES_DIR = path.join(ROOT, 'All Articles');
 const FALLBACK_FILE = path.join(TMP_DIR, 'unique-fallback-image-map.json');
 const BROKEN_FILE = path.join(TMP_DIR, 'unique-broken-images.json');
-const REPORT_FILE = path.join(TMP_DIR, 'spaces-remediation-report.json');
 const DEFAULT_BATCH_REPORT = path.join(TMP_DIR, 'spaces-remediation-batch-report.json');
 
 const SPACES_BUCKET = process.env.SPACES_BUCKET || 'lcdb';
@@ -73,8 +72,8 @@ function toObjectKey(url) {
 
 function stripSizeSuffixFromKey(key) {
   return key
-    .replace(/-(?:\d+)(?:x|X|\*|Ã—)(?:\d+)-scaled(?=\.[a-z0-9]+$)/i, '')
-    .replace(/-(?:\d+)(?:x|X|\*|Ã—)(?:\d+)(?=\.[a-z0-9]+$)/i, '')
+    .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)-scaled(?=\.[a-z0-9]+$)/i, '')
+    .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)(?=\.[a-z0-9]+$)/i, '')
     .replace(/-scaled(?=\.[a-z0-9]+$)/i, '');
 }
 
@@ -212,6 +211,33 @@ function buildBrokenSourceCandidates(entry) {
   return Array.from(urls);
 }
 
+function buildInternalCopyCandidates(targetKey, entry) {
+  const keys = new Set();
+
+  const strippedTargetKey = stripSizeSuffixFromKey(targetKey);
+  if (strippedTargetKey && strippedTargetKey !== targetKey) {
+    keys.add(strippedTargetKey);
+  }
+
+  const normalizedKey = toObjectKey(entry.normalizedOriginalUrl);
+  if (normalizedKey && normalizedKey !== targetKey) {
+    keys.add(normalizedKey);
+    const strippedNormalizedKey = stripSizeSuffixFromKey(normalizedKey);
+    if (strippedNormalizedKey && strippedNormalizedKey !== targetKey) {
+      keys.add(strippedNormalizedKey);
+    }
+  }
+
+  for (const fallbackUrl of entry.fallbackCandidates || []) {
+    const fallbackKey = toObjectKey(fallbackUrl);
+    if (fallbackKey && fallbackKey !== targetKey) {
+      keys.add(fallbackKey);
+    }
+  }
+
+  return Array.from(keys);
+}
+
 const exportUrlIndex = new Map();
 
 function buildExportUrlIndex() {
@@ -278,6 +304,37 @@ async function remediateBroken(entry) {
     return { type: 'broken', status: 'already-exists', entry, targetKey };
   }
 
+  const internalAttempts = [];
+  for (const sourceKey of buildInternalCopyCandidates(targetKey, entry)) {
+    const sourceExists = await headObject(sourceKey);
+    internalAttempts.push({ sourceKey, exists: sourceExists });
+
+    if (!sourceExists) continue;
+
+    if (dryRun) {
+      return {
+        type: 'broken',
+        status: 'dry-run',
+        entry,
+        targetKey,
+        sourceKey,
+        sourceType: 'spaces-copy',
+        attempts: internalAttempts,
+      };
+    }
+
+    await copyObject(sourceKey, targetKey);
+    return {
+      type: 'broken',
+      status: 'copied-from-spaces',
+      entry,
+      targetKey,
+      sourceKey,
+      sourceType: 'spaces-copy',
+      attempts: internalAttempts,
+    };
+  }
+
   const candidates = buildBrokenSourceCandidates(entry);
   const attempts = [];
 
@@ -315,7 +372,7 @@ async function remediateBroken(entry) {
     status: 'failed',
     entry,
     targetKey,
-    attempts,
+    attempts: [...internalAttempts, ...attempts],
     reason: 'no_source_candidate_worked',
   };
 }
@@ -393,7 +450,7 @@ async function main() {
       continue;
     }
 
-    if (result.status === 'uploaded') report.broken.uploaded += 1;
+    if (result.status === 'uploaded' || result.status === 'copied-from-spaces') report.broken.uploaded += 1;
     else if (result.status === 'already-exists') report.broken.exists += 1;
     else if (result.status === 'dry-run') report.broken.dryRun += 1;
     else report.broken.failed += 1;
@@ -401,11 +458,17 @@ async function main() {
 
   fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
 
-  console.log(JSON.stringify({
-    reportFile,
-    fallback: report.fallback,
-    broken: report.broken,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        reportFile,
+        fallback: report.fallback,
+        broken: report.broken,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 main().catch((error) => {

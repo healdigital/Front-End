@@ -1,6 +1,6 @@
 const VIDEO_COURSES_SOURCE_URL =
   process.env.VIDEO_COURSES_API_URL ||
-  'https://atelier-lacuisinedebernard.com/api/video-courses';
+  'https://atelier-lacuisinedebernard.com/api/video-courses?scope=featured';
 
 const VIDEO_COURSES_FETCH_TIMEOUT_MS = 5000;
 const VIDEO_COURSES_USER_AGENT =
