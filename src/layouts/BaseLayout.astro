@@ -3,6 +3,7 @@ import SEO from "../components/SEO.astro";
 import Header from "../components/Header.astro";
 import GlobalAbout from "../components/GlobalAbout.astro";
 import GlobalFooter from "../components/GlobalFooter.astro";
+import ClubLoginModal from '../components/ClubLoginModal.astro';
 import NewsletterModal from "../components/organisms/NewsletterModal.astro";
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -60,7 +61,41 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     ))}
     {loadAds && mediavineScriptSrc && (
-      <script async src={mediavineScriptSrc}></script>
+      <>
+        <script is:inline>
+          window.__lcdbClubMember = (function () {
+            try {
+              var raw = document.cookie.split('; ').find(function (row) {
+                return row.indexOf('lcdb_club=') === 0;
+              });
+              if (!raw) return false;
+              var token = raw.split('=').slice(1).join('=');
+              var parts = token.split('.');
+              if (parts.length !== 3) return false;
+              var payloadPart = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+              var padding = payloadPart.length % 4;
+              if (padding) {
+                payloadPart += '='.repeat(4 - padding);
+              }
+              var payload = JSON.parse(atob(payloadPart));
+              if (!payload || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return false;
+              if (payload.iss !== 'atelier-lacuisinedebernard.com') return false;
+              document.documentElement.setAttribute('data-club-member', 'true');
+              return true;
+            } catch (error) {
+              return false;
+            }
+          })();
+        </script>
+        <script is:inline define:vars={{ mediavineScriptSrc }}>
+          if (!window.__lcdbClubMember) {
+            var mediavineScript = document.createElement('script');
+            mediavineScript.async = true;
+            mediavineScript.src = mediavineScriptSrc;
+            document.head.appendChild(mediavineScript);
+          }
+        </script>
+      </>
     )}
     {gaMeasurementId && (
       <>
@@ -85,6 +120,7 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
     <slot />
     {showGlobalAbout && <GlobalAbout />}
     <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
+    <ClubLoginModal />
     <GlobalFooter currentLang={lang} />
   </body>
 </html>
@@ -168,4 +204,8 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
   } else {
     window.setTimeout(() => startTranslationInit(), 180);
   }
+</script>
+
+<script>
+  import '../scripts/clubAuth';
 </script>
