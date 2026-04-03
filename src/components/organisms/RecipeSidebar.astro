@@ -8,10 +8,12 @@ interface Props {
   variant?: 'full' | 'popular';
   className?: string;
   stickyPopularRail?: boolean;
+  mobileVisible?: boolean;
 }
 
-const { variant = 'full', className = '', stickyPopularRail = false } = Astro.props as Props;
+const { variant = 'full', className = '', stickyPopularRail = false, mobileVisible = false } = Astro.props as Props;
 const isFull = variant === 'full';
+const responsiveClass = mobileVisible ? 'flex lg:hidden' : 'hidden lg:flex';
 const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 const workshopsApiUrl =
   process.env.WORKSHOPS_CACHE_URL ||
@@ -68,7 +70,7 @@ const sidebarBooks = [
   { src: '/images/book-scandaleusement-decadent.jpg', alt: 'Scandaleusement Decadent' },
 ];
 const SHOP_CLUB_URL = 'https://atelier-lacuisinedebernard.com/club/';
-const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/';
+const SHOP_VIDEO_URL = '/cours-video';
 const sidebarVideoTitle = featuredVideoCourse?.title || 'Mes cours vidéo';
 const sidebarVideoDescription =
   featuredVideoCourse?.shortDescription ||
@@ -81,7 +83,7 @@ const sidebarVideoDisplayDescription =
   'Des techniques essentielles expliqu\u00E9es pas \u00E0 pas pour progresser chez vous \u00E0 votre rythme.';
 ---
 
-<aside class={`recipe-sidebar hidden lg:flex flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
+<aside class={`recipe-sidebar ${responsiveClass} flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
   {isFull && (
     <div class="sidebar-block px-5 py-7 text-center">
       <img

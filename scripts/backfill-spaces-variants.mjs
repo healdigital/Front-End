@@ -50,6 +50,11 @@ const allKeys = new Set();
 const basenameIndex = new Map();
 const strippedBasenameIndex = new Map();
 const stemIndex = new Map();
+const collapsedStemIndex = new Map();
+const collapsedStemByDirIndex = new Map();
+const normalizedStemIndex = new Map();
+const normalizedStemByDirIndex = new Map();
+const normalizedPrefixIndex = new Map();
 
 function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -121,9 +126,62 @@ function addToIndex(map, key, value) {
   map.set(key, list);
 }
 
+function buildCollapsedStemVariants(stem) {
+  const variants = new Set();
+  let current = stripSizeSuffixFromStem(stem);
+  variants.add(current);
+
+  while (/-\d+$/i.test(current)) {
+    current = current.replace(/-\d+$/i, '');
+    variants.add(current);
+  }
+
+  return Array.from(variants).filter(Boolean);
+}
+
+function decodeSafe(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
+function normalizeStemForMatching(stem) {
+  return decodeSafe(stem)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/e2809[89]/g, '')
+    .replace(/e2809c|e2809d/g, '')
+    .replace(/cc8[0-9a-f]/g, '')
+    .replace(/c3[a-f0-9]{2}/g, '')
+    .replace(/capture-d-ecran/g, 'capture-decran')
+    .replace(/captured-ecran/g, 'capturedecran')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function buildNormalizedPrefixes(normalizedStem) {
+  const tokens = normalizedStem.split('-').filter(Boolean);
+  const prefixes = new Set();
+
+  for (let length = 2; length <= Math.min(tokens.length, 4); length += 1) {
+    prefixes.add(tokens.slice(0, length).join('-'));
+  }
+
+  if (tokens.length >= 2) {
+    prefixes.add(tokens.slice(0, 2).join('-'));
+  }
+
+  return Array.from(prefixes).filter(Boolean);
+}
+
 function indexKey(key) {
   allKeys.add(key);
 
+  const { dir } = splitDirAndFile(key);
   const basename = getBasename(key);
   const stem = getStem(basename);
   const strippedBasename = stripSizeSuffix(basename);
@@ -132,6 +190,21 @@ function indexKey(key) {
   addToIndex(basenameIndex, basename, key);
   addToIndex(strippedBasenameIndex, strippedBasename, key);
   addToIndex(stemIndex, strippedStem, key);
+
+  for (const collapsedStem of buildCollapsedStemVariants(stem)) {
+    addToIndex(collapsedStemIndex, collapsedStem, key);
+    addToIndex(collapsedStemByDirIndex, `${dir}|${collapsedStem}`, key);
+  }
+
+  const normalizedStem = normalizeStemForMatching(stem);
+  if (normalizedStem) {
+    addToIndex(normalizedStemIndex, normalizedStem, key);
+    addToIndex(normalizedStemByDirIndex, `${dir}|${normalizedStem}`, key);
+
+    for (const prefix of buildNormalizedPrefixes(normalizedStem)) {
+      addToIndex(normalizedPrefixIndex, prefix, key);
+    }
+  }
 }
 
 async function listBucketKeys() {
@@ -223,11 +296,14 @@ function scoreCandidate(targetKey, sourceKey) {
 
 function buildCandidateKeys(targetKey, entry) {
   const candidates = new Set();
+  const { dir: targetDir } = splitDirAndFile(targetKey);
   const strippedTargetKey = stripSizeSuffix(targetKey);
   const targetBasename = getBasename(targetKey);
   const strippedTargetBasename = stripSizeSuffix(targetBasename);
   const targetStem = getStem(targetBasename);
   const strippedTargetStem = stripSizeSuffixFromStem(targetStem);
+  const collapsedTargetStems = buildCollapsedStemVariants(targetStem);
+  const normalizedTargetStem = normalizeStemForMatching(targetStem);
 
   if (strippedTargetKey && strippedTargetKey !== targetKey) {
     candidates.add(strippedTargetKey);
@@ -241,6 +317,34 @@ function buildCandidateKeys(targetKey, entry) {
   for (const key of basenameIndex.get(targetBasename) || []) candidates.add(key);
   for (const key of strippedBasenameIndex.get(strippedTargetBasename) || []) candidates.add(key);
   for (const key of stemIndex.get(strippedTargetStem) || []) candidates.add(key);
+
+  for (const collapsedStem of collapsedTargetStems) {
+    for (const key of collapsedStemByDirIndex.get(`${targetDir}|${collapsedStem}`) || []) {
+      candidates.add(key);
+    }
+  }
+
+  for (const collapsedStem of collapsedTargetStems) {
+    for (const key of collapsedStemIndex.get(collapsedStem) || []) {
+      candidates.add(key);
+    }
+  }
+
+  if (normalizedTargetStem) {
+    for (const key of normalizedStemByDirIndex.get(`${targetDir}|${normalizedTargetStem}`) || []) {
+      candidates.add(key);
+    }
+
+    for (const key of normalizedStemIndex.get(normalizedTargetStem) || []) {
+      candidates.add(key);
+    }
+
+    for (const prefix of buildNormalizedPrefixes(normalizedTargetStem)) {
+      for (const key of normalizedPrefixIndex.get(prefix) || []) {
+        candidates.add(key);
+      }
+    }
+  }
 
   return Array.from(candidates)
     .filter((key) => key && key !== targetKey && allKeys.has(key))

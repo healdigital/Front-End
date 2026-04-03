@@ -8,6 +8,7 @@ import DisqusComments from '../../components/DisqusComments.astro';
 import MediavineSlot from '../../components/MediavineSlot.astro';
 import SocialShare from '../../components/molecules/SocialShare.astro';
 import NewsletterModal from '../../components/organisms/NewsletterModal.astro';
+import RecipeSidebar from '../../components/organisms/RecipeSidebar.astro';
 
 export const prerender = !import.meta.env.DEV;
 
@@ -256,6 +257,23 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
 
   <section class="lcdb-page-section">
     <div class="lcdb-page-shell lcdb-page-section-inner">
+      <section class="recipe-redesign lcdb-surface-card article-mobile-author-card">
+        <img
+          src="/images/image.png"
+          alt="Bernard Laurance"
+          class="article-mobile-author-avatar"
+          loading="lazy"
+          decoding="async"
+          width="88"
+          height="88"
+        />
+        <div class="article-mobile-author-copy">
+          <p class="article-mobile-author-label">Bernard Laurance</p>
+          <p class="article-mobile-author-text">
+            Cuisine r&eacute;elle, recettes test&eacute;es depuis 2010.
+          </p>
+        </div>
+      </section>
       <article class="lcdb-surface-card overflow-hidden">
         {imageUrl && (
           <img
@@ -358,11 +376,59 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
       </article>
     </div>
   </section>
+  <div class="article-sidebar-mobile">
+    <div class="lcdb-page-shell">
+      <RecipeSidebar variant="full" mobileVisible={true} />
+    </div>
+  </div>
   <NewsletterModal triggerId="open-newsletter-article-content" id="newsletter-modal-article-content" />
   <NewsletterModal triggerId="open-newsletter-article-inline" id="newsletter-modal-article-inline" />
 </BaseLayout>
 
 <style>
+  .article-mobile-author-card,
+  .article-sidebar-mobile {
+    display: none;
+    margin: 1.5rem 0 0;
+  }
+
+  .article-mobile-author-card {
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    border: 1px solid #d8d2c2;
+    border-radius: 18px;
+    background: #f7f5ef;
+  }
+
+  .article-mobile-author-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    object-fit: cover;
+    object-position: top;
+    flex-shrink: 0;
+  }
+
+  .article-mobile-author-copy {
+    min-width: 0;
+  }
+
+  .article-mobile-author-label {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .article-mobile-author-text {
+    margin: 8px 0 0;
+    color: #5b5b5b;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
   .article-actions {
     display: flex;
     align-items: center;
@@ -556,6 +622,15 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
   }
 
   @media (max-width: 900px) {
+    .article-sidebar-mobile {
+      display: block;
+    }
+
+    .article-mobile-author-card {
+      display: flex;
+      margin: 1.5rem 10px 0;
+    }
+
     .article-related-grid {
       grid-template-columns: 1fr;
     }

@@ -41,6 +41,40 @@ const formatMinutes = (value: any) => {
   return `${Math.round(numeric)} min`;
 };
 
+const normalizeDifficultyLabel = (value: any) => {
+  const raw = String(value || "").trim();
+  const normalized = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (!normalized) return "";
+  if (["easy", "facile"].includes(normalized)) return "Facile";
+  if (["medium", "moyen", "intermediate"].includes(normalized)) return "M\u00E9dium";
+  if (["hard", "difficult", "difficile"].includes(normalized)) return "Difficile";
+  return raw;
+};
+
+const formatServingsLabel = (value: any) => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const numeric = Number(raw.replace(",", "."));
+  if (Number.isFinite(numeric)) {
+    const rounded = Math.round(numeric);
+    return `${rounded} personne${rounded > 1 ? "s" : ""}`;
+  }
+
+  return raw
+    .replace(/\b(servings?|people|persons?)\b/gi, "personnes")
+    .replace(/\b(person)\b/gi, "personne")
+    .replace(/\b1\s+personnes\b/gi, "1 personne")
+    .replace(/\b1\s+people\b/gi, "1 personne")
+    .replace(/\b1\s+persons\b/gi, "1 personne")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const quickInfoItems = [
   {
     label: "Temps de préparation",
@@ -52,16 +86,16 @@ const quickInfoItems = [
   },
   {
     label: "Nombre de portions",
-    value: String(recipeBlock?.servingsCount || "").trim(),
+    value: formatServingsLabel(recipeBlock?.servingsCount),
   },
-  { label: "Difficulté", value: String(recipeBlock?.difficulty || "").trim() },
+  { label: "Difficulté", value: normalizeDifficultyLabel(recipeBlock?.difficulty) },
   {
     label: "Type de recette",
     value: String(recipeBlock?.recipeType || "").trim(),
   },
   { label: "Type de plat", value: String(recipeBlock?.dishType || "").trim() },
   { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
-  { label: "Portions", value: String(recipeBlock?.servings || "").trim() },
+  { label: "Portions", value: formatServingsLabel(recipeBlock?.servings) },
 ].filter((item) => item.value);
 
 const printLink = `/print/${slug}/?auto=1`;
@@ -161,16 +195,15 @@ const printLink = `/print/${slug}/?auto=1`;
   </section>
 
   <section class="recipe-redesign__section">
-    <div class="recipe-redesign__section-head">
-      <h2>Ingrédients</h2>
-      <div class="recipe-redesign__servings" aria-label="Portions">
-        <button type="button" class="is-active" data-multiplier="1">1x</button>
-        <button type="button" data-multiplier="2">2x</button>
-        <button type="button" data-multiplier="3">3x</button>
-      </div>
-    </div>
-
     <div class="recipe-redesign__card">
+      <div class="recipe-redesign__section-head recipe-redesign__section-head--inside">
+        <h2>Ingrédients</h2>
+        <div class="recipe-redesign__servings" aria-label="Portions">
+          <button type="button" class="is-active" data-multiplier="1">1x</button>
+          <button type="button" data-multiplier="2">2x</button>
+          <button type="button" data-multiplier="3">3x</button>
+        </div>
+      </div>
       {
         ingredientGroups.map((group: any) => (
           <section class="recipe-redesign__group">
@@ -305,18 +338,17 @@ const printLink = `/print/${slug}/?auto=1`;
       )
     }
 
-    <div
-      class="recipe-redesign__section-head recipe-redesign__section-head--compact"
-    >
-      <h3>Ingrédients</h3>
-      <div class="recipe-redesign__servings" aria-label="Portions">
-        <button type="button" class="is-active" data-multiplier="1">1x</button>
-        <button type="button" data-multiplier="2">2x</button>
-        <button type="button" data-multiplier="3">3x</button>
-      </div>
-    </div>
-
     <div class="recipe-redesign__card">
+      <div
+        class="recipe-redesign__section-head recipe-redesign__section-head--compact recipe-redesign__section-head--inside"
+      >
+        <h3>Ingrédients</h3>
+        <div class="recipe-redesign__servings" aria-label="Portions">
+          <button type="button" class="is-active" data-multiplier="1">1x</button>
+          <button type="button" data-multiplier="2">2x</button>
+          <button type="button" data-multiplier="3">3x</button>
+        </div>
+      </div>
       {
         ingredientGroups.map((group: any) => (
           <section class="recipe-redesign__group">
@@ -367,7 +399,7 @@ const printLink = `/print/${slug}/?auto=1`;
     {
       nutritionItems.length > 0 && (
         <div class="recipe-redesign__card recipe-redesign__nutrition-card">
-          <h3 class="recipe-redesign__nutrition-title">Nutrition</h3>
+          <h3 class="recipe-redesign__nutrition-title">Valeurs nutritionnelles</h3>
           <div class="recipe-redesign__nutrition">
             {nutritionItems.map((item: any) => (
               <div class="recipe-redesign__nutrition-item">
@@ -624,7 +656,7 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__stars {
     display: inline-flex;
     gap: 4px;
-    color: #7baa43;
+    color: #54b6b1;
   }
 
   .recipe-redesign__meta {
@@ -755,6 +787,12 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__recipe-card,
   .recipe-redesign__step-card {
     padding: 24px;
+  }
+
+  .recipe-redesign__section-head--inside {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #ebe3d7;
   }
 
   .recipe-redesign__group + .recipe-redesign__group {

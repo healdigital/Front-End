@@ -1,31 +1,14 @@
 ---
 import Icon from '../atoms/Icon.astro';
-import { loadVideoCourses } from '../../lib/videoCourses';
+import { loadFeaturedCourses } from '../../lib/videoCourses';
 
 interface Props {
   embedded?: boolean;
 }
 
 const { embedded = false } = Astro.props as Props;
-const SHOP_VIDEO_URL = 'https://atelier-lacuisinedebernard.com/club/';
-const videoCourses = await loadVideoCourses();
-const featuredCourse = videoCourses[0] || null;
-const featuredCourseHref = featuredCourse?.courseUrl || SHOP_VIDEO_URL;
-const featuredCourseTitle = featuredCourse?.title || 'Les Bases de la Patisserie';
-const featuredCourseDescription =
-  featuredCourse?.shortDescription ||
-  "Découvrez mes premiers cours vidéo pour apprendre les bases de la pâtisserie à votre rythme depuis chez vous.";
-const featuredCourseImage = featuredCourse?.image || '/images/masterclass-featured.jpg';
-const featuredCourseDisplayTitle = featuredCourse?.title || 'Les bases de la p\u00E2tisserie';
-const featuredCourseDisplayDescription =
-  featuredCourse?.shortDescription ||
-  'D\u00E9couvrez mes premiers cours vid\u00E9o pour apprendre les bases de la p\u00E2tisserie \u00E0 votre rythme depuis chez vous.';
-
-const features = [
-  { icon: 'video' as const, label: 'Cours vid&eacute;o pas &agrave; pas' },
-  { icon: 'download' as const, label: 'Fiches t&eacute;l&eacute;chargeables' },
-  { icon: 'refresh' as const, label: 'Acc&egrave;s &agrave; vie et mises &agrave; jour gratuites' },
-];
+const SHOP_VIDEO_URL = '/cours-video';
+const featuredCourses = await loadFeaturedCourses();
 ---
 
 <section class={`relative ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
@@ -37,62 +20,203 @@ const features = [
   )}
   <div class={embedded ? 'relative z-10' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
     <div class="flex items-center gap-6 mb-12">
-      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section" style="padding-top:0px !important;">Mes cours vid&eacute;o</h2>
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section" style="padding-top:0px !important;">Cours videos</h2>
       <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
     </div>
 
-    <div class="featured-masterclass-card">
-      <div class="featured-masterclass-media">
-        <img
-          src={featuredCourseImage}
-          alt={featuredCourseDisplayTitle}
-          class="featured-masterclass-media-image"
-          loading="lazy"
-          decoding="async"
-          width="960"
-          height="720"
-          sizes="(min-width: 1024px) 42vw, 92vw"
-        />
-        <div class="absolute top-4 left-4 bg-white/90 rounded-full px-4 py-2 flex items-center gap-2">
-          <Icon name="star" size="sm" class="text-text-primary" />
-          <span class="font-mono text-[11px] uppercase tracking-wider text-text-primary">Produit phare</span>
-        </div>
-      </div>
-
-      <div class="featured-masterclass-panel">
-        <div class="featured-masterclass-copy">
-              <p class="featured-masterclass-eyebrow">Cours vid&eacute;o</p>
-          <h3 class="featured-masterclass-title">
-            {featuredCourseDisplayTitle}
-          </h3>
-          <p class="featured-masterclass-description">
-            {featuredCourseDisplayDescription}
-          </p>
-          <div class="featured-masterclass-features">
-            {features.map((feature) => (
-              <div class="featured-masterclass-feature">
-                <Icon name={feature.icon} size="sm" />
-                <span set:html={feature.label}></span>
+    <div class="featured-masterclass-grid">
+      {featuredCourses.map((course) => (
+        <article class="featured-masterclass-item">
+          <a href={course.courseUrl || SHOP_VIDEO_URL} class="featured-masterclass-link">
+            <div class="featured-masterclass-image-shell">
+              <img
+                src={course.image || '/images/masterclass-video.jpg'}
+                alt={course.title}
+                class="featured-masterclass-image"
+                loading="lazy"
+                decoding="async"
+                width="960"
+                height="720"
+                sizes="(min-width: 768px) 31vw, 92vw"
+              />
+              {(course.lessonCount || course.duration) && (
+                <div class="featured-masterclass-badges">
+                  {course.lessonCount ? (
+                    <span class="featured-masterclass-badge">
+                      <Icon name="video" size="sm" /> {course.lessonCount} le&ccedil;ons
+                    </span>
+                  ) : null}
+                  {course.duration ? (
+                    <span class="featured-masterclass-badge">
+                      <Icon name="clock" size="sm" /> {course.duration}
+                    </span>
+                  ) : null}
+                </div>
+              )}
+            </div>
+            <div class="featured-masterclass-body">
+              <div class="featured-masterclass-meta">
+                <p class="featured-masterclass-kicker">Cours videos</p>
+                {(course.priceType === 'paid' || course.price > 0) && (
+                  <span class="featured-masterclass-price-badge">Premium</span>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
+              <h3 class="featured-masterclass-heading">{course.title}</h3>
+              <p class="featured-masterclass-copy">{course.shortDescription}</p>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
 
-        <div class="mt-8 flex items-end justify-between gap-4 flex-wrap">
-          <a
-            href={featuredCourseHref}
-            class="inline-flex items-center justify-center px-8 py-5 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90 typ-button"
-          >
-            Voir les cours vid&eacute;o
-          </a>
-          <a
-            href={SHOP_VIDEO_URL}
-            class="inline-flex items-center justify-center px-6 py-4 border border-[#D7D1C2] text-text-primary font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:bg-[#F7F5EF] typ-button"
-          >
-            D&eacute;couvrir le bundle
-          </a>
-        </div>
-      </div>
+    <div class="mt-8 flex justify-center">
+      <a
+        href={SHOP_VIDEO_URL}
+        class="inline-flex items-center justify-center px-8 py-4 bg-primary-turquoise text-primary-white font-button font-medium text-[13px] uppercase tracking-wider rounded-sm hover:opacity-90"
+      >
+        Voir tous les cours vid&eacute;o
+      </a>
     </div>
   </div>
 </section>
+
+<style>
+  .featured-masterclass-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .featured-masterclass-item {
+    min-width: 0;
+  }
+
+  .featured-masterclass-link {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid #d8d2c2;
+    background: #f7f5ef;
+    box-shadow: 0 18px 42px rgba(8, 18, 34, 0.08);
+    text-decoration: none;
+    transition:
+      transform 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .featured-masterclass-image-shell {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1.16;
+    background: #e8e1d2;
+  }
+
+  .featured-masterclass-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+
+  .featured-masterclass-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.35rem 1.25rem 1.4rem;
+  }
+
+  .featured-masterclass-kicker {
+    margin: 0;
+    color: #5f6671;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .featured-masterclass-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .featured-masterclass-price-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: #c4b06d;
+    padding: 0.32rem 0.7rem;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .featured-masterclass-heading {
+    margin: 0;
+    color: #151f2b;
+    font-family: var(--font-heading);
+    font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+    line-height: 0.98;
+    transition: color 0.22s ease;
+  }
+
+  .featured-masterclass-copy {
+    margin: 0;
+    color: #5b6270;
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.62;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .featured-masterclass-badges {
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .featured-masterclass-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    padding: 0.45rem 0.8rem;
+    color: #1e2b3a;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .featured-masterclass-link:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px rgba(8, 18, 34, 0.14);
+  }
+
+  .featured-masterclass-link:hover .featured-masterclass-image {
+    transform: scale(1.04);
+  }
+
+  .featured-masterclass-link:hover .featured-masterclass-heading {
+    color: #54b6b1;
+  }
+
+  @media (min-width: 768px) {
+    .featured-masterclass-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
