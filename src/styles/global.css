@@ -843,6 +843,11 @@ a.w-9.h-9.rounded-full.overflow-hidden.border.border-white\/20 {
 .article-intro-card .article-intro-rating .article-intro-rating-label {
     color: #111;
 }
+
+html[data-club-member="true"] .mv-ad-slot {
+  display: none !important;
+  min-height: 0 !important;
+}
  
 .article-intro-meta .article-intro-meta-item {
     display: flex;

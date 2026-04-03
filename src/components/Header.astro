@@ -202,6 +202,33 @@ const accountItems = [
             ))}
           </div>
         </div>
+        <div class="relative" data-no-translate="true">
+          <button
+            type="button"
+            class="flex items-center gap-[7px] text-white/85 hover:text-white text-[14px] header-utility-text"
+            data-club-login-trigger
+            aria-label="Connexion Club"
+          >
+            <Icon name="user" size="sm" class="w-[18px] h-[18px]" />
+            <span data-header-utility-label>Club</span>
+          </button>
+          <div class="hidden items-center gap-[7px]" data-club-member-status>
+            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:#bba86b"></span>
+            <span
+              class="text-[14px] header-utility-text"
+              style="color:#bba86b"
+              data-club-member-name
+            ></span>
+            <button
+              type="button"
+              class="text-white/50 hover:text-white/85 text-[12px] header-utility-text transition-colors"
+              data-club-logout-trigger
+              aria-label="Se déconnecter du Club"
+            >
+              ×
+            </button>
+          </div>
+        </div>
         <a href="/favoris" class="inline-flex items-center gap-[6px] text-white/85 hover:text-white" aria-label="Favoris">
           <span class="header-favorites-icon" aria-hidden="true">
             <img src="/images/client-favorites.svg" alt="" loading="lazy" decoding="async" />
@@ -243,6 +270,15 @@ const accountItems = [
             ))}
           </div>
         </div>
+        <button
+          type="button"
+          class="text-white/80 hover:text-white transition-colors"
+          aria-label="Club"
+          data-club-login-trigger
+          data-no-translate="true"
+        >
+          <Icon name="user" size="md" />
+        </button>
         <button
           type="button"
           class="text-white/80"
