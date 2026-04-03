@@ -606,6 +606,10 @@ div#search-controls {
     padding-top: 40px;
 }
 @media (min-width: 768px) {
+  .home-page-section{
+    padding: calc(var(--spacing) * 4);
+
+  }
   .lcdb-page-shell {
     padding-left: 28px;
     padding-right: 28px;
@@ -635,6 +639,10 @@ div#search-controls {
 }
 
 @media (max-width: 767px) {
+  .home-page-section{
+    padding: calc(var(--spacing) * 4);
+
+  }
   .lcdb-article-card-title {
     font-size: 21px;
   }

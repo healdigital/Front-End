@@ -49,6 +49,40 @@ const formatMinutes = (value: any): string => {
   return numeric === null ? "" : `${Math.round(numeric)} min`;
 };
 
+const normalizeDifficultyLabel = (value: any): string => {
+  const raw = toText(value).trim();
+  const normalized = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (!normalized) return "";
+  if (["easy", "facile"].includes(normalized)) return "Facile";
+  if (["medium", "moyen", "intermediate"].includes(normalized)) return "M\u00E9dium";
+  if (["hard", "difficult", "difficile"].includes(normalized)) return "Difficile";
+  return raw;
+};
+
+const formatServingsLabel = (value: any): string => {
+  const raw = toText(value).trim();
+  if (!raw) return "";
+
+  const numeric = Number(raw.replace(",", "."));
+  if (Number.isFinite(numeric)) {
+    const rounded = Math.round(numeric);
+    return `${rounded} personne${rounded > 1 ? "s" : ""}`;
+  }
+
+  return raw
+    .replace(/\b(servings?|people|persons?)\b/gi, "personnes")
+    .replace(/\b(person)\b/gi, "personne")
+    .replace(/\b1\s+personnes\b/gi, "1 personne")
+    .replace(/\b1\s+people\b/gi, "1 personne")
+    .replace(/\b1\s+persons\b/gi, "1 personne")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
 
 export async function getStaticPaths() {
@@ -136,14 +170,14 @@ const recipeCardTitle = toText(primaryRecipe?.title) || "Fiche recette";
 const recipeType = toText(primaryRecipe?.recipeType).toUpperCase();
 const dishType = toText(primaryRecipe?.dishType);
 const cuisine = toText(primaryRecipe?.cuisine);
-const difficulty = toText(primaryRecipe?.difficulty);
+const difficulty = normalizeDifficultyLabel(primaryRecipe?.difficulty);
 const prepTime = formatMinutes(primaryRecipe?.preparationTimeMinutes);
 const cookTime = formatMinutes(primaryRecipe?.cookingTimeMinutes);
 const prepNumeric = toPositiveNumber(primaryRecipe?.preparationTimeMinutes) || 0;
 const cookNumeric = toPositiveNumber(primaryRecipe?.cookingTimeMinutes) || 0;
 const totalTime = prepNumeric + cookNumeric > 0 ? `${Math.round(prepNumeric + cookNumeric)} min` : "";
 const servings =
-  toText(primaryRecipe?.servings) ||
+  formatServingsLabel(primaryRecipe?.servings) ||
   (toPositiveNumber(primaryRecipe?.servingsCount) ? String(Math.round(Number(primaryRecipe.servingsCount))) : "");
 
 const caloriesKcal = toPositiveNumber(primaryRecipe?.nutrition?.caloriesKcal);

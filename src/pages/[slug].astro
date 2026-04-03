@@ -19,6 +19,7 @@ import {
 } from "../utils/buildArticleJsonLd";
 import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
 import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 import { renderArticleContent } from "../utils/renderArticleContent";
 
 export const prerender = true;
@@ -29,7 +30,7 @@ const getBuildLimit = () => {
 };
 
 const stripHtml = (value: string) =>
-  String(value || "")
+  decodeHtmlEntities(String(value || ""))
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -346,7 +347,7 @@ const getExcerpt = () => {
   return "";
 };
 
-const title = article.title || "Untitled";
+const title = toText(article?.title) || "Untitled";
 const excerpt = getExcerpt();
 const image = processArticleImageUrl(article);
 const imageAlt =
@@ -467,8 +468,44 @@ const primaryRecipeBlock =
       Array.isArray(block?.ingredients) ||
       Array.isArray(block?.steps),
   ) || null;
-const recipeDifficulty = toText(primaryRecipeBlock?.difficulty);
-const recipePortions = toText(
+const normalizeRecipeDifficulty = (value: any): string => {
+  const raw = toText(value).trim();
+  const normalized = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (!normalized) return "";
+  if (["easy", "facile"].includes(normalized)) return "Facile";
+  if (["medium", "moyen", "intermediate"].includes(normalized)) return "M\u00E9dium";
+  if (["hard", "difficult", "difficile"].includes(normalized)) return "Difficile";
+  return raw;
+};
+
+const formatRecipeServings = (value: any): string => {
+  const raw = toText(value).trim();
+  if (!raw) return "";
+
+  const numeric = Number(raw.replace(",", "."));
+  if (Number.isFinite(numeric)) {
+    const rounded = Math.round(numeric);
+    return `${rounded} personne${rounded > 1 ? "s" : ""}`;
+  }
+
+  const normalized = raw
+    .replace(/\b(servings?|people|persons?)\b/gi, "personnes")
+    .replace(/\b(person)\b/gi, "personne")
+    .replace(/\b1\s+personnes\b/gi, "1 personne")
+    .replace(/\b1\s+people\b/gi, "1 personne")
+    .replace(/\b1\s+persons\b/gi, "1 personne")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return normalized;
+};
+
+const recipeDifficulty = normalizeRecipeDifficulty(primaryRecipeBlock?.difficulty);
+const recipePortions = formatRecipeServings(
   primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount,
 );
 const heroMetaItems = [
@@ -504,8 +541,8 @@ const uiText = {
   print: "Imprimer la recette",
   pin: "Épingler la recette",
   collect: "Ajouter à la collection",
-  quickInfo: "Quick Info",
-  nutrition: "Nutrition",
+  quickInfo: "Infos pratiques",
+  nutrition: "Valeurs nutritionnelles",
   finalRecipe: "Fiche recette",
 };
 const topInfoItems = [
@@ -520,7 +557,7 @@ const topInfoItems = [
   { label: "Cuisine", value: toText(primaryRecipeBlock?.cuisine) },
   {
     label: "Portions",
-    value: toText(
+    value: formatRecipeServings(
       primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount,
     ),
   },
@@ -541,12 +578,12 @@ const quickInfoItems = [
     label: "Temps de cuisson",
     value: formatMinutes(primaryRecipeBlock?.cookingTimeMinutes),
   },
-  { label: "Nombre de portions", value: toText(primaryRecipeBlock?.servingsCount) },
-  { label: "Difficulté", value: toText(primaryRecipeBlock?.difficulty) },
+  { label: "Nombre de portions", value: formatRecipeServings(primaryRecipeBlock?.servingsCount) },
+  { label: "Difficulté", value: normalizeRecipeDifficulty(primaryRecipeBlock?.difficulty) },
   { label: "Type de recette", value: toText(primaryRecipeBlock?.recipeType) },
   { label: "Type de plat", value: toText(primaryRecipeBlock?.dishType) },
   { label: "Cuisine", value: toText(primaryRecipeBlock?.cuisine) },
-  { label: "Portions", value: toText(primaryRecipeBlock?.servings) },
+  { label: "Portions", value: formatRecipeServings(primaryRecipeBlock?.servings) },
 ].filter((item) => item.value);
 const nutritionItems = [
   {
@@ -555,23 +592,23 @@ const nutritionItems = [
     unit: "kcal",
   },
   {
-    label: "Protein",
+    label: "Protéines",
     value: primaryRecipeBlock?.nutrition?.proteinGrams,
     unit: "g",
   },
   {
-    label: "Carbs",
+    label: "Glucides",
     value: primaryRecipeBlock?.nutrition?.carbohydratesGrams,
     unit: "g",
   },
-  { label: "Fat", value: primaryRecipeBlock?.nutrition?.fatGrams, unit: "g" },
+  { label: "Lipides", value: primaryRecipeBlock?.nutrition?.fatGrams, unit: "g" },
   {
-    label: "Fiber",
+    label: "Fibres",
     value: primaryRecipeBlock?.nutrition?.fiberGrams,
     unit: "g",
   },
   {
-    label: "Sugar",
+    label: "Sucres",
     value: primaryRecipeBlock?.nutrition?.sugarGrams,
     unit: "g",
   },
@@ -612,7 +649,7 @@ const recipeContentSanitized = recipeContent
   )
   .replace(
     /(<div class="content-v2-recipe-section">\s*<h3>)Nutrition[^<]*(<\/h3>)/,
-    "$1Nutrition$2",
+    "$1Valeurs nutritionnelles$2",
   );
 
 const storyContent = renderArticleContent(article, {
@@ -749,6 +786,24 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     <div class="lcdb-page-shell lcdb-page-section-inner">
       <div class="article-layout">
         <div class="article-main-column">
+          <section class="recipe-redesign lcdb-surface-card article-mobile-author-card">
+            <img
+              src="/images/image.png"
+              alt="Bernard Laurance"
+              class="article-mobile-author-avatar"
+              loading="lazy"
+              decoding="async"
+              width="88"
+              height="88"
+            />
+            <div class="article-mobile-author-copy">
+              <p class="article-mobile-author-label">Bernard Laurance</p>
+              <p class="article-mobile-author-text">
+                Cuisine r&eacute;elle, recettes test&eacute;es depuis 2010.
+              </p>
+            </div>
+          </section>
+
           {
             primaryRecipeBlock && (
               <RecipeDetailRedesign
@@ -1154,7 +1209,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                     {nutritionItems.length > 0 && (
                       <div class="recipe-detail-compact-panel">
                         <h3 class="recipe-detail-compact-section-title">
-                          Nutrition
+                          Valeurs nutritionnelles
                         </h3>
                         <div class="recipe-detail-nutrition-grid">
                           {nutritionItems.map((item) => (
@@ -1356,6 +1411,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               showComposerPreview={true}
             />
           </section>
+
+          <div class="article-sidebar-mobile">
+            <RecipeSidebar variant="full" mobileVisible={true} />
+          </div>
         </div>
 
         <div class="article-sidebar-column">
@@ -2649,6 +2708,11 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     min-width: 0;
     align-self: start;
     background: transparent;
+  }
+
+  .article-mobile-author-card,
+  .article-sidebar-mobile {
+    display: none;
   }
 
   .lcdb-page-hero,
@@ -4081,6 +4145,51 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       overflow-x: hidden;
     }
 
+    .article-mobile-author-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-left: 10px;
+      margin-right: 10px;
+      padding: 16px 18px;
+      border: 1px solid #d8d2c2;
+      border-radius: 18px;
+      background: #f7f5ef;
+    }
+
+    .article-mobile-author-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 999px;
+      object-fit: cover;
+      object-position: top;
+      flex-shrink: 0;
+    }
+
+    .article-mobile-author-copy {
+      min-width: 0;
+    }
+
+    .article-mobile-author-label {
+      margin: 0;
+      color: #111111;
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .article-mobile-author-text {
+      margin: 8px 0 0;
+      color: #5b5b5b;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .article-sidebar-mobile {
+      display: block;
+    }
+
     .article-main-column > .recipe-redesign,
     .article-main-column > .article-newsletter-card,
     .article-main-column > .comments-card,
@@ -4325,6 +4434,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
     .article-breadcrumb,
     .article-hero-actions,
     .article-sidebar-column,
+    .article-sidebar-mobile,
     .article-newsletter-card,
     .comments-card,
     .article-chip-groups,
