@@ -3,21 +3,10 @@ import { buildWpSquareVariantUrl, processArticleImageUrl } from '../utils/cdnUrl
 import { stripHtml } from '../utils/stripHtml.js';
 
 type SidebarArticle = {
-  date: string;
   image: string;
+  label: string;
   slug: string;
   title: string;
-};
-
-const formatFrenchDate = (value: unknown): string => {
-  const parsed = new Date(String(value || ''));
-  if (Number.isNaN(parsed.getTime())) return '';
-
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(parsed);
 };
 
 const getSlug = (article: any): string => {
@@ -35,6 +24,38 @@ const hasRecipe = (article: any): boolean =>
 
 const hasCategories = (article: any): boolean =>
   Array.isArray(article?.categories) && article.categories.length > 0;
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    for (const candidate of [value.rendered, value.value, value.text, value.title, value.name, value.label]) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+  }
+  return '';
+};
+
+const extractSidebarLabel = (article: any): string => {
+  const categoryLabel = (Array.isArray(article?.categories) ? article.categories : [])
+    .map((entry: any) => toText(entry))
+    .find(Boolean);
+
+  if (categoryLabel) return categoryLabel;
+
+  const tagLabel = (Array.isArray(article?.tags) ? article.tags : [])
+    .map((entry: any) => toText(entry))
+    .find(Boolean);
+
+  if (tagLabel) return tagLabel;
+
+  const cuisineLabel = toText(article?.cuisine);
+  if (cuisineLabel) return cuisineLabel;
+
+  return 'Recettes';
+};
 
 const articleScore = (article: any): number => {
   const hasImage = Boolean(processArticleImageUrl(article));
@@ -69,8 +90,6 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
       const title = getTitle(article);
       const imageSource = processArticleImageUrl(article);
       const image = buildWpSquareVariantUrl(imageSource, 500) || imageSource;
-      const formattedDate = formatFrenchDate(article?.date || article?.updatedAt || article?.modified);
-
       return {
         article,
         score: articleScore(article),
@@ -78,7 +97,7 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
           title,
           slug: slug ? `/${slug}` : '',
           image,
-          date: formattedDate,
+          label: extractSidebarLabel(article),
         },
       };
     })

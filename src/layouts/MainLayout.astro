@@ -2,6 +2,7 @@
 import SEO from '../components/SEO.astro';
 import Header from '../components/Header.astro';
 import GlobalFooter from '../components/GlobalFooter.astro';
+import ClubLoginModal from '../components/ClubLoginModal.astro';
 import NewsletterModal from '../components/organisms/NewsletterModal.astro';
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -41,6 +42,7 @@ const { title, description, image, lang = 'fr' } = Astro.props;
       <slot />
     </main>
     <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
+    <ClubLoginModal />
     <GlobalFooter currentLang={lang} />
   </body>
 </html>
@@ -123,4 +125,8 @@ const { title, description, image, lang = 'fr' } = Astro.props;
   } else {
     window.setTimeout(() => startTranslationInit(), 180);
   }
+</script>
+
+<script>
+  import '../scripts/clubAuth';
 </script>

@@ -21,19 +21,19 @@ const workshopsApiUrl =
 const fallbackPopularArticles = [
   {
     title: 'Salade de nouilles de tofu aux 5 parfums',
-    date: 'Rédigé récemment',
+    label: 'Salé',
     image: '/images/workshop-soup.jpg',
     slug: '/salade-nouilles-tofu',
   },
   {
     title: 'Concombres marinés',
-    date: 'Rédigé récemment',
+    label: 'Accompagnement',
     image: '/images/workshop-dumplings.jpg',
     slug: '/concombres-marines',
   },
   {
     title: 'Lohikeitto',
-    date: 'Rédigé récemment',
+    label: 'Soupes',
     image: '/images/masterclass-video.jpg',
     slug: '/lohikeitto',
   },
@@ -99,7 +99,7 @@ const sidebarVideoDisplayDescription =
       <p class="mt-3 font-mono text-[13px] uppercase tracking-[0.15em] text-text-secondary">
         Cuisine réelle, recettes testées depuis 2010
       </p>
-      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[16px] leading-[1.7] text-text-secondary typ-body">
+      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[15px] leading-[1.72] text-text-secondary typ-body">
         <p>
           Depuis 2010, je publie sur mon site une cuisine à la fois rigoureuse et accessible, inspirée des pâtisseries et des saveurs du monde entier, mêlant grands classiques et recettes plus confidentielles, enrichie par les voyages, les traditions, les découvertes et le plaisir de partager. Plus de 1300 recettes mises au point, testées et validées dans ma cuisine, avec passion et gourmandise.
         </p>
@@ -114,7 +114,7 @@ const sidebarVideoDisplayDescription =
             <span class="recipe-sidebar-bullet-dot" aria-hidden="true"></span>
             <div>
               <h4 class="recipe-sidebar-bullet-title font-heading text-primary-black">{item.title}</h4>
-              <p class="mt-2 text-[14px] leading-[1.65] text-text-secondary">{item.body}</p>
+              <p class="mt-2 recipe-sidebar-bullet-body text-text-secondary">{item.body}</p>
             </div>
           </li>
         ))}
@@ -293,8 +293,10 @@ const sidebarVideoDisplayDescription =
               height="72"
             />
             <div class="min-w-0 flex-1">
-              {article.date && (
-                <p class="text-[11px] uppercase tracking-[0.12em] text-[#2D3643] font-mono article-date">{article.date}</p>
+              {article.label && (
+                <p class="inline-flex max-w-full items-center rounded-full bg-[#F0EFE8] px-3 py-1 text-[11px] uppercase tracking-[0.12em] text-[#2D3643] font-mono article-date">
+                  {article.label}
+                </p>
               )}
               <p class="text-[17px] leading-[1.18] text-[#111111] mt-2 font-heading article-title break-words">{article.title}</p>
             </div>
@@ -634,6 +636,7 @@ const sidebarVideoDisplayDescription =
 
   .recipe-sidebar :global(.article-date) {
     color: #59606d;
+    letter-spacing: 0.12em;
   }
 
   .recipe-sidebar :global(.article-title) {
@@ -666,8 +669,13 @@ const sidebarVideoDisplayDescription =
   }
 
   .recipe-sidebar-bullet-title {
-    font-size: 22px;
-    line-height: normal;
+    font-size: 18px;
+    line-height: 1.18;
+  }
+
+  .recipe-sidebar-bullet-body {
+    font-size: 14px;
+    line-height: 1.65;
   }
 
   .recipe-sidebar-bullet-dot {
