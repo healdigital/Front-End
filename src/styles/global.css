@@ -605,6 +605,9 @@ body {
 div#search-controls {
     padding-top: 40px;
 }
+.home-shell-width.relative.z-10 {
+    padding-bottom: 40px;
+}
 @media (min-width: 768px) {
   .home-page-section{
     padding: calc(var(--spacing) * 4);
