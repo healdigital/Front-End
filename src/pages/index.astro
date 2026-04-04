@@ -891,8 +891,8 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         </div>
       </div>
 
-      <div class="home-workshops-feature-grid grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
-        <div class="home-workshops-feature-card max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
+      <div class="home-workshops-feature-grid grid grid-cols-1 gap-7 mb-16">
+        <div class="home-workshops-feature-card hidden max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
           <div class="relative h-[350px] lg:h-[420px]">
             <img
               src={featuredWorkshop?.image || WORKSHOP_FALLBACK_IMAGE}
@@ -942,7 +942,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           </div>
         </div>
 
-        <div class="grid gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
           {homepageVideoCourses.map((course) => (
             <article class="overflow-hidden rounded-[16px] border border-[#D9D4C6] bg-[#F7F5EF] shadow-[0_16px_44px_rgba(6,18,40,0.22)]">
               <div>
