@@ -11,6 +11,7 @@ import {
 const ROOT = process.cwd();
 const TMP_DIR = path.join(ROOT, 'tmp');
 const ARTICLES_DIR = path.join(ROOT, 'All Articles');
+const PREPARED_ARTICLES_FILE = path.join(ROOT, 'prepared-articles.json');
 const FALLBACK_FILE = path.join(TMP_DIR, 'unique-fallback-image-map.json');
 const BROKEN_FILE = path.join(TMP_DIR, 'unique-broken-images.json');
 const DEFAULT_BATCH_REPORT = path.join(TMP_DIR, 'spaces-remediation-batch-report.json');
@@ -277,6 +278,24 @@ function buildExportUrlIndex() {
   const files = fs.readdirSync(ARTICLES_DIR).filter((file) => file.endsWith('.json'));
   for (const file of files) {
     const raw = fs.readFileSync(path.join(ARTICLES_DIR, file), 'utf8');
+    const matches = raw.match(EXPORT_URL_REGEX) || [];
+    for (const match of matches) {
+      const basename = basenameFromUrlOrKey(match);
+      if (!basename) continue;
+      const list = exportUrlIndex.get(basename) || [];
+      if (!list.includes(match)) list.push(match);
+      exportUrlIndex.set(basename, list);
+
+      const normalizedBasename = normalizeBasenameForMatching(basename);
+      if (!normalizedBasename) continue;
+      const normalizedList = normalizedExportUrlIndex.get(normalizedBasename) || [];
+      if (!normalizedList.includes(match)) normalizedList.push(match);
+      normalizedExportUrlIndex.set(normalizedBasename, normalizedList);
+    }
+  }
+
+  if (fs.existsSync(PREPARED_ARTICLES_FILE)) {
+    const raw = fs.readFileSync(PREPARED_ARTICLES_FILE, 'utf8');
     const matches = raw.match(EXPORT_URL_REGEX) || [];
     for (const match of matches) {
       const basename = basenameFromUrlOrKey(match);
