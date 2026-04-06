@@ -409,6 +409,33 @@ const sidebarVideoDisplayDescription =
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 5000);
 
+      const applyFallbackState = (message) => {
+        const statusEl = block.querySelector('[data-sidebar-workshop-status]');
+        const titleEl = block.querySelector('[data-sidebar-workshop-title]');
+        const descriptionEl = block.querySelector('[data-sidebar-workshop-description]');
+        const capacityEl = block.querySelector('[data-sidebar-workshop-capacity]');
+        const durationEl = block.querySelector('[data-sidebar-workshop-duration]');
+        const priceEl = block.querySelector('[data-sidebar-workshop-price]');
+        const monthEl = block.querySelector('[data-sidebar-workshop-month]');
+        const dayEl = block.querySelector('[data-sidebar-workshop-day]');
+
+        if (statusEl instanceof HTMLElement) {
+          statusEl.textContent = message;
+          statusEl.style.color = '#5F6671';
+        }
+
+        if (titleEl instanceof HTMLElement) titleEl.textContent = 'Atelier à venir';
+        if (descriptionEl instanceof HTMLElement) {
+          descriptionEl.textContent =
+            'Les prochains ateliers ne sont pas disponibles pour le moment. Vous pouvez consulter la page atelier pour voir les mises à jour dès leur publication.';
+        }
+        if (capacityEl instanceof HTMLElement) capacityEl.textContent = '--';
+        if (durationEl instanceof HTMLElement) durationEl.textContent = '--';
+        if (priceEl instanceof HTMLElement) priceEl.textContent = '--';
+        if (monthEl instanceof HTMLElement) monthEl.textContent = '--';
+        if (dayEl instanceof HTMLElement) dayEl.textContent = '--';
+      };
+
       fetch(apiUrl, {
         method: 'GET',
         headers: { Accept: 'application/json' },
@@ -429,6 +456,7 @@ const sidebarVideoDisplayDescription =
           const firstWorkshop = workshops[0];
           if (!firstWorkshop) {
             block.dataset.workshopLoaded = 'empty';
+            applyFallbackState('Ateliers bientôt disponibles');
             return;
           }
 
@@ -524,6 +552,7 @@ const sidebarVideoDisplayDescription =
         .catch((error) => {
           console.warn('[SIDEBAR] Failed to load workshop data:', error);
           block.dataset.workshopLoaded = 'error';
+          applyFallbackState('Ateliers bientôt disponibles');
         })
         .finally(() => {
           window.clearTimeout(timeout);
