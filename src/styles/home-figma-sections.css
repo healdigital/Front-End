@@ -1496,6 +1496,10 @@ footer a.hover\:text-primary-turquoise.transition-colors {
   box-shadow: 0 14px 38px rgba(6, 18, 40, 0.18);
 }
 
+.home-workshops-section .home-workshops-grid article a.inline-flex.items-center.justify-center.font-button {
+  font-size: 14px !important;
+}
+
 .section_1 {
   padding-bottom: 48px !important;
 }
