@@ -399,6 +399,14 @@ body {
   color: #4b5563;
 }
 
+@media (max-width: 767px) {
+  .lcdb-chip {
+    padding: 5px 10px;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+  }
+}
+
 .lcdb-pagination {
   margin-top: 48px;
   padding-top: 28px;
