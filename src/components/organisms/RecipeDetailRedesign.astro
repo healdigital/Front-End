@@ -55,6 +55,36 @@ const normalizeDifficultyLabel = (value: any) => {
   return raw;
 };
 
+const normalizeRecipeMetaValue = (value: any, type: "recipeType" | "dishType" | "cuisine" = "recipeType") => {
+  const raw = String(value || "").trim();
+  const normalized = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (!normalized) return "";
+
+  if (type === "cuisine") {
+    if (["french", "france", "francaise", "francais"].includes(normalized)) return "Française";
+    if (["italian", "italie", "italienne"].includes(normalized)) return "Italienne";
+    if (["asian", "asie", "asiatique"].includes(normalized)) return "Asiatique";
+    if (["japanese", "japon", "japonaise"].includes(normalized)) return "Japonaise";
+    if (["chinese", "chine", "chinoise"].includes(normalized)) return "Chinoise";
+    if (["indian", "inde", "indienne"].includes(normalized)) return "Indienne";
+    if (["thai", "thailandaise", "thaïlandaise"].includes(normalized)) return "Thaïlandaise";
+    if (["american", "americaine", "americain", "usa"].includes(normalized)) return "Américaine";
+  }
+
+  if (["other", "autre"].includes(normalized)) return "Autre";
+  if (["starter", "entree"].includes(normalized)) return "Entrée";
+  if (["main", "main course", "plat", "plat principal"].includes(normalized)) return "Plat principal";
+  if (["dessert", "desserts"].includes(normalized)) return "Dessert";
+  if (["savory", "savoury", "sale", "sales", "salee", "salees"].includes(normalized)) return "Salé";
+  if (["sweet", "sucre", "sucree", "sucrees"].includes(normalized)) return "Sucré";
+
+  return raw;
+};
+
 const formatServingsLabel = (value: any) => {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -91,10 +121,10 @@ const quickInfoItems = [
   { label: "Difficulté", value: normalizeDifficultyLabel(recipeBlock?.difficulty) },
   {
     label: "Type de recette",
-    value: String(recipeBlock?.recipeType || "").trim(),
+    value: normalizeRecipeMetaValue(recipeBlock?.recipeType, "recipeType"),
   },
-  { label: "Type de plat", value: String(recipeBlock?.dishType || "").trim() },
-  { label: "Cuisine", value: String(recipeBlock?.cuisine || "").trim() },
+  { label: "Type de plat", value: normalizeRecipeMetaValue(recipeBlock?.dishType, "dishType") },
+  { label: "Cuisine", value: normalizeRecipeMetaValue(recipeBlock?.cuisine, "cuisine") },
   { label: "Portions", value: formatServingsLabel(recipeBlock?.servings) },
 ].filter((item) => item.value);
 
@@ -1078,6 +1108,12 @@ const printLink = `/print/${slug}/?auto=1`;
     .recipe-redesign__title {
       padding: 4px 0 10px;
       overflow-wrap: anywhere;
+    }
+
+    .recipe-redesign__meta-pill {
+      padding: 6px 10px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
     }
 
     .recipe-redesign__hero-image {
