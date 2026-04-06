@@ -156,6 +156,9 @@ function normalizeStemForMatching(stem) {
     .replace(/e2809c|e2809d/g, '')
     .replace(/cc8[0-9a-f]/g, '')
     .replace(/c3[a-f0-9]{2}/g, '')
+    // Collapse the many mojibake/screenshot filename variants into one canonical form.
+    .replace(/captur(?:ed?)?[^a-z0-9]*e[^a-z0-9]*cran/g, 'capturedecran')
+    .replace(/capture[^a-z0-9]*de[^a-z0-9]*cran/g, 'capturedecran')
     .replace(/capture-d-ecran/g, 'capture-decran')
     .replace(/captured-ecran/g, 'capturedecran')
     .replace(/[^a-z0-9]+/g, '-')

@@ -85,6 +85,30 @@ function basenameFromUrlOrKey(value) {
   return parts[parts.length - 1] || '';
 }
 
+function decodeSafe(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
+function normalizeBasenameForMatching(text) {
+  return decodeSafe(text)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/e2809[89]/g, '')
+    .replace(/e2809c|e2809d/g, '')
+    .replace(/cc8[0-9a-f]/g, '')
+    .replace(/c3[a-f0-9]{2}/g, '')
+    .replace(/captur(?:ed?)?[^a-z0-9]*e[^a-z0-9]*cran/g, 'capturedecran')
+    .replace(/capture[^a-z0-9]*de[^a-z0-9]*cran/g, 'capturedecran')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function objectKeyToWpUrl(key) {
   return `https://lacuisinedebernard.com/${key}`;
 }
@@ -179,10 +203,18 @@ function buildBrokenSourceCandidates(entry) {
   const urls = new Set();
   const exactBasename = basenameFromUrlOrKey(entry.normalizedOriginalUrl);
   const strippedBasename = basenameFromUrlOrKey(stripSizeSuffixFromKey(toObjectKey(entry.normalizedOriginalUrl)));
+  const normalizedBasenames = new Set(
+    [exactBasename, strippedBasename].map((value) => normalizeBasenameForMatching(value)).filter(Boolean),
+  );
 
   for (const basename of [exactBasename, strippedBasename]) {
     if (!basename) continue;
     const relatedUrls = exportUrlIndex.get(basename) || [];
+    for (const relatedUrl of relatedUrls) urls.add(relatedUrl);
+  }
+
+  for (const normalizedBasename of normalizedBasenames) {
+    const relatedUrls = normalizedExportUrlIndex.get(normalizedBasename) || [];
     for (const relatedUrl of relatedUrls) urls.add(relatedUrl);
   }
 
@@ -239,6 +271,7 @@ function buildInternalCopyCandidates(targetKey, entry) {
 }
 
 const exportUrlIndex = new Map();
+const normalizedExportUrlIndex = new Map();
 
 function buildExportUrlIndex() {
   const files = fs.readdirSync(ARTICLES_DIR).filter((file) => file.endsWith('.json'));
@@ -251,6 +284,12 @@ function buildExportUrlIndex() {
       const list = exportUrlIndex.get(basename) || [];
       if (!list.includes(match)) list.push(match);
       exportUrlIndex.set(basename, list);
+
+      const normalizedBasename = normalizeBasenameForMatching(basename);
+      if (!normalizedBasename) continue;
+      const normalizedList = normalizedExportUrlIndex.get(normalizedBasename) || [];
+      if (!normalizedList.includes(match)) normalizedList.push(match);
+      normalizedExportUrlIndex.set(normalizedBasename, normalizedList);
     }
   }
 }
