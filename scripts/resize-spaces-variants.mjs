@@ -29,6 +29,7 @@ const args = new Map(
 const urlsFile = args.get('--urls-file');
 const singleUrl = args.get('--url');
 const reportFile = args.get('--report') || DEFAULT_REPORT;
+const concurrency = Number.parseInt(args.get('--concurrency') || '4', 10);
 
 if (!process.env.SPACES_ACCESS_KEY_ID || !process.env.SPACES_SECRET_ACCESS_KEY) {
   console.error('Missing SPACES_ACCESS_KEY_ID or SPACES_SECRET_ACCESS_KEY.');
@@ -213,18 +214,36 @@ function loadUrls() {
     .filter(Boolean);
 }
 
+async function mapWithConcurrency(items, size, task) {
+  const results = new Array(items.length);
+  let index = 0;
+
+  async function worker() {
+    while (true) {
+      const current = index;
+      index += 1;
+      if (current >= items.length) return;
+      results[current] = await task(items[current], current);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.max(1, size) }, () => worker()));
+  return results;
+}
+
 async function main() {
   const urls = loadUrls();
   if (urls.length === 0) {
     throw new Error('Provide --url=... or --urls-file=...');
   }
 
-  const results = [];
-  for (const url of urls) {
+  let processed = 0;
+  const results = await mapWithConcurrency(urls, concurrency, async (url) => {
     const result = await processUrl(url);
-    results.push(result);
-    console.log(`${result.status.toUpperCase()} ${url}`);
-  }
+    processed += 1;
+    console.log(`${result.status.toUpperCase()} ${processed}/${urls.length} ${url}`);
+    return result;
+  });
 
   const summary = {
     generatedAt: new Date().toISOString(),
