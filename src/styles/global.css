@@ -185,6 +185,11 @@ body {
   line-height: var(--type-body-line);
 }
 
+.font-body,
+.font-maison {
+  font-family: var(--font-body) !important;
+}
+
 .typ-caption {
   font-family: var(--font-mono);
   font-size: var(--type-caption-size);
@@ -252,7 +257,14 @@ body {
   letter-spacing: 0.2em;
 }
 
+.font-button {
+  font-family: var(--font-button) !important;
+}
+
 .books-section-button,
+.button-data,
+.button-data-full,
+.sidebar-workshop-cta-button,
 .footer-btn,
 .article-newsletter-btn,
 .newsletter-modal-submit,
@@ -276,6 +288,9 @@ body {
 }
 
 .books-section-button:hover,
+.button-data:hover,
+.button-data-full:hover,
+.sidebar-workshop-cta-button:hover,
 .footer-btn:hover,
 .article-newsletter-btn:hover,
 .newsletter-modal-submit:hover,
