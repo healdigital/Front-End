@@ -97,8 +97,8 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
         width="130"
         height="130"
       />
-      <h3 class="mt-6 font-heading text-primary-black">Bernard Laurance</h3>
-      <p class="mt-3 font-mono text-[13px] uppercase tracking-[0.15em] text-text-secondary">
+      <h3 class="recipe-sidebar-profile-title mt-6 font-heading text-primary-black">Bernard Laurance</h3>
+      <p class="recipe-sidebar-profile-eyebrow mt-3 font-mono text-[13px] uppercase tracking-[0.15em] text-text-secondary">
         Cuisine réelle, recettes testées depuis 2010
       </p>
       <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[15px] leading-[1.72] text-text-secondary typ-body">
@@ -700,14 +700,44 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
     column-gap: 12px;
   }
 
+  .recipe-sidebar-bullet-item > div {
+    text-align: left;
+  }
+
   .recipe-sidebar-bullet-title {
-    font-size: 16px;
-    line-height: 1.2;
+    font-size: 14px;
+    line-height: 1.18;
   }
 
   .recipe-sidebar-bullet-body {
-    font-size: 15px;
-    line-height: 1.68;
+    font-family: var(--font-prose), serif;
+    font-size: 17px;
+    line-height: 1.74;
+    color: rgb(49, 49, 49);
+  }
+
+  .recipe-sidebar-profile-title {
+    font-size: clamp(1.95rem, 3.3vw, 2.55rem);
+    line-height: 1;
+    text-align: center;
+  }
+
+  .recipe-sidebar-profile-eyebrow {
+    text-align: center;
+    letter-spacing: 0.18em;
+    line-height: 1.5;
+  }
+
+  .recipe-sidebar-profile-copy {
+    font-family: var(--font-prose), serif;
+    font-size: 18px;
+    line-height: 1.72;
+    color: rgb(49, 49, 49);
+    text-align: left;
+  }
+
+  .recipe-sidebar-profile-copy p {
+    margin: 0;
   }
 
   .recipe-sidebar-bullet-dot {

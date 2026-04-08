@@ -670,8 +670,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__title {
-    font-size: clamp(2.35rem, 4vw, 4rem);
-    padding: 2px 0 8px;
+    font-size: clamp(2rem, 3.2vw, 3.2rem);
+    padding: 2px 0 6px;
   }
 
   .recipe-redesign__rating {
@@ -784,8 +784,9 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__section h2 {
-    font-size: clamp(2rem, 3.2vw, 3rem);
-    padding: 4px 0 6px;
+    font-size: clamp(1.65rem, 2.5vw, 2.35rem);
+    line-height: 1.08;
+    padding: 2px 0 4px;
   }
 
   .recipe-redesign__servings {
@@ -820,8 +821,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__section-head--inside {
-    margin-bottom: 22px;
-    padding-bottom: 18px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
     border-bottom: 1px solid #ebe3d7;
   }
 
@@ -833,10 +834,10 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__group-title {
     margin: 0;
-    padding: 10px 0 16px;
+    padding: 6px 0 12px;
     color: #161616;
-    font-size: 2rem;
-    line-height: 1.1;
+    font-size: clamp(1.45rem, 2vw, 1.85rem);
+    line-height: 1.12;
     font-family: var(--font-heading), serif;
     font-weight: 500;
   }
@@ -854,7 +855,10 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__instructions li {
     position: relative;
     padding-left: 18px;
-    color: #222;
+    color: rgb(49, 49, 49);
+    font-family: var(--font-prose), serif;
+    font-size: 18px;
+    line-height: 1.78;
   }
 
   .recipe-redesign__ingredient {
@@ -912,17 +916,18 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__step-text,
   .recipe-redesign__excerpt {
     margin: 0;
-    color: #26211b;
-    line-height: 1.85;
+    color: rgb(49, 49, 49);
+    font-family: var(--font-prose), serif;
+    line-height: 1.78;
   }
   p.recipe-redesign__step-text {
     font-size: 18px !important;
-    padding: 10px 0 6px !important;
-     line-height: 1.95;
+    padding: 6px 0 4px !important;
+    line-height: 1.78;
   }
   p[data-astro-cid-xpob6qz5].recipe-redesign__step-text {
     font-size: 18px!important;
-    padding: 10px 0 6px!important
+    padding: 6px 0 4px!important
 }
 
   .recipe-redesign__bon-appetit {
@@ -957,7 +962,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__recipe-card h2 {
-    font-size: clamp(2rem, 3.4vw, 3.1rem);
+    font-size: clamp(1.65rem, 2.6vw, 2.45rem);
+    line-height: 1.08;
   }
 
   .recipe-redesign__quick-info {
@@ -977,7 +983,7 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__nutrition-item span {
     margin: 0;
     color: #6c655b;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     line-height: 1.35;
@@ -985,18 +991,20 @@ const printLink = `/print/${slug}/?auto=1`;
 
   .recipe-redesign__quick-info-item strong,
   .recipe-redesign__nutrition-item strong {
-    color: #1a1714;
-    font-size: 1rem;
+    color: rgb(49, 49, 49);
+    font-family: var(--font-prose), serif;
+    font-size: 1.02rem;
+    line-height: 1.45;
     font-weight: 500;
   }
 
   .recipe-redesign__section-head--compact h3,
   .recipe-redesign__compact-title {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     font-family: var(--font-heading), serif;
     font-weight: 500;
-    padding: 4px 0 6px;
+    padding: 2px 0 4px;
   }
 
   .recipe-redesign__nutrition-card {
@@ -1005,7 +1013,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
 
   .recipe-redesign__nutrition-title {
-    font-size: 2rem;
+    font-size: clamp(1.45rem, 2vw, 1.85rem);
+    line-height: 1.12;
   }
 
   .recipe-redesign__nutrition {
@@ -1054,8 +1063,8 @@ const printLink = `/print/${slug}/?auto=1`;
   }
   p.recipe-redesign__step-text {
     font-size: 18px !important;
-    padding: 10px 0 6px !important;
-     line-height: 1.95;
+    padding: 6px 0 4px !important;
+    line-height: 1.78;
   }
   @media (max-width: 767px) {
     .recipe-redesign {
@@ -1106,8 +1115,21 @@ const printLink = `/print/${slug}/?auto=1`;
     }
 
     .recipe-redesign__title {
+      font-size: clamp(1.8rem, 8vw, 2.4rem);
       padding: 4px 0 10px;
       overflow-wrap: anywhere;
+    }
+
+    .recipe-redesign__section h2,
+    .recipe-redesign__recipe-card h2 {
+      font-size: 1.55rem;
+      line-height: 1.12;
+    }
+
+    .recipe-redesign__group-title,
+    .recipe-redesign__nutrition-title {
+      font-size: 1.35rem;
+      line-height: 1.15;
     }
 
     .recipe-redesign__meta-pill {
