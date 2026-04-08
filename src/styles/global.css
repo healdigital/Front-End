@@ -154,6 +154,7 @@ body {
   --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-maison: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-prose: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
   --font-button: 'Jost', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --type-title-size: 86px;
   --type-title-line: 1;
@@ -248,7 +249,39 @@ body {
   font-family: var(--font-button);
   font-size: 13px;
   text-transform: uppercase;
-  /* letter-spacing: 0.2em; */
+  letter-spacing: 0.2em;
+}
+
+.books-section-button,
+.footer-btn,
+.article-newsletter-btn,
+.newsletter-modal-submit,
+.home-workshops-section a.inline-flex.items-center.justify-center.font-button,
+.home-workshops-section button.inline-flex.items-center.justify-center.font-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 16px 32px;
+  border-radius: 2px;
+  background: #57bbb8;
+  color: #ffffff;
+  font-family: var(--font-button);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.books-section-button:hover,
+.footer-btn:hover,
+.article-newsletter-btn:hover,
+.newsletter-modal-submit:hover,
+.home-workshops-section a.inline-flex.items-center.justify-center.font-button:hover,
+.home-workshops-section button.inline-flex.items-center.justify-center.font-button:hover {
+  opacity: 0.9;
 }
 
 .lcdb-page-shell {
@@ -1208,6 +1241,22 @@ section.content-v2-block.content-v2-recipe-card ol li {
 
 .article-main-column p {
     color: #111;
+}
+
+.article-content,
+.article-content :global(p),
+.article-content :global(li),
+.article-content :global(.wprm-recipe-summary),
+.article-content :global(.wprm-recipe-instruction-text),
+.article-content :global(.wprm-recipe-instruction p),
+.article-content :global(.article-step-text),
+.article-content :global(.article-step-body),
+.content-v2-recipe-step-instruction {
+    font-family: var(--font-prose) !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    line-height: 32px !important;
+    color: rgb(49, 49, 49) !important;
 }
 
  
