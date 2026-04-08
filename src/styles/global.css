@@ -912,6 +912,15 @@ html[data-club-member="true"] .content_desktop_hint {
   width: 100%;
   overflow: hidden;
 }
+
+[data-lcdb-ad-slot="true"][data-lcdb-ad-state="empty"] {
+  display: none !important;
+  min-height: 0 !important;
+}
+
+[data-mediavine][data-lcdb-ad-wrapper-state="empty"] {
+  display: none !important;
+}
  
 .article-intro-meta .article-intro-meta-item {
     display: flex;

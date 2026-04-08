@@ -74,6 +74,7 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
 
   var lcdbGaLoaded = false;
   var lcdbMediavineLoaded = false;
+  var lcdbAdSlotObservers = [];
 
   var splitVendorNames = function (rawValue, fallbackValues) {
     var source = String(rawValue || '').trim();
@@ -146,6 +147,64 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
     mediavineScript.setAttribute('data-cfasync', 'false');
     mediavineScript.setAttribute('data-lcdb-mediavine', 'true');
     document.head.appendChild(mediavineScript);
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 2500);
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 6000);
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 12000);
+  };
+
+  var getAdSlots = function () {
+    return Array.prototype.slice.call(document.querySelectorAll('[data-lcdb-ad-slot="true"]'));
+  };
+
+  var slotHasRenderableAd = function (slot) {
+    if (!(slot instanceof HTMLElement)) return false;
+    if (slot.querySelector('iframe, ins, img, .mv-ad-box, .mvp-ad')) return true;
+    var text = (slot.textContent || '').trim();
+    if (text.length > 0) return true;
+    var rect = slot.getBoundingClientRect();
+    return rect.height > 24 && slot.childElementCount > 0;
+  };
+
+  var syncAdWrapperState = function (slot, isFilled) {
+    var wrapper = slot && slot.closest ? slot.closest('[data-mediavine]') : null;
+    if (!(wrapper instanceof HTMLElement)) return;
+    wrapper.setAttribute('data-lcdb-ad-wrapper-state', isFilled ? 'filled' : 'empty');
+  };
+
+  var refreshAdSlotVisibility = function () {
+    getAdSlots().forEach(function (slot) {
+      var filled = slotHasRenderableAd(slot);
+      slot.setAttribute('data-lcdb-ad-state', filled ? 'filled' : 'empty');
+      syncAdWrapperState(slot, filled);
+    });
+  };
+
+  var setAllAdSlotStates = function (state) {
+    getAdSlots().forEach(function (slot) {
+      slot.setAttribute('data-lcdb-ad-state', state);
+      syncAdWrapperState(slot, state === 'filled');
+    });
+  };
+
+  var watchAdSlots = function () {
+    lcdbAdSlotObservers.forEach(function (observer) { observer.disconnect(); });
+    lcdbAdSlotObservers = [];
+
+    getAdSlots().forEach(function (slot) {
+      if (!(slot instanceof HTMLElement)) return;
+      slot.setAttribute('data-lcdb-ad-state', 'pending');
+      var observer = new MutationObserver(function () {
+        var filled = slotHasRenderableAd(slot);
+        slot.setAttribute('data-lcdb-ad-state', filled ? 'filled' : 'empty');
+        syncAdWrapperState(slot, filled);
+      });
+      observer.observe(slot, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+      lcdbAdSlotObservers.push(observer);
+    });
   };
 
   var applyConsentChoices = function (choices) {
@@ -153,7 +212,12 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
     var adsGranted = hasGrantedVendor(choices, mediavineVendorNames);
     updateGoogleConsent(analyticsGranted, adsGranted);
     if (analyticsGranted) loadGoogleAnalytics();
-    if (adsGranted) loadMediavine();
+    if (adsGranted) {
+      setAllAdSlotStates('pending');
+      loadMediavine();
+    } else {
+      setAllAdSlotStates('empty');
+    }
   };
 
   if (hasAxeptioConfig) {
@@ -208,6 +272,15 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
     }
     loadMediavine();
   }
+
+  watchAdSlots();
+  if (window.__lcdbClubMember) {
+    refreshAdSlotVisibility();
+  }
+  document.addEventListener('astro:page-load', function () {
+    watchAdSlots();
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 1500);
+  });
 
   window.openAxeptioCookies = function () {
     window.dispatchEvent(new CustomEvent('overlayOpenCookies'));
