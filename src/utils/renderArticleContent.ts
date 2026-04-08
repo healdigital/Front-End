@@ -2,7 +2,8 @@ import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html';
 
 import { replaceCdnUrl } from './cdnUrlReplacer';
 
-type AnyRecord = Record<string, any>;
+type UnknownRecord = Record<string, unknown>;
+type LexicalValue = { root: { children: unknown[] } };
 type RenderArticleContentOptions = {
   includeContentBlocks?: boolean;
   includeContentV2?: boolean;
@@ -12,7 +13,7 @@ type RenderArticleContentOptions = {
   suppressRecipeSummaryTitle?: boolean;
 };
 
-const isRecord = (value: unknown): value is AnyRecord =>
+const isRecord = (value: unknown): value is UnknownRecord =>
   Boolean(value && typeof value === 'object' && !Array.isArray(value));
 
 const asText = (value: unknown): string => {
@@ -59,7 +60,7 @@ const isLexicalValue = (value: unknown): boolean => {
 
 const hasLexicalContent = (value: unknown): boolean => {
   if (!isLexicalValue(value)) return false;
-  const lexicalValue = value as { root: { children: unknown[] } };
+  const lexicalValue = value as LexicalValue;
   return lexicalValue.root.children.some((child: unknown) => lexicalNodeHasContent(child));
 };
 
@@ -68,7 +69,7 @@ const renderLexicalRichText = (value: unknown): string => {
 
   try {
     return convertLexicalToHTML({
-      data: value as any,
+      data: value as LexicalValue,
       disableContainer: true,
     });
   } catch (error) {
@@ -180,7 +181,7 @@ const extractImagesFromHtml = (
 };
 
 const extractLegacyStepImages = (
-  article: AnyRecord,
+  article: UnknownRecord,
 ): Array<{ alt: string; height: null | number; url: string; width: null | number }> => {
   const legacyHtml = typeof article.content === 'string' ? article.content : '';
   if (!legacyHtml) return [];
@@ -207,7 +208,7 @@ const extractLegacyStepImages = (
   });
 };
 
-const renderLegacyImageFallback = (article: AnyRecord, structuredContent: string): string => {
+const renderLegacyImageFallback = (article: UnknownRecord, structuredContent: string): string => {
   const hasRecipeSteps =
     Array.isArray(article.recipeBlocks) &&
     article.recipeBlocks.some(

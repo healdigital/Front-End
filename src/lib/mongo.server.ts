@@ -357,11 +357,12 @@ export async function getMongoConnection() {
         cachedClient = client;
         cachedDb = db;
         return db;
-      } catch (err: any) {
+      } catch (err: unknown) {
         lastError = err;
+        const message = err instanceof Error ? err.message : String(err);
         console.warn(`⚠️ [BUILD] MongoDB connect attempt ${attempt} failed:`, err && err.message ? err.message : err);
         const backoffMs = 250 * Math.pow(2, attempt - 1);
-        await new Promise(res => setTimeout(res, backoffMs));
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
       }
     }
 

@@ -157,10 +157,40 @@ export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): st
   );
 }
 
+type ArticleImageRecord = Record<string, unknown> & {
+  content?: string;
+  contentV2?: string;
+  featureImage?: string;
+  featuredImage?: Record<string, unknown> & {
+    sizes?: {
+      articleHero?: { url?: string };
+      gallery?: { url?: string };
+    };
+    url?: string;
+  };
+  featuredImageUrl?: string;
+  featuredMedia?: Record<string, unknown> & {
+    sizes?: {
+      articleHero?: { url?: string };
+      gallery?: { url?: string };
+    };
+    url?: string;
+    value?: {
+      url?: string;
+    };
+  };
+  featured_image?: Record<string, unknown> & {
+    asset?: { url?: string };
+    url?: string;
+  };
+  featured_image_url?: string;
+  featured_img_url?: string;
+};
+
 /**
  * Process article image URLs to use the new CDN
  */
-export function processArticleImageUrl(article: any): string {
+export function processArticleImageUrl(article: ArticleImageRecord | null | undefined): string {
   if (!article) return '';
 
   const extractFromHtml = (html?: string): string => {

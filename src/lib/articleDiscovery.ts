@@ -9,23 +9,40 @@ type SidebarArticle = {
   title: string;
 };
 
-const getSlug = (article: any): string => {
+type ContentValue = string | number | boolean | null | undefined | ContentRecord | ContentValue[];
+type ContentRecord = Record<string, ContentValue>;
+type DiscoverableArticle = ContentRecord & {
+  categories?: ContentValue[];
+  cuisine?: ContentValue;
+  date?: string;
+  excerpt?: ContentValue;
+  lang?: string;
+  modified?: string;
+  recipeBlocks?: unknown[];
+  seoDescription?: string;
+  slug?: string | { current?: string };
+  tags?: ContentValue[];
+  title?: ContentValue;
+  updatedAt?: string;
+};
+
+const getSlug = (article: DiscoverableArticle): string => {
   const raw = typeof article?.slug === 'string' ? article.slug : article?.slug?.current;
   return String(raw || '').trim().replace(/^\/+|\/+$/g, '');
 };
 
-const getTitle = (article: any): string => stripHtml(String(article?.title || ''));
+const getTitle = (article: DiscoverableArticle): string => stripHtml(String(article?.title || ''));
 
-const getExcerpt = (article: any): string =>
+const getExcerpt = (article: DiscoverableArticle): string =>
   stripHtml(String(article?.excerpt || article?.seoDescription || article?.content || ''));
 
-const hasRecipe = (article: any): boolean =>
+const hasRecipe = (article: DiscoverableArticle): boolean =>
   Array.isArray(article?.recipeBlocks) && article.recipeBlocks.length > 0;
 
-const hasCategories = (article: any): boolean =>
+const hasCategories = (article: DiscoverableArticle): boolean =>
   Array.isArray(article?.categories) && article.categories.length > 0;
 
-const toText = (value: any): string => {
+const toText = (value: ContentValue): string => {
   if (!value) return '';
   if (typeof value === 'string') return stripHtml(value);
   if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
@@ -38,15 +55,15 @@ const toText = (value: any): string => {
   return '';
 };
 
-const extractSidebarLabel = (article: any): string => {
+const extractSidebarLabel = (article: DiscoverableArticle): string => {
   const categoryLabel = (Array.isArray(article?.categories) ? article.categories : [])
-    .map((entry: any) => toText(entry))
+    .map((entry) => toText(entry))
     .find(Boolean);
 
   if (categoryLabel) return categoryLabel;
 
   const tagLabel = (Array.isArray(article?.tags) ? article.tags : [])
-    .map((entry: any) => toText(entry))
+    .map((entry) => toText(entry))
     .find(Boolean);
 
   if (tagLabel) return tagLabel;
@@ -57,7 +74,7 @@ const extractSidebarLabel = (article: any): string => {
   return 'Recettes';
 };
 
-const articleScore = (article: any): number => {
+const articleScore = (article: DiscoverableArticle): number => {
   const hasImage = Boolean(processArticleImageUrl(article));
   const excerptLength = getExcerpt(article).length;
   const updatedValue = article?.updatedAt || article?.modified || article?.date || '';
@@ -84,8 +101,8 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
   const allArticles = await getAllArticlesFromMongo();
 
   const ranked = allArticles
-    .filter((article: any) => String(article?.lang || 'fr').toLowerCase() === lang.toLowerCase())
-    .map((article: any) => {
+    .filter((article: DiscoverableArticle) => String(article?.lang || 'fr').toLowerCase() === lang.toLowerCase())
+    .map((article: DiscoverableArticle) => {
       const slug = getSlug(article);
       const title = getTitle(article);
       const imageSource = processArticleImageUrl(article);
