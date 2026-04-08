@@ -1,5 +1,6 @@
 ﻿---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import MediavineSlot from "../components/MediavineSlot.astro";
 import { t as translate } from "../i18n";
 
 export const prerender = true;
@@ -24,7 +25,7 @@ const allCategoriesLabel = "Toutes les catégories";
 const paginationLabel = "Pagination des résultats";
 ---
 
-<BaseLayout title={title} lang={lang}>
+<BaseLayout title={title} lang={lang} loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <p class="lcdb-page-eyebrow typ-caption">{pageEyebrow}</p>
@@ -101,6 +102,9 @@ const paginationLabel = "Pagination des résultats";
 
       <div id="results-grid" class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Results populated by JS -->
+      </div>
+      <div class="mt-10" data-mediavine>
+        <MediavineSlot slot="search-results-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
       </div>
       <div id="search-pagination" class="mt-10 hidden"></div>
     </div>

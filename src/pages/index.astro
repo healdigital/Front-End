@@ -10,6 +10,7 @@ import HeroCarousel from '../components/organisms/HeroCarousel.astro';
 import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
+import MediavineSlot from '../components/MediavineSlot.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
 import { loadVideoCourses } from '../lib/videoCourses';
 import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
@@ -645,6 +646,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 <MainLayout
   title="La Cuisine de Bernard - Accueil"
   description="Découvrez des recettes authentiques et savoureuses par Bernard Laurance."
+  loadAds={true}
 >
   <HeroCarousel cards={heroCards} />
   <h1 class="sr-only">La Cuisine de Bernard</h1>
@@ -826,6 +828,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             <RecipeSidebar />
           </div>
         </div>
+      </div>
+      <div class="mt-10" data-mediavine>
+        <MediavineSlot slot="homepage-main-inline" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
       </div>
     </div>
 
@@ -1068,6 +1073,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         role="status"
         aria-live="polite"
       ></p>
+      <div class="mt-10" data-mediavine>
+        <MediavineSlot slot="homepage-dark-inline" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
+      </div>
     </div>
   </section>
 
@@ -1103,6 +1111,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             <RecipeSidebar variant="popular" />
           </div>
         </div>
+      </div>
+      <div class="mt-10" data-mediavine>
+        <MediavineSlot slot="homepage-lower-inline" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
       </div>
     </div>
   </section>
