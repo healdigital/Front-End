@@ -156,13 +156,26 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
     return Array.prototype.slice.call(document.querySelectorAll('[data-lcdb-ad-slot="true"]'));
   };
 
+  var nodeHasRenderableAd = function (node) {
+    if (!(node instanceof HTMLElement)) return false;
+    if (node.querySelector('iframe, ins, img, video')) return true;
+    var text = (node.textContent || '').trim();
+    return text.length > 24;
+  };
+
+  var syncInnerAdBoxStates = function (slot) {
+    if (!(slot instanceof HTMLElement)) return;
+    Array.prototype.slice.call(slot.querySelectorAll('.mv-ad-box, .mvp-ad')).forEach(function (box) {
+      if (!(box instanceof HTMLElement)) return;
+      box.setAttribute('data-lcdb-ad-box-state', nodeHasRenderableAd(box) ? 'filled' : 'empty');
+    });
+  };
+
   var slotHasRenderableAd = function (slot) {
     if (!(slot instanceof HTMLElement)) return false;
-    if (slot.querySelector('iframe, ins, img, .mv-ad-box, .mvp-ad')) return true;
-    var text = (slot.textContent || '').trim();
-    if (text.length > 0) return true;
-    var rect = slot.getBoundingClientRect();
-    return rect.height > 24 && slot.childElementCount > 0;
+    if (slot.querySelector('iframe, ins, img, video')) return true;
+    var adBoxes = Array.prototype.slice.call(slot.querySelectorAll('.mv-ad-box, .mvp-ad'));
+    return adBoxes.some(function (box) { return nodeHasRenderableAd(box); });
   };
 
   var syncAdWrapperState = function (slot, isFilled) {
@@ -173,6 +186,7 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
 
   var refreshAdSlotVisibility = function () {
     getAdSlots().forEach(function (slot) {
+      syncInnerAdBoxStates(slot);
       var filled = slotHasRenderableAd(slot);
       slot.setAttribute('data-lcdb-ad-state', filled ? 'filled' : 'empty');
       syncAdWrapperState(slot, filled);
@@ -194,6 +208,7 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
       if (!(slot instanceof HTMLElement)) return;
       slot.setAttribute('data-lcdb-ad-state', 'pending');
       var observer = new MutationObserver(function () {
+        syncInnerAdBoxStates(slot);
         var filled = slotHasRenderableAd(slot);
         slot.setAttribute('data-lcdb-ad-state', filled ? 'filled' : 'empty');
         syncAdWrapperState(slot, filled);
