@@ -41,10 +41,10 @@ export default {
       },
       fontFamily: {
         heading: ['Instrument Serif', 'serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
+        body: ['PT Serif', 'serif'],
         mono: ['Roboto Mono', 'ui-monospace', 'monospace'],
-        button: ['Jost', 'Inter', 'sans-serif'],
-        legal: ['Jost', 'Inter', 'sans-serif'],
+        button: ['PT Serif', 'serif'],
+        legal: ['PT Serif', 'serif'],
       },
       boxShadow: {
         light: '0 24px 60px rgba(15, 23, 42, 0.08)',
