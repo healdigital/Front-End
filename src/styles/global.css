@@ -151,11 +151,11 @@ body {
 
 :root {
   --font-heading: 'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
-  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-maison: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
+  --font-maison: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-prose: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
-  --font-button: 'Jost', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-button: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
   --type-title-size: 86px;
   --type-title-line: 1;
   --type-h2-size: 46px;
