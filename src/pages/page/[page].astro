@@ -5,6 +5,7 @@ import MainContent from "../../components/MainContent.astro";
 import RecipesSections from "../../components/RecipesSections.astro";
 import VideoSection from "../../components/VideoSection.astro";
 import AboutSection from "../../components/AboutSection.astro";
+import MediavineSlot from "../../components/MediavineSlot.astro";
 import { payloadFetch } from "../../lib/payload.client";
 import { getAllArticlesFromMongo } from "../../lib/mongo.server";
 
@@ -54,12 +55,15 @@ const endIdx = startIdx + articlesPerPage;
 const paginatedArticles = articles.slice(startIdx, endIdx);
 ---
 
-<BaseLayout title={`Home - Page ${currentPage}`}>
+<BaseLayout title={`Home - Page ${currentPage}`} loadAds={true}>
   <!-- Article Slider -->
   <ArticleSlider articles={paginatedArticles} />
 
   <!-- Main Content (Latest Articles + Sidebar) - Same as homepage -->
   <MainContent latestArticles={paginatedArticles} currentLang="fr" currentPage={currentPage} totalPages={totalPages} />
+  <div class="lcdb-page-shell mt-10" data-mediavine>
+    <MediavineSlot slot="homepage-page-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
+  </div>
 
   <!-- Sweet & Savory Recipes Sections -->
   <RecipesSections allArticles={paginatedArticles} />

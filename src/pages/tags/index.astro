@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { BUILD_ONLY_ARTICLE_PAGES } from '../../utils/buildFlags';
 
@@ -30,7 +31,7 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
   .sort((a: any, b: any) => b.articleCount - a.articleCount);
 ---
 
-<BaseLayout title="Mots-clés" description="Parcourir les articles par mot-clé">
+<BaseLayout title="Mots-clés" description="Parcourir les articles par mot-clé" loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <p class="lcdb-page-eyebrow typ-caption">Explorer</p>
@@ -48,6 +49,7 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
       )}
 
       {tags.length > 0 ? (
+        <>
         <div class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {tags.map((tag: any) => (
             <a href={`/tags/${tag.slug}`} class="lcdb-surface-card p-6 transition-shadow hover:shadow-lg">
@@ -57,6 +59,10 @@ const tags = (Array.isArray(tagsWithCounts) ? tagsWithCounts : [])
             </a>
           ))}
         </div>
+        <div class="mt-10" data-mediavine>
+          <MediavineSlot slot="tags-index-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
+        </div>
+        </>
       ) : (
         <div class="lcdb-empty-state"><p class="typ-body">Aucun mot-clé disponible.</p></div>
       )}

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
 import Pagination from '../../components/organisms/Pagination.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { getAllArticlesFromMongo } from '../../lib/mongo.server';
@@ -101,7 +102,7 @@ const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
 const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);
 ---
 
-<BaseLayout title="Articles" lang={lang}>
+<BaseLayout title="Articles" lang={lang} loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <p class="lcdb-page-eyebrow typ-caption">Archive</p>
@@ -151,6 +152,9 @@ const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);
                 </div>
               </a>
             ))}
+          </div>
+          <div class="mt-10" data-mediavine>
+            <MediavineSlot slot="articles-index-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
           </div>
 
           {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl="/articles" routeStyle="direct" />}

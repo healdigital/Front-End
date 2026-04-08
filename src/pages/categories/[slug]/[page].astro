@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../../components/MediavineSlot.astro';
 import Pagination from '../../../components/organisms/Pagination.astro';
 import { getAllCategoriesFromMongo, getArticlesFromMongo } from '../../../lib/mongo.server';
 import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
@@ -91,7 +92,7 @@ const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
 const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 ---
 
-<BaseLayout title={`${categoryTitle} - page ${currentPage}`} description={`Articles dans la catégorie ${categoryTitle}`}>
+<BaseLayout title={`${categoryTitle} - page ${currentPage}`} description={`Articles dans la catégorie ${categoryTitle}`} loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <nav class="article-breadcrumb typ-caption mb-4" aria-label="Breadcrumb">
@@ -140,6 +141,9 @@ const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * 
             </div>
           </a>
         ))}
+      </div>
+      <div class="mt-10" data-mediavine>
+        <MediavineSlot slot="category-page-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
       </div>
       {totalPages > 1 && (
         <div class="mt-10">

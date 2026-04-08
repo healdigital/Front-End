@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
 import { payloadFetch } from '../../lib/payload.client';
 import { BUILD_ONLY_ARTICLE_PAGES } from '../../utils/buildFlags';
 
@@ -30,7 +31,7 @@ const categories = (Array.isArray(categoriesWithCounts) ? categoriesWithCounts :
   .sort((a: any, b: any) => b.articleCount - a.articleCount);
 ---
 
-<BaseLayout title="Catégories" description="Parcourir les articles par catégorie">
+<BaseLayout title="Catégories" description="Parcourir les articles par catégorie" loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <p class="lcdb-page-eyebrow typ-caption">Explorer</p>
@@ -48,6 +49,7 @@ const categories = (Array.isArray(categoriesWithCounts) ? categoriesWithCounts :
       )}
 
       {categories.length > 0 ? (
+        <>
         <div class="lcdb-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category: any) => (
             <a href={`/categories/${category.slug}`} class="lcdb-surface-card p-6 transition-shadow hover:shadow-lg">
@@ -57,6 +59,10 @@ const categories = (Array.isArray(categoriesWithCounts) ? categoriesWithCounts :
             </a>
           ))}
         </div>
+        <div class="mt-10" data-mediavine>
+          <MediavineSlot slot="categories-index-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
+        </div>
+        </>
       ) : (
         <div class="lcdb-empty-state"><p class="typ-body">Aucune cat&eacute;gorie disponible.</p></div>
       )}

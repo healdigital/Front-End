@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
 import Pagination from '../../components/organisms/Pagination.astro';
 import { getAllTagsFromMongo, getArticlesByTagFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
@@ -99,7 +100,7 @@ const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
 const articles = allArticles.slice(0, PAGE_SIZE);
 ---
 
-<BaseLayout title={`#${tagTitle}`} description={`Articles associés au mot-clé ${tagTitle}`}>
+<BaseLayout title={`#${tagTitle}`} description={`Articles associés au mot-clé ${tagTitle}`} loadAds={true}>
   <section class="lcdb-page-hero">
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <nav class="article-breadcrumb typ-caption mb-4" aria-label="Breadcrumb">
@@ -148,6 +149,9 @@ const articles = allArticles.slice(0, PAGE_SIZE);
                 </div>
               </a>
             ))}
+          </div>
+          <div class="mt-10" data-mediavine>
+            <MediavineSlot slot="tag-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
           </div>
           {totalPages > 1 && (
             <div class="mt-10">

@@ -1,6 +1,7 @@
 ---
 import Icon from '../atoms/Icon.astro';
 import Button from '../atoms/Button.astro';
+import MediavineSlot from '../MediavineSlot.astro';
 import { getPopularSidebarArticles } from '../../lib/articleDiscovery';
 import { loadVideoCourses } from '../../lib/videoCourses';
 
@@ -81,6 +82,7 @@ const sidebarVideoDisplayTitle = featuredVideoCourse?.title || 'Mes cours vid\u0
 const sidebarVideoDisplayDescription =
   featuredVideoCourse?.shortDescription ||
   'Des techniques essentielles expliqu\u00E9es pas \u00E0 pas pour progresser chez vous \u00E0 votre rythme.';
+const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'}`;
 ---
 
 <aside class={`recipe-sidebar ${responsiveClass} flex-col w-full min-h-full recipe-sidebar--${variant} ${className}`}>
@@ -306,8 +308,8 @@ const sidebarVideoDisplayDescription =
     </div>
 
     <div class="sidebar-block px-4 pt-4 pb-5">
-      <div class="bg-[#DCDCCF] rounded-[8px] border border-[#D8D2C2] h-[220px] flex items-center justify-center text-[#363A40] text-[13px] uppercase tracking-[0.12em]">
-        Espace publicite
+      <div class="rounded-[8px] border border-[#D8D2C2] bg-[#F7F5EF] p-3" data-mediavine>
+        <MediavineSlot slot={sidebarAdSlot} minHeight={220} className="rounded-[6px] bg-[#E9E4D8]" />
       </div>
     </div>
   </div>

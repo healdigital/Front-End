@@ -892,6 +892,16 @@ html[data-club-member="true"] .mv-ad-slot {
   display: none !important;
   min-height: 0 !important;
 }
+
+[data-mediavine] {
+  width: 100%;
+}
+
+.mv-ad-slot {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
  
 .article-intro-meta .article-intro-meta-item {
     display: flex;
