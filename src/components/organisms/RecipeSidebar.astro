@@ -101,7 +101,7 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
       <p class="recipe-sidebar-profile-eyebrow mt-3 font-mono text-[13px] uppercase tracking-[0.15em] text-text-secondary">
         Cuisine réelle, recettes testées depuis 2010
       </p>
-      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[15px] leading-[1.72] text-text-secondary typ-body">
+      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[15px] leading-[1.72] text-text-secondary">
         <p>
           Depuis 2010, je publie sur mon site une cuisine à la fois rigoureuse et accessible, inspirée des pâtisseries et des saveurs du monde entier, mêlant grands classiques et recettes plus confidentielles, enrichie par les voyages, les traditions, les découvertes et le plaisir de partager. Plus de 1300 recettes mises au point, testées et validées dans ma cuisine, avec passion et gourmandise.
         </p>
@@ -115,7 +115,7 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
           <li class="recipe-sidebar-bullet-item">
             <span class="recipe-sidebar-bullet-dot" aria-hidden="true"></span>
             <div>
-              <h3 class="recipe-sidebar-bullet-title font-heading text-primary-black">{item.title}</h3>
+              <h3 class="recipe-sidebar-bullet-title text-primary-black">{item.title}</h3>
               <p class="mt-2 recipe-sidebar-bullet-body text-text-secondary">{item.body}</p>
             </div>
           </li>
@@ -705,8 +705,11 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
   }
 
   .recipe-sidebar-bullet-title {
-    font-size: 14px;
-    line-height: 1.18;
+    font-family: var(--font-prose), serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgb(49, 49, 49);
+    font-weight: 400;
   }
 
   .recipe-sidebar-bullet-body {
