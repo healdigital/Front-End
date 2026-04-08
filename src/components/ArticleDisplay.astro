@@ -1,5 +1,6 @@
 ---
 import { t as translate } from '../i18n';
+import { sanitizeTrustedHtml } from '../utils/trustedHtml';
 
 interface Props {
   article: {
@@ -93,6 +94,11 @@ interface Props {
 
 const { article } = Astro.props;
 const lang = article.language || 'en';
+const articleContentHtml = sanitizeTrustedHtml(article.content);
+const recipeIngredientsHtml = sanitizeTrustedHtml(article.recipe?.ingredients);
+const recipeInstructionsHtml = sanitizeTrustedHtml(article.recipe?.instructions);
+const recipeNoteHtml = sanitizeTrustedHtml(article.recipe?.note);
+const reviewDescriptionHtml = sanitizeTrustedHtml(article.review?.description);
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -168,7 +174,7 @@ const getAuthorName = () => {
       </div>
     )}
     
-    <div class="article-body" set:html={article.content} />
+    <div class="article-body" set:html={articleContentHtml} />
   </section>
 
   <!-- Taxonomy/Tags Section -->
@@ -331,21 +337,21 @@ const getAuthorName = () => {
       {article.recipe.ingredients && (
         <div class="recipe-section">
           <h4>{translate('recipe.ingredients', lang)}</h4>
-          <div set:html={article.recipe.ingredients} />
+          <div set:html={recipeIngredientsHtml} />
         </div>
       )}
 
       {article.recipe.instructions && (
         <div class="recipe-section">
           <h4>{translate('recipe.instructions', lang)}</h4>
-          <div set:html={article.recipe.instructions} />
+          <div set:html={recipeInstructionsHtml} />
         </div>
       )}
 
       {article.recipe.note && (
         <div class="recipe-section">
           <h4>Notes</h4>
-          <div set:html={article.recipe.note} />
+          <div set:html={recipeNoteHtml} />
         </div>
       )}
 
@@ -384,7 +390,7 @@ const getAuthorName = () => {
       )}
 
       {article.review.description && (
-        <div class="review-description" set:html={article.review.description} />
+        <div class="review-description" set:html={reviewDescriptionHtml} />
       )}
 
       {article.review.items?.length > 0 && (

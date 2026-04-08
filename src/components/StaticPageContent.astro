@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { normalizeWordPressUploadUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
+import { sanitizeTrustedHtml } from "../utils/trustedHtml";
 
 interface Props {
   slug: string;
@@ -42,11 +43,12 @@ if (html) {
 }
 
 const hasHtml = html.length > 0;
+const sanitizedHtml = sanitizeTrustedHtml(html);
 ---
 
 {hasHtml ? (
   <>
-    <div class="wp-content" set:html={html} />
+    <div class="wp-content" set:html={sanitizedHtml} />
     <script is:inline>
       (() => {
         const containers = Array.from(document.querySelectorAll('.wp-content'));

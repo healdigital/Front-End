@@ -1844,6 +1844,19 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
     }
 }
 
+@media screen and (min-width: 700px) and (max-width: 1024px) {
+    .home-workshops-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        justify-items: stretch !important;
+    }
+
+    .home-workshops-grid article {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
 /* @media (min-width: 1024px) and (max-width: 1024px) {
     #main-content .section_2 {
         padding-top: 0px !important;

@@ -16,6 +16,70 @@ const { slug } = Astro.props;
 </div>
 
 <script define:vars={{ slug }}>
+  const EMPTY_MESSAGE = 'Aucun commentaire pour le moment. Soyez le premier à partager votre avis.';
+  const ERROR_PREFIX = 'Impossible de charger les commentaires pour le moment';
+
+  function clearElement(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
+  }
+
+  function appendParagraph(container, className, text) {
+    const paragraph = document.createElement('p');
+    paragraph.className = className;
+    paragraph.textContent = text;
+    container.appendChild(paragraph);
+  }
+
+  function renderComments(container, comments) {
+    clearElement(container);
+
+    if (comments.length === 0) {
+      appendParagraph(container, 'text-text-secondary', EMPTY_MESSAGE);
+      return;
+    }
+
+    comments.forEach((comment) => {
+      const article = document.createElement('article');
+      article.className = 'rounded-[10px] border border-border-primary bg-secondary-beige-light p-5';
+
+      const header = document.createElement('div');
+      header.className = 'mb-2 flex items-center justify-between gap-4';
+
+      const title = document.createElement('h3');
+      title.className = 'font-body text-[16px] font-semibold text-text-primary';
+      title.textContent = comment.author || 'Anonyme';
+
+      const time = document.createElement('time');
+      time.className = 'text-[12px] uppercase tracking-[0.12em] text-text-secondary';
+      time.textContent = new Date(comment.date).toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+
+      header.append(title, time);
+      article.appendChild(header);
+
+      if (comment.email) {
+        appendParagraph(article, 'mb-3 text-[12px] text-text-secondary', comment.email);
+      }
+
+      appendParagraph(article, 'leading-[1.75] whitespace-pre-line text-text-secondary', comment.content || '');
+
+      if (comment.approved === false) {
+        appendParagraph(
+          article,
+          'mt-3 text-[12px] uppercase tracking-[0.12em] text-status-premium',
+          'En attente de modération',
+        );
+      }
+
+      container.appendChild(article);
+    });
+  }
+
   async function loadComments() {
     const container = document.getElementById('comments-display');
     const countEl = document.getElementById('comment-count');
@@ -35,41 +99,11 @@ const { slug } = Astro.props;
       const comments = await response.json();
       const commentList = Array.isArray(comments) ? comments : [];
       countEl.textContent = String(commentList.length);
-
-      if (commentList.length === 0) {
-        container.innerHTML =
-          '<p class="text-text-secondary">Aucun commentaire pour le moment. Soyez le premier à partager votre avis.</p>';
-        return;
-      }
-
-      container.innerHTML = commentList
-        .map((comment) => {
-          const date = new Date(comment.date).toLocaleDateString('fr-FR', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          });
-
-          return `
-            <article class="rounded-[10px] border border-border-primary bg-secondary-beige-light p-5">
-              <div class="mb-2 flex items-center justify-between gap-4">
-                <h3 class="font-body text-[16px] font-semibold text-text-primary">${comment.author || 'Anonyme'}</h3>
-                <time class="text-[12px] uppercase tracking-[0.12em] text-text-secondary">${date}</time>
-              </div>
-              ${comment.email ? `<p class="mb-3 text-[12px] text-text-secondary">${comment.email}</p>` : ''}
-              <p class="leading-[1.75] text-text-secondary">${comment.content || ''}</p>
-              ${
-                comment.approved === false
-                  ? '<p class="mt-3 text-[12px] uppercase tracking-[0.12em] text-status-premium">En attente de modération</p>'
-                  : ''
-              }
-            </article>
-          `;
-        })
-        .join('');
+      renderComments(container, commentList);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erreur inconnue';
-      container.innerHTML = `<p class="text-status-error">Impossible de charger les commentaires pour le moment (${message}).</p>`;
+      clearElement(container);
+      appendParagraph(container, 'text-status-error', `${ERROR_PREFIX} (${message}).`);
     }
   }
 

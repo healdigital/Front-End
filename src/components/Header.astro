@@ -8,6 +8,8 @@ import videosMenuIcon from '../../menu/la_cuisine_de_bernard_24_video_course 1.s
 import voyagesMenuIcon from '../../menu/voyage 1.svg?raw';
 import reportagesMenuIcon from '../../menu/reportages 1.svg?raw';
 import selectionsMenuIcon from '../../menu/Frame-1 1.svg?raw';
+import { decodeHtmlEntities } from '../utils/decodeHtmlEntities';
+import { sanitizeTrustedHtml } from '../utils/trustedHtml';
 
 interface Props {
   lang?: string;
@@ -16,11 +18,11 @@ interface Props {
 const { lang = 'fr' } = Astro.props;
 
 const languageLabels: Record<string, string> = {
-  fr: 'Fran&ccedil;ais',
+  fr: 'Français',
   en: 'English',
-  es: 'Espa&ntilde;ol',
-  'pt-br': 'Portugu&ecirc;s',
-  ar: '&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;',
+  es: 'Español',
+  'pt-br': 'Português',
+  ar: 'العربية',
 };
 
 const supportedLanguages = ['fr', 'en', 'es', 'pt-br', 'ar'];
@@ -78,12 +80,23 @@ const navItems = [
   { label: 'VOYAGES', href: '/voyages-culinaires', iconSvg: voyagesMenuIcon },
   { label: 'REPORTAGES', href: '/reportages', iconSvg: reportagesMenuIcon },
   { label: 'S&Eacute;LECTIONS', href: '/selection', iconSvg: selectionsMenuIcon },
-];
+].map((item) => ({
+  ...item,
+  label: decodeHtmlEntities(item.label),
+  iconSvg: sanitizeTrustedHtml(item.iconSvg),
+  children: item.children?.map((child) => ({
+    ...child,
+    label: decodeHtmlEntities(child.label),
+  })),
+}));
 
 const accountItems = [
   { label: 'VOTRE PANIER', href: '/panier', icon: 'shopping-bag' },
   { label: 'VOTRE COMPTE', href: '/compte', icon: 'user' },
-];
+].map((item) => ({
+  ...item,
+  label: decodeHtmlEntities(item.label),
+}));
 
 ---
 
@@ -170,7 +183,7 @@ const accountItems = [
             aria-controls="header-language-dropdown"
           >
             <Icon name="globe" size="sm" class="w-[17px] h-[17px]" />
-            <span data-lang-current-label data-header-utility-label set:html={languageLabel} />
+            <span data-lang-current-label data-header-utility-label>{languageLabel}</span>
             <span
               class="hidden items-center gap-1 text-[11px] text-white/75"
               data-lang-loading
@@ -197,7 +210,7 @@ const accountItems = [
                 role="menuitemradio"
                 aria-checked={option.code === currentLang}
               >
-                <span set:html={option.label} />
+                <span>{option.label}</span>
               </button>
             ))}
           </div>
@@ -265,7 +278,7 @@ const accountItems = [
                 role="menuitemradio"
                 aria-checked={option.code === currentLang}
               >
-                <span set:html={option.label} />
+                <span>{option.label}</span>
               </button>
             ))}
           </div>
@@ -340,7 +353,7 @@ const accountItems = [
                 aria-haspopup="true"
               >
                 <span class="menu-nav-icon" aria-hidden="true" set:html={item.iconSvg} />
-                <span data-header-nav-label set:html={item.label} />
+                <span data-header-nav-label>{item.label}</span>
                 <Icon name="chevron-down" size="sm" class="w-[15px] h-[15px] text-[#6F7680] transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
               </a>
 
@@ -351,7 +364,7 @@ const accountItems = [
                       href={child.href}
                       class="flex items-start rounded-xl px-4 py-3 text-[13px] leading-5 text-[#2F3441] transition-colors hover:bg-[#F4F0E6] hover:text-[#1A2335]"
                     >
-                      <span set:html={child.label} />
+                      <span>{child.label}</span>
                     </a>
                   ))}
                 </div>
@@ -366,7 +379,7 @@ const accountItems = [
               rel={item.external ? 'noopener noreferrer' : undefined}
             >
               <span class="menu-nav-icon" aria-hidden="true" set:html={item.iconSvg} />
-              <span data-header-nav-label set:html={item.label} />
+              <span data-header-nav-label>{item.label}</span>
             </a>
           )
         ))}
@@ -412,7 +425,7 @@ const accountItems = [
                     rel={item.external ? 'noopener noreferrer' : undefined}
                   >
                     <span class="menu-nav-icon" aria-hidden="true" set:html={item.iconSvg} />
-                    <span set:html={item.label} />
+                    <span>{item.label}</span>
                   </a>
                   <button
                     type="button"
@@ -441,7 +454,7 @@ const accountItems = [
                       href={child.href}
                       class="block rounded-lg py-2 text-[13px] leading-5 text-white/70 transition-colors hover:text-white"
                     >
-                      <span set:html={child.label} />
+                      <span>{child.label}</span>
                     </a>
                   ))}
                 </div>
@@ -455,7 +468,7 @@ const accountItems = [
               >
                 <span class="flex items-center gap-3">
                   <span class="menu-nav-icon" aria-hidden="true" set:html={item.iconSvg} />
-                  <span set:html={item.label} />
+                  <span>{item.label}</span>
                 </span>
                 <span aria-hidden="true">&#8250;</span>
               </a>
@@ -775,7 +788,7 @@ const accountItems = [
       button.setAttribute('aria-checked', String(isSelected));
 
       if (isSelected && currentLangLabel) {
-        currentLangLabel.innerHTML = button.innerHTML;
+        currentLangLabel.textContent = button.textContent?.trim() || '';
       }
     });
   }
@@ -790,7 +803,7 @@ const accountItems = [
       button.setAttribute('aria-checked', String(isSelected));
 
       if (isSelected && mobileCurrentLangLabel) {
-        mobileCurrentLangLabel.innerHTML = button.innerHTML;
+        mobileCurrentLangLabel.textContent = button.textContent?.trim() || '';
       }
     });
   }

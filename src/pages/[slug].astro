@@ -21,8 +21,21 @@ import { buildRecipeJsonLd } from "../utils/buildRecipeJsonLd";
 import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 import { renderArticleContent } from "../utils/renderArticleContent";
+import { sanitizeTrustedHtml } from "../utils/trustedHtml";
 
 export const prerender = true;
+
+type ContentValue = string | number | boolean | null | undefined | ContentRecord | ContentValue[];
+type ContentRecord = Record<string, ContentValue>;
+
+interface ArticleEntry extends ContentRecord {
+  excerpt?: ContentValue;
+  featuredImage?: ContentRecord;
+  featuredMedia?: ContentRecord;
+  featured_image?: ContentRecord;
+  slug?: string | { current?: string };
+  title?: ContentValue;
+}
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
@@ -35,7 +48,7 @@ const stripHtml = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const toText = (value: any): string => {
+const toText = (value: ContentValue): string => {
   if (!value) return "";
   if (typeof value === "string") return stripHtml(value);
   if (Array.isArray(value))
@@ -58,7 +71,7 @@ const toText = (value: any): string => {
     }
     if (Array.isArray(value.children)) {
       return value.children
-        .map((child: any) => toText(child))
+        .map((child) => toText(child))
         .filter(Boolean)
         .join(" ");
     }
@@ -67,7 +80,7 @@ const toText = (value: any): string => {
   return "";
 };
 
-const normalizeSlug = (value: any) =>
+const normalizeSlug = (value: ContentValue) =>
   String(value || "").replace(/^\/+|\/+$/g, "");
 const toTitleCase = (value: string) =>
   value.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (char) => char.toUpperCase());
@@ -82,7 +95,7 @@ const dedupeTextList = (items: string[]) => {
   });
 };
 
-const deriveFlavorCategory = (article: any, categoryTitles: string[]) => {
+const deriveFlavorCategory = (article: ArticleEntry, categoryTitles: string[]) => {
   const sourceText = [
     ...categoryTitles,
     toText(article?.category),
@@ -99,7 +112,7 @@ const deriveFlavorCategory = (article: any, categoryTitles: string[]) => {
   return "";
 };
 
-const extractId = (value: any): string => {
+const extractId = (value: ContentValue): string => {
   if (!value) return "";
   if (typeof value === "string" || typeof value === "number")
     return String(value);
@@ -109,7 +122,7 @@ const extractId = (value: any): string => {
   return "";
 };
 
-const formatRecipeTimeLabel = (value: any): string => {
+const formatRecipeTimeLabel = (value: ContentValue): string => {
   if (value === null || value === undefined) return "";
   const raw = String(value).replace(/\s+/g, " ").trim();
   if (!raw) return "";
@@ -127,19 +140,19 @@ const formatRecipeTimeLabel = (value: any): string => {
   return raw.toUpperCase();
 };
 
-const toPositiveNumber = (value: any): number | null => {
+const toPositiveNumber = (value: ContentValue): number | null => {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric < 0) return null;
   return numeric;
 };
 
-const formatMinutes = (value: any): string => {
+const formatMinutes = (value: ContentValue): string => {
   const numeric = toPositiveNumber(value);
   if (numeric === null) return "";
   return `${Math.round(numeric)} min`;
 };
 
-const resolveRecipeMedia = (...candidates: any[]) => {
+const resolveRecipeMedia = (...candidates: ContentValue[]) => {
   for (const candidate of candidates) {
     if (!candidate) continue;
 
@@ -262,7 +275,7 @@ const buildStepGroups = (
 };
 
 export async function getStaticPaths() {
-  let articles: any[] = [];
+  let articles: ArticleEntry[] = [];
 
   const decodeSafe = (value: string) => {
     try {
@@ -283,11 +296,11 @@ export async function getStaticPaths() {
 
   if (!articles || articles.length === 0) {
     try {
-      const payloadResponse: any = await payloadFetch({
+      const payloadResponse = await payloadFetch<ArticleEntry>({
         collection: "articles",
         query: { depth: 2, limit: getBuildLimit() },
       });
-      articles = payloadResponse?.docs || payloadResponse || [];
+      articles = payloadResponse;
     } catch (error) {
       console.error("payloadFetch fallback failed:", error);
     }
@@ -296,8 +309,8 @@ export async function getStaticPaths() {
   if (!Array.isArray(articles)) return [];
 
   return articles
-    .filter((item: any) => item?.slug)
-    .map((item: any) => {
+    .filter((item): item is ArticleEntry => Boolean(item?.slug))
+    .map((item) => {
       const rawSlug =
         typeof item.slug === "string" ? item.slug : item.slug?.current || "";
       const slugValue = decodeSafe(rawSlug);
@@ -309,7 +322,7 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  article: any;
+  article: ArticleEntry;
 }
 
 let { article } = Astro.props as Props;
@@ -694,6 +707,7 @@ const introText =
   excerptText || toText(firstStoryParagraphHtml) || excerpt || "";
 const hasStoryContent = false;
 const content = renderArticleContent(article);
+const sanitizedContent = sanitizeTrustedHtml(content);
 const firstContentParagraphHtml =
   content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
 const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(
@@ -1389,7 +1403,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                 class="article-content typ-body"
                 data-article-title={title}
                 data-article-summary={excerptText}
-                set:html={content}
+                set:html={sanitizedContent}
               />
             </article>
           </div>
@@ -1860,9 +1874,10 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
         const journeyHeader = document.createElement("div");
         journeyHeader.className = "article-visual-journey-header";
-        journeyHeader.innerHTML = `
-          <h2 class="article-visual-title">Préparation</h2>
-        `;
+        const journeyTitle = document.createElement("h2");
+        journeyTitle.className = "article-visual-title";
+        journeyTitle.textContent = "Préparation";
+        journeyHeader.append(journeyTitle);
         journey.append(journeyHeader);
 
         const journeyList = document.createElement("div");
@@ -1895,10 +1910,13 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
           ) {
             const sectionHeader = document.createElement("div");
             sectionHeader.className = "article-step-group";
-            sectionHeader.innerHTML = `
-              <h3 class="article-step-group-title">${normalizedSectionLabel}</h3>
-              <span class="article-step-group-line" aria-hidden="true"></span>
-            `;
+            const sectionTitle = document.createElement("h3");
+            sectionTitle.className = "article-step-group-title";
+            sectionTitle.textContent = normalizedSectionLabel;
+            const sectionLine = document.createElement("span");
+            sectionLine.className = "article-step-group-line";
+            sectionLine.setAttribute("aria-hidden", "true");
+            sectionHeader.append(sectionTitle, sectionLine);
             journeyList.appendChild(sectionHeader);
             renderedSectionLabel = normalizedSectionLabel;
           }
@@ -2021,7 +2039,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
       const buildDots = () => {
         if (!dotsHost) return;
 
-        dotsHost.innerHTML = "";
+        dotsHost.replaceChildren();
         const totalDots = Math.max(maxIndex + 1, 1);
         for (let index = 0; index < totalDots; index += 1) {
           const dot = document.createElement("button");

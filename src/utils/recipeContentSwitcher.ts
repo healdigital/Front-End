@@ -17,16 +17,30 @@ interface RecipeData {
   recipe: {
     name: string;
     summary?: string;
-    ingredients?: any[];
-    instructions_flat?: any[];
+    ingredients?: RecipeIngredient[];
+    instructions_flat?: Array<RecipeInstruction | string>;
     notes?: string;
     tags?: {
       course?: string[];
       cuisine?: string[];
       keyword?: string[];
     };
-    [key: string]: any;
+    [key: string]: unknown;
   };
+}
+
+interface RecipeIngredient {
+  amount?: string | number;
+  name?: string;
+  notes?: string;
+  unit?: string;
+}
+
+interface RecipeInstruction {
+  image_url?: string;
+  name?: string;
+  text?: string;
+  type?: string;
 }
 
 /**
@@ -110,6 +124,105 @@ function formatTime(minutes: string | number): string {
   return `${hours}h ${mins_remainder}min`;
 }
 
+function clearChildren(element: Element): void {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
+
+function renderIngredientList(list: Element, ingredients: RecipeIngredient[]): void {
+  clearChildren(list);
+
+  ingredients.forEach((ingredient) => {
+    const item = document.createElement('li');
+    item.className = 'ingredient-item';
+
+    const amountSpan = document.createElement('span');
+    const amount = ingredient.amount || '';
+    const unit = ingredient.unit || '';
+    amountSpan.textContent = `${amount}${amount && unit ? ' ' : ''}${unit}${amount || unit ? ' ' : ''}`;
+
+    const detailSpan = document.createElement('span');
+    const name = decodeHtmlEntities(stripHtml(ingredient.name || ''));
+    const notes = ingredient.notes ? ` (${decodeHtmlEntities(stripHtml(ingredient.notes))})` : '';
+    detailSpan.textContent = `${name}${notes}`;
+
+    item.append(amountSpan, detailSpan);
+    list.appendChild(item);
+  });
+}
+
+function renderInstructionList(
+  list: Element,
+  instructions: Array<RecipeInstruction | string>,
+): void {
+  clearChildren(list);
+
+  let stepCount = 0;
+
+  instructions.forEach((instruction) => {
+    const item = document.createElement('li');
+    item.className = 'instruction-item';
+
+    const stepWrapper = document.createElement('div');
+    stepWrapper.className = 'instruction-step';
+
+    const stepNumber = document.createElement('span');
+    stepNumber.className = 'step-number';
+
+    const stepText = document.createElement('p');
+    stepText.className = 'step-text';
+
+    let imageUrl = '';
+    let text = '';
+
+    if (typeof instruction === 'string') {
+      stepCount += 1;
+      text = decodeHtmlEntities(stripHtml(instruction.trim()));
+    } else if (instruction && instruction.type === 'instruction') {
+      stepCount += 1;
+      text = decodeHtmlEntities(stripHtml(instruction.text || instruction.name || ''));
+      imageUrl = String(instruction.image_url || '').trim();
+    }
+
+    if (!text) return;
+
+    stepNumber.textContent = String(stepCount);
+    stepText.textContent = text;
+    stepWrapper.append(stepNumber, stepText);
+    item.appendChild(stepWrapper);
+
+    if (imageUrl) {
+      const figure = document.createElement('figure');
+      figure.className = 'step-image';
+
+      const image = document.createElement('img');
+      image.src = imageUrl;
+      image.alt = `Step ${stepCount}`;
+      image.loading = 'lazy';
+      image.decoding = 'async';
+
+      figure.appendChild(image);
+      item.appendChild(figure);
+    }
+
+    list.appendChild(item);
+  });
+}
+
+function renderCategoryLinks(container: Element, categories: string[]): void {
+  clearChildren(container);
+
+  categories.forEach((course) => {
+    const slug = String(course).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    const link = document.createElement('a');
+    link.href = `/categories/${slug}`;
+    link.className = 'tag-badge category-badge';
+    link.textContent = course;
+    container.appendChild(link);
+  });
+}
+
 /**
  * Switch recipe content to a different language
  * Requires that window.langVersions is populated on the page
@@ -145,13 +258,7 @@ export function switchRecipeLanguage(lang: string): void {
   if (ingredientsSection && recipe.ingredients) {
     const list = ingredientsSection.querySelector('.ingredients-list');
     if (list) {
-      list.innerHTML = recipe.ingredients.map((ing: any) => {
-        const amount = ing.amount || '';
-        const unit = ing.unit || '';
-        const name = decodeHtmlEntities(stripHtml(ing.name || ''));
-        const notes = ing.notes ? ` (${decodeHtmlEntities(stripHtml(ing.notes))})` : '';
-        return `<li class="ingredient-item"><span>${amount}${amount && unit ? ' ' : ''}${unit}${amount || unit ? ' ' : ''}</span><span>${name}${notes}</span></li>`;
-      }).join('');
+      renderIngredientList(list, recipe.ingredients);
     }
   }
 
@@ -160,21 +267,7 @@ export function switchRecipeLanguage(lang: string): void {
   if (instructionsSection && recipe.instructions_flat) {
     const list = instructionsSection.querySelector('.instructions-list');
     if (list) {
-      let stepCount = 0;
-      list.innerHTML = recipe.instructions_flat.map((instruction: any, idx: number) => {
-        if (typeof instruction === 'object' && instruction !== null && instruction.type === "instruction") {
-          stepCount++;
-          const text = decodeHtmlEntities(stripHtml(instruction.text || instruction.name || ''));
-          const image = instruction.image_url ? `<figure class="step-image"><img src="${instruction.image_url}" alt="Step ${stepCount}" loading="lazy" decoding="async" /></figure>` : '';
-          return `<li class="instruction-item"><div class="instruction-step"><span class="step-number">${stepCount}</span><p class="step-text">${text}</p></div>${image}</li>`;
-        }
-        if (typeof instruction === 'string') {
-          stepCount++;
-          const text = decodeHtmlEntities(stripHtml(instruction.trim()));
-          return `<li class="instruction-item"><div class="instruction-step"><span class="step-number">${stepCount}</span><p class="step-text">${text}</p></div></li>`;
-        }
-        return '';
-      }).join('');
+      renderInstructionList(list, recipe.instructions_flat);
     }
   }
 
@@ -191,10 +284,7 @@ export function switchRecipeLanguage(lang: string): void {
   if (recipe.tags?.course) {
     const categories = document.querySelector('.tag-group .tags-container');
     if (categories && recipe.tags.course.length > 0) {
-      categories.innerHTML = recipe.tags.course.map((course: string) => {
-        const slug = String(course).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        return `<a href="/categories/${slug}" class="tag-badge category-badge">${course}</a>`;
-      }).join('');
+      renderCategoryLinks(categories, recipe.tags.course);
     }
   }
 
@@ -208,8 +298,9 @@ export function switchRecipeLanguage(lang: string): void {
  */
 export function initializeRecipeContentSwitcher(): void {
   // Listen for language change events
-  window.addEventListener('page-translated', (e: any) => {
-    const newLang = e.detail?.lang;
+  window.addEventListener('page-translated', (event: Event) => {
+    const customEvent = event as CustomEvent<{ lang?: string }>;
+    const newLang = customEvent.detail?.lang;
     if (newLang && window.langVersions && window.langVersions[newLang]) {
       switchRecipeLanguage(newLang);
     }

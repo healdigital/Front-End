@@ -1,7 +1,16 @@
 ---
 // CommentList.astro - Modern Comment Display
+interface CommentEntry {
+  author?: string;
+  content?: string;
+  createdAt?: string;
+  date?: string;
+  rating?: number;
+  text?: string;
+}
+
 interface Props {
-  comments?: any[];
+  comments?: CommentEntry[];
   slug?: string;
 }
 
@@ -9,7 +18,7 @@ const { comments = [], slug = '' } = Astro.props;
 
 // Calculate average rating from comments
 const avgRating = comments.length > 0
-  ? comments.reduce((sum: number, c: any) => sum + (c.rating || 5), 0) / comments.length
+  ? comments.reduce((sum: number, comment) => sum + (comment.rating || 5), 0) / comments.length
   : 0;
 const avgRatingDisplay = avgRating.toFixed(1);
 ---
@@ -46,7 +55,7 @@ const avgRatingDisplay = avgRating.toFixed(1);
   <!-- Comments List -->
   <div class="comments-list">
     {comments.length > 0 ? (
-      comments.map((comment: any, index: number) => (
+      comments.map((comment) => (
         <div class="comment-card">
           <div class="comment-avatar">
             <div class="avatar-circle">
@@ -79,7 +88,7 @@ const avgRatingDisplay = avgRating.toFixed(1);
               </div>
             </div>
 
-            <div class="comment-text" set:html={comment.text || comment.content}></div>
+            <div class="comment-text whitespace-pre-line">{comment.text || comment.content}</div>
           </div>
         </div>
       ))

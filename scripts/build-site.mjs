@@ -46,9 +46,10 @@ try {
   }
 
   if (disableSearch) {
-    console.log('BUILD_DISABLE_SEARCH is enabled but ignored: generating search index to keep search fully working.');
+    console.log('BUILD_DISABLE_SEARCH is enabled: skipping search index generation.');
+  } else {
+    run('npm run generate-search-index', env);
   }
-  run('npm run generate-search-index', env);
 
   run('node ./node_modules/astro/astro.js build', env);
 

@@ -297,6 +297,22 @@ const { slug } = Astro.props;
       4: 'Très bien (4/5)',
       5: 'Excellent (5/5)',
     };
+    const defaultSubmitLabel = 'Publier le commentaire et la note';
+
+    const setSubmitButtonContent = (label, isLoading = false) => {
+      submitBtn.replaceChildren();
+
+      if (isLoading) {
+        const spinner = document.createElement('span');
+        spinner.className = 'submit-btn-spinner';
+        spinner.setAttribute('aria-hidden', 'true');
+        submitBtn.appendChild(spinner);
+      }
+
+      const text = document.createElement('span');
+      text.textContent = label;
+      submitBtn.appendChild(text);
+    };
 
     const syncStars = (rating) => {
       stars.forEach((star) => {
@@ -363,8 +379,7 @@ const { slug } = Astro.props;
       submitBtn.disabled = true;
       submitBtn.setAttribute('aria-busy', 'true');
       submitBtn.classList.add('is-loading');
-      submitBtn.innerHTML =
-        '<span class="submit-btn-spinner" aria-hidden="true"></span><span>Publication...</span>';
+      setSubmitButtonContent('Publication...', true);
 
       try {
         const response = await fetch('/api/comments', {
@@ -403,7 +418,7 @@ const { slug } = Astro.props;
         submitBtn.disabled = false;
         submitBtn.setAttribute('aria-busy', 'false');
         submitBtn.classList.remove('is-loading');
-        submitBtn.textContent = 'Publier le commentaire et la note';
+        setSubmitButtonContent(defaultSubmitLabel);
       }
     });
   }, 100);
