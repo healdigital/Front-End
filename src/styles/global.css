@@ -921,6 +921,14 @@ html[data-club-member="true"] .content_desktop_hint {
 [data-mediavine][data-lcdb-ad-wrapper-state="empty"] {
   display: none !important;
 }
+
+.mv-ad-box[data-lcdb-ad-box-state="empty"],
+.mvp-ad[data-lcdb-ad-box-state="empty"],
+.mv-ad-box:empty,
+.mvp-ad:empty {
+  display: none !important;
+  min-height: 0 !important;
+}
  
 .article-intro-meta .article-intro-meta-item {
     display: flex;
