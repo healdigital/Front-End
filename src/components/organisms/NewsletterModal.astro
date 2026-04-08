@@ -9,17 +9,21 @@ interface Props {
   triggerId?: string; // ID of the button that opens this modal
   /** Unique dialog id used for ARIA attributes and script hooks. */
   id?: string;
+  /** Controls whether the modal opens only manually or via auto-open logic. */
+  autoOpenMode?: 'manual' | 'exit-intent';
 }
 
 const { 
   triggerId = 'open-newsletter-modal',
-  id = 'newsletter-modal'
+  id = 'newsletter-modal',
+  autoOpenMode = 'manual',
 } = Astro.props;
 ---
 
 <dialog
   id={id}
   data-trigger-id={triggerId}
+  data-auto-open-mode={autoOpenMode}
   data-motion="full"
   class="newsletter-modal-dialog fixed inset-0 z-50 hidden items-center justify-center bg-transparent overflow-hidden"
   aria-modal="true"
@@ -109,6 +113,7 @@ const {
   dialogs.forEach((dialog) => {
     const id = dialog.id;
     const triggerId = dialog.dataset.triggerId;
+    const autoOpenMode = dialog.dataset.autoOpenMode ?? 'manual';
     const trigger = triggerId ? document.getElementById(triggerId) : null;
     const panel = dialog.querySelector<HTMLElement>('[data-modal-panel]');
     const closeBtn = document.getElementById(`${id}-close`);
@@ -130,7 +135,11 @@ const {
     const checkboxDefaultClasses = ['newsletter-modal-checkbox-box--default'];
 
     const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const autoOpenSessionKey = `lcdb-newsletter-auto-opened:${autoOpenMode}`;
     let prefersReducedMotion = isReducedMotionPreferred();
+    let hasInteracted = false;
+    let hasScrolled = false;
+    let mobileAutoOpenTimer: number | null = null;
 
     const applyMotionPreference = () => {
       dialog.dataset.motion = prefersReducedMotion ? 'reduced' : 'full';
@@ -312,8 +321,67 @@ const {
       trigger?.focus();
     }
 
+    function hasAutoOpenedThisSession() {
+      try {
+        return sessionStorage.getItem(autoOpenSessionKey) === '1';
+      } catch {
+        return false;
+      }
+    }
+
+    function markAutoOpened() {
+      try {
+        sessionStorage.setItem(autoOpenSessionKey, '1');
+      } catch {
+        // Ignore storage failures.
+      }
+    }
+
+    function shouldAutoOpen() {
+      return autoOpenMode === 'exit-intent' && !dialog.open && !hasAutoOpenedThisSession();
+    }
+
+    function openAutoDialog() {
+      if (!shouldAutoOpen()) return;
+      markAutoOpened();
+      openDialog();
+    }
+
+    const onFirstInteraction = () => {
+      hasInteracted = true;
+    };
+
+    const onScroll = () => {
+      hasScrolled = true;
+    };
+
+    const onDesktopMouseOut = (event: MouseEvent) => {
+      if (!shouldAutoOpen()) return;
+      if (event.relatedTarget instanceof Node) return;
+      if (event.clientY > 32) return;
+      openAutoDialog();
+      window.removeEventListener('mouseout', onDesktopMouseOut);
+    };
+
     if (trigger) {
       trigger.addEventListener('click', openDialog);
+    }
+
+    if (autoOpenMode === 'exit-intent') {
+      const prefersCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+
+      if (prefersCoarsePointer) {
+        window.addEventListener('pointerdown', onFirstInteraction, { passive: true });
+        window.addEventListener('keydown', onFirstInteraction);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        mobileAutoOpenTimer = window.setTimeout(() => {
+          if (!shouldAutoOpen()) return;
+          if (!hasInteracted && !hasScrolled) return;
+          openAutoDialog();
+        }, 18000);
+      } else {
+        window.addEventListener('mouseout', onDesktopMouseOut);
+      }
     }
 
     closeBtn?.addEventListener('click', () => {
@@ -414,7 +482,20 @@ const {
       }
     });
 
-    window.addEventListener('pagehide', unsubscribeReducedMotion, { once: true });
+    window.addEventListener(
+      'pagehide',
+      () => {
+        unsubscribeReducedMotion();
+        if (mobileAutoOpenTimer !== null) {
+          window.clearTimeout(mobileAutoOpenTimer);
+        }
+        window.removeEventListener('pointerdown', onFirstInteraction);
+        window.removeEventListener('keydown', onFirstInteraction);
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('mouseout', onDesktopMouseOut);
+      },
+      { once: true }
+    );
   });
 </script>
 

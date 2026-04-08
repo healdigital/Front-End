@@ -893,10 +893,20 @@ html[data-club-member="true"] .mv-ad-slot {
   min-height: 0 !important;
 }
 
+html[data-club-member="true"] .content_hint,
+html[data-club-member="true"] .content_mobile_hint,
+html[data-club-member="true"] .content_desktop_hint {
+  display: none !important;
+  min-height: 0 !important;
+}
+
 [data-mediavine] {
   width: 100%;
 }
 
+.content_hint,
+.content_mobile_hint,
+.content_desktop_hint,
 .mv-ad-slot {
   display: block;
   width: 100%;

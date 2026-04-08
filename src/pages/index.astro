@@ -714,6 +714,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 </a>
               </div>
             </article>
+
           </div>
 
           <!-- Decouvrez mes recettes -->
@@ -770,6 +771,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 Suivant
               </button>
             </div>
+
           </div>
 
           <div class="home-deferred-block">
@@ -829,10 +831,13 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           </div>
         </div>
       </div>
-      <div class="mt-10" data-mediavine>
-        <MediavineSlot slot="homepage-main-inline" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
-      </div>
     </div>
+
+  <section class="bg-secondary-cream">
+    <div class="home-shell py-6 md:py-8" data-mediavine>
+      <MediavineSlot slot="homepage-main-transition" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
+    </div>
+  </section>
 
   <!-- Dark Section -->
   <section class="relative overflow-hidden home-page-section home-page-section--dark home-render-deferred home-workshops-section Ateliers_css">
@@ -1073,9 +1078,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
         role="status"
         aria-live="polite"
       ></p>
-      <div class="mt-10" data-mediavine>
-        <MediavineSlot slot="homepage-dark-inline" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
-      </div>
+    </div>
+  </section>
+
+  <section class="bg-secondary-cream">
+    <div class="home-shell py-6 md:py-8" data-mediavine>
+      <MediavineSlot slot="homepage-workshops-transition" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
     </div>
   </section>
 
@@ -1091,6 +1099,9 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
       <div class="home-two-column">
         <div class="home-main-column home-main-column-stack mes-livres
         ">
+          <div class="mb-8" data-mediavine>
+            <MediavineSlot slot="homepage-books-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
+          </div>
           <div class="books-section-desktop-only">
             <BooksSection embedded />
           </div>
@@ -1111,9 +1122,6 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             <RecipeSidebar variant="popular" />
           </div>
         </div>
-      </div>
-      <div class="mt-10" data-mediavine>
-        <MediavineSlot slot="homepage-lower-inline" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
       </div>
     </div>
   </section>

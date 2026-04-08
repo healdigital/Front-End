@@ -45,6 +45,7 @@ const { title, description, image, lang = 'fr', loadAds = false } = Astro.props;
       <slot />
     </main>
     <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
+    <NewsletterModal id="newsletter-modal-exit" autoOpenMode="exit-intent" />
     <ClubLoginModal />
     <GlobalFooter currentLang={lang} />
   </body>

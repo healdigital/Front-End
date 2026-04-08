@@ -1,4 +1,5 @@
 import { getAllArticlesFromMongo } from './mongo.server';
+import { getPopularPageViews } from './googleAnalytics';
 import { buildWpSquareVariantUrl, processArticleImageUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
@@ -74,6 +75,43 @@ const extractSidebarLabel = (article: DiscoverableArticle): string => {
   return 'Recettes';
 };
 
+const normalizePath = (value: string): string => String(value || '').split('?')[0].split('#')[0].trim();
+
+const pathToSlug = (path: string): string => {
+  const normalizedPath = normalizePath(path).replace(/^https?:\/\/[^/]+/i, '');
+  const trimmed = normalizedPath.replace(/^\/+|\/+$/g, '');
+  if (!trimmed) return '';
+  if (trimmed.startsWith('print/')) return '';
+  if (trimmed.startsWith('articles/')) return trimmed.slice('articles/'.length).replace(/^\/+|\/+$/g, '');
+  if (trimmed.includes('/')) return '';
+  return trimmed;
+};
+
+const buildGaRanking = async (
+  articles: DiscoverableArticle[],
+): Promise<Map<string, number>> => {
+  const articleSlugs = new Set(
+    articles
+      .map((article) => getSlug(article))
+      .filter(Boolean),
+  );
+
+  if (!articleSlugs.size) return new Map();
+
+  const pageViews = await getPopularPageViews(250);
+  if (!pageViews.length) return new Map();
+
+  const ranking = new Map<string, number>();
+
+  for (const row of pageViews) {
+    const slug = pathToSlug(row.pagePath);
+    if (!slug || !articleSlugs.has(slug)) continue;
+    ranking.set(slug, (ranking.get(slug) || 0) + row.screenPageViews);
+  }
+
+  return ranking;
+};
+
 const articleScore = (article: DiscoverableArticle): number => {
   const hasImage = Boolean(processArticleImageUrl(article));
   const excerptLength = getExcerpt(article).length;
@@ -99,17 +137,22 @@ const articleScore = (article: DiscoverableArticle): number => {
 
 export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise<SidebarArticle[]> {
   const allArticles = await getAllArticlesFromMongo();
+  const localizedArticles = allArticles.filter(
+    (article: DiscoverableArticle) => String(article?.lang || 'fr').toLowerCase() === lang.toLowerCase(),
+  );
+  const gaRanking = await buildGaRanking(localizedArticles);
 
-  const ranked = allArticles
-    .filter((article: DiscoverableArticle) => String(article?.lang || 'fr').toLowerCase() === lang.toLowerCase())
+  const ranked = localizedArticles
     .map((article: DiscoverableArticle) => {
       const slug = getSlug(article);
       const title = getTitle(article);
       const imageSource = processArticleImageUrl(article);
       const image = buildWpSquareVariantUrl(imageSource, 500) || imageSource;
+      const gaScore = gaRanking.get(slug) || 0;
       return {
         article,
-        score: articleScore(article),
+        score: gaScore > 0 ? gaScore * 1000 + articleScore(article) : articleScore(article),
+        gaScore,
         sidebar: {
           title,
           slug: slug ? `/${slug}` : '',
@@ -119,7 +162,10 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
       };
     })
     .filter(({ sidebar }) => Boolean(sidebar.slug && sidebar.title && sidebar.image))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      if (a.gaScore !== b.gaScore) return b.gaScore - a.gaScore;
+      return b.score - a.score;
+    });
 
   return ranked.slice(0, limit).map((entry) => entry.sidebar);
 }
