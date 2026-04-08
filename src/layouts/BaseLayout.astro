@@ -16,7 +16,7 @@ interface Props {
   slug?: string;
   lang?: string;
   image?: string;
-  jsonLd?: any[];
+  jsonLd?: Array<Record<string, unknown>>;
   loadAds?: boolean;
   showGlobalAbout?: boolean;
 }
@@ -78,84 +78,7 @@ const {
 </html>
 
 <script>
-  import { initializeTranslations, setupLanguageSwitcher, watchLanguageChanges, changeLanguage, getCurrentLanguage } from '../utils/dynamicTranslate';
-  const LANGUAGE_STORAGE_KEY = 'preferred-language';
-
-  // Initialize translations on page load
-  async function init() {
-    await initializeTranslations();
-    setupLanguageSwitcher();
-    watchLanguageChanges();
-
-    const currentLang = String(getCurrentLanguage() || '').toLowerCase();
-    const htmlLang = String(
-      document.documentElement.getAttribute('data-lang') ||
-      document.documentElement.lang ||
-      'fr',
-    ).toLowerCase();
-    const pendingLang = String((window as any).__lcdbPendingLanguage || '').toLowerCase();
-
-    if (pendingLang || (currentLang && currentLang !== htmlLang)) {
-      await changeLanguage(currentLang);
-    }
-  }
-
-  const htmlLang = String(
-    document.documentElement.getAttribute('data-lang') ||
-    document.documentElement.lang ||
-    'fr',
-  ).toLowerCase();
-  const pendingLang = String((window as any).__lcdbPendingLanguage || '').toLowerCase();
-  let storedLang = '';
-  try {
-    storedLang = String(localStorage.getItem(LANGUAGE_STORAGE_KEY) || '').toLowerCase();
-  } catch {
-    storedLang = '';
-  }
-
-  const needsImmediateTranslationBoot =
-    Boolean(pendingLang) || (storedLang && storedLang !== htmlLang);
-
-  const startTranslationInit = () =>
-    init().catch(error => console.error('Failed to initialize translations:', error));
-
-  const translationStatusEl = document.querySelector<HTMLElement>('[data-translation-status]');
-  const translationStatusTextEl = translationStatusEl?.querySelector<HTMLElement>('[data-translation-status-text]');
-  let translationStatusTimeout: number | null = null;
-
-  const showTranslationStatus = (state: 'loading' | 'success' | 'warning' | 'error', message: string) => {
-    if (!translationStatusEl || !translationStatusTextEl || !message) return;
-    if (translationStatusTimeout) {
-      window.clearTimeout(translationStatusTimeout);
-      translationStatusTimeout = null;
-    }
-
-    translationStatusEl.hidden = false;
-    translationStatusEl.dataset.state = state;
-    translationStatusTextEl.textContent = message;
-
-    if (state !== 'loading') {
-      translationStatusTimeout = window.setTimeout(() => {
-        translationStatusEl.hidden = true;
-      }, state === 'error' ? 5200 : 3200);
-    }
-  };
-
-  window.addEventListener('lcdb:translation-status', ((event: Event) => {
-    const customEvent = event as CustomEvent<{ state?: 'loading' | 'success' | 'warning' | 'error'; message?: string }>;
-    const state = customEvent?.detail?.state;
-    const message = customEvent?.detail?.message;
-    if (!state || !message) return;
-    showTranslationStatus(state, message);
-  }) as EventListener);
-
-  if (needsImmediateTranslationBoot) {
-    startTranslationInit();
-  } else if (typeof window.requestIdleCallback === 'function') {
-    window.requestIdleCallback(() => startTranslationInit(), { timeout: 1200 });
-  } else {
-    window.setTimeout(() => startTranslationInit(), 180);
-  }
+  import '../scripts/translationBoot';
 </script>
 
 <script>

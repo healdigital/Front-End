@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import { sanitizeTrustedHtml } from '../../utils/trustedHtml';
 
 /**
  * Props for the `Icon` atom.
@@ -63,7 +64,7 @@ const icons = {
   'nav-featured': `<path d="M20.43,21.59H3.6c-.4,0-.73-.32-.73-.73l-1.72-11.48,5.42,3.88L12.02,2.89l5.84,10.38,5.02-4.11-1.72,11.7c0,.4-.32.73-.73.73Z" stroke="currentColor" stroke-width=".75" stroke-linecap="round" stroke-linejoin="round"/><line x1="2.88" y1="18.64" x2="21.19" y2="18.64" stroke="currentColor" stroke-width=".75" stroke-linecap="round" stroke-linejoin="round"/>`,
 };
 
-const path = icons[name] || '';
+const path = sanitizeTrustedHtml(icons[name] || '');
 
 const classes = [
   sizes[size],

@@ -4,6 +4,7 @@ import { payloadFetch } from '../../lib/payload.client';
 import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 import { renderArticleContent } from '../../utils/renderArticleContent';
+import { sanitizeTrustedHtml } from '../../utils/trustedHtml';
 import DisqusComments from '../../components/DisqusComments.astro';
 import MediavineSlot from '../../components/MediavineSlot.astro';
 import SocialShare from '../../components/molecules/SocialShare.astro';
@@ -11,6 +12,49 @@ import NewsletterModal from '../../components/organisms/NewsletterModal.astro';
 import RecipeSidebar from '../../components/organisms/RecipeSidebar.astro';
 
 export const prerender = !import.meta.env.DEV;
+
+type ContentValue = string | number | boolean | null | undefined | ContentRecord | ContentValue[];
+type ContentRecord = Record<string, ContentValue>;
+
+interface TaxonomyItem {
+  label?: string;
+  name?: string;
+  slug?: string | { current?: string };
+  title?: string;
+}
+
+interface ArticleEntry extends ContentRecord {
+  categories?: TaxonomyItem[];
+  content?: ContentValue;
+  date?: string;
+  excerpt?: ContentValue;
+  featuredImage?: ContentRecord;
+  featuredMedia?: ContentRecord;
+  featured_image?: ContentRecord;
+  lang?: string;
+  language?: string;
+  locale?: string;
+  modified?: string;
+  post_id?: number | string;
+  publishedAt?: string;
+  slug?: string | { current?: string };
+  tags?: TaxonomyItem[];
+  title?: ContentValue;
+}
+
+interface RelatedArticleCard {
+  date: string;
+  excerpt: string;
+  image: string;
+  score: number;
+  slug: string;
+  title: string;
+}
+
+interface PageTaxonomyItem {
+  slug: string;
+  title: string;
+}
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
@@ -23,7 +67,7 @@ const stripHtml = (value: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const toText = (value: any): string => {
+const toText = (value: ContentValue): string => {
   if (!value) return '';
   if (typeof value === 'string') return stripHtml(value);
   if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
@@ -34,29 +78,29 @@ const toText = (value: any): string => {
       if (text) return text;
     }
     if (Array.isArray(value.children)) {
-      return value.children.map((child: any) => toText(child)).filter(Boolean).join(' ');
+      return value.children.map((child) => toText(child)).filter(Boolean).join(' ');
     }
     if (value.content) return toText(value.content);
   }
   return '';
 };
 
-const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+const normalizeSlug = (value: ContentValue) => String(value || '').replace(/^\/+|\/+$/g, '');
 
 export async function getStaticPaths() {
   if (import.meta.env.DEV) {
     return [];
   }
 
-  const normalize = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+  const normalize = (value: ContentValue) => String(value || '').replace(/^\/+|\/+$/g, '');
 
-  let articles = await getAllArticlesFromMongo();
+  let articles: ArticleEntry[] = await getAllArticlesFromMongo();
   if (!articles || articles.length === 0) {
-    const response: any = await payloadFetch({
+    const response = await payloadFetch<ArticleEntry>({
       collection: 'articles',
       query: { depth: 2, limit: getBuildLimit() },
     });
-    articles = response?.docs || response || [];
+    articles = response;
   }
 
   if (!Array.isArray(articles)) {
@@ -64,7 +108,7 @@ export async function getStaticPaths() {
   }
 
   return articles
-    .map((article: any) => {
+    .map((article) => {
       const slug = normalize(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
       if (!slug) return null;
       return {
@@ -76,7 +120,7 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  article: any;
+  article: ArticleEntry;
 }
 
 let { article } = Astro.props as Props;
@@ -86,11 +130,11 @@ if (!article) {
   if (slugParam) {
     article = await getArticleBySlugFromMongo(slugParam);
     if (!article) {
-      const fallback: any = await payloadFetch({
+      const fallback = await payloadFetch<ArticleEntry>({
         collection: 'articles',
         query: { slug: slugParam, depth: 2, limit: 1 },
       });
-      article = Array.isArray(fallback) ? fallback[0] : fallback?.docs?.[0];
+      article = fallback[0];
     }
   }
 }
@@ -117,8 +161,9 @@ const imageAlt =
   toText(article?.featuredMedia?.alt || article?.featuredImage?.alt || article?.featured_image?.alt) ||
   title;
 const content = renderArticleContent(article);
+const sanitizedContent = sanitizeTrustedHtml(content);
 
-const formatDate = (value: any) => {
+const formatDate = (value: ContentValue) => {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
@@ -130,20 +175,20 @@ const formatDate = (value: any) => {
 };
 
 const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
-  .map((item: any) => {
+  .map((item): PageTaxonomyItem | null => {
     const itemTitle = toText(item?.title || item?.name || item?.label || item);
     const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
-  .filter(Boolean);
+  .filter((item): item is PageTaxonomyItem => Boolean(item));
 
 const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
-  .map((item: any) => {
+  .map((item): PageTaxonomyItem | null => {
     const itemTitle = toText(item?.title || item?.name || item?.label || item);
     const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
-  .filter(Boolean);
+  .filter((item): item is PageTaxonomyItem => Boolean(item));
 
 const publishedDate = formatDate(article?.publishedAt || article?.date || article?.modified);
 const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
@@ -152,7 +197,7 @@ const numericPostId = Number(article?.post_id);
 const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
   ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
   : slug;
-const normalizePageLanguage = (value: any) => {
+const normalizePageLanguage = (value: ContentValue) => {
   const raw = String(value || '').trim().toLowerCase();
   if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
   if (['en', 'fr', 'es', 'pt-br', 'ar'].includes(raw)) return raw;
@@ -177,36 +222,36 @@ const relatedArticlesSource = (() => {
   }
 })();
 
-let relatedArticlesRaw = await relatedArticlesSource;
+let relatedArticlesRaw: ArticleEntry[] = await relatedArticlesSource;
 if (!relatedArticlesRaw || relatedArticlesRaw.length === 0) {
-  const fallback: any = await payloadFetch({
+  const fallback = await payloadFetch<ArticleEntry>({
     collection: 'articles',
     query: { depth: 2, limit: getBuildLimit() },
   });
-  relatedArticlesRaw = fallback?.docs || fallback || [];
+  relatedArticlesRaw = fallback;
 }
 
 const currentCategoryKeys = new Set(
-  categoryItems.map((item: any) => normalizeValue(item.slug || item.title)).filter(Boolean),
+  categoryItems.map((item) => normalizeValue(item.slug || item.title)).filter(Boolean),
 );
 const currentTagKeys = new Set(
-  tagItems.map((item: any) => normalizeValue(item.slug || item.title)).filter(Boolean),
+  tagItems.map((item) => normalizeValue(item.slug || item.title)).filter(Boolean),
 );
 
 const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : [])
-  .map((entry: any) => {
+  .map((entry): RelatedArticleCard | null => {
     const entrySlug = normalizeSlug(typeof entry?.slug === 'string' ? entry.slug : entry?.slug?.current);
     const entryTitle = toText(entry?.title);
     if (!entrySlug || !entryTitle || entrySlug === slug) return null;
 
     const entryCategoryKeys = new Set(
       (Array.isArray(entry?.categories) ? entry.categories : [])
-        .map((item: any) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
+        .map((item) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
         .filter(Boolean),
     );
     const entryTagKeys = new Set(
       (Array.isArray(entry?.tags) ? entry.tags : [])
-        .map((item: any) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
+        .map((item) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
         .filter(Boolean),
     );
 
@@ -228,8 +273,8 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
       score,
     };
   })
-  .filter(Boolean)
-  .sort((a: any, b: any) => b.score - a.score)
+  .filter((entry): entry is RelatedArticleCard => Boolean(entry))
+  .sort((a, b) => b.score - a.score)
   .slice(0, 3);
 ---
 
@@ -314,7 +359,7 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
             </div>
           )}
 
-          <div class="article-content text-text-primary typ-body" set:html={content}></div>
+          <div class="article-content text-text-primary typ-body" set:html={sanitizedContent}></div>
 
           <div class="my-8">
             <MediavineSlot slot="article-bottom" minHeight={280} />

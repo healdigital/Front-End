@@ -1,4 +1,6 @@
 ---
+import { decodeHtmlEntities } from '../../utils/decodeHtmlEntities';
+
 interface Props {
   embedded?: boolean;
 }
@@ -27,6 +29,11 @@ const features = [
     icon: '/images/feature-bowl.png',
   },
 ];
+const decodedFeatures = features.map((feature) => ({
+  ...feature,
+  title: decodeHtmlEntities(feature.title),
+  description: decodeHtmlEntities(feature.description),
+}));
 ---
 
 <section class={`relative hidden ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`} aria-hidden="true">
@@ -43,12 +50,12 @@ const features = [
           <div class="bio-section-media-stack">
             <div class="bio-section-media-panel hidden" aria-hidden="true">
               <div class="bio-section-features bio-section-features--media">
-                {features.map((feature) => (
+                {decodedFeatures.map((feature) => (
                   <div class="bio-section-feature">
                     <img src={feature.icon} alt="" aria-hidden="true" class="bio-section-feature-icon" />
                     <div>
-                      <p class="bio-section-feature-title" set:html={feature.title}></p>
-                      <p class="bio-section-feature-description" set:html={feature.description}></p>
+                      <p class="bio-section-feature-title">{feature.title}</p>
+                      <p class="bio-section-feature-description">{feature.description}</p>
                     </div>
                   </div>
                 ))}

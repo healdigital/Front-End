@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { decodeHtmlEntities } from '../utils/decodeHtmlEntities';
+import { sanitizeTrustedHtml } from '../utils/trustedHtml';
 
 type EmbedKind = 'iframe' | 'mv';
 
@@ -46,7 +47,7 @@ const escapeAttribute = (value: string): string =>
     .replace(/>/g, '&gt;');
 
 const sanitizeEmbedHtml = (value: string, title: string): string => {
-  let html = String(value || '').trim();
+  let html = sanitizeTrustedHtml(String(value || '').trim());
   if (!html) return '';
 
   if (/^<iframe\b/i.test(html)) {

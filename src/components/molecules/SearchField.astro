@@ -97,12 +97,17 @@ const {
       loadingIndicator.classList.toggle('inline-flex', isLoading);
     };
 
+    const clearSuggestions = () => {
+      if (!suggestionsPanel) return;
+      suggestionsPanel.replaceChildren();
+    };
+
     const closeSuggestions = () => {
       activeSuggestionIndex = -1;
       setLoading(false);
       input.setAttribute('aria-expanded', 'false');
       suggestionsPanel?.classList.add('hidden');
-      if (suggestionsPanel) suggestionsPanel.innerHTML = '';
+      clearSuggestions();
     };
 
     const setActiveSuggestion = (index: number) => {
@@ -137,23 +142,28 @@ const {
         return;
       }
 
-      suggestionsPanel.innerHTML = matches
-        .map(
-          (item, index) => `
-            <button
-              type="button"
-              class="flex w-full items-start rounded-xl px-3 py-2 text-left text-[14px] text-[#111111] transition-colors hover:bg-[#F0ECE1]"
-              data-search-suggestion-item
-              data-search-suggestion-slug="${item.slug}"
-              data-search-suggestion-title="${item.title?.replace(/"/g, '&quot;')}"
-              role="option"
-              aria-selected="false"
-            >
-              <span>${item.title}</span>
-            </button>
-          `,
-        )
-        .join('');
+      clearSuggestions();
+
+      const fragment = document.createDocumentFragment();
+      matches.forEach((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className =
+          'flex w-full items-start rounded-xl px-3 py-2 text-left text-[14px] text-[#111111] transition-colors hover:bg-[#F0ECE1]';
+        button.dataset.searchSuggestionItem = 'true';
+        button.dataset.searchSuggestionSlug = item.slug || '';
+        button.dataset.searchSuggestionTitle = item.title || '';
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-selected', 'false');
+
+        const title = document.createElement('span');
+        title.textContent = item.title || '';
+        button.appendChild(title);
+
+        fragment.appendChild(button);
+      });
+
+      suggestionsPanel.appendChild(fragment);
 
       suggestionsPanel.classList.remove('hidden');
       input.setAttribute('aria-expanded', 'true');

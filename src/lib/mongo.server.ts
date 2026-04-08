@@ -9,10 +9,32 @@ config();
 
 let cachedClient: MongoClient | null = null;
 let cachedDb: Db | null = null;
-let cachedPreparedArticles: any[] | null = null;
-let cachedAllArticles: any[] | null = null;
+type GenericDoc = Record<string, unknown>;
+type ArticleRecord = GenericDoc & {
+  _id?: string | ObjectId;
+  featuredImage?: GenericDoc;
+  featuredImageUrl?: string;
+  featuredMedia?: GenericDoc;
+  featured_image?: GenericDoc;
+  featured_img_url?: string;
+  id?: string;
+  slug?: string | { current?: string };
+};
+type CategoryLike = { _id: string; name: string; slug: string; title: string };
+type RelatedArticleId = string | ObjectId;
+type TaxonomyEntry = {
+  _id?: string | ObjectId;
+  id?: string | ObjectId;
+  label?: string;
+  name?: string;
+  title?: string;
+  value?: string | ObjectId | GenericDoc;
+};
+
+let cachedPreparedArticles: ArticleRecord[] | null = null;
+let cachedAllArticles: ArticleRecord[] | null = null;
 let cachedAllArticlesAt = 0;
-let inFlightAllArticlesPromise: Promise<any[]> | null = null;
+let inFlightAllArticlesPromise: Promise<ArticleRecord[]> | null = null;
 
 const isDevMode = () => process.env.NODE_ENV !== 'production';
 
@@ -35,7 +57,20 @@ const shouldUseIncludeSlugs = () => {
   return process.env.DEV_INCLUDE_SLUGS === '1';
 };
 
-const getPreparedArticles = () => {
+const normalizeComparableText = (value: string): string =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const getTaxonomyLabel = (entry: unknown): string =>
+  String(
+    (typeof entry === 'object' && entry
+      ? (entry as TaxonomyEntry).title || (entry as TaxonomyEntry).name || (entry as TaxonomyEntry).label
+      : entry) || '',
+  ).trim();
+
+const getPreparedArticles = (): ArticleRecord[] => {
   if (cachedPreparedArticles) return cachedPreparedArticles;
   const preparedPath = path.join(process.cwd(), 'prepared-articles.json');
   const raw = fs.readFileSync(preparedPath, 'utf8');
@@ -98,7 +133,7 @@ const withStringIds = <T extends Record<string, unknown>>(doc: T): T & { _id?: s
   id: normalizeId(doc.id) || normalizeId(doc._id) || undefined,
 });
 
-const hasUsableArticleImage = (article: any): boolean =>
+const hasUsableArticleImage = (article: ArticleRecord): boolean =>
   Boolean(
     article?.featuredMedia?.url ||
       article?.featuredMedia?.sizes?.articleHero?.url ||
@@ -112,8 +147,11 @@ const hasUsableArticleImage = (article: any): boolean =>
       article?.featuredImageUrl,
   );
 
-const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[]> => {
+const shouldUseLocalJson = (): boolean => process.env.USE_LOCAL_JSON === '1';
+
+const backfillPreparedArticleMediaFields = async (articles: ArticleRecord[]): Promise<ArticleRecord[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
+  if (shouldUseLocalJson()) return articles;
 
   const articlesNeedingBackfill = articles.filter((article) => !hasUsableArticleImage(article));
   if (articlesNeedingBackfill.length === 0) return articles;
@@ -163,8 +201,8 @@ const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[
       )
       .toArray();
 
-    const bySlug = new Map<string, any>();
-    const byId = new Map<string, any>();
+    const bySlug = new Map<string, ArticleRecord>();
+    const byId = new Map<string, ArticleRecord>();
 
     for (const doc of articleDocs) {
       const normalizedDoc = {
@@ -205,8 +243,14 @@ const backfillPreparedArticleMediaFields = async (articles: any[]): Promise<any[
   }
 };
 
-const hydrateArticleMediaRelations = async (articles: any[]): Promise<any[]> => {
+const hydrateArticleMediaRelations = async (articles: ArticleRecord[]): Promise<ArticleRecord[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
+  if (shouldUseLocalJson()) {
+    return articles.map((article) => ({
+      _id: normalizeId(article?._id) || undefined,
+      ...article,
+    }));
+  }
 
   const mediaIds = new Set<string>();
 
@@ -296,7 +340,7 @@ export async function getMongoConnection() {
     console.log('🔌 [BUILD] Establishing MongoDB connection...');
     const maxRetries = 3;
     let attempt = 0;
-    let lastError: any = null;
+    let lastError: unknown = null;
 
     while (attempt < maxRetries) {
       attempt++;
@@ -313,7 +357,7 @@ export async function getMongoConnection() {
         cachedClient = client;
         cachedDb = db;
         return db;
-      } catch (err) {
+      } catch (err: any) {
         lastError = err;
         console.warn(`⚠️ [BUILD] MongoDB connect attempt ${attempt} failed:`, err && err.message ? err.message : err);
         const backoffMs = 250 * Math.pow(2, attempt - 1);
@@ -330,6 +374,27 @@ export async function getMongoConnection() {
 }
 
 export async function getArticlesFromMongo(page = 1, limit = 10, categoryName?: string) {
+  if (shouldUseLocalJson()) {
+    const allArticles = await getAllArticlesFromMongo();
+    const skip = Math.max(0, (page - 1) * limit);
+    const normalizedCategoryName = String(categoryName || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+    const filteredArticles = normalizedCategoryName
+      ? allArticles.filter((article) => {
+          const categories = Array.isArray(article?.categories) ? article.categories : [];
+          return categories.some((entry) =>
+            normalizeComparableText(getTaxonomyLabel(entry)).includes(normalizedCategoryName),
+          );
+        })
+      : allArticles;
+
+    return filteredArticles.slice(skip, skip + limit);
+  }
+
   try {
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
@@ -380,6 +445,11 @@ export async function getArticlesFromMongo(page = 1, limit = 10, categoryName?: 
 }
 
 export async function getArticlesCountFromMongo(): Promise<number> {
+  if (shouldUseLocalJson()) {
+    const allArticles = await getAllArticlesFromMongo();
+    return allArticles.length;
+  }
+
   try {
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
@@ -391,15 +461,19 @@ export async function getArticlesCountFromMongo(): Promise<number> {
   }
 }
 
-const getArticleCategoryIds = (article: any): string[] => {
+const getArticleCategoryIds = (article: ArticleRecord): string[] => {
   if (!Array.isArray(article?.categories)) return [];
 
   return article.categories
-    .map((item: any) => normalizeId(item?.id || item?._id || item?.value || item))
+    .map((item) => normalizeId((item as TaxonomyEntry)?.id || (item as TaxonomyEntry)?._id || (item as TaxonomyEntry)?.value || item))
     .filter(Boolean);
 };
 
-const fallbackRelatedArticlesFromPrepared = async (categoryIds: any[], excludeArticleId: string, limit = 6) => {
+const fallbackRelatedArticlesFromPrepared = async (
+  categoryIds: RelatedArticleId[],
+  excludeArticleId: string,
+  limit = 6,
+) => {
   const normalizedCategoryIds = Array.from(
     new Set(
       (Array.isArray(categoryIds) ? categoryIds : [])
@@ -431,14 +505,14 @@ const fallbackRelatedArticlesFromPrepared = async (categoryIds: any[], excludeAr
   return relatedArticles;
 };
 
-export async function getRelatedArticlesFromMongo(categoryIds: any[], excludeArticleId: string, limit = 6) {
-  if (process.env.USE_LOCAL_JSON === '1') {
+export async function getRelatedArticlesFromMongo(categoryIds: RelatedArticleId[], excludeArticleId: string, limit = 6) {
+  if (shouldUseLocalJson()) {
     return fallbackRelatedArticlesFromPrepared(categoryIds, excludeArticleId, limit);
   }
 
   try {
     // Convert excludeArticleId to ObjectId if it's a string
-    let excludeId = excludeArticleId;
+    let excludeId: RelatedArticleId = excludeArticleId;
     if (typeof excludeArticleId === 'string' && excludeArticleId.match(/^[0-9a-fA-F]{24}$/)) {
       excludeId = new ObjectId(excludeArticleId);
     }
@@ -449,7 +523,7 @@ export async function getRelatedArticlesFromMongo(categoryIds: any[], excludeArt
     const articlesCollection = db.collection('articles');
 
     // Convert string IDs to ObjectIds if needed
-    const objectIds = categoryIds.map(id => {
+    const objectIds = categoryIds.map((id) => {
       if (typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/)) {
         return new ObjectId(id);
       }
@@ -517,7 +591,7 @@ export async function getAllArticlesFromMongo() {
 
   inFlightAllArticlesPromise = (async () => {
     // Optional: use local JSON dump instead of hitting Mongo (one-off full build)
-    if (process.env.USE_LOCAL_JSON === '1') {
+    if (shouldUseLocalJson()) {
       try {
         const items = getPreparedArticles();
         const cappedItems = items.slice(0, limit);
@@ -658,7 +732,7 @@ export async function getAllArticlesFromMongo() {
 
 export async function getArticleBySlugFromMongo(slug: string) {
   // Optional local JSON lookup
-  if (process.env.USE_LOCAL_JSON === '1') {
+  if (shouldUseLocalJson()) {
     try {
       const items = getPreparedArticles();
       const decodeSafe = (s: string) => { try { return decodeURIComponent(s); } catch { return s; } };
@@ -734,6 +808,10 @@ export async function getArticleBySlugFromMongo(slug: string) {
 }
 
 export async function getCommentsByArticleIdFromMongo(articleId: string) {
+  if (shouldUseLocalJson()) {
+    return [];
+  }
+
   try {
     const db = await getMongoConnection();
     const commentsCollection = db.collection('comments');
@@ -828,6 +906,31 @@ export async function searchArticlesFromMongo(query: string, limit = 50) {
 }
 
 export async function getAllCategoriesFromMongo() {
+  if (shouldUseLocalJson()) {
+    const allArticles = await getAllArticlesFromMongo();
+    const seen = new Map<string, CategoryLike>();
+
+    allArticles.forEach((article) => {
+      const categories = Array.isArray(article?.categories) ? article.categories : [];
+      categories.forEach((entry) => {
+        const label = getTaxonomyLabel(entry);
+        if (!label) return;
+        const slug = label
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        if (!slug || seen.has(slug)) return;
+        seen.set(slug, { _id: slug, title: label, name: label, slug });
+      });
+    });
+
+    return Array.from(seen.values());
+  }
+
   try {
     const db = await getMongoConnection();
     const categoriesCollection = db.collection('categories');
@@ -845,6 +948,31 @@ export async function getAllCategoriesFromMongo() {
 }
 
 export async function getAllTagsFromMongo() {
+  if (shouldUseLocalJson()) {
+    const allArticles = await getAllArticlesFromMongo();
+    const seen = new Map<string, CategoryLike>();
+
+    allArticles.forEach((article) => {
+      const tags = Array.isArray(article?.tags) ? article.tags : [];
+      tags.forEach((entry) => {
+        const label = getTaxonomyLabel(entry);
+        if (!label) return;
+        const slug = label
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        if (!slug || seen.has(slug)) return;
+        seen.set(slug, { _id: slug, title: label, name: label, slug });
+      });
+    });
+
+    return Array.from(seen.values());
+  }
+
   try {
     const db = await getMongoConnection();
     const tagsCollection = db.collection('tags');
@@ -862,6 +990,24 @@ export async function getAllTagsFromMongo() {
 }
 
 export async function getArticlesByTagFromMongo(tagName: string, limit = 1000) {
+  if (shouldUseLocalJson()) {
+    const normalizedTagName = String(tagName || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+    const allArticles = await getAllArticlesFromMongo();
+
+    return allArticles
+      .filter((article) => {
+        const tags = Array.isArray(article?.tags) ? article.tags : [];
+        return tags.some((entry) =>
+          normalizeComparableText(getTaxonomyLabel(entry)).includes(normalizedTagName),
+        );
+      })
+      .slice(0, limit);
+  }
+
   try {
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
