@@ -29,7 +29,9 @@ const toText = (value: any): string => {
   return '';
 };
 
-const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+function normalizeSlug(value: any) {
+  return String(value || '').replace(/^\/+|\/+$/g, '');
+}
 const articleSlug = (article: any) =>
   normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
 
@@ -65,15 +67,40 @@ const mapArticles = (fetchedArticles: any[]) =>
 
 export async function getStaticPaths() {
   if (BUILD_ONLY_ARTICLE_PAGES) return [];
+  const pageSize = 12;
   const categories = await getAllCategoriesFromMongo();
   const paths: any[] = [];
+  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
+  const stripRouteHtml = (value: unknown) =>
+    String(value || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const toRouteText = (value: unknown): string => {
+    if (!value) return '';
+    if (typeof value === 'string') return stripRouteHtml(value);
+    if (Array.isArray(value)) return value.map((item) => toRouteText(item)).filter(Boolean).join(' ');
+    if (typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
+      for (const candidate of directCandidates) {
+        const text = toRouteText(candidate);
+        if (text) return text;
+      }
+    }
+    return '';
+  };
 
   for (const category of categories) {
-    const slug = normalizeSlug(typeof category?.slug === 'string' ? category.slug : category?.slug?.current);
+    const slug = normalizeRouteSlug(typeof category?.slug === 'string' ? category.slug : category?.slug?.current);
     if (!slug) continue;
-    const categoryName = toText(category?.name || category?.title || slug);
-    const count = mapArticles(await getArticlesFromMongo(1, 1000, categoryName)).length;
-    const totalPages = Math.ceil(count / PAGE_SIZE);
+    const categoryName = toRouteText(category?.name || category?.title || slug);
+    const count = (await getArticlesFromMongo(1, 1000, categoryName)).filter((article: any) => {
+      const articleSlugValue = normalizeRouteSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+      const articleTitle = toRouteText(article?.title);
+      return Boolean(articleSlugValue && articleTitle);
+    }).length;
+    const totalPages = Math.ceil(count / pageSize);
 
     for (let page = 2; page <= totalPages; page++) {
       paths.push({ params: { slug, page: String(page) }, props: { category, page } });

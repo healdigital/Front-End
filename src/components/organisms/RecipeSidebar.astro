@@ -307,12 +307,12 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
       </div>
     </div>
 
-    <div class="sidebar-block px-4 pt-4 pb-5">
-      <div class="rounded-[8px] border border-[#D8D2C2] bg-[#F7F5EF] p-3" data-mediavine>
-        <MediavineSlot slot={sidebarAdSlot} minHeight={220} className="rounded-[6px] bg-[#E9E4D8]" />
+      <div class="sidebar-block px-4 pt-4 pb-5">
+        <div class="rounded-[8px] border border-[#D8D2C2] bg-[#F7F5EF] p-3" data-mediavine>
+        <MediavineSlot slot={sidebarAdSlot} hint={false} minHeight={220} className="rounded-[6px] bg-[#E9E4D8]" />
+        </div>
       </div>
     </div>
-  </div>
 </aside>
 
 <script>

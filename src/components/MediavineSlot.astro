@@ -1,18 +1,26 @@
 ---
 interface Props {
-  slot: string;
+  slot?: string;
   minHeight?: number;
   className?: string;
+  hint?: 'all' | 'mobile' | 'desktop' | false;
 }
 
-const { slot, minHeight = 250, className = '' } = Astro.props;
+const { slot = '', minHeight = 250, className = '', hint = 'all' } = Astro.props;
 const style = `min-height: ${minHeight}px; width: 100%;`;
+const baseClass =
+  hint === false
+    ? 'mv-ad-slot'
+    : hint === 'mobile'
+      ? 'content_mobile_hint'
+      : hint === 'desktop'
+        ? 'content_desktop_hint'
+        : 'content_hint';
 ---
 
 <div
-  class={`mv-ad-slot ${className}`}
-  data-mv-slot={slot}
-  data-mediavine={slot}
+  class={`${baseClass} ${className}`.trim()}
+  data-lcdb-mediavine-slot={slot || undefined}
   data-no-translate="true"
   style={style}
   aria-hidden="true"

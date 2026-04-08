@@ -135,6 +135,34 @@ const normalizeDuration = (value: unknown): string | null => {
 const getFallbackImage = (title: string): string | null =>
   FALLBACK_IMAGE_MAP.find((entry) => entry.matcher.test(title))?.src || '/images/masterclass-video.jpg';
 
+const getForcedCourseImage = (course: Pick<VideoCourse, 'title' | 'courseUrl'>): string | null => {
+  const title = normalizeCourseText(course.title);
+  const courseUrl = String(course.courseUrl || '').trim().toLowerCase();
+  if (/millefeuille/i.test(title) || courseUrl.includes('/course/millefeuille/')) {
+    return 'https://atelier-lacuisinedebernard.com/wp-content/uploads/fluent-community/fluentcom-5ESxvDoe6eY88sOtUNMsiMhVUbvsOG1q-fluentcom-IMG_8120-2.jpg';
+  }
+  return null;
+};
+
+const buildCourseKey = (course: Pick<VideoCourse, 'courseUrl' | 'title'>): string => {
+  const normalizedUrl = String(course.courseUrl || '').trim().toLowerCase();
+  if (normalizedUrl) return `url:${normalizedUrl}`;
+  return `title:${normalizeCourseText(course.title).toLowerCase()}`;
+};
+
+const mergeCourseDetails = (primary: VideoCourse, canonical?: VideoCourse): VideoCourse => {
+  const forcedImage = getForcedCourseImage(primary);
+  if (!canonical) return primary;
+
+  return {
+    ...primary,
+    image: forcedImage || canonical.image || primary.image,
+    shortDescription: canonical.shortDescription || primary.shortDescription,
+    lessonCount: canonical.lessonCount ?? primary.lessonCount,
+    duration: canonical.duration ?? primary.duration,
+  };
+};
+
 const mapVideoCourse = (item: Record<string, unknown>, index: number): VideoCourse | null => {
   if (!item || typeof item !== 'object') return null;
 
@@ -142,14 +170,17 @@ const mapVideoCourse = (item: Record<string, unknown>, index: number): VideoCour
   if (!title) return null;
 
   const shortDescription = normalizeCourseText(item.shortDescription);
+  const courseUrl = normalizeHref(item.courseUrl);
+  const forcedImage = getForcedCourseImage({ title, courseUrl });
   const image =
-    typeof item.image === 'string' && item.image.trim() ? item.image.trim() : getFallbackImage(title);
+    forcedImage ||
+    (typeof item.image === 'string' && item.image.trim() ? item.image.trim() : getFallbackImage(title));
 
   return {
     id: String(item.id || index + 1),
     title,
     shortDescription,
-    courseUrl: normalizeHref(item.courseUrl),
+    courseUrl,
     priceType: String(item.priceType || '').trim().toLowerCase() || undefined,
     price: toPositiveNumber(item.price),
     image,
@@ -215,7 +246,18 @@ const getCachedCourses = (url: string, fallbackCourses: VideoCourse[]): Promise<
 };
 
 export const loadFeaturedCourses = async (): Promise<VideoCourse[]> =>
-  getCachedCourses(VIDEO_COURSES_FEATURED_API_URL, featuredFallbackCourses);
+  {
+    const [featuredCourses, allCourses] = await Promise.all([
+      getCachedCourses(VIDEO_COURSES_FEATURED_API_URL, featuredFallbackCourses),
+      getCachedCourses(VIDEO_COURSES_API_URL, genericFallbackCourses),
+    ]);
+
+    const allCourseMap = new Map(allCourses.map((course) => [buildCourseKey(course), course]));
+
+    return featuredCourses.map((course) =>
+      mergeCourseDetails(course, allCourseMap.get(buildCourseKey(course))),
+    );
+  };
 
 export const loadVideoCourses = async (): Promise<VideoCourse[]> =>
   getCachedCourses(VIDEO_COURSES_API_URL, genericFallbackCourses);

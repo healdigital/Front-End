@@ -30,7 +30,9 @@ const toText = (value: any): string => {
   return '';
 };
 
-const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+function normalizeSlug(value: any) {
+  return String(value || '').replace(/^\/+|\/+$/g, '');
+}
 const articleSlug = (article: any) =>
   normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
 
@@ -74,10 +76,11 @@ export async function getStaticPaths() {
     return [];
   }
 
+  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
   const tags = await getAllTagsFromMongo();
   return tags
     .map((tag: any) => {
-      const slug = normalizeSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
+      const slug = normalizeRouteSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
       if (!slug) return null;
       return { params: { slug }, props: { tag } };
     })

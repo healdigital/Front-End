@@ -33,7 +33,9 @@ const toText = (value: any): string => {
   return '';
 };
 
-const normalizeSlug = (value: any) => String(value || '').replace(/^\/+|\/+$/g, '');
+function normalizeSlug(value: any) {
+  return String(value || '').replace(/^\/+|\/+$/g, '');
+}
 
 const articleSlug = (article: any) =>
   normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
@@ -78,10 +80,11 @@ export async function getStaticPaths() {
     return [];
   }
 
+  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
   const categories = await getAllCategoriesFromMongo();
   return categories
     .map((category: any) => {
-      const slug = normalizeSlug(typeof category?.slug === 'string' ? category.slug : category?.slug?.current);
+      const slug = normalizeRouteSlug(typeof category?.slug === 'string' ? category.slug : category?.slug?.current);
       if (!slug) return null;
       return { params: { slug }, props: { category } };
     })
