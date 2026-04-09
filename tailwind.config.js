@@ -43,8 +43,8 @@ export default {
         heading: ['Instrument Serif', 'serif'],
         body: ['PT Serif', 'serif'],
         mono: ['Roboto Mono', 'ui-monospace', 'monospace'],
-        button: ['PT Serif', 'serif'],
-        legal: ['PT Serif', 'serif'],
+        button: ['Montserrat', 'sans-serif'],
+        legal: ['Montserrat', 'sans-serif'],
       },
       boxShadow: {
         light: '0 24px 60px rgba(15, 23, 42, 0.08)',

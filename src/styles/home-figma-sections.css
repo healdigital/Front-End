@@ -1195,7 +1195,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 .label-data {
-  font-family: Jost;
+  font-family: var(--font-button);
   font-weight: 500;
   font-style: Medium;
   font-size: 14px;
@@ -1252,7 +1252,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   top: 2866px;
   left: 1057px;
   border-radius: 5px;
-  font-family: var(--font-body);
+  font-family: var(--font-button);
   font-weight: 500;
   font-style: Medium;
   font-size: 16px;
@@ -1279,7 +1279,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
 }
 
 .footer-btn span {
-  font-family: Jost;
+  font-family: var(--font-button);
   font-weight: 400;
   font-style: Regular;
   font-size: 16px;

@@ -152,10 +152,10 @@ body {
 :root {
   --font-heading: 'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
   --font-body: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
-  --font-maison: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
+  --font-maison: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-prose: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
-  --font-button: 'PT Serif', Georgia, Cambria, 'Times New Roman', serif;
+  --font-button: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
   --type-title-size: 86px;
   --type-title-line: 1;
   --type-h2-size: 46px;
@@ -185,9 +185,12 @@ body {
   line-height: var(--type-body-line);
 }
 
-.font-body,
-.font-maison {
+.font-body {
   font-family: var(--font-body) !important;
+}
+
+.font-maison {
+  font-family: var(--font-maison) !important;
 }
 
 .typ-caption {
