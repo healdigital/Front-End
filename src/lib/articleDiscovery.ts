@@ -60,23 +60,47 @@ const toText = (value: unknown): string => {
   return '';
 };
 
+const normalizeToken = (value: string): string =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const toSidebarTag = (source: string): string => {
+  const normalized = normalizeToken(source);
+  if (!normalized) return 'RECETTE';
+  if (/(sucre|dessert|sweet|gateau|cake|cookie|brioche|chocolat|tarte|entremet|creme|praline|sable)/.test(normalized)) {
+    return 'SUCRÉ';
+  }
+  if (/(sale|savory|savoury|gratin|omelette|quiche|salade|foie gras|poulet|poisson|soupe|legume|potimarron)/.test(normalized)) {
+    return 'SALÉ';
+  }
+  if (normalized.includes('atelier')) return 'ATELIERS';
+  if (normalized.includes('voyage')) return 'VOYAGES';
+  if (normalized.includes('reportage')) return 'REPORTAGES';
+  if (normalized.includes('selection')) return 'SÉLECTIONS';
+  if (normalized.includes('video')) return 'VIDÉOS';
+  return source.trim().toUpperCase() || 'RECETTE';
+};
+
 const extractSidebarLabel = (article: DiscoverableArticle): string => {
   const categoryLabel = (Array.isArray(article?.categories) ? article.categories : [])
     .map((entry: unknown) => toText(entry))
     .find(Boolean);
 
-  if (categoryLabel) return categoryLabel;
+  if (categoryLabel) return toSidebarTag(categoryLabel);
 
   const tagLabel = (Array.isArray(article?.tags) ? article.tags : [])
     .map((entry: unknown) => toText(entry))
     .find(Boolean);
 
-  if (tagLabel) return tagLabel;
+  if (tagLabel) return toSidebarTag(tagLabel);
 
   const cuisineLabel = toText(article?.cuisine);
-  if (cuisineLabel) return cuisineLabel;
+  if (cuisineLabel) return toSidebarTag(cuisineLabel);
 
-  return 'Recettes';
+  return hasRecipe(article) ? 'RECETTE' : 'ARTICLE';
 };
 
 const normalizePath = (value: string): string => String(value || '').split('?')[0].split('#')[0].trim();

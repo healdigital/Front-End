@@ -519,14 +519,14 @@ const getRecipeTagLabel = (categoryLabel: string, filterKeyHint = ''): string =>
   if (filterKey === 'salees') return 'SALÉ';
 
   const fallback = normalizeToken(categoryLabel);
-  if (!fallback) return 'RECETTE';
+  if (!fallback) return 'ARTICLE';
   if (fallback.includes('atelier')) return 'ATELIERS';
   if (fallback.includes('voyage')) return 'VOYAGES';
   if (fallback.includes('reportage')) return 'REPORTAGES';
   if (fallback.includes('selection')) return 'SÉLECTIONS';
   if (fallback.includes('video')) return 'VIDÉOS';
 
-  return String(categoryLabel).trim().toUpperCase() || 'RECETTE';
+  return String(categoryLabel).trim().toUpperCase() || 'ARTICLE';
 };
 
 const getRecipeTimeLabel = (article: any): string => {
@@ -819,12 +819,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                     <input
                       type="email"
                       placeholder="Votre adresse email"
-                      class="h-[52px] min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-5 text-white placeholder:text-white/55 focus:outline-none focus:ring-2 focus:ring-[#8BE3DE]/70"
+                      class="h-[56px] min-w-0 flex-1 rounded-[2px] border border-white/15 bg-white/10 px-5 text-white placeholder:text-white/55 focus:outline-none focus:ring-2 focus:ring-[#8BE3DE]/70"
                     />
                     <button
                       id="open-newsletter-home"
                       type="submit"
-                      class="inline-flex h-[52px] items-center justify-center rounded-full bg-primary-turquoise px-6 text-[12px] uppercase tracking-[0.16em] text-[#13202E] typ-button"
+                      class="article-newsletter-btn inline-flex h-[56px] items-center justify-center rounded-[2px] px-8 text-[13px] tracking-[0.2em] text-white font-button"
                     >
                       S&apos;inscrire
                     </button>
