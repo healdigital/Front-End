@@ -1,4 +1,4 @@
----
+﻿---
 interface Props {
   slug: string;
 }
@@ -18,6 +18,7 @@ const { slug } = Astro.props;
 <script define:vars={{ slug }}>
   const EMPTY_MESSAGE = 'Aucun commentaire pour le moment. Soyez le premier à partager votre avis.';
   const ERROR_PREFIX = 'Impossible de charger les commentaires pour le moment';
+  const COMMENTS_REFRESH_KEY = '__lcdbCommentsRefreshTimer';
 
   function clearElement(element) {
     while (element.firstChild) {
@@ -107,9 +108,24 @@ const { slug } = Astro.props;
     }
   }
 
-  loadComments();
+  function stopCommentsRefresh() {
+    const timerId = window[COMMENTS_REFRESH_KEY];
+    if (typeof timerId === 'number') {
+      window.clearInterval(timerId);
+      delete window[COMMENTS_REFRESH_KEY];
+    }
+  }
 
-  window.setInterval(() => {
+  function startCommentsRefresh() {
+    stopCommentsRefresh();
     loadComments();
-  }, 15000);
+    window[COMMENTS_REFRESH_KEY] = window.setInterval(() => {
+      loadComments();
+    }, 15000);
+  }
+
+  startCommentsRefresh();
+  document.addEventListener('astro:page-load', startCommentsRefresh);
+  document.addEventListener('astro:before-swap', stopCommentsRefresh);
 </script>
+

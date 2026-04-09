@@ -7,6 +7,7 @@ const VIDEO_COURSES_FEATURED_API_URL =
   `${VIDEO_COURSES_API_URL}${VIDEO_COURSES_API_URL.includes('?') ? '&' : '?'}scope=featured`;
 
 const VIDEO_COURSES_FETCH_TIMEOUT_MS = 5000;
+const VIDEO_COURSES_CACHE_TTL_MS = 5 * 60 * 1000;
 const VIDEO_COURSES_USER_AGENT =
   'Mozilla/5.0 (compatible; LCDBAstro/1.0; +https://lacuisinedebernard.com)';
 
@@ -87,7 +88,7 @@ const featuredFallbackCourses: VideoCourse[] = [
 
 const genericFallbackCourses: VideoCourse[] = [...featuredFallbackCourses];
 
-const responseCache = new Map<string, Promise<VideoCourse[]>>();
+const responseCache = new Map<string, { expiresAt: number; promise: Promise<VideoCourse[]> }>();
 
 const decodeEntities = (value: string): string =>
   String(value || '')
@@ -219,7 +220,7 @@ const fetchVideoCourses = async (url: string, fallbackCourses: VideoCourse[]): P
         : [];
 
     const normalized = items
-      .map((item, index) => mapVideoCourse(item as Record<string, unknown>, index))
+      .map((item: unknown, index: number) => mapVideoCourse(item as Record<string, unknown>, index))
       .filter(Boolean) as VideoCourse[];
 
     const deduped = normalized.filter(
@@ -238,10 +239,14 @@ const fetchVideoCourses = async (url: string, fallbackCourses: VideoCourse[]): P
 
 const getCachedCourses = (url: string, fallbackCourses: VideoCourse[]): Promise<VideoCourse[]> => {
   const cached = responseCache.get(url);
-  if (cached) return cached;
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) return cached.promise;
 
   const promise = fetchVideoCourses(url, fallbackCourses);
-  responseCache.set(url, promise);
+  responseCache.set(url, {
+    expiresAt: now + VIDEO_COURSES_CACHE_TTL_MS,
+    promise,
+  });
   return promise;
 };
 

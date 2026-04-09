@@ -74,25 +74,6 @@ const {
           </button>
         </div>
 
-        <label class="newsletter-modal-consent">
-          <input
-            id={`${id}-consent`}
-            type="checkbox"
-            class="newsletter-modal-checkbox-input"
-            name="consent"
-            required
-          />
-          <span class="newsletter-modal-checkbox-box" aria-hidden="true">
-            <svg viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </span>
-          <span class="newsletter-modal-consent-text">
-            J'accepte les <a href="/mentions-legales/" target="_blank" rel="noopener noreferrer">Conditions Générales d'Utilisation</a> du site
-            lacuisinedebernard.com ne partage ni ne vend les données personnelles.
-          </span>
-        </label>
-
         <p
           id={`${id}-feedback`}
           class="newsletter-modal-feedback hidden"
@@ -119,27 +100,21 @@ const {
     const closeBtn = document.getElementById(`${id}-close`);
     const form = document.getElementById(`${id}-form`) as HTMLFormElement | null;
     const emailInput = document.getElementById(`${id}-email`) as HTMLInputElement | null;
-    const consentCheckbox = document.getElementById(`${id}-consent`) as HTMLInputElement | null;
     const submitBtn = form?.querySelector<HTMLButtonElement>('button[type="submit"]') ?? null;
     const feedback = document.getElementById(`${id}-feedback`) as HTMLParagraphElement | null;
 
-    if (!form || !emailInput || !consentCheckbox) return;
+    if (!form || !emailInput) return;
 
     const defaultSubmitText = submitBtn?.innerText || "S'inscrire";
-
     const textInputErrorClasses = ['newsletter-modal-input--error'];
     const textInputSuccessClasses = ['newsletter-modal-input--success'];
     const textInputDefaultClasses = ['newsletter-modal-input--default'];
-    const checkboxErrorClasses = ['newsletter-modal-checkbox-box--error'];
-    const checkboxSuccessClasses = ['newsletter-modal-checkbox-box--success'];
-    const checkboxDefaultClasses = ['newsletter-modal-checkbox-box--default'];
-
     const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
     const autoOpenSessionKey = `lcdb-newsletter-auto-opened:${autoOpenMode}`;
     let prefersReducedMotion = isReducedMotionPreferred();
     let hasInteracted = false;
     let hasScrolled = false;
-    let mobileAutoOpenTimer: number | null = null;
+    let mobileAutoOpenTimer = null;
 
     const applyMotionPreference = () => {
       dialog.dataset.motion = prefersReducedMotion ? 'reduced' : 'full';
@@ -152,7 +127,7 @@ const {
       applyMotionPreference();
     });
 
-    function setFeedback(message: string, state: 'error' | 'success' | 'neutral') {
+    function setFeedback(message, state) {
       if (!feedback) return;
 
       feedback.textContent = message;
@@ -162,6 +137,7 @@ const {
         'newsletter-modal-feedback--success',
         'newsletter-modal-feedback--neutral'
       );
+
       if (!message) {
         feedback.classList.add('hidden');
         return;
@@ -176,48 +152,20 @@ const {
       }
     }
 
-    function getErrorElement(input: HTMLInputElement): HTMLElement {
+    function getErrorElement(input) {
       let errorElement = document.getElementById(`${input.id}-error`);
       if (errorElement) return errorElement;
 
-      errorElement = document.createElement(input.type === 'checkbox' ? 'p' : 'span');
+      errorElement = document.createElement('span');
       errorElement.id = `${input.id}-error`;
       errorElement.setAttribute('role', 'alert');
-
-      if (input.type === 'checkbox') {
-        errorElement.className = 'newsletter-modal-error newsletter-modal-error--checkbox';
-        const checkboxLabel = input.closest('label');
-        checkboxLabel?.appendChild(errorElement);
-      } else {
-        errorElement.className = 'newsletter-modal-error';
-        input.parentElement?.appendChild(errorElement);
-      }
-
+      errorElement.className = 'newsletter-modal-error';
+      input.parentElement?.appendChild(errorElement);
       return errorElement;
     }
 
-    function setFieldState(input: HTMLInputElement, state: 'default' | 'error' | 'success') {
+    function setFieldState(input, state) {
       input.dataset.validationState = state;
-
-      if (input.type === 'checkbox') {
-        const visualBox = input.nextElementSibling as HTMLElement | null;
-        if (!visualBox) return;
-
-        visualBox.classList.remove(...checkboxDefaultClasses, ...checkboxErrorClasses, ...checkboxSuccessClasses);
-
-        if (state === 'error') {
-          visualBox.classList.add(...checkboxErrorClasses);
-          input.setAttribute('aria-invalid', 'true');
-        } else if (state === 'success') {
-          visualBox.classList.add(...checkboxSuccessClasses);
-          input.removeAttribute('aria-invalid');
-        } else {
-          visualBox.classList.add(...checkboxDefaultClasses);
-          input.removeAttribute('aria-invalid');
-        }
-        return;
-      }
-
       input.classList.remove(...textInputDefaultClasses, ...textInputErrorClasses, ...textInputSuccessClasses);
 
       if (state === 'error') {
@@ -232,9 +180,7 @@ const {
       }
     }
 
-    function showError(input: HTMLInputElement, message: string) {
-      if (!input) return;
-
+    function showError(input, message) {
       const errorElement = getErrorElement(input);
       errorElement.textContent = message;
       errorElement.classList.remove('hidden');
@@ -242,32 +188,31 @@ const {
       setFieldState(input, 'error');
     }
 
-    function hideError(input: HTMLInputElement) {
+    function hideError(input) {
       const errorElement = document.getElementById(`${input.id}-error`);
       if (!errorElement) return;
       errorElement.textContent = '';
       errorElement.classList.add('hidden');
     }
 
-    function clearError(input: HTMLInputElement) {
-      if (!input) return;
+    function clearError(input) {
       hideError(input);
       input.removeAttribute('aria-describedby');
       setFieldState(input, 'default');
     }
 
-    function setSuccess(input: HTMLInputElement) {
+    function setSuccess(input) {
       hideError(input);
       input.removeAttribute('aria-describedby');
       setFieldState(input, 'success');
     }
 
-    const trapFocus = (event: KeyboardEvent) => {
+    const trapFocus = (event) => {
       if (event.key !== 'Tab') return;
 
-      const focusableElements = Array.from(
-        dialog.querySelectorAll<HTMLElement>(focusableSelector)
-      ).filter((element) => !element.hasAttribute('disabled'));
+      const focusableElements = Array.from(dialog.querySelectorAll(focusableSelector)).filter(
+        (element) => !element.hasAttribute('disabled')
+      );
 
       if (focusableElements.length === 0) return;
 
@@ -288,7 +233,6 @@ const {
     function resetFormState() {
       form.reset();
       clearError(emailInput);
-      clearError(consentCheckbox);
       setFeedback('', 'neutral');
       form.removeAttribute('aria-busy');
 
@@ -307,11 +251,11 @@ const {
       document.body.style.overflow = 'hidden';
       dialog.addEventListener('keydown', trapFocus);
 
-      const firstFocusable = dialog.querySelector<HTMLElement>(focusableSelector);
+      const firstFocusable = dialog.querySelector(focusableSelector);
       setTimeout(() => firstFocusable?.focus(), 0);
     }
 
-    function closeDialog({ reset = true }: { reset?: boolean } = {}) {
+    function closeDialog({ reset = true } = {}) {
       if (dialog.open) dialog.close();
       dialog.classList.add('hidden');
       dialog.classList.remove('flex');
@@ -333,7 +277,6 @@ const {
       try {
         sessionStorage.setItem(autoOpenSessionKey, '1');
       } catch {
-        // Ignore storage failures.
       }
     }
 
@@ -355,7 +298,7 @@ const {
       hasScrolled = true;
     };
 
-    const onDesktopMouseOut = (event: MouseEvent) => {
+    const onDesktopMouseOut = (event) => {
       if (!shouldAutoOpen()) return;
       if (event.relatedTarget instanceof Node) return;
       if (event.clientY > 32) return;
@@ -389,7 +332,7 @@ const {
     });
 
     dialog.addEventListener('click', (event) => {
-      const target = event.target as Node;
+      const target = event.target;
       if (!panel || panel.contains(target)) return;
       closeDialog({ reset: true });
     });
@@ -406,34 +349,23 @@ const {
       dialog.classList.remove('flex');
     });
 
-    // Form Submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
 
       clearError(emailInput);
-      clearError(consentCheckbox);
       setFeedback('', 'neutral');
 
-      const formData = {
+      const result = validateForm(newsletterSchema, {
         email: emailInput.value,
-        consent: consentCheckbox.checked ? true : undefined,
-      };
+      });
 
-      const result = validateForm(newsletterSchema, formData);
-
-      if (!result.success && result.errors) {
-        setFeedback('Veuillez corriger les champs indiqués en rouge.', 'error');
-        if (result.errors.email) {
-          showError(emailInput, result.errors.email);
-        }
-        if (result.errors.consent) {
-          showError(consentCheckbox, result.errors.consent);
-        }
+      if (!result.success && result.errors?.email) {
+        setFeedback('Veuillez corriger les champs indiqu?s en rouge.', 'error');
+        showError(emailInput, result.errors.email);
         return;
       }
 
       setSuccess(emailInput);
-      setSuccess(consentCheckbox);
 
       if (submitBtn) {
         submitBtn.disabled = true;
@@ -445,7 +377,7 @@ const {
 
         submitBtn.innerText = 'Inscrit !';
         submitBtn.classList.add('newsletter-modal-submit--success');
-        setFeedback('Inscription réussie. Merci pour votre confiance.', 'success');
+        setFeedback('Inscription r?ussie. Merci pour votre confiance.', 'success');
         form.removeAttribute('aria-busy');
 
         setTimeout(() => {
@@ -472,30 +404,16 @@ const {
       }
     });
 
-    consentCheckbox.addEventListener('change', () => {
-      if (consentCheckbox.checked) {
-        setSuccess(consentCheckbox);
-      } else if (consentCheckbox.dataset.validationState === 'error') {
-        showError(consentCheckbox, 'Vous devez accepter la politique de confidentialité.');
-      } else {
-        clearError(consentCheckbox);
+    window.addEventListener('pagehide', () => {
+      unsubscribeReducedMotion();
+      if (mobileAutoOpenTimer !== null) {
+        window.clearTimeout(mobileAutoOpenTimer);
       }
-    });
-
-    window.addEventListener(
-      'pagehide',
-      () => {
-        unsubscribeReducedMotion();
-        if (mobileAutoOpenTimer !== null) {
-          window.clearTimeout(mobileAutoOpenTimer);
-        }
-        window.removeEventListener('pointerdown', onFirstInteraction);
-        window.removeEventListener('keydown', onFirstInteraction);
-        window.removeEventListener('scroll', onScroll);
-        window.removeEventListener('mouseout', onDesktopMouseOut);
-      },
-      { once: true }
-    );
+      window.removeEventListener('pointerdown', onFirstInteraction);
+      window.removeEventListener('keydown', onFirstInteraction);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('mouseout', onDesktopMouseOut);
+    }, { once: true });
   });
 </script>
 
@@ -680,82 +598,7 @@ const {
 
   .newsletter-modal-submit--success {
     background: #2f8f57 !important;
-  }
-
-  .newsletter-modal-consent {
-    position: relative;
-    display: grid;
-    grid-template-columns: 16px minmax(0, 1fr);
-    align-items: start;
-    gap: 9px;
-    margin-top: 14px;
-    cursor: pointer;
-  }
-
-  .newsletter-modal-checkbox-input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .newsletter-modal-checkbox-box {
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-    border: 1.5px solid #54b6b1;
-    border-radius: 2px;
-    background: transparent;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .newsletter-modal-checkbox-box svg {
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
-  .newsletter-modal-checkbox-input:checked + .newsletter-modal-checkbox-box {
-    background: #54b6b1;
-    border-color: #54b6b1;
-  }
-
-  .newsletter-modal-checkbox-input:checked + .newsletter-modal-checkbox-box svg {
-    opacity: 1;
-  }
-
-  .newsletter-modal-checkbox-input:focus-visible + .newsletter-modal-checkbox-box,
-  .newsletter-modal-checkbox-box--default {
-    box-shadow: none;
-  }
-
-  .newsletter-modal-checkbox-box--error {
-    border-color: #c64545 !important;
-    box-shadow: inset 0 0 0 1px #c64545;
-  }
-
-  .newsletter-modal-checkbox-box--success {
-    border-color: #2f8f57 !important;
-    box-shadow: inset 0 0 0 1px #2f8f57;
-  }
-
-  .newsletter-modal-consent-text {
-    max-width: 322px;
-    color: #3d4a51;
-    font-family: var(--font-body);
-    font-size: 0.73rem;
-    line-height: 1.22;
-  }
-
-  .newsletter-modal-consent-text a {
-    color: #54b6b1;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
+  }
 
   .newsletter-modal-feedback {
     margin-top: 14px;
@@ -866,11 +709,6 @@ const {
       gap: 10px;
     }
 
-    .newsletter-modal-consent {
-      grid-template-columns: 18px minmax(0, 1fr);
-      gap: 10px;
-    }
-
     .newsletter-modal-close-btn {
       top: 12px;
       right: 12px;
@@ -883,3 +721,6 @@ const {
     }
   }
 </style>
+
+
+

@@ -3,7 +3,13 @@ import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html';
 import { replaceCdnUrl } from './cdnUrlReplacer';
 
 type UnknownRecord = Record<string, unknown>;
+type AnyRecord = UnknownRecord;
 type LexicalValue = { root: { children: unknown[] } };
+type StepMedia = { alt: string; height: null | number; url: string; width: null | number } | null;
+type RecipeStepGroup = {
+  heading: string;
+  items: Array<{ caption: string; instruction: string; media: StepMedia }>;
+};
 type RenderArticleContentOptions = {
   includeContentBlocks?: boolean;
   includeContentV2?: boolean;
@@ -69,7 +75,7 @@ const renderLexicalRichText = (value: unknown): string => {
 
   try {
     return convertLexicalToHTML({
-      data: value as LexicalValue,
+      data: value as unknown as Parameters<typeof convertLexicalToHTML>[0]['data'],
       disableContainer: true,
     });
   } catch (error) {
@@ -239,7 +245,7 @@ const renderLegacyImageFallback = (article: UnknownRecord, structuredContent: st
     figures.push(
       [
         '<figure class="content-v2-legacy-image-fallback-item">',
-        `  <img src="${escapeAttribute(image.url)}" alt="${escapeAttribute(image.alt || article.title || 'Article image')}" loading="lazy" decoding="async"${imageDimensions} />`,
+        `  <img src="${escapeAttribute(image.url)}" alt="${escapeAttribute(image.alt || asText(article.title) || 'Article image')}" loading="lazy" decoding="async"${imageDimensions} />`,
         '</figure>',
       ].join('\n'),
     );
@@ -435,9 +441,7 @@ const renderRecipeCardBlock = (
   const stepGroups = Array.isArray(block.steps)
     ? block.steps.reduce(
         (
-          groups: Array<
-            { heading: string; items: Array<{ caption: string; instruction: string; media: AnyRecord | null }> }
-          >,
+          groups: RecipeStepGroup[],
           step: unknown,
         ) => {
           if (!isRecord(step)) return groups;
@@ -485,11 +489,11 @@ const renderRecipeCardBlock = (
     : [];
 
   const stepRows = stepGroups
-    .map((group) => {
+    .map((group: RecipeStepGroup) => {
       if (group.items.length === 0) return '';
 
       const groupRows = group.items
-        .map((step, index) => {
+        .map((step, index: number) => {
           const imageDimensions =
             step.media?.width && step.media?.height
               ? ` width="${step.media.width}" height="${step.media.height}"`
@@ -530,7 +534,7 @@ const renderRecipeCardBlock = (
     .join('\n');
 
   const compactSteps = stepGroups
-    .map((group) => {
+    .map((group: RecipeStepGroup) => {
       if (group.items.length === 0) return '';
 
       return [
@@ -539,7 +543,7 @@ const renderRecipeCardBlock = (
           ? `  <h4 class="wprm-recipe-group-name wprm-recipe-instruction-group-name">${escapeHtml(group.heading)}</h4>`
           : '',
         `  <ol class="wprm-recipe-instructions">${group.items
-          .map((step) => `<li>${escapeHtml(step.instruction)}</li>`)
+          .map((step: RecipeStepGroup['items'][number]) => `<li>${escapeHtml(step.instruction)}</li>`)
           .join('')}</ol>`,
         '</div>',
       ]

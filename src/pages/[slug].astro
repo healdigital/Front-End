@@ -98,6 +98,15 @@ interface RecipeBlock extends ContentRecord {
   blockType?: string;
   ingredients?: RecipeIngredientRow[];
   steps?: RecipeStepRow[];
+  difficulty?: ContentValue;
+  cuisine?: ContentValue;
+  dishType?: ContentValue;
+  preparationTimeMinutes?: ContentValue;
+  cookingTimeMinutes?: ContentValue;
+  recipeType?: ContentValue;
+  servings?: ContentValue;
+  servingsCount?: ContentValue;
+  nutrition?: ContentRecord;
 }
 
 interface DetailedRecipeStepItem extends RecipeStepItem {
@@ -521,12 +530,41 @@ const categoryItems = (
   })
   .filter(Boolean);
 
+const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
+  .map((item: TaxonomyItem): PageTaxonomyItem | null => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(
+      typeof item?.slug === "string" ? item.slug : item?.slug?.current,
+    );
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter((item): item is PageTaxonomyItem => Boolean(item));
+
 const categoryTitles = dedupeTextList(
   categoryItems.map((item) => toTitleCase(item.title)),
 );
-const flavorCategoryLabel = deriveFlavorCategory(article, categoryTitles);
+const articleContextText = [
+  slug,
+  ...categoryTitles,
+  ...tagItems.map((item) => item.title),
+  toText(article?.category),
+  toText(article?.category_names),
+  toText(article?.tags),
+]
+  .join(" ")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase();
+const isNonRecipeArticle =
+  /^mes-voyages-cul/i.test(slug) ||
+  /\b(voyage|voyages|travel|reportage|reportages)\b/.test(articleContextText);
+const flavorCategoryLabel = isNonRecipeArticle
+  ? ""
+  : deriveFlavorCategory(article, categoryTitles);
 const displayCategoryTitles = dedupeTextList([
-  ...(categoryTitles.length > 0 ? categoryTitles : ["Recette"]),
+  ...(categoryTitles.length > 0
+    ? categoryTitles
+    : [isNonRecipeArticle ? "Article" : "Recette"]),
   flavorCategoryLabel,
 ]);
 const secondaryCategoryTitle =
@@ -562,13 +600,56 @@ const ratingStars = Array.from(
   (_, index) => index < Math.round(ratingAverage),
 );
 
-const primaryRecipeBlock =
-  (Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : []).find(
-      (block: RecipeBlock) =>
-        block?.blockType === "recipeCard" ||
-        Array.isArray(block?.ingredients) ||
-        Array.isArray(block?.steps),
-   ) || null;
+const hasMeaningfulRecipeIngredients = (block: RecipeBlock): boolean =>
+  Array.isArray(block?.ingredients) &&
+  block.ingredients.some((item) =>
+    Boolean(
+      toText(item?.item).trim() ||
+        toText(item?.quantity).trim() ||
+        toText(item?.notes).trim(),
+    ),
+  );
+
+const hasMeaningfulRecipeSteps = (block: RecipeBlock): boolean =>
+  Array.isArray(block?.steps) &&
+  block.steps.some((item) =>
+    Boolean(
+      toText(item?.instruction).trim() ||
+        toText(item?.imageUrl).trim() ||
+        toText(item?.image_url).trim(),
+    ),
+  );
+
+const hasMeaningfulRecipeMeta = (block: RecipeBlock): boolean =>
+  Boolean(
+    toText(block?.difficulty).trim() ||
+      toText(block?.recipeType).trim() ||
+      toText(block?.dishType).trim() ||
+      toText(block?.cuisine).trim() ||
+      toText(block?.servings).trim() ||
+      toText(block?.servingsCount).trim() ||
+      toText(block?.preparationTimeMinutes).trim() ||
+      toText(block?.cookingTimeMinutes).trim(),
+  );
+
+const isRenderableRecipeBlock = (block: RecipeBlock): boolean => {
+  if (!block || typeof block !== "object") return false;
+
+  const hasIngredients = hasMeaningfulRecipeIngredients(block);
+  const hasSteps = hasMeaningfulRecipeSteps(block);
+
+  // Real recipe UI should only render when there is actual ingredient/step content.
+  if (!hasIngredients && !hasSteps) return false;
+
+  if (block?.blockType === "recipeCard") return true;
+  return hasMeaningfulRecipeMeta(block) || hasIngredients || hasSteps;
+};
+
+const primaryRecipeBlock = isNonRecipeArticle
+  ? null
+  : (Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : []).find(
+      (block: RecipeBlock) => isRenderableRecipeBlock(block),
+    ) || null;
 const normalizeRecipeDifficulty = (value: ContentValue): string => {
   const raw = toText(value).trim();
   const normalized = raw
@@ -858,15 +939,6 @@ const relatedArticles = (
   .filter((item): item is RelatedArticleCard => Boolean(item))
   .slice(0, 6);
 
-const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
-  .map((item: TaxonomyItem): PageTaxonomyItem | null => {
-    const itemTitle = toText(item?.title || item?.name || item?.label || item);
-    const itemSlug = normalizeSlug(
-      typeof item?.slug === "string" ? item.slug : item?.slug?.current,
-    );
-    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
-  })
-  .filter((item): item is PageTaxonomyItem => Boolean(item));
 ---
 
 <BaseLayout

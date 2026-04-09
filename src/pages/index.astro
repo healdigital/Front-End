@@ -1,4 +1,4 @@
----
+﻿---
 import MainLayout from '../layouts/MainLayout.astro';
 import Button from '../components/atoms/Button.astro';
 import Icon from '../components/atoms/Icon.astro';
@@ -20,8 +20,8 @@ export const prerender = true;
 const SHOP_VIDEO_URL = '/cours-video';
 const videoCourses = await loadVideoCourses();
 const HOMEPAGE_VIDEO_PRIORITY = [
-  /p[aâ]te feuillet[eé]e invers[eé]e/i,
-  /cr[eè]mes? de base/i,
+  /p[aÃ¢]te feuillet[eÃ©]e invers[eÃ©]e/i,
+  /cr[eÃ¨]mes? de base/i,
   /millefeuille/i,
 ];
 const getVideoPriorityIndex = (title: string) => {
@@ -52,10 +52,10 @@ const fallbackImages = [
 
 const fallbackHeroCards = [
   { title: 'Entremet praline dubai, chantilly et ganache lactee', image: '/images/recipe-chocolate-cake.jpg', category: 'SUCRE', slug: '/entremet-praline-dubai' },
-  { title: 'Ateliers cuisine février - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: '/ateliers' },
-  { title: 'Omelette du curé (crêpes, pommes de terre, foie gras poêlé)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
-  { title: 'Brioche tressée aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
-  { title: 'Tarte figue séchée, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
+  { title: 'Ateliers cuisine fÃ©vrier - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: '/ateliers' },
+  { title: 'Omelette du curÃ© (crÃªpes, pommes de terre, foie gras poÃªlÃ©)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
+  { title: 'Brioche tressÃ©e aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
+  { title: 'Tarte figue sÃ©chÃ©e, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
 ];
 
 const recipeFilters = [
@@ -101,7 +101,7 @@ const fallbackRecipes = [
   {
     id: '4',
     title: 'Lasagnes gratinees maison',
-    description: 'Des lasagnes généreuses à la sauce tomate mijotée et parmesan gratiné.',
+    description: 'Des lasagnes gÃ©nÃ©reuses Ã  la sauce tomate mijotÃ©e et parmesan gratinÃ©.',
     image: '/images/recipe-lasagnes.jpg',
     category: 'SALE',
     filterKey: 'salees',
@@ -134,7 +134,7 @@ const fallbackRecipes = [
   {
     id: '7',
     title: 'Sable mega pistache',
-    description: 'Une recette simple et rapide, généreusement garnie de pistaches hachées.',
+    description: 'Une recette simple et rapide, gÃ©nÃ©reusement garnie de pistaches hachÃ©es.',
     image: '/images/recipe-chocolate-cake.jpg',
     category: 'SUCRE',
     filterKey: 'sucrees',
@@ -356,7 +356,7 @@ const getWorkshopAvailability = (workshop: any) => {
 
   if (String(workshop.status || '').toUpperCase() === 'LIMITED') {
     return {
-      label: 'Dernières places',
+      label: 'DerniÃ¨res places',
       className: 'text-status-error',
     };
   }
@@ -392,7 +392,7 @@ const featuredWorkshopAvailability = getWorkshopAvailability(featuredWorkshop);
 
 const fallbackSuggestedRecipes = [
   {
-    title: 'Crèmes brûlées salées au potimarron et chorizo',
+    title: 'CrÃ¨mes brÃ»lÃ©es salÃ©es au potimarron et chorizo',
     description: 'Une version salee et originale de la creme brulee, avec la douceur du potimarron.',
     image: '/images/recipe-chocolate-cake.jpg',
     category: 'SALE',
@@ -499,10 +499,17 @@ const getCategoryLabel = (article: any): string => {
   return candidate || '';
 };
 
-const getFilterKey = (categoryLabel: string): string => {
-  const normalized = normalizeToken(categoryLabel);
+const getFilterKey = (sourceLabel: string): string => {
+  const normalized = normalizeToken(sourceLabel);
   if (normalized.includes('sucre') || normalized.includes('sweet') || normalized.includes('dessert')) return 'sucrees';
   if (normalized.includes('sale') || normalized.includes('savour') || normalized.includes('savory')) return 'salees';
+
+  const sweetKeywords = ['gateau', 'cake', 'cookie', 'brioche', 'chocolat', 'galette', 'tarte', 'creme', 'entremet', 'sable'];
+  if (sweetKeywords.some((keyword) => normalized.includes(keyword))) return 'sucrees';
+
+  const savoryKeywords = ['omelette', 'quiche', 'gratin', 'soupe', 'salade', 'foie gras', 'poulet', 'poisson', 'courge', 'legume'];
+  if (savoryKeywords.some((keyword) => normalized.includes(keyword))) return 'salees';
+
   return 'toutes';
 };
 
@@ -510,7 +517,16 @@ const getRecipeTagLabel = (categoryLabel: string, filterKeyHint = ''): string =>
   const filterKey = filterKeyHint || getFilterKey(categoryLabel);
   if (filterKey === 'sucrees') return 'SUCRÉ';
   if (filterKey === 'salees') return 'SALÉ';
-  return 'RECETTE';
+
+  const fallback = normalizeToken(categoryLabel);
+  if (!fallback) return 'RECETTE';
+  if (fallback.includes('atelier')) return 'ATELIERS';
+  if (fallback.includes('voyage')) return 'VOYAGES';
+  if (fallback.includes('reportage')) return 'REPORTAGES';
+  if (fallback.includes('selection')) return 'SÉLECTIONS';
+  if (fallback.includes('video')) return 'VIDÉOS';
+
+  return String(categoryLabel).trim().toUpperCase() || 'RECETTE';
 };
 
 const getRecipeTimeLabel = (article: any): string => {
@@ -564,7 +580,8 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   if (!title || !slug) return null;
 
   const categoryLabel = getCategoryLabel(article);
-  const filterKey = getFilterKey(categoryLabel);
+  const description = getDescription(article);
+  const filterKey = getFilterKey([categoryLabel, title, description].join(' '));
   const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
   const image = buildWpPortraitVariantUrl(fallbackImage) || fallbackImage;
   const tagLabel = getRecipeTagLabel(categoryLabel, filterKey);
@@ -573,7 +590,7 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   return {
     id: article?._id?.toString?.() || article?.id?.toString?.() || `${index + 1}`,
     title,
-    description: getDescription(article),
+    description,
     image,
     imageFallback: fallbackImage,
     category: tagLabel,
@@ -645,7 +662,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
 <MainLayout
   title="La Cuisine de Bernard - Accueil"
-  description="Découvrez des recettes authentiques et savoureuses par Bernard Laurance."
+  description="DÃ©couvrez des recettes authentiques et savoureuses par Bernard Laurance."
   loadAds={true}
 >
   <HeroCarousel cards={heroCards} />
@@ -934,10 +951,10 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body"
               style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.65em * 3);"
               data-workshops-feature-description
-            >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.'}</p>
+            >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de pÃ¢tisserie dans une ambiance conviviale, avec une approche prÃ©cise, gÃ©nÃ©reuse et accessible.'}</p>
             <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
-                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}€` : '--'}</div>
+                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}â‚¬` : '--'}</div>
               </div>
               <Button
                 href={featuredWorkshop?.slug || '/ateliers'}
@@ -993,7 +1010,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                   </div>
                   <div class="border-t border-[#D6D0C2] pt-4">
                     <p class="hidden font-mono text-[12px] uppercase tracking-[0.16em] text-[#5B6270]">
-                      {course.priceType === 'paid' || course.price > 0 ? `${Math.round(course.price)}€` : 'Acc&egrave;s gratuit'}
+                      {course.priceType === 'paid' || course.price > 0 ? `${Math.round(course.price)}â‚¬` : 'Acc&egrave;s gratuit'}
                     </p>
                     <Button
                       href={course.courseUrl || SHOP_VIDEO_URL}
@@ -1316,6 +1333,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
   }
 
 </style>
+
 
 
 
