@@ -89,8 +89,7 @@ const {
   import { validateForm } from '../../lib/validation/client';
   import { isReducedMotionPreferred, subscribeToReducedMotionPreference } from '../../utils/motion';
 
-  const NEWSLETTER_EXTERNAL_FORM_URL = 'https://server.fillout.com/igqnHQG5XWus';
-  const NEWSLETTER_LIST_FALLBACK_URL = 'https://acumbamail.com/app/list/757474/';
+  const NEWSLETTER_EXTERNAL_FORM_URL = 'https://forms.fillout.com/t/igqnHQG5XWus';
   const dialogs = document.querySelectorAll<HTMLDialogElement>('dialog[id^="newsletter-modal"]');
 
   dialogs.forEach((dialog) => {
@@ -382,7 +381,7 @@ const {
 
           const popup = window.open(targetUrl.toString(), '_blank', 'noopener,noreferrer');
           if (!popup) {
-            window.location.assign(NEWSLETTER_LIST_FALLBACK_URL);
+            window.location.assign(targetUrl.toString());
             return;
           }
 
