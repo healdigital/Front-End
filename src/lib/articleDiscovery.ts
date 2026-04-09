@@ -1,5 +1,5 @@
 import { getAllArticlesFromMongo } from './mongo.server';
-import { getPopularPageViews } from './googleAnalytics';
+import { getPopularSlugViewMap } from './googleAnalytics';
 import { buildWpSquareVariantUrl, processArticleImageUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
@@ -103,18 +103,6 @@ const extractSidebarLabel = (article: DiscoverableArticle): string => {
   return hasRecipe(article) ? 'RECETTE' : 'ARTICLE';
 };
 
-const normalizePath = (value: string): string => String(value || '').split('?')[0].split('#')[0].trim();
-
-const pathToSlug = (path: string): string => {
-  const normalizedPath = normalizePath(path).replace(/^https?:\/\/[^/]+/i, '');
-  const trimmed = normalizedPath.replace(/^\/+|\/+$/g, '');
-  if (!trimmed) return '';
-  if (trimmed.startsWith('print/')) return '';
-  if (trimmed.startsWith('articles/')) return trimmed.slice('articles/'.length).replace(/^\/+|\/+$/g, '');
-  if (trimmed.includes('/')) return '';
-  return trimmed;
-};
-
 type ArticleImageInput = Parameters<typeof processArticleImageUrl>[0];
 
 const buildGaRanking = async (
@@ -128,15 +116,14 @@ const buildGaRanking = async (
 
   if (!articleSlugs.size) return new Map();
 
-  const pageViews = await getPopularPageViews(250);
-  if (!pageViews.length) return new Map();
+  const viewMap = await getPopularSlugViewMap(250);
+  if (!viewMap.size) return new Map();
 
   const ranking = new Map<string, number>();
 
-  for (const row of pageViews) {
-    const slug = pathToSlug(row.pagePath);
+  for (const [slug, views] of viewMap.entries()) {
     if (!slug || !articleSlugs.has(slug)) continue;
-    ranking.set(slug, (ranking.get(slug) || 0) + row.screenPageViews);
+    ranking.set(slug, views);
   }
 
   return ranking;
