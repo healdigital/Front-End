@@ -360,7 +360,7 @@ export async function getMongoConnection() {
       } catch (err: unknown) {
         lastError = err;
         const message = err instanceof Error ? err.message : String(err);
-        console.warn(`⚠️ [BUILD] MongoDB connect attempt ${attempt} failed:`, err && err.message ? err.message : err);
+        console.warn(`⚠️ [BUILD] MongoDB connect attempt ${attempt} failed:`, message);
         const backoffMs = 250 * Math.pow(2, attempt - 1);
         await new Promise((resolve) => setTimeout(resolve, backoffMs));
       }
