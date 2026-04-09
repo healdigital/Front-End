@@ -3,8 +3,15 @@
 
 export interface TranslationsData {
   [lang: string]: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
+}
+
+declare global {
+  interface Window {
+    __lcdbPendingLanguage?: string;
+    __lcdbChangeLanguage?: (lang: string) => Promise<void>;
+  }
 }
 
 let translationsData: TranslationsData = {};
@@ -251,9 +258,8 @@ const registerDeepLFailure = (reason: string, error?: unknown): void => {
     console.warn(`[translate] DeepL temporary failure (${deeplFailureCount}/${DEEPL_FAILURE_THRESHOLD}): ${reason}`);
   }
 
-  // Network instability should not permanently disable translation attempts.
   if (deeplFailureCount >= DEEPL_FAILURE_THRESHOLD) {
-    deeplFailureCount = 0;
+    markDeepLUnavailable(reason, error);
   }
 };
 
@@ -271,7 +277,7 @@ export async function initializeTranslations(): Promise<void> {
     appliedLanguage = null;
     hasTranslatedContent = false;
 
-    const pendingLang = normalizeLanguageCode(String((window as any).__lcdbPendingLanguage || ''));
+    const pendingLang = normalizeLanguageCode(String(window.__lcdbPendingLanguage || ''));
     let storedLang = '';
     try {
       storedLang = normalizeLanguageCode(localStorage.getItem(LANGUAGE_STORAGE_KEY) || '');
@@ -455,7 +461,7 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     } catch (error) {
       hadChunkFailure = true;
       lastNetworkError = error;
-      const message = String((error as any)?.message || error || '');
+      const message = error instanceof Error ? error.message : String(error || '');
       if (
         message.includes('ERR_CERT_AUTHORITY_INVALID') ||
         message.includes('ERR_CERT_COMMON_NAME_INVALID') ||
@@ -477,7 +483,7 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
     }
 
     try {
-      const data: any = await response.json();
+      const data = (await response.json()) as { translations?: unknown[] } | null;
       const translations = Array.isArray(data?.translations) ? data.translations : [];
       if (translations.length !== chunk.texts.length) {
         hadChunkFailure = true;
@@ -520,7 +526,9 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
         registerDeepLFailure(`Translate API responded with ${lastStatus.status} ${lastStatus.statusText}.`);
       }
     } else if (lastNetworkError && !hadChunkSuccess) {
-      const message = String((lastNetworkError as any)?.message || lastNetworkError || '');
+      const message = lastNetworkError instanceof Error
+        ? lastNetworkError.message
+        : String(lastNetworkError || '');
       if (message.includes('ERR_CERT_AUTHORITY_INVALID')) {
         markDeepLUnavailable(
           'TLS certificate is invalid on translate API endpoint. Use a valid HTTPS cert.',
@@ -663,7 +671,7 @@ export function getTranslation(key: string, lang?: string): string {
     return key;
   }
 
-  let current: any = translationsData[targetLang];
+  let current: unknown = translationsData[targetLang];
 
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
@@ -811,7 +819,7 @@ export function getCurrentLanguage(): string {
 export function setupLanguageSwitcher(): void {
   if (languageSwitcherBound) return;
   languageSwitcherBound = true;
-  const globalWindow = window as any;
+  const globalWindow = window;
 
   const syncLanguageButtonState = (lang: string): void => {
     document.querySelectorAll('.lang-btn').forEach((btn) => {
@@ -859,7 +867,7 @@ export function setupLanguageSwitcher(): void {
     }) as EventListener);
   }
 
-  (window as any).__lcdbChangeLanguage = async (lang: string) => {
+  window.__lcdbChangeLanguage = async (lang: string) => {
     const normalizedLang = normalizeLanguageCode(lang || '');
     if (normalizedLang) {
       globalWindow.__lcdbPendingLanguage = normalizedLang;

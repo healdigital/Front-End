@@ -75,7 +75,7 @@ const SHOP_VIDEO_URL = '/cours-video';
 const sidebarVideoTitle = featuredVideoCourse?.title || 'Mes cours vidéo';
 const sidebarVideoDescription =
   featuredVideoCourse?.shortDescription ||
-  'Des techniques essentielles expliquees pas a pas pour progresser chez vous a votre rythme.';
+  'Des techniques essentielles expliquées pas à pas pour progresser chez vous à votre rythme.';
 const sidebarVideoImage = featuredVideoCourse?.image || '/images/masterclass-video.jpg';
 const sidebarVideoHref = featuredVideoCourse?.courseUrl || SHOP_VIDEO_URL;
 const sidebarVideoDisplayTitle = featuredVideoCourse?.title || 'Mes cours vid\u00E9o';
@@ -177,7 +177,7 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
 
   {isFull && (
     <div class="sidebar-block px-6 py-8">
-      <h4 class="sidebar-title">Mes cours vid&eacute;o</h4>
+      <h4 class="sidebar-title">Mes cours vidéo</h4>
       <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden mt-5 pannel-data">
         <div class="relative">
           <img
@@ -215,16 +215,16 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
 
           <div class="flex items-center gap-4 text-[#2F3642] text-[13px] mt-4 uppercase tracking-[0.08em] border-b border-[#D8D2C2] pb-4">
             <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 2h</span>
-            <span class="flex items-center gap-1"><Icon name="video" size="sm" /> Vid&eacute;o 4K</span>
+            <span class="flex items-center gap-1"><Icon name="video" size="sm" /> Vidéo 4K</span>
           </div>
 
           <p class="description-data text-[16px] text-[#5F6671] mt-5 leading-[1.65]" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">{sidebarVideoDisplayDescription}</p>
-          <Button href={sidebarVideoHref} variant="primary" size="sm" class="button-data-full w-full mt-5">Voir les cours vid&eacute;o</Button>
+          <Button href={sidebarVideoHref} variant="primary" size="sm" class="button-data-full w-full mt-5">Voir les cours vidéo</Button>
         </div>
       </div>
 
       <a href="/cours-video" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
-        Voir les cours vid&eacute;o
+        Voir les cours vidéo
       </a>
     </div>
   )}
@@ -695,9 +695,9 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
 
   .recipe-sidebar-bullet-item {
     display: grid;
-    grid-template-columns: 12px minmax(0, 1fr);
+    grid-template-columns: 14px minmax(0, 1fr);
     align-items: start;
-    column-gap: 12px;
+    column-gap: 14px;
   }
 
   .recipe-sidebar-bullet-item > div {
@@ -705,9 +705,9 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
   }
 
   .recipe-sidebar-bullet-title {
-    font-family: var(--font-prose), serif;
-    font-size: 15px;
-    line-height: 1.7;
+    font-family: var(--font-heading), serif;
+    font-size: 16px;
+    line-height: 1.32;
     color: rgb(49, 49, 49);
     font-weight: 400;
   }
@@ -748,7 +748,7 @@ const sidebarAdSlot = `sidebar-${variant}-${mobileVisible ? 'mobile' : 'desktop'
     height: 10px;
     border-radius: 999px;
     background: #54b6b1;
-    margin-top: 9px;
+    margin-top: 8px;
   }
 
   .recipe-sidebar-club-item {
