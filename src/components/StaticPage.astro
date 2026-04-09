@@ -440,8 +440,9 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     line-height: 1.28;
   }
 
-  .static-page.menu-page--travel-grid .static-page-content .penci-hide-tagupdated {
-    margin-top: 0.45rem;
+  .static-page.menu-page--travel-grid .static-page-content .penci-hide-tagupdated,
+  .static-page.menu-page--travel-grid .static-page-content .grid-post-box-meta {
+    display: none;
   }
 
   .static-page .travel-page-intro {
@@ -507,3 +508,4 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     }
   }
 </style>
+

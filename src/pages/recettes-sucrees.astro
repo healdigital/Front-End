@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
+import InfiniteGrid from "../components/InfiniteGrid.astro";
 import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
 import { buildWordPressImageFallbackCandidates, buildWpSquareVariantUrl, processArticleImageUrl } from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
@@ -145,7 +146,7 @@ const cards = sourceEntries.map((entry) => {
     className="menu-page menu-page--sweet-grid"
     navLinks={navLinks}
   >
-    <div class="sweet-grid" aria-label="Recettes sucrées">
+    <InfiniteGrid gridClass="sweet-grid" ariaLabel="Recettes sucrées" totalCount={cards.length}>
       {cards.map((card) => (
         <article class="sweet-card">
           <a href={card.href} class="sweet-card-media-link" aria-label={card.title}>
@@ -182,17 +183,17 @@ const cards = sourceEntries.map((entry) => {
               <a href={card.href}>{card.title}</a>
             </h2>
             <p class="sweet-card-excerpt">{card.excerpt}</p>
-            <a href={card.href} class="sweet-card-cta">Lire la suite</a>
+            <a href={card.href} class="sweet-card-cta">Lire la recette</a>
           </div>
         </article>
       ))}
-    </div>
+    </InfiniteGrid>
   </StaticPage>
 </BaseLayout>
 
 <style is:global>
   .menu-page--sweet-grid .static-page-body {
-    padding: clamp(18px, 2.8vw, 30px);
+    padding: clamp(14px, 2.2vw, 24px);
   }
 
   .menu-page--sweet-grid .sweet-grid {
@@ -271,7 +272,7 @@ const cards = sourceEntries.map((entry) => {
   }
 
   .menu-page--sweet-grid .sweet-card-content {
-    padding: 1rem 1rem 1.2rem;
+    padding: 0.9rem 0.9rem 1rem;
   }
 
   .menu-page--sweet-grid .sweet-card-meta {
@@ -309,9 +310,10 @@ const cards = sourceEntries.map((entry) => {
     display: inline-flex;
     margin-top: 1rem;
     color: #54b6b1;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    font-family: var(--font-button);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     text-decoration: none;
   }
@@ -334,3 +336,4 @@ const cards = sourceEntries.map((entry) => {
     }
   }
 </style>
+

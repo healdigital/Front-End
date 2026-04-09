@@ -1,4 +1,4 @@
----
+﻿---
 import Button from '../atoms/Button.astro';
 import Icon from '../atoms/Icon.astro';
 
@@ -51,7 +51,7 @@ if (normalizedStatus === 'SOLD_OUT' || isFull) {
     const plural = safeSpotsLeft === 1 ? '' : 's';
     statusLabel = `${safeSpotsLeft} place${plural} disponible${plural}`;
   } else if (normalizedStatus === 'LIMITED') {
-    statusLabel = 'Dernieres places';
+    statusLabel = 'Dernières places';
   }
 
   if (normalizedStatus === 'LIMITED') {
@@ -119,3 +119,4 @@ const month = parts.find((p) => p.type === 'month')?.value || '';
     </div>
   </div>
 </article>
+

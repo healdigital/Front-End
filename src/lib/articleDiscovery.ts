@@ -10,20 +10,20 @@ type SidebarArticle = {
   title: string;
 };
 
-type ContentValue = string | number | boolean | null | undefined | ContentRecord | ContentValue[];
-type ContentRecord = Record<string, ContentValue>;
-type DiscoverableArticle = ContentRecord & {
-  categories?: ContentValue[];
-  cuisine?: ContentValue;
+type UnknownRecord = Record<string, unknown>;
+type DiscoverableArticle = UnknownRecord & {
+  categories?: unknown[];
+  content?: unknown;
+  cuisine?: unknown;
   date?: string;
-  excerpt?: ContentValue;
+  excerpt?: unknown;
   lang?: string;
   modified?: string;
   recipeBlocks?: unknown[];
   seoDescription?: string;
   slug?: string | { current?: string };
-  tags?: ContentValue[];
-  title?: ContentValue;
+  tags?: unknown[];
+  title?: unknown;
   updatedAt?: string;
 };
 
@@ -43,11 +43,15 @@ const hasRecipe = (article: DiscoverableArticle): boolean =>
 const hasCategories = (article: DiscoverableArticle): boolean =>
   Array.isArray(article?.categories) && article.categories.length > 0;
 
-const toText = (value: ContentValue): string => {
+const isRecord = (value: unknown): value is UnknownRecord =>
+  Boolean(value && typeof value === 'object' && !Array.isArray(value));
+
+const toText = (value: unknown): string => {
   if (!value) return '';
   if (typeof value === 'string') return stripHtml(value);
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
-  if (typeof value === 'object') {
+  if (isRecord(value)) {
     for (const candidate of [value.rendered, value.value, value.text, value.title, value.name, value.label]) {
       const text = toText(candidate);
       if (text) return text;
@@ -58,13 +62,13 @@ const toText = (value: ContentValue): string => {
 
 const extractSidebarLabel = (article: DiscoverableArticle): string => {
   const categoryLabel = (Array.isArray(article?.categories) ? article.categories : [])
-    .map((entry) => toText(entry))
+    .map((entry: unknown) => toText(entry))
     .find(Boolean);
 
   if (categoryLabel) return categoryLabel;
 
   const tagLabel = (Array.isArray(article?.tags) ? article.tags : [])
-    .map((entry) => toText(entry))
+    .map((entry: unknown) => toText(entry))
     .find(Boolean);
 
   if (tagLabel) return tagLabel;
@@ -86,6 +90,8 @@ const pathToSlug = (path: string): string => {
   if (trimmed.includes('/')) return '';
   return trimmed;
 };
+
+type ArticleImageInput = Parameters<typeof processArticleImageUrl>[0];
 
 const buildGaRanking = async (
   articles: DiscoverableArticle[],
@@ -113,7 +119,7 @@ const buildGaRanking = async (
 };
 
 const articleScore = (article: DiscoverableArticle): number => {
-  const hasImage = Boolean(processArticleImageUrl(article));
+  const hasImage = Boolean(processArticleImageUrl(article as ArticleImageInput));
   const excerptLength = getExcerpt(article).length;
   const updatedValue = article?.updatedAt || article?.modified || article?.date || '';
   const updatedAt = new Date(String(updatedValue || ''));
@@ -146,7 +152,7 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
     .map((article: DiscoverableArticle) => {
       const slug = getSlug(article);
       const title = getTitle(article);
-      const imageSource = processArticleImageUrl(article);
+      const imageSource = processArticleImageUrl(article as ArticleImageInput);
       const image = buildWpSquareVariantUrl(imageSource, 500) || imageSource;
       const gaScore = gaRanking.get(slug) || 0;
       return {

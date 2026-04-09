@@ -10,15 +10,27 @@ config();
 let cachedClient: MongoClient | null = null;
 let cachedDb: Db | null = null;
 type GenericDoc = Record<string, unknown>;
+type MediaSizeEntry = {
+  url?: string;
+};
+type MediaRecord = GenericDoc & {
+  url?: string;
+  sizes?: {
+    articleHero?: MediaSizeEntry;
+    gallery?: MediaSizeEntry;
+  };
+};
 type ArticleRecord = GenericDoc & {
   _id?: string | ObjectId;
-  featuredImage?: GenericDoc;
+  featuredImage?: MediaRecord;
   featuredImageUrl?: string;
-  featuredMedia?: GenericDoc;
-  featured_image?: GenericDoc;
+  featuredMedia?: MediaRecord;
+  featured_image?: MediaRecord;
   featured_img_url?: string;
   id?: string;
   slug?: string | { current?: string };
+  categories?: unknown[];
+  tags?: unknown[];
 };
 type CategoryLike = { _id: string; name: string; slug: string; title: string };
 type RelatedArticleId = string | ObjectId;
@@ -205,10 +217,7 @@ const backfillPreparedArticleMediaFields = async (articles: ArticleRecord[]): Pr
     const byId = new Map<string, ArticleRecord>();
 
     for (const doc of articleDocs) {
-      const normalizedDoc = {
-        _id: normalizeId(doc._id) || undefined,
-        ...doc,
-      };
+      const normalizedDoc = withStringIds(doc as GenericDoc) as ArticleRecord;
       const docSlug =
         typeof normalizedDoc.slug === 'string'
           ? normalizedDoc.slug.trim()
@@ -247,8 +256,8 @@ const hydrateArticleMediaRelations = async (articles: ArticleRecord[]): Promise<
   if (!Array.isArray(articles) || articles.length === 0) return articles;
   if (shouldUseLocalJson()) {
     return articles.map((article) => ({
-      _id: normalizeId(article?._id) || undefined,
       ...article,
+      _id: normalizeId(article?._id) || undefined,
     }));
   }
 
@@ -435,9 +444,9 @@ export async function getArticlesFromMongo(page = 1, limit = 10, categoryName?: 
       ])
       .toArray();
 
-    return articles.map(doc => ({
-      _id: doc._id?.toString(),
+    return articles.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error fetching articles from MongoDB:', error);
@@ -566,9 +575,9 @@ export async function getRelatedArticlesFromMongo(categoryIds: RelatedArticleId[
 
     console.log('✅ [RELATED] Found', relatedArticles.length, 'related articles');
 
-    return relatedArticles.map(doc => ({
-      _id: doc._id?.toString(),
+    return relatedArticles.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error fetching related articles from MongoDB:', error);
@@ -703,9 +712,9 @@ export async function getAllArticlesFromMongo() {
       }
 
       const processedArticles = await hydrateArticleMediaRelations(
-        articles.map(doc => ({
-          _id: doc._id?.toString(),
+        articles.map((doc) => ({
           ...doc,
+          _id: doc._id?.toString(),
         })),
       );
 
@@ -796,8 +805,8 @@ export async function getArticleBySlugFromMongo(slug: string) {
 
     const [hydratedArticle] = await hydrateArticleMediaRelations([
       {
-        _id: article._id?.toString(),
         ...article,
+        _id: article._id?.toString(),
       },
     ]);
 
@@ -822,9 +831,9 @@ export async function getCommentsByArticleIdFromMongo(articleId: string) {
       .sort({ createdAt: -1 })
       .toArray();
 
-    return comments.map(doc => ({
-      _id: doc._id?.toString(),
+    return comments.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error fetching comments from MongoDB:', error);
@@ -896,9 +905,9 @@ export async function searchArticlesFromMongo(query: string, limit = 50) {
       ])
       .toArray();
 
-    return articles.map(doc => ({
-      _id: doc._id?.toString(),
+    return articles.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error searching articles from MongoDB:', error);
@@ -938,9 +947,9 @@ export async function getAllCategoriesFromMongo() {
 
     const categories = await categoriesCollection.find({}).toArray();
 
-    return categories.map(doc => ({
-      _id: doc._id?.toString(),
+    return categories.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error fetching categories from MongoDB:', error);
@@ -980,9 +989,9 @@ export async function getAllTagsFromMongo() {
 
     const tags = await tagsCollection.find({}).toArray();
 
-    return tags.map(doc => ({
-      _id: doc._id?.toString(),
+    return tags.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error fetching tags from MongoDB:', error);
@@ -1020,9 +1029,9 @@ export async function getArticlesByTagFromMongo(tagName: string, limit = 1000) {
       .limit(limit)
       .toArray();
 
-    return articles.map(doc => ({
-      _id: doc._id?.toString(),
+    return articles.map((doc) => ({
       ...doc,
+      _id: doc._id?.toString(),
     }));
   } catch (error) {
     console.error('❌ Error fetching articles by tag from MongoDB:', error);
