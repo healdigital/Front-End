@@ -64,7 +64,7 @@ h4.sidebar-title {
 }
 
 .home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button {
-  font-family: var(--font-maison);
+  font-family: var(--font-button);
 }
 
 .btn-hover-transition[data-astro-cid-3pspvxuc] {
@@ -76,7 +76,7 @@ h4.sidebar-title {
 }
 
 .typ-button {
-  font-family: var(--font-maison);
+  font-family: var(--font-button);
 }
 
 .section-noise-overlay {
@@ -575,9 +575,10 @@ p.featured-masterclass-description {
 .home-shell a.inline-flex.items-center.justify-center.font-button.rounded.border.border-transparent.btn-hover-transition.btn-state-transition.focus\:outline-none.focus\:ring-2.focus\:ring-offset-2.bg-primary-turquoise.text-primary-white.hover\:bg-opacity-90.active\:scale-95.focus\:ring-primary-turquoise.px-3.py-1\.5.text-sm {
   background: #54B6B1;
   color: #fff !important;
-  border-radius: 3px;
-  padding: 18px 30px;
-  font-size: 16px;
+  border-radius: 2px;
+  padding: 16px 32px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -593,8 +594,9 @@ p.featured-masterclass-description {
 .home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button {
   background: #54B6B1;
   color: #fff !important;
-  font-weight: 400;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.2em;
 }
 
 .home-shell p.text-\[13px\].uppercase.tracking-\[0\.14em\].font-mono.text-status-error.typ-meta {
@@ -726,9 +728,10 @@ span.inline-flex.items-center.gap-1\.5.rounded-full.bg-white.px-4.py-1\.5.text-\
 a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-primary-white.font-button.font-medium.text-\[13px\].uppercase.tracking-wider.rounded-sm.hover\:opacity-90.typ-button {
   background: #54B6B1;
   color: #fff !important;
-  border-radius: 3px;
-  padding: 18px 30px;
-  font-size: 16px;
+  border-radius: 2px;
+  padding: 16px 32px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -1174,19 +1177,13 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
 .button-data {
   width: 159.4481201171875px;
-  height: 55px;
-  angle: 0 deg;
-  opacity: 1;
-  top: 2037px;
-  left: 1235px;
-  border-radius: 5px;
-  font-family: var(--font-body);
+  height: 56px;
+  border-radius: 2px;
+  font-family: var(--font-button);
   font-weight: 500;
-  font-style: Medium;
-  font-size: 16px;
-  leading-trim: NONE;
-  line-height: 100%;
-  letter-spacing: 15%;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.2em;
   text-align: center;
   text-transform: uppercase;
   background: #54B6B1;
@@ -1246,19 +1243,13 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
 
 .button-data-full {
   /* width: 274px; */
-  height: 55px;
-  angle: 0 deg;
-  opacity: 1;
-  top: 2866px;
-  left: 1057px;
-  border-radius: 5px;
+  height: 56px;
+  border-radius: 2px;
   font-family: var(--font-button);
   font-weight: 500;
-  font-style: Medium;
-  font-size: 16px;
-  leading-trim: NONE;
-  line-height: 100%;
-  letter-spacing: 15%;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.2em;
   text-align: center;
   text-transform: uppercase;
   background-color: #54B6B1;
@@ -1267,25 +1258,18 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
 }
 
 .footer-btn {
-  width: 227;
-  height: 55;
-  angle: 0 deg;
-  opacity: 1;
-  top: 11971px;
-  left: 1129px;
-  border-radius: 3px;
+  height: 56px;
+  border-radius: 2px;
   background-color: #54B6B1;
 
 }
 
 .footer-btn span {
   font-family: var(--font-button);
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 16px;
-  leading-trim: NONE;
-  line-height: 100%;
-  letter-spacing: 15%;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.2em;
   text-align: center;
   text-transform: uppercase;
   color: #FFFFFF;
