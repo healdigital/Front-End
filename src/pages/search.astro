@@ -147,7 +147,7 @@ const paginationLabel = "Pagination des résultats";
   const filterAllLabel = filterAllLabelText;
   const noImageLabel = noImageLabelText;
   const paginationLabel = paginationLabelText;
-  const entityDecoder = document.createElement("textarea");
+  const htmlParser = new DOMParser();
   let latestHits = [];
   let latestQuery = "";
   let activePage = 1;
@@ -194,8 +194,11 @@ const paginationLabel = "Pagination des résultats";
   };
 
   const decodeHtmlEntities = (value) => {
-    entityDecoder.innerHTML = String(value || "");
-    return entityDecoder.value;
+    const source = String(value || "");
+    if (!source) return "";
+
+    const parsed = htmlParser.parseFromString(source, "text/html");
+    return parsed.documentElement.textContent || "";
   };
 
   const stripMarkup = (value) =>
