@@ -38,8 +38,14 @@ const {
     <span>Chargement des recettes...</span>
   </div>
 
-  <button type="button" class="infinite-grid-top hidden" data-infinite-grid-top>
-    Haut de page
+  <button
+    type="button"
+    class="infinite-grid-top hidden"
+    data-infinite-grid-top
+    aria-label="Haut de page"
+    title="Haut de page"
+  >
+    <span aria-hidden="true">↑</span>
   </button>
 </div>
 
@@ -187,15 +193,18 @@ const {
     right: 20px;
     bottom: 20px;
     z-index: 30;
+    width: 56px;
+    height: 56px;
+    padding: 0;
     border: 0;
     border-radius: 999px;
     background: #54b6b1;
     color: #fff;
-    padding: 0.75rem 1rem;
-    font-family: var(--font-button);
-    font-size: 12px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55rem;
+    line-height: 1;
     box-shadow: 0 14px 32px rgba(17, 25, 39, 0.18);
   }
 

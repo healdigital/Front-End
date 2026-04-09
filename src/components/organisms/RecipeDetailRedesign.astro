@@ -29,6 +29,18 @@ const heroImageFallbackCandidates = image
 const recipeImageFallbackCandidates = image
   ? buildWordPressImageFallbackCandidates(image)
   : [];
+const visibleShareLinks = articleShareLinks.filter((link: any) => {
+  const platform = String(link?.platform || '').toLowerCase();
+  const label = String(link?.label || '').toLowerCase();
+  return (
+    platform === 'facebook' ||
+    platform === 'pinterest' ||
+    platform === 'email' ||
+    label.includes('facebook') ||
+    label.includes('pinterest') ||
+    label.includes('mail')
+  );
+});
 
 const toNumber = (value: any) => {
   const numeric = Number(value);
@@ -144,7 +156,7 @@ const printLink = `/print/${slug}/?auto=1`;
 
       <div class="recipe-redesign__share" aria-label="Partager la recette">
         {
-          articleShareLinks.map((link: any) => (
+          visibleShareLinks.map((link: any) => (
             <a
               href="#"
               target="_blank"
@@ -157,15 +169,6 @@ const printLink = `/print/${slug}/?auto=1`;
             </a>
           ))
         }
-        <a
-          href={printLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="recipe-redesign__share-link"
-          aria-label="Imprimer la recette"
-        >
-          <i class="fas fa-print" aria-hidden="true"></i>
-        </a>
       </div>
     </div>
 
@@ -786,7 +789,10 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__section h2 {
     font-size: 28px;
     line-height: 31px;
-    padding: 2px 0 4px;
+    color: #151f2b;
+    padding: 2px 0 14px;
+    margin: 0 0 22px;
+    border-bottom: 1px solid #ebe3d7;
   }
 
   .recipe-redesign__section > h2 {
@@ -1011,7 +1017,9 @@ const printLink = `/print/${slug}/?auto=1`;
     line-height: 1.2;
     font-family: var(--font-heading), serif;
     font-weight: 500;
-    padding: 2px 0 4px;
+    padding: 2px 0 14px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #ebe3d7;
   }
 
   .recipe-redesign__nutrition-card {
@@ -1022,6 +1030,9 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__nutrition-title {
     font-size: 28px;
     line-height: 31px;
+    padding: 2px 0 14px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #ebe3d7;
   }
 
   .recipe-redesign__nutrition {

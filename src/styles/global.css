@@ -311,6 +311,27 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   opacity: 0.9;
 }
 
+@media (max-width: 767px) {
+  .books-section-button,
+  .button-data,
+  .button-data-full,
+  .sidebar-workshop-cta-button,
+  .footer-btn,
+  .article-newsletter-btn,
+  .newsletter-modal-submit,
+  .home-workshops-section a.inline-flex.items-center.justify-center.font-button,
+  .home-workshops-section button.inline-flex.items-center.justify-center.font-button,
+  .featured-masterclass-panel a.inline-flex.items-center.justify-center.font-button,
+  .home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button,
+  .home-shell a.inline-flex.items-center.justify-center.font-button.rounded.border.border-transparent.btn-hover-transition.btn-state-transition.focus\:outline-none.focus\:ring-2.focus\:ring-offset-2.bg-primary-turquoise.text-primary-white.hover\:bg-opacity-90.active\:scale-95.focus\:ring-primary-turquoise.px-3.py-1\.5.text-sm,
+  a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-primary-white.font-button.font-medium.text-\[13px\].uppercase.tracking-wider.rounded-sm.hover\:opacity-90.typ-button {
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 12px !important;
+    letter-spacing: 0.16em !important;
+  }
+}
+
 .lcdb-page-shell {
   width: 100%;
   max-width: 1440px;
