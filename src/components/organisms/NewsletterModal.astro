@@ -379,11 +379,17 @@ const {
           targetUrl.searchParams.set('email', emailInput.value.trim());
           targetUrl.searchParams.set('source', id);
 
-          const popup = window.open(targetUrl.toString(), '_blank', 'noopener,noreferrer');
+          const popup = window.open('', '_blank');
           if (!popup) {
             window.location.assign(targetUrl.toString());
             return;
           }
+
+          try {
+            popup.opener = null;
+          } catch {
+          }
+          popup.location.href = targetUrl.toString();
 
           submitBtn.innerText = 'Ouvert';
           submitBtn.classList.add('newsletter-modal-submit--success');
