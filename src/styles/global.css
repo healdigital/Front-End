@@ -1351,13 +1351,11 @@ section.content-v2-block.content-v2-recipe-card ol li {
 }
  
 .recipe-redesign__section h2 {
-    padding-top: 30px!important;
-    padding-bottom: 30px!important;
+    /* padding-top: 15px!important; */
+    padding-bottom: 13px !important;
 }
  
-.recipe-redesign[data-astro-cid-xpob6qz5] {
-    gap: 0px!important;
-}
+
  
 .recipe-redesign__section-head h2 {
     padding: 0px!important;
@@ -1387,4 +1385,8 @@ h3.recipe-redesign__compact-title {
     padding-bottom: 24px;
 }
 
+
+.recipe-redesign {
+    gap: 32px !important;
+}
 
