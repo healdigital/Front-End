@@ -557,6 +557,8 @@ const articleContextText = [
   .toLowerCase();
 const isNonRecipeArticle =
   /^mes-voyages-cul/i.test(slug) ||
+  /^mini-reportage/i.test(slug) ||
+  /^reportage/i.test(slug) ||
   /\b(voyage|voyages|travel|reportage|reportages)\b/.test(articleContextText);
 const flavorCategoryLabel = isNonRecipeArticle
   ? ""
@@ -724,11 +726,15 @@ const recipeDifficulty = normalizeRecipeDifficulty(primaryRecipeBlock?.difficult
 const recipePortions = formatRecipeServings(
   primaryRecipeBlock?.servings || primaryRecipeBlock?.servingsCount,
 );
-const heroMetaItems = [
-  displayCategoryTitles[0] || "Recette",
-  recipeDifficulty,
-  recipePortions ? `${recipePortions}` : "",
-].filter(Boolean);
+const heroMetaItems = (
+  isNonRecipeArticle
+    ? [displayCategoryTitles[0] || "Article"]
+    : [
+        displayCategoryTitles[0] || "Recette",
+        recipeDifficulty,
+        recipePortions ? `${recipePortions}` : "",
+      ]
+).filter(Boolean);
 const recipeLegacyImages = extractLegacyStepImages(
   typeof article?.content === "string" ? article.content : "",
   image,
@@ -761,7 +767,9 @@ const uiText = {
   nutrition: "Valeurs nutritionnelles",
   finalRecipe: "Fiche recette",
 };
-const topInfoItems = [
+const topInfoItems = (isNonRecipeArticle
+  ? []
+  : [
   {
     label: "Temps de préparation",
     value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes),
@@ -784,8 +792,10 @@ const topInfoItems = [
         ? `${Math.round(toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) || 0)} kcal`
         : "",
   },
-].filter((item) => item.value);
-const quickInfoItems = [
+]).filter((item) => item.value);
+const quickInfoItems = (isNonRecipeArticle
+  ? []
+  : [
   {
     label: "Temps de préparation",
     value: formatMinutes(primaryRecipeBlock?.preparationTimeMinutes),
@@ -800,8 +810,10 @@ const quickInfoItems = [
   { label: "Type de plat", value: normalizeRecipeMetaValue(primaryRecipeBlock?.dishType, "dishType") },
   { label: "Cuisine", value: normalizeRecipeMetaValue(primaryRecipeBlock?.cuisine, "cuisine") },
   { label: "Portions", value: formatRecipeServings(primaryRecipeBlock?.servings) },
-].filter((item) => item.value);
-const nutritionItems = [
+]).filter((item) => item.value);
+const nutritionItems = (isNonRecipeArticle
+  ? []
+  : [
   {
     label: "Calories",
     value: primaryRecipeBlock?.nutrition?.caloriesKcal,
@@ -833,7 +845,7 @@ const nutritionItems = [
     value: primaryRecipeBlock?.nutrition?.sodiumMg,
     unit: "mg",
   },
-].filter((item) => toPositiveNumber(item.value) !== null);
+]).filter((item) => toPositiveNumber(item.value) !== null);
 
 const recipeOnlyArticle = primaryRecipeBlock
   ? {

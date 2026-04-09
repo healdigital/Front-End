@@ -26,7 +26,7 @@ const toHeroCategoryTag = (card: HeroCard): string => {
   if (filter === 'sucrees') return 'SUCRÉ';
   if (filter === 'salees') return 'SALÉ';
 
-  const source = normalizeToken(`${card.category} ${card.title}`);
+  const source = normalizeToken(`${card.category} ${card.title} ${card.slug}`);
 
   const sweetKeywords = [
     'sucre',
@@ -66,8 +66,18 @@ const toHeroCategoryTag = (card: HeroCard): string => {
     return 'SALÉ';
   }
 
+  if (source.includes('voyage')) return 'VOYAGES';
+  if (source.includes('reportage')) return 'REPORTAGES';
+  if (source.includes('atelier')) return 'ATELIERS';
+  if (source.includes('selection')) return 'SÉLECTIONS';
+  if (source.includes('video')) return 'VIDÉOS';
+
   const fallbackCategory = String(card.category || '').trim().toUpperCase();
-  return fallbackCategory || 'RECETTE';
+  if (fallbackCategory && !['RECETTE', 'ARTICLE'].includes(fallbackCategory)) {
+    return fallbackCategory;
+  }
+
+  return source.includes('article') ? 'ARTICLE' : 'RECETTE';
 };
 ---
 

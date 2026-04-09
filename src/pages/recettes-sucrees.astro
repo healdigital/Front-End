@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import InfiniteGrid from "../components/InfiniteGrid.astro";
+import RecipeCard from "../components/organisms/RecipeCard.astro";
 import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
 import { buildWordPressImageFallbackCandidates, buildWpSquareVariantUrl, processArticleImageUrl } from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
@@ -148,44 +149,17 @@ const cards = sourceEntries.map((entry) => {
   >
     <InfiniteGrid gridClass="sweet-grid" ariaLabel="Recettes sucrées" totalCount={cards.length}>
       {cards.map((card) => (
-        <article class="sweet-card">
-          <a href={card.href} class="sweet-card-media-link" aria-label={card.title}>
-            <div class="sweet-card-media" style="position:relative;overflow:hidden;line-height:0;background:#ece5d8;">
-              {card.image ? (
-                <img
-                  src={card.image}
-                  alt={card.title}
-                  loading="lazy"
-                  decoding="async"
-                  class="sweet-card-image"
-                  style="position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;object-position:center top;"
-                  data-fallback-src={card.imageFallback}
-                  data-fallback-candidates={card.imageFallbackCandidates.join('|')}
-                  onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
-                />
-              ) : (
-                <div class="sweet-card-image sweet-card-image--empty">Aucune image</div>
-              )}
-              <span class="sweet-card-badge" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 5h5v5" />
-                  <path d="M10 14 19 5" />
-                  <path d="M19 14v4a1 1 0 0 1-1 1h-4" />
-                  <path d="M10 19H6a1 1 0 0 1-1-1v-4" />
-                </svg>
-              </span>
-            </div>
-          </a>
-
-          <div class="sweet-card-content">
-            <p class="sweet-card-meta">{card.difficulty.toUpperCase()} · {card.time}</p>
-            <h2 class="sweet-card-title">
-              <a href={card.href}>{card.title}</a>
-            </h2>
-            <p class="sweet-card-excerpt">{card.excerpt}</p>
-            <a href={card.href} class="sweet-card-cta">Lire la recette</a>
-          </div>
-        </article>
+        <RecipeCard
+          title={card.title}
+          slug={card.href}
+          image={card.image}
+          imageFallback={card.imageFallback}
+          description={card.excerpt}
+          prepTime={card.time}
+          difficulty={card.difficulty}
+          category="SUCRÉ"
+          contentClass="archive-card-content"
+        />
       ))}
     </InfiniteGrid>
   </StaticPage>
