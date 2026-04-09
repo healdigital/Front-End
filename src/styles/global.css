@@ -667,7 +667,7 @@ div#search-controls {
 .home-shell-width.relative.z-10 {
     padding-bottom: 40px;
 }
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 1023px) {
   .home-page-section{
     padding: calc(var(--spacing) * 4);
 
