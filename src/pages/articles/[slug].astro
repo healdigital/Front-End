@@ -10,6 +10,7 @@ import MediavineSlot from '../../components/MediavineSlot.astro';
 import SocialShare from '../../components/molecules/SocialShare.astro';
 import NewsletterModal from '../../components/organisms/NewsletterModal.astro';
 import RecipeSidebar from '../../components/organisms/RecipeSidebar.astro';
+import { getPopularSlugViewMap } from '../../lib/googleAnalytics';
 
 export const prerender = !import.meta.env.DEV;
 
@@ -45,6 +46,7 @@ interface ArticleEntry extends ContentRecord {
 interface RelatedArticleCard {
   date: string;
   excerpt: string;
+  gaScore?: number;
   image: string;
   score: number;
   slug: string;
@@ -230,6 +232,7 @@ if (!relatedArticlesRaw || relatedArticlesRaw.length === 0) {
   });
   relatedArticlesRaw = fallback;
 }
+const relatedArticleViewMap = await getPopularSlugViewMap(250);
 
 const currentCategoryKeys = new Set(
   categoryItems.map((item) => normalizeValue(item.slug || item.title)).filter(Boolean),
@@ -270,11 +273,15 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
       excerpt: (toText(entry?.excerpt) || toText(entry?.content)).slice(0, 150).trim(),
       image: processArticleImageUrl(entry),
       date: formatDate(entry?.publishedAt || entry?.date || entry?.modified),
+      gaScore: relatedArticleViewMap.get(entrySlug) || 0,
       score,
     };
   })
   .filter((entry): entry is RelatedArticleCard => Boolean(entry))
-  .sort((a, b) => b.score - a.score)
+  .sort((a, b) => {
+    if ((a.gaScore || 0) !== (b.gaScore || 0)) return (b.gaScore || 0) - (a.gaScore || 0);
+    return b.score - a.score;
+  })
   .slice(0, 3);
 ---
 

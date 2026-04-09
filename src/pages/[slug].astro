@@ -22,6 +22,7 @@ import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 import { renderArticleContent } from "../utils/renderArticleContent";
 import { sanitizeTrustedHtml } from "../utils/trustedHtml";
+import { getPopularSlugViewMap } from "../lib/googleAnalytics";
 
 export const prerender = true;
 
@@ -125,6 +126,7 @@ interface PageTaxonomyItem {
 
 interface RelatedArticleCard {
   category: string;
+  gaScore?: number;
   image: string;
   metaPrimary: string;
   metaSecondary: string;
@@ -904,11 +906,12 @@ const relatedArticlesRaw =
   categoryIds.length > 0 && currentArticleId
     ? await getRelatedArticlesFromMongo(categoryIds, currentArticleId, 6)
     : [];
+const relatedArticleViewMap = await getPopularSlugViewMap(250);
 
 const relatedArticles = (
   Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : []
 )
-  .map((item: ArticleEntry): RelatedArticleCard | null => {
+  .map((item: ArticleEntry, index: number): (RelatedArticleCard & { originalIndex: number }) | null => {
     const relatedSlug = normalizeSlug(
       typeof item?.slug === "string" ? item.slug : item?.slug?.current || "",
     );
@@ -929,6 +932,7 @@ const relatedArticles = (
       title: relatedTitle,
       image: processArticleImageUrl(item),
       category: relatedCategory || "Recette",
+      gaScore: relatedArticleViewMap.get(relatedSlug) || 0,
       metaPrimary: (
         toText(
           item?.difficulty ||
@@ -946,9 +950,17 @@ const relatedArticles = (
           item?.cook_time ??
           item?.cookTime,
       ),
+      originalIndex: index,
     };
   })
-  .filter((item): item is RelatedArticleCard => Boolean(item))
+  .filter((item): item is RelatedArticleCard & { originalIndex: number } => Boolean(item))
+  .sort((a, b) => {
+    if ((a.gaScore || 0) !== (b.gaScore || 0)) {
+      return (b.gaScore || 0) - (a.gaScore || 0);
+    }
+    return a.originalIndex - b.originalIndex;
+  })
+  .map(({ originalIndex, ...item }) => item)
   .slice(0, 6);
 
 ---

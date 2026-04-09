@@ -9,6 +9,18 @@ type GaPageViewRow = {
   screenPageViews: number;
 };
 
+const normalizePath = (value: string): string => String(value || '').split('?')[0].split('#')[0].trim();
+
+const pathToSlug = (path: string): string => {
+  const normalizedPath = normalizePath(path).replace(/^https?:\/\/[^/]+/i, '');
+  const trimmed = normalizedPath.replace(/^\/+|\/+$/g, '');
+  if (!trimmed) return '';
+  if (trimmed.startsWith('print/')) return '';
+  if (trimmed.startsWith('articles/')) return trimmed.slice('articles/'.length).replace(/^\/+|\/+$/g, '');
+  if (trimmed.includes('/')) return '';
+  return trimmed;
+};
+
 const getEnv = (name: string): string => String(process.env[name] || '').trim();
 
 const getGaConfig = () => {
@@ -124,4 +136,19 @@ export async function getPopularPageViews(limit = 50): Promise<GaPageViewRow[]> 
   } catch {
     return [];
   }
+}
+
+export async function getPopularSlugViewMap(limit = 250): Promise<Map<string, number>> {
+  const rows = await getPopularPageViews(limit);
+  if (!rows.length) return new Map();
+
+  const viewMap = new Map<string, number>();
+
+  for (const row of rows) {
+    const slug = pathToSlug(row.pagePath);
+    if (!slug) continue;
+    viewMap.set(slug, (viewMap.get(slug) || 0) + row.screenPageViews);
+  }
+
+  return viewMap;
 }
