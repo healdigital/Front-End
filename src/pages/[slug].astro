@@ -33,8 +33,94 @@ interface ArticleEntry extends ContentRecord {
   featuredImage?: ContentRecord;
   featuredMedia?: ContentRecord;
   featured_image?: ContentRecord;
+  categories?: TaxonomyItem[];
+  tags?: TaxonomyItem[];
+  recipeBlocks?: RecipeBlock[];
   slug?: string | { current?: string };
   title?: ContentValue;
+}
+
+interface TaxonomyItem extends ContentRecord {
+  id?: ContentValue;
+  _id?: ContentValue;
+  label?: ContentValue;
+  name?: ContentValue;
+  slug?: string | { current?: string };
+  title?: ContentValue;
+  value?: ContentValue;
+}
+
+interface CommentEntry extends ContentRecord {
+  rating?: ContentValue;
+}
+
+interface RecipeIngredientRow extends ContentRecord {
+  groupHeading?: ContentValue;
+  isGroupHeading?: boolean;
+  item?: ContentValue;
+  notes?: ContentValue;
+  quantity?: ContentValue;
+}
+
+interface RecipeStepRow extends ContentRecord {
+  groupHeading?: ContentValue;
+  image?: ContentValue;
+  imageUrl?: ContentValue;
+  image_url?: ContentValue;
+  instruction?: ContentValue;
+  isGroupHeading?: boolean;
+  media?: ContentValue;
+  photo?: ContentValue;
+}
+
+interface RecipeGroupItem {
+  item: string;
+  notes: string;
+  quantity: string;
+}
+
+interface RecipeStepItem {
+  instruction: string;
+  media: { alt: string; url: string } | null;
+}
+
+interface RecipeGroup {
+  heading: string;
+  items: RecipeGroupItem[];
+}
+
+interface RecipeStepGroup {
+  heading: string;
+  items: RecipeStepItem[];
+}
+
+interface RecipeBlock extends ContentRecord {
+  blockType?: string;
+  ingredients?: RecipeIngredientRow[];
+  steps?: RecipeStepRow[];
+}
+
+interface DetailedRecipeStepItem extends RecipeStepItem {
+  stepNumber: number;
+}
+
+interface DetailedRecipeStepGroup {
+  heading: string;
+  items: DetailedRecipeStepItem[];
+}
+
+interface PageTaxonomyItem {
+  slug: string;
+  title: string;
+}
+
+interface RelatedArticleCard {
+  category: string;
+  image: string;
+  metaPrimary: string;
+  metaSecondary: string;
+  slug: string;
+  title: string;
 }
 
 const getBuildLimit = () => {
@@ -202,9 +288,9 @@ const extractLegacyStepImages = (html: string, featuredUrl: string) => {
   return images;
 };
 
-const buildIngredientGroups = (ingredients: any[]) => {
+const buildIngredientGroups = (ingredients: RecipeIngredientRow[]) => {
   return (Array.isArray(ingredients) ? ingredients : []).reduce(
-    (groups: any[], row: any) => {
+    (groups: RecipeGroup[], row: RecipeIngredientRow) => {
       if (!row) return groups;
 
       if (row.isGroupHeading) {
@@ -230,13 +316,13 @@ const buildIngredientGroups = (ingredients: any[]) => {
 };
 
 const buildStepGroups = (
-  steps: any[],
+  steps: RecipeStepRow[],
   legacyImages: Array<{ alt: string; url: string }>,
 ) => {
   let fallbackIndex = 0;
 
   return (Array.isArray(steps) ? steps : []).reduce(
-    (groups: any[], row: any) => {
+    (groups: RecipeStepGroup[], row: RecipeStepRow) => {
       if (!row) return groups;
 
       if (row.isGroupHeading) {
@@ -351,8 +437,10 @@ const getExcerpt = () => {
   if (Array.isArray(article.excerpt)) {
     return article.excerpt
       .map(
-        (block: any) =>
-          block.children?.map((child: any) => child.text).join(" ") || "",
+        (block: ContentRecord) =>
+          Array.isArray(block.children)
+            ? block.children.map((child) => toText(child)).join(" ")
+            : "",
       )
       .join(" ")
       .substring(0, 160);
@@ -406,7 +494,7 @@ const disqusIdentifier =
     ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
     : slug;
 
-const normalizePageLanguage = (value: any) => {
+const normalizePageLanguage = (value: ContentValue) => {
   const raw = String(value || "")
     .trim()
     .toLowerCase();
@@ -424,7 +512,7 @@ const displayAuthorName = "Bernard Laurance";
 const categoryItems = (
   Array.isArray(article?.categories) ? article.categories : []
 )
-  .map((item: any) => {
+  .map((item: TaxonomyItem) => {
     const itemTitle = toText(item?.title || item?.name || item?.label || item);
     const itemSlug = normalizeSlug(
       typeof item?.slug === "string" ? item.slug : item?.slug?.current,
@@ -434,7 +522,7 @@ const categoryItems = (
   .filter(Boolean);
 
 const categoryTitles = dedupeTextList(
-  categoryItems.map((item: any) => toTitleCase(item.title)),
+  categoryItems.map((item) => toTitleCase(item.title)),
 );
 const flavorCategoryLabel = deriveFlavorCategory(article, categoryTitles);
 const displayCategoryTitles = dedupeTextList([
@@ -447,7 +535,7 @@ const secondaryCategoryTitle =
 const categoryIds = (
   Array.isArray(article?.categories) ? article.categories : []
 )
-  .map((item: any) => extractId(item))
+  .map((item: TaxonomyItem) => extractId(item))
   .filter(Boolean);
 
 const currentArticleId = extractId(article?.id || article?._id);
@@ -455,7 +543,7 @@ const articleComments = currentArticleId
   ? await getCommentsByArticleIdFromMongo(currentArticleId)
   : [];
 const validRatings = articleComments
-  .map((comment: any) => Number(comment?.rating))
+  .map((comment: CommentEntry) => Number(comment?.rating))
   .filter((rating: number) => Number.isFinite(rating) && rating > 0);
 const ratingCount = validRatings.length;
 const ratingAverage =
@@ -476,12 +564,12 @@ const ratingStars = Array.from(
 
 const primaryRecipeBlock =
   (Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : []).find(
-    (block: any) =>
-      block?.blockType === "recipeCard" ||
-      Array.isArray(block?.ingredients) ||
-      Array.isArray(block?.steps),
-  ) || null;
-const normalizeRecipeDifficulty = (value: any): string => {
+      (block: RecipeBlock) =>
+        block?.blockType === "recipeCard" ||
+        Array.isArray(block?.ingredients) ||
+        Array.isArray(block?.steps),
+   ) || null;
+const normalizeRecipeDifficulty = (value: ContentValue): string => {
   const raw = toText(value).trim();
   const normalized = raw
     .normalize("NFD")
@@ -495,7 +583,10 @@ const normalizeRecipeDifficulty = (value: any): string => {
   return raw;
 };
 
-const normalizeRecipeMetaValue = (value: any, type: "recipeType" | "dishType" | "cuisine" = "recipeType"): string => {
+const normalizeRecipeMetaValue = (
+  value: ContentValue,
+  type: "recipeType" | "dishType" | "cuisine" = "recipeType",
+): string => {
   const raw = toText(value).trim();
   const normalized = raw
     .normalize("NFD")
@@ -526,7 +617,7 @@ const normalizeRecipeMetaValue = (value: any, type: "recipeType" | "dishType" | 
   return raw;
 };
 
-const formatRecipeServings = (value: any): string => {
+const formatRecipeServings = (value: ContentValue): string => {
   const raw = toText(value).trim();
   if (!raw) return "";
 
@@ -569,9 +660,9 @@ const stepGroups = buildStepGroups(
   recipeLegacyImages,
 );
 let absoluteStepNumber = 1;
-const stepGroupsDetailed = stepGroups.map((group: any) => ({
+const stepGroupsDetailed: DetailedRecipeStepGroup[] = stepGroups.map((group) => ({
   ...group,
-  items: group.items.map((item: any) => ({
+  items: group.items.map((item) => ({
     ...item,
     stepNumber: absoluteStepNumber++,
   })),
@@ -724,7 +815,7 @@ const relatedArticlesRaw =
 const relatedArticles = (
   Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : []
 )
-  .map((item: any) => {
+  .map((item: ArticleEntry): RelatedArticleCard | null => {
     const relatedSlug = normalizeSlug(
       typeof item?.slug === "string" ? item.slug : item?.slug?.current || "",
     );
@@ -735,7 +826,7 @@ const relatedArticles = (
       ? item.categories
       : [];
     const relatedCategory = relatedCategories
-      .map((category: any) =>
+      .map((category: TaxonomyItem) =>
         toText(category?.name || category?.title || category),
       )
       .find(Boolean);
@@ -764,18 +855,18 @@ const relatedArticles = (
       ),
     };
   })
-  .filter(Boolean)
+  .filter((item): item is RelatedArticleCard => Boolean(item))
   .slice(0, 6);
 
 const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
-  .map((item: any) => {
+  .map((item: TaxonomyItem): PageTaxonomyItem | null => {
     const itemTitle = toText(item?.title || item?.name || item?.label || item);
     const itemSlug = normalizeSlug(
       typeof item?.slug === "string" ? item.slug : item?.slug?.current,
     );
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
-  .filter(Boolean);
+  .filter((item): item is PageTaxonomyItem => Boolean(item));
 ---
 
 <BaseLayout
@@ -909,7 +1000,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               {
                 (categoryItems.length > 0 || tagItems.length > 0) && (
                   <div class="article-chip-groups article-chip-groups--top">
-                    {categoryItems.map((category: any) => (
+                    {categoryItems.map((category) => (
                       <a
                         href={
                           category.slug
@@ -921,7 +1012,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                         {category.title}
                       </a>
                     ))}
-                    {tagItems.map((tag: any) => (
+                    {tagItems.map((tag) => (
                       <a
                         href={tag.slug ? `/tags/${tag.slug}` : "/tags"}
                         class="lcdb-chip article-chip-link article-tag-chip"
@@ -1053,7 +1144,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                     </div>
 
                     <div class="lcdb-surface-card recipe-detail-group-card">
-                      {ingredientGroups.map((group: any) => (
+                      {ingredientGroups.map((group) => (
                         <section class="recipe-detail-group">
                           {group.heading && (
                             <h3 class="recipe-detail-group-title">
@@ -1061,7 +1152,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                             </h3>
                           )}
                           <ul class="recipe-detail-ingredients-list">
-                            {group.items.map((item: any) => (
+                            {group.items.map((item) => (
                               <li class="recipe-detail-ingredient-item">
                                 {item.quantity && (
                                   <span class="wprm-recipe-ingredient-amount">
@@ -1086,14 +1177,14 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                   <section class="recipe-detail-section">
                     <h2 class="recipe-detail-section-title">Préparation</h2>
                     <div class="recipe-detail-steps-list">
-                      {stepGroups.map((group: any) => (
+                      {stepGroups.map((group) => (
                         <section class="recipe-detail-step-group">
                           {group.heading && (
                             <h3 class="recipe-detail-group-title">
                               {group.heading}
                             </h3>
                           )}
-                          {group.items.map((step: any, index: number) => (
+                          {group.items.map((step, index: number) => (
                             <article class="lcdb-surface-card recipe-detail-step-card">
                               <div class="recipe-detail-step-copy">
                                 <span class="recipe-detail-step-index">
@@ -1200,7 +1291,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                     </div>
 
                     <div class="recipe-detail-compact-panel">
-                      {ingredientGroups.map((group: any) => (
+                      {ingredientGroups.map((group) => (
                         <section class="recipe-detail-group">
                           {group.heading && (
                             <h4 class="recipe-detail-group-title">
@@ -1208,7 +1299,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                             </h4>
                           )}
                           <ul class="recipe-detail-ingredients-list">
-                            {group.items.map((item: any) => (
+                            {group.items.map((item) => (
                               <li class="recipe-detail-ingredient-item">
                                 {item.quantity && (
                                   <span class="wprm-recipe-ingredient-amount">
@@ -1233,7 +1324,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                       <h3 class="recipe-detail-compact-section-title">
                         Préparation
                       </h3>
-                      {stepGroups.map((group: any) => (
+                      {stepGroups.map((group) => (
                         <section class="recipe-detail-group">
                           {group.heading && (
                             <h4 class="recipe-detail-group-title">
@@ -1241,7 +1332,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                             </h4>
                           )}
                           <ol class="recipe-detail-instructions-list">
-                            {group.items.map((step: any) => (
+                            {group.items.map((step) => (
                               <li class="recipe-detail-instruction-item">
                                 {step.instruction}
                               </li>
@@ -1375,7 +1466,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
               {
                 (categoryItems.length > 0 || tagItems.length > 0) && (
                   <div class="article-chip-groups">
-                    {categoryItems.map((category: any) => (
+                    {categoryItems.map((category) => (
                       <a
                         href={
                           category.slug
@@ -1387,7 +1478,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
                         {category.title}
                       </a>
                     ))}
-                    {tagItems.map((tag: any) => (
+                    {tagItems.map((tag) => (
                       <a
                         href={tag.slug ? `/tags/${tag.slug}` : "/tags"}
                         class="lcdb-chip article-chip-link article-tag-chip"
@@ -1508,7 +1599,7 @@ const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
 
             <div class="article-related-viewport" data-related-viewport>
               <div class="article-related-track" data-related-track>
-                {relatedArticles.map((related: any) => (
+                {relatedArticles.map((related) => (
                   <a href={`/${related.slug}/`} class="article-related-card">
                     <div class="article-related-media">
                       <span class="article-related-badge" aria-hidden="true">
