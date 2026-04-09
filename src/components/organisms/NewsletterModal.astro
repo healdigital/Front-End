@@ -488,6 +488,7 @@ const {
     padding: 56px 44px 42px 32px;
     background: #f3f0ea;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .newsletter-modal-copy {
@@ -691,6 +692,28 @@ const {
   dialog[id^="newsletter-modal"][data-motion='reduced'] [data-modal-panel] {
     animation-duration: 0.01ms;
     transform: none;
+  }
+
+  @media (max-width: 920px) {
+    .newsletter-modal-panel {
+      width: min(100%, 720px);
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .newsletter-modal-content {
+      padding: 36px 24px 24px;
+    }
+
+    .newsletter-modal-copy,
+    .newsletter-modal-description,
+    .newsletter-modal-form {
+      max-width: 100%;
+    }
+
+    .newsletter-modal-field-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+    }
   }
 
   @media (max-width: 767px) {
