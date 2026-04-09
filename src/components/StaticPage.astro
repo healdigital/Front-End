@@ -457,6 +457,42 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     display: none;
   }
 
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box::after {
+    content: "›";
+  }
+
+  .static-page.menu-page--le-sale .static-page-content .mag-post-box::before {
+    content: "Salé";
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .penci-image-holder,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-image-holder,
+  .static-page.menu-page--travel-grid .static-page-content .penci-image-holder {
+    position: relative;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .penci-image-holder::after,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-image-holder::after,
+  .static-page.menu-page--travel-grid .static-page-content .penci-image-holder::after {
+    content: "\f02e";
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #171f2c;
+    font-family: "Font Awesome 5 Free";
+    font-size: 18px;
+    font-weight: 400;
+    box-shadow: 0 12px 24px rgba(8, 18, 34, 0.12);
+    z-index: 2;
+  }
+
   .static-page .travel-page-intro {
     margin: 0 0 1.25rem;
     max-width: 62ch;

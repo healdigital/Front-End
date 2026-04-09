@@ -1,4 +1,4 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import InfiniteGrid from "../components/InfiniteGrid.astro";
@@ -16,13 +16,13 @@ import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 
 const navLinks = [
   {
-    label: "Index des recettes salÃ©es avec photo",
-    description: "Version illustrÃ©e, plus visuelle pour parcourir les recettes.",
+    label: "Index des recettes salées avec photo",
+    description: "Version illustrée, plus visuelle pour parcourir les recettes.",
     active: true,
   },
   {
-    label: "Index des recettes salÃ©es sans photo",
-    description: "Version compacte, plus rapide Ã  scanner par titre.",
+    label: "Index des recettes salées sans photo",
+    description: "Version compacte, plus rapide à scanner par titre.",
     href: "/le-sale/",
   },
 ];
@@ -53,7 +53,7 @@ const toText = (value: unknown): string => {
 
 const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
   const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
-  if (!raw) return `DÃ©couvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
+  if (!raw) return `Découvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
   return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
 };
 
@@ -111,10 +111,10 @@ const cards = sourceEntries.map((entry) => {
 });
 ---
 
-<BaseLayout title="Recettes salÃ©es">
+<BaseLayout title="Recettes salées">
   <StaticPage
-    title="Recettes salÃ©es"
-    subtitle="Index des recettes salÃ©es avec photo."
+    title="Recettes salées"
+    subtitle="Index des recettes salées avec photo."
     className="menu-page menu-page--savory-grid"
     navLinks={navLinks}
   >
@@ -171,4 +171,3 @@ const cards = sourceEntries.map((entry) => {
     }
   }
 </style>
-
