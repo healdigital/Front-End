@@ -256,6 +256,8 @@ body {
 .typ-button {
   font-family: var(--font-button);
   font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.2em;
 }
@@ -272,21 +274,28 @@ body {
 .article-newsletter-btn,
 .newsletter-modal-submit,
 .home-workshops-section a.inline-flex.items-center.justify-center.font-button,
-.home-workshops-section button.inline-flex.items-center.justify-center.font-button {
+.home-workshops-section button.inline-flex.items-center.justify-center.font-button,
+.featured-masterclass-panel a.inline-flex.items-center.justify-center.font-button,
+.home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button,
+.home-shell a.inline-flex.items-center.justify-center.font-button.rounded.border.border-transparent.btn-hover-transition.btn-state-transition.focus\:outline-none.focus\:ring-2.focus\:ring-offset-2.bg-primary-turquoise.text-primary-white.hover\:bg-opacity-90.active\:scale-95.focus\:ring-primary-turquoise.px-3.py-1\.5.text-sm,
+a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-primary-white.font-button.font-medium.text-\[13px\].uppercase.tracking-wider.rounded-sm.hover\:opacity-90.typ-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
-  padding: 16px 32px;
-  border-radius: 2px;
-  background: #57bbb8;
-  color: #ffffff;
-  font-family: var(--font-button);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  text-decoration: none;
+  min-height: 56px !important;
+  padding: 16px 32px !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  background: #57bbb8 !important;
+  color: #ffffff !important;
+  font-family: var(--font-button) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
   transition: opacity 0.2s ease;
 }
 

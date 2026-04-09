@@ -69,7 +69,7 @@ const {
               required
             />
           </div>
-          <button class="newsletter-modal-submit typ-button" type="submit">
+          <button class="books-section-button newsletter-modal-submit typ-button" type="submit">
             S'inscrire
           </button>
         </div>
@@ -565,16 +565,16 @@ const {
   }
 
   .newsletter-modal-submit {
-    min-height: 44px;
+    min-height: 56px;
     border: 0;
     border-radius: 2px;
-    background: #54b6b1;
+    background: #57bbb8;
     color: #ffffff !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0 18px;
+    padding: 16px 32px;
     font-family: var(--font-button);
     font-size: 13px;
     font-weight: 500;
@@ -586,6 +586,7 @@ const {
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
     -webkit-font-smoothing: antialiased;
     text-rendering: geometricPrecision;
+    white-space: nowrap;
   }
 
   .newsletter-modal-submit:hover {
@@ -598,7 +599,15 @@ const {
 
   .newsletter-modal-submit--success {
     background: #2f8f57 !important;
-  }
+  }
+
+  .newsletter-modal-submit:disabled,
+  .newsletter-modal-submit[aria-disabled='true'] {
+    opacity: 1 !important;
+    color: #ffffff !important;
+    background: #57bbb8 !important;
+    cursor: not-allowed;
+  }
 
   .newsletter-modal-feedback {
     margin-top: 14px;
