@@ -3,6 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "fix:vite-optimize": "node scripts/fix-vite-optimize-deps.mjs",
+    "prebuild": "node scripts/fix-vite-optimize-deps.mjs",
     "dev": "node scripts/dev-site.mjs",
     "build": "node scripts/build-site.mjs",
     "preview": "node ./node_modules/astro/astro.js preview",

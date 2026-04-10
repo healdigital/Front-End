@@ -69,7 +69,7 @@ const {
               required
             />
           </div>
-          <button class="books-section-button newsletter-modal-submit typ-button" type="submit">
+          <button class="newsletter-modal-submit typ-button" type="submit">
             S'inscrire
           </button>
         </div>
@@ -540,13 +540,16 @@ const {
     width: 100%;
     max-width: 366px;
     margin-top: 24px;
+    overflow: hidden;
   }
 
   .newsletter-modal-field-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     align-items: stretch;
+    width: 100%;
+    min-width: 0;
   }
 
   .newsletter-modal-field {
@@ -612,6 +615,7 @@ const {
     text-rendering: geometricPrecision;
     white-space: nowrap;
     width: 100%;
+    max-width: 100%;
   }
 
   .newsletter-modal-submit:hover {
