@@ -319,7 +319,7 @@ section.home-page-section {
   padding: 16px 32px;
   border-radius: 2px;
   background: #57bbb8;
-  color: #ffffff;
+  color: #faf8f2;
   font-family: var(--font-button);
   font-weight: 500;
   font-size: 13px;
@@ -574,7 +574,7 @@ p.featured-masterclass-description {
 
 .home-shell a.inline-flex.items-center.justify-center.font-button.rounded.border.border-transparent.btn-hover-transition.btn-state-transition.focus\:outline-none.focus\:ring-2.focus\:ring-offset-2.bg-primary-turquoise.text-primary-white.hover\:bg-opacity-90.active\:scale-95.focus\:ring-primary-turquoise.px-3.py-1\.5.text-sm {
   background: #54B6B1;
-  color: #fff !important;
+  color: #faf8f2 !important;
   border-radius: 2px;
   padding: 16px 32px;
   font-size: 13px;
@@ -584,7 +584,7 @@ p.featured-masterclass-description {
 
 
 .home-shell span.text-\[\#EEF4FF\] {
-  color: #fff !important;
+  color: #faf8f2 !important;
 }
 
 .home-shell p.text-\[15px\].text-\[\#D6DEEC\].mt-3.typ-body {
@@ -593,7 +593,7 @@ p.featured-masterclass-description {
 
 .home-shell a.inline-flex.items-center.gap-2.bg-primary-turquoise.text-\[\#EBFAFF\].px-6.py-3.text-\[12px\].uppercase.tracking-wider.rounded-sm.typ-button {
   background: #54B6B1;
-  color: #fff !important;
+  color: #faf8f2 !important;
   font-weight: 500;
   font-size: 13px;
   letter-spacing: 0.2em;
@@ -627,7 +627,7 @@ p.featured-masterclass-description {
 
 .home-shell button.inline-flex.items-center.justify-center.font-button.rounded.border.border-transparent.btn-hover-transition.btn-state-transition.focus\:outline-none.focus\:ring-2.focus\:ring-offset-2.bg-status-disabled.text-primary-white.cursor-not-allowed.opacity-70.px-3.py-1\.5.text-sm {
   background: #919191;
-  color: #fff;
+  color: #faf8f2;
   font-size: 16px;
   text-transform: uppercase;
   padding: 18px 30px;
@@ -727,7 +727,7 @@ span.inline-flex.items-center.gap-1\.5.rounded-full.bg-white.px-4.py-1\.5.text-\
 
 a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-primary-white.font-button.font-medium.text-\[13px\].uppercase.tracking-wider.rounded-sm.hover\:opacity-90.typ-button {
   background: #54B6B1;
-  color: #fff !important;
+  color: #faf8f2 !important;
   border-radius: 2px;
   padding: 16px 32px;
   font-size: 13px;
@@ -1187,7 +1187,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   text-align: center;
   text-transform: uppercase;
   background: #54B6B1;
-  color: #FFFFFF;
+  color: #faf8f2;
 
 }
 
@@ -1253,7 +1253,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   text-align: center;
   text-transform: uppercase;
   background-color: #54B6B1;
-  color: #FFFFFF;
+  color: #faf8f2;
 
 }
 
@@ -1272,7 +1272,7 @@ h3.font-body.text-\[34px\].md\:text-\[35px\].text-white.leading-\[1\.08\].line-c
   letter-spacing: 0.2em;
   text-align: center;
   text-transform: uppercase;
-  color: #FFFFFF;
+  color: #faf8f2;
 }
 
 .acces-data {
@@ -1420,7 +1420,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
 #header-language-dropdown button,
 #mobile-header-language-dropdown span,
 #mobile-header-language-dropdown button {
-  color: #fff !important;
+  color: #faf8f2 !important;
 }
 
 

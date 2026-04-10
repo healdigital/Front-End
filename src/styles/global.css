@@ -291,7 +291,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   border: 0 !important;
   border-radius: 2px !important;
   background: #57bbb8 !important;
-  color: #ffffff !important;
+  color: #faf8f2 !important;
   font-family: var(--font-button) !important;
   font-size: 13px !important;
   font-weight: 500 !important;
@@ -543,7 +543,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
 .wprm-recipe-adjustable-servings.wprm-toggle-active {
   background: var(--lcdb-accent);
-  color: #ffffff;
+  color: #faf8f2;
   border-color: var(--lcdb-accent);
 }
 
@@ -1133,7 +1133,7 @@ section.content-v2-block.content-v2-recipe-ingredients {
     align-items: center;
     justify-content: center;
     background: #54B6B1;
-    color: #fff;
+    color: #faf8f2;
     font-weight: 600;
     border-radius: 35px;
     width: 59px;
