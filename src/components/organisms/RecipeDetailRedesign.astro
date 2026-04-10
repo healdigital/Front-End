@@ -18,6 +18,7 @@ const {
   ingredientGroups = [],
   stepGroups = [],
   nutritionItems = [],
+  showNutritionFallback = false,
   pinterestLink = "",
   collectionHref = "/favoris",
 } = Astro.props;
@@ -43,7 +44,15 @@ const visibleShareLinks = articleShareLinks.filter((link: any) => {
 });
 
 const toNumber = (value: any) => {
-  const numeric = Number(value);
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(",", ".")
+    .replace(/[^0-9.+-]/g, "");
+  if (!normalized) return null;
+  const numeric = Number(normalized);
   return Number.isFinite(numeric) ? numeric : null;
 };
 
@@ -429,23 +438,27 @@ const printLink = `/print/${slug}/?auto=1`;
       }
     </div>
 
-    {
-      nutritionItems.length > 0 && (
-        <div class="recipe-redesign__card recipe-redesign__nutrition-card">
-          <h3 class="recipe-redesign__nutrition-title">Valeurs nutritionnelles</h3>
+    {(nutritionItems.length > 0 || showNutritionFallback) && (
+      <div class="recipe-redesign__card recipe-redesign__nutrition-card">
+        <h3 class="recipe-redesign__nutrition-title">Valeurs nutritionnelles</h3>
+        {nutritionItems.length > 0 ? (
           <div class="recipe-redesign__nutrition">
             {nutritionItems.map((item: any) => (
               <div class="recipe-redesign__nutrition-item">
                 <span>{item.label}</span>
                 <strong>
-                  {Math.round(Number(item.value))} {item.unit}
+                  {Math.round(toNumber(item.value) ?? 0)} {item.unit}
                 </strong>
               </div>
             ))}
           </div>
-        </div>
-      )
-    }
+        ) : (
+          <p class="recipe-redesign__nutrition-empty">
+            Valeurs nutritionnelles indisponibles pour cette recette.
+          </p>
+        )}
+      </div>
+    )}
   </section>
 </div>
 
@@ -1044,6 +1057,14 @@ const printLink = `/print/${slug}/?auto=1`;
   .recipe-redesign__nutrition-item {
     display: grid;
     gap: 4px;
+  }
+
+  .recipe-redesign__nutrition-empty {
+    margin: 0;
+    color: var(--lcdb-text-secondary, #5c5f64);
+    font-size: 16px;
+    line-height: 1.6;
+    font-family: "PT Serif", Georgia, serif;
   }
 
   @media (max-width: 1080px) {
