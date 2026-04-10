@@ -385,7 +385,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 .lcdb-page-section-inner {
-  padding-top: 48px;
+  /* padding-top: 48px; */
   padding-bottom: 64px;
 }
 
@@ -1411,10 +1411,10 @@ section.recipe-redesign__recipe-card {
 }
 
 
-p.recipe-redesign__bon-appetit {
+/* p.recipe-redesign__bon-appetit {
     padding-top: 40px;
     padding-bottom: 20px;
-}
+} */
 h3.recipe-redesign__compact-title {
     padding-bottom: 24px;
 }
