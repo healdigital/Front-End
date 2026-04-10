@@ -48,7 +48,7 @@ footer .home-shell.py-6.text-center.text-white\/65.text-\[14px\] {
 }
 
 .typ-body {
-  font-family: var(--font-maison);
+  font-family: var(--font-body);
 }
 
 p.text-\[20px\].leading-\[1\.1\].text-\[\#111111\].mt-2.font-heading.article-title {
@@ -56,7 +56,7 @@ p.text-\[20px\].leading-\[1\.1\].text-\[\#111111\].mt-2.font-heading.article-tit
 }
 
 h4.sidebar-title {
-  font-family: var(--font-maison);
+  font-family: var(--font-body);
 }
 
 .home-shell p.text-\[15px\].text-\[\#D6DEEC\].mt-3.typ-body {
