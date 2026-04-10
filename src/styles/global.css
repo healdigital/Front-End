@@ -55,7 +55,8 @@ body {
   line-height: 1.6;
 }
 
-.bg-white {
+.bg-white,
+.bg-primary-white {
   background-color: #faf8f2 !important;
 }
 
