@@ -48,7 +48,12 @@ export async function payloadFetch<T>({
     let url = `${payloadApiUrl}/${collection}`;
     const params = new URLSearchParams();
 
-    for (const [key, value] of Object.entries(query)) {
+    const effectiveQuery: PayloadQuery =
+      collection === 'articles' && query._status === undefined
+        ? { ...query, _status: 'published' }
+        : query;
+
+    for (const [key, value] of Object.entries(effectiveQuery)) {
       if (value === undefined || value === null) continue;
       if (key === 'limit' || key === 'page' || key === 'depth') {
         params.append(key, String(value));
@@ -68,7 +73,7 @@ export async function payloadFetch<T>({
         const fallbackUrl = process.env.NODE_ENV === 'development'
           ? 'http://localhost:3000/api'
           : 'https://payloadcms-pi.vercel.app/api';
-        const proxyRes = await fetch(`${fallbackUrl}/${collection}`);
+        const proxyRes = await fetch(`${fallbackUrl}/${collection}${qs ? `?${qs}` : ''}`);
         if (proxyRes.ok) {
           const proxyData: unknown = await proxyRes.json();
           return normalizePayloadList<T>(proxyData);
@@ -145,7 +150,12 @@ export async function getCommentsByArticle(articleId: string) {
  */
 export async function getArticlesCount(): Promise<number> {
   try {
-    const url = `${payloadApiUrl}/articles?limit=1&depth=2`;
+    const params = new URLSearchParams({
+      limit: '1',
+      depth: '2',
+      'where[_status][equals]': 'published',
+    });
+    const url = `${payloadApiUrl}/articles?${params.toString()}`;
     const res = await fetch(url);
     if (!res.ok) return 0;
 
@@ -164,7 +174,13 @@ export async function getArticlesCount(): Promise<number> {
  */
 export async function getArticlesPage(page = 1, limit = 10) {
   try {
-    const url = `${payloadApiUrl}/articles?limit=${limit}&page=${page}&depth=2`;
+    const params = new URLSearchParams({
+      limit: String(limit),
+      page: String(page),
+      depth: '2',
+      'where[_status][equals]': 'published',
+    });
+    const url = `${payloadApiUrl}/articles?${params.toString()}`;
     const res = await fetch(url);
     if (!res.ok) return [];
 

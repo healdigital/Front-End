@@ -22,6 +22,7 @@ type MediaRecord = GenericDoc & {
 };
 type ArticleRecord = GenericDoc & {
   _id?: string | ObjectId;
+  _status?: string;
   featuredImage?: MediaRecord;
   featuredImageUrl?: string;
   featuredMedia?: MediaRecord;
@@ -74,6 +75,15 @@ const normalizeComparableText = (value: string): string =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
+
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const PUBLISHED_ARTICLE_MATCH = { _status: 'published' } as const;
+const BUILD_DEBUG = process.env.BUILD_DEBUG === '1';
+const debugLog = (...args: unknown[]) => {
+  if (BUILD_DEBUG) {
+    console.log(...args);
+  }
+};
 
 const getTaxonomyLabel = (entry: unknown): string =>
   String(
@@ -194,9 +204,14 @@ const backfillPreparedArticleMediaFields = async (articles: ArticleRecord[]): Pr
       .collection('articles')
       .find(
         {
-          $or: [
-            ...(slugs.length ? [{ slug: { $in: slugs } }, { 'slug.current': { $in: slugs } }] : []),
-            ...(ids.length ? [{ _id: { $in: ids.map((id) => new ObjectId(id)) } }] : []),
+          $and: [
+            PUBLISHED_ARTICLE_MATCH,
+            {
+              $or: [
+                ...(slugs.length ? [{ slug: { $in: slugs } }, { 'slug.current': { $in: slugs } }] : []),
+                ...(ids.length ? [{ _id: { $in: ids.map((id) => new ObjectId(id)) } }] : []),
+              ],
+            },
           ],
         },
         {
@@ -346,7 +361,7 @@ export async function getMongoConnection() {
       throw new Error('MONGODB_URI not found in process.env or import.meta.env');
     }
 
-    console.log('🔌 [BUILD] Establishing MongoDB connection...');
+    debugLog('[BUILD] Establishing MongoDB connection...');
     const maxRetries = 3;
     let attempt = 0;
     let lastError: unknown = null;
@@ -360,7 +375,7 @@ export async function getMongoConnection() {
 
         const connectionEndTime = Date.now();
         const connectionDuration = ((connectionEndTime - connectionStartTime) / 1000).toFixed(2);
-        console.log(`✅ [BUILD] MongoDB connected successfully in ${connectionDuration}s (attempt ${attempt})`);
+        debugLog(`[BUILD] MongoDB connected successfully in ${connectionDuration}s (attempt ${attempt})`);
 
         const db = client.db('lcdb');
         cachedClient = client;
@@ -411,7 +426,7 @@ export async function getArticlesFromMongo(page = 1, limit = 10, categoryName?: 
     const categoriesCollection = db.collection('categories');
     const skip = (page - 1) * limit;
 
-    let query = {};
+    let query: Record<string, unknown> = { ...PUBLISHED_ARTICLE_MATCH };
     if (categoryName) {
       // Find the category by name
       const category = await categoriesCollection.findOne({
@@ -419,7 +434,7 @@ export async function getArticlesFromMongo(page = 1, limit = 10, categoryName?: 
       });
 
       if (category) {
-        query = { categories: category._id };
+        query = { ...PUBLISHED_ARTICLE_MATCH, categories: category._id };
       } else {
         // If category not found, return empty array
         return [];
@@ -463,7 +478,7 @@ export async function getArticlesCountFromMongo(): Promise<number> {
   try {
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
-    const count = await articlesCollection.countDocuments({});
+    const count = await articlesCollection.countDocuments(PUBLISHED_ARTICLE_MATCH);
     return count;
   } catch (error) {
     console.error('❌ Error fetching articles count from MongoDB:', error);
@@ -510,7 +525,7 @@ const fallbackRelatedArticlesFromPrepared = async (
     })
     .slice(0, limit);
 
-  console.log('✅ [RELATED:FALLBACK] Found', relatedArticles.length, 'related articles from prepared/local data');
+  debugLog('[RELATED:FALLBACK] Found', relatedArticles.length, 'related articles from prepared/local data');
 
   return relatedArticles;
 };
@@ -527,7 +542,7 @@ export async function getRelatedArticlesFromMongo(categoryIds: RelatedArticleId[
       excludeId = new ObjectId(excludeArticleId);
     }
 
-    console.log('🔍 [RELATED] Exclude ID:', excludeId);
+    debugLog('[RELATED] Exclude ID:', excludeId);
 
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
@@ -540,12 +555,13 @@ export async function getRelatedArticlesFromMongo(categoryIds: RelatedArticleId[
       return id;
     });
 
-    console.log('🔍 [RELATED] Converted category IDs:', objectIds);
+    debugLog('[RELATED] Converted category IDs:', objectIds);
 
     const relatedArticles = await articlesCollection
       .aggregate([
         {
           $match: {
+            ...PUBLISHED_ARTICLE_MATCH,
             'categories': { $in: objectIds },
             '_id': { $ne: excludeId },
             $or: [
@@ -573,7 +589,7 @@ export async function getRelatedArticlesFromMongo(categoryIds: RelatedArticleId[
       ])
       .toArray();
 
-    console.log('✅ [RELATED] Found', relatedArticles.length, 'related articles');
+    debugLog('[RELATED] Found', relatedArticles.length, 'related articles');
 
     return relatedArticles.map((doc) => ({
       ...doc,
@@ -604,8 +620,11 @@ export async function getAllArticlesFromMongo() {
     if (shouldUseLocalJson()) {
       try {
         const items = getPreparedArticles();
-        const cappedItems = items.slice(0, limit);
-        console.log(`[BUILD] Using prepared-articles.json with ${cappedItems.length}/${items.length} articles (USE_LOCAL_JSON=1, MAX_SSG_ARTICLES=${limit})`);
+        const publishedItems = items.filter((item) => !item?._status || item._status === 'published');
+        const cappedItems = publishedItems.slice(0, limit);
+        debugLog(
+          `[BUILD] Using prepared-articles.json with ${cappedItems.length}/${publishedItems.length} published articles (USE_LOCAL_JSON=1, MAX_SSG_ARTICLES=${limit})`,
+        );
         const mergedItems = await backfillPreparedArticleMediaFields(cappedItems);
         const hydratedItems = await hydrateArticleMediaRelations(mergedItems);
         cachedAllArticles = hydratedItems;
@@ -617,7 +636,7 @@ export async function getAllArticlesFromMongo() {
     }
 
     const startTime = Date.now();
-    console.log('[BUILD] Starting to fetch ALL articles from MongoDB...');
+    debugLog('[BUILD] Starting to fetch ALL articles from MongoDB...');
 
     try {
       const db = await getMongoConnection();
@@ -631,15 +650,15 @@ export async function getAllArticlesFromMongo() {
         : [];
 
       if (isDevMode() && (process.env.INCLUDE_SLUGS || '').trim() && prioritySlugsRaw.length === 0) {
-        console.log('[BUILD] Skipping INCLUDE_SLUGS in dev (set DEV_INCLUDE_SLUGS=1 to enable).');
+        debugLog('[BUILD] Skipping INCLUDE_SLUGS in dev (set DEV_INCLUDE_SLUGS=1 to enable).');
       }
 
       // Count can be skipped in dev to speed up route generation.
       if (isDevMode()) {
-        console.log(`[BUILD] Dev mode: fetching ${limit} articles (count skipped).`);
+        debugLog(`[BUILD] Dev mode: fetching ${limit} articles (count skipped).`);
       } else {
-        const totalCount = await articlesCollection.countDocuments();
-        console.log(`[BUILD] Found ${totalCount} articles in database`);
+        const totalCount = await articlesCollection.countDocuments(PUBLISHED_ARTICLE_MATCH);
+        debugLog(`[BUILD] Found ${totalCount} published articles in database`);
 
         if (totalCount > limit) {
           console.warn(`[BUILD] Will fetch ${limit} base articles (set MAX_SSG_ARTICLES to raise). Priority slugs will still be added.`);
@@ -670,9 +689,9 @@ export async function getAllArticlesFromMongo() {
       };
 
       // Fetch only fields needed to render article pages statically
-      console.log(`[BUILD] Fetching up to ${limit} base articles from MongoDB (fields needed for SSG)...`);
+      debugLog(`[BUILD] Fetching up to ${limit} base articles from MongoDB (fields needed for SSG)...`);
       const baseArticles = await articlesCollection
-        .find({}, { projection })
+        .find(PUBLISHED_ARTICLE_MATCH, { projection })
         // Sort on indexed _id to avoid in-memory sort limits.
         .sort({ _id: -1 })
         .maxTimeMS(60_000)
@@ -691,9 +710,14 @@ export async function getAllArticlesFromMongo() {
         const extraArticles = await articlesCollection
           .find(
             {
-              $or: [
-                { slug: { $in: prioritySlugs } },
-                { 'slug.current': { $in: prioritySlugs } },
+              $and: [
+                PUBLISHED_ARTICLE_MATCH,
+                {
+                  $or: [
+                    { slug: { $in: prioritySlugs } },
+                    { 'slug.current': { $in: prioritySlugs } },
+                  ],
+                },
               ],
             },
             { projection },
@@ -708,7 +732,7 @@ export async function getAllArticlesFromMongo() {
             seen.add(key);
           }
         }
-        console.log(`[BUILD] Added ${articles.length - baseArticles.length} priority slug articles (INCLUDE_SLUGS).`);
+        debugLog(`[BUILD] Added ${articles.length - baseArticles.length} priority slug articles (INCLUDE_SLUGS).`);
       }
 
       const processedArticles = await hydrateArticleMediaRelations(
@@ -721,8 +745,8 @@ export async function getAllArticlesFromMongo() {
       const endTime = Date.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
 
-      console.log(`[BUILD] Successfully fetched ${processedArticles.length} articles in ${duration}s`);
-      console.log(`[BUILD] Average: ${(processedArticles.length / (endTime - startTime) * 1000).toFixed(0)} articles/second`);
+      debugLog(`[BUILD] Successfully fetched ${processedArticles.length} articles in ${duration}s`);
+      debugLog(`[BUILD] Average: ${(processedArticles.length / (endTime - startTime) * 1000).toFixed(0)} articles/second`);
 
       cachedAllArticles = processedArticles;
       cachedAllArticlesAt = Date.now();
@@ -795,9 +819,14 @@ export async function getArticleBySlugFromMongo(slug: string) {
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
     const article = await articlesCollection.findOne({
-      $or: [
-        { slug: { $in: variants } },             // plain string slug
-        { 'slug.current': { $in: variants } },   // nested slug object { current: '...' }
+      $and: [
+        PUBLISHED_ARTICLE_MATCH,
+        {
+          $or: [
+            { slug: { $in: variants } },             // plain string slug
+            { 'slug.current': { $in: variants } },   // nested slug object { current: '...' }
+          ],
+        },
       ],
     });
 
@@ -876,16 +905,20 @@ export async function saveCommentToMongo(articleId: string, commentData: {
 
 export async function searchArticlesFromMongo(query: string, limit = 50) {
   try {
+    const trimmedQuery = String(query || '').trim();
+    if (!trimmedQuery) return [];
+
     const db = await getMongoConnection();
     const articlesCollection = db.collection('articles');
 
-    // Create a regex pattern for case-insensitive search
-    const searchRegex = new RegExp(query, 'i');
+    // Escape user input to avoid unsafe runtime regex behavior.
+    const searchRegex = new RegExp(escapeRegex(trimmedQuery).slice(0, 120), 'i');
 
     const articles = await articlesCollection
       .aggregate([
         {
           $match: {
+            ...PUBLISHED_ARTICLE_MATCH,
             $or: [
               { title: { $regex: searchRegex } },
               { excerpt: { $regex: searchRegex } },
@@ -1024,6 +1057,7 @@ export async function getArticlesByTagFromMongo(tagName: string, limit = 1000) {
 
     const articles = await articlesCollection
       .find({
+        ...PUBLISHED_ARTICLE_MATCH,
         tags: { $in: [tagName] }
       })
       .limit(limit)

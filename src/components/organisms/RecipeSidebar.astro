@@ -122,10 +122,10 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
         height="130"
       />
       <h3 class="recipe-sidebar-profile-title mt-6 font-heading text-primary-black">Bernard Laurance</h3>
-      <p class="recipe-sidebar-profile-eyebrow mt-3 font-mono text-[13px] uppercase tracking-[0.15em] text-text-secondary">
+      <p class="recipe-sidebar-profile-eyebrow mt-3 text-[13px] uppercase tracking-[0.15em] text-text-secondary">
         {sidebarProfileEyebrow}
       </p>
-      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-[15px] leading-[1.72] text-text-secondary">
+      <div class="recipe-sidebar-profile-copy mt-5 space-y-4 text-text-secondary">
         {sidebarProfileParagraphs.map((paragraph) => (
           <p>{paragraph}</p>
         ))}
@@ -725,16 +725,16 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
   }
 
   .recipe-sidebar-bullet-title {
-    font-family: var(--font-prose), serif;
-    font-size: 16px !important;
+    font-family: var(--font-body), serif !important;
+    font-size: 17px !important;
     line-height: 1.7;
     color: rgb(49, 49, 49);
     font-weight: 400;
   }
 
   .recipe-sidebar-bullet-body {
-    font-family: var(--font-prose), serif;
-    font-size: 16px;
+    font-family: var(--font-body), serif !important;
+    font-size: 17px !important;
     line-height: 1.7;
     color: rgb(49, 49, 49);
   }
@@ -752,8 +752,8 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
   }
 
   .recipe-sidebar-profile-copy {
-    font-family: var(--font-prose), serif;
-    font-size: 16px;
+    font-family: var(--font-body), serif !important;
+    font-size: 17px !important;
     line-height: 1.7;
     color: rgb(49, 49, 49);
     text-align: left;
@@ -761,6 +761,10 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
 
   .recipe-sidebar-profile-copy p {
     margin: 0;
+    font-family: var(--font-body), serif !important;
+    font-size: 17px !important;
+    line-height: 1.7;
+    color: rgb(49, 49, 49);
   }
 
   .recipe-sidebar-bullet-dot {
