@@ -870,7 +870,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   .home-sidebar-column {
     display: block;
     border-left: 1px solid #d8d2c2;
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(250, 248, 242, 0.72);
     padding-left: 22px;
     padding-right: 20px;
   }

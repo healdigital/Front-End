@@ -532,7 +532,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
 .wprm-recipe-adjustable-servings {
   border: 1px solid #d8d2c2;
-  background: #ffffff;
+  background: #faf8f2;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   font-size: 0.9rem;
@@ -622,7 +622,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 }
 
 .content-v2-recipe-summary-grid-section {
-  background: #fff;
+  background: #faf8f2;
   border: 1px solid #d8d2c2;
   border-radius: 16px;
   padding: 28px 24px;
@@ -812,13 +812,13 @@ div#search-controls {
   }
 
   body {
-    background: #ffffff !important;
+    background: #faf8f2 !important;
     color: #111111 !important;
   }
 
   .lcdb-page-hero,
   .lcdb-page-section {
-    background: #ffffff !important;
+    background: #faf8f2 !important;
   }
 
   .lcdb-page-shell,
@@ -838,14 +838,14 @@ div#search-controls {
   .article-content-card {
     border: 0 !important;
     box-shadow: none !important;
-    background: #ffffff !important;
+    background: #faf8f2 !important;
     padding: 0 !important;
   }
 
   .content-v2-recipe-ingredients,
   .content-v2-recipe-steps-visual,
   .content-v2-recipe-card {
-    background: #ffffff !important;
+    background: #faf8f2 !important;
     border: 1px solid #222222 !important;
     box-shadow: none !important;
     margin: 0 0 14pt !important;
@@ -867,7 +867,7 @@ div#search-controls {
   .content-v2-gallery-item img {
     max-height: none !important;
     border: 1px solid #777777 !important;
-    background: #ffffff !important;
+    background: #faf8f2 !important;
   }
 
   .article-content a {
@@ -1020,7 +1020,7 @@ section.lcdb-page-section {
 
 .content-v2-recipe-ingredients-header .wprm-recipe-servings {
     align-items: center;
-    background: #fff;
+    background: #faf8f2;
     border-radius: 55px;
     width: 217px;
     height: 55px;
@@ -1070,7 +1070,7 @@ section.content-v2-block.content-v2-recipe-ingredients {
     padding: 38px 24px 28px 39px !important;
     border: unset !important;
     border-radius: 10px !important;
-    background: #fff !important;
+    background: #faf8f2 !important;
 }
 
 /* remove default bullets */
@@ -1109,7 +1109,7 @@ section.content-v2-block.content-v2-recipe-ingredients {
 .content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list {gap: 24px;}
 
 .content-v2-block.content-v2-recipe-steps-visual ol.content-v2-recipe-visual-list li.content-v2-recipe-visual-step {
-    background: #fff;
+    background: #faf8f2;
     padding: 40px;
     border-radius: 10px;
 }
@@ -1256,7 +1256,7 @@ section.content-v2-block.content-v2-recipe-ingredients {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: #fff;
+    background: #faf8f2;
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -1312,7 +1312,7 @@ section.content-v2-block.content-v2-recipe-ingredients {
 }
 
 section.content-v2-block.content-v2-recipe-card {
-    background: #fff;
+    background: #faf8f2;
     border: unset;
     padding: 40px;
 }
