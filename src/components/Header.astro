@@ -121,7 +121,7 @@ const accountItems = [
 
   <!-- Main header -->
   <div class="bg-[#72C2C3] header-main">
-    <div class="home-shell h-[64px] lg:h-[72px] flex items-center gap-5">
+    <div class="home-shell h-[60px] lg:h-[64px] flex items-center gap-4">
       <!-- Mobile menu trigger -->
       <button
         class="hidden items-center justify-center text-white/80 hover:text-white transition-colors"
@@ -155,7 +155,7 @@ const accountItems = [
             <input
               type="search"
               placeholder="Rechercher une recette, un atelier, une vid&eacute;o..."
-              class="w-full h-[44px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/44 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 header-search-text"
+              class="w-full h-[40px] pl-11 pr-4 rounded-full bg-white/15 text-white placeholder:text-white/44 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-turquoise/60 header-search-text"
               data-header-search
               data-header-desktop-search
             />
@@ -163,7 +163,7 @@ const accountItems = [
         </form>
       </div>
 
-      <div class="hidden w-px h-8 bg-white/25" data-header-desktop-flex></div>
+      <div class="hidden w-px h-7 bg-white/25" data-header-desktop-flex></div>
 
       <!-- Desktop actions -->
       <div class="hidden items-center gap-[18px] ml-auto" data-header-desktop-flex>
@@ -339,7 +339,7 @@ const accountItems = [
 
   <!-- Secondary navigation -->
   <div class="hidden bg-[#FAFAF8] border-b border-[#DCD8CC] header-bottom" data-header-desktop-flex>
-    <div class="home-shell w-full h-[70px] flex items-center">
+    <div class="home-shell w-full h-[64px] flex items-center">
       <nav class="flex items-center gap-8" aria-label="Navigation principale">
         {navItems.map((item) => (
           item.children?.length ? (
