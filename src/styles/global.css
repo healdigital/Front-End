@@ -55,6 +55,10 @@ body {
   line-height: 1.6;
 }
 
+.bg-white {
+  background-color: #faf8f2 !important;
+}
+
 .lcdb-translation-status {
   position: fixed;
   top: 96px;
