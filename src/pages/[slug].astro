@@ -237,8 +237,24 @@ const formatRecipeTimeLabel = (value: ContentValue): string => {
   return raw.toUpperCase();
 };
 
+const toNumericValue = (value: ContentValue): number | null => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string") {
+    const normalized = value
+      .trim()
+      .replace(",", ".")
+      .replace(/[^0-9.+-]/g, "");
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
 const toPositiveNumber = (value: ContentValue): number | null => {
-  const numeric = Number(value);
+  const numeric = toNumericValue(value);
   if (!Number.isFinite(numeric) || numeric < 0) return null;
   return numeric;
 };
@@ -769,6 +785,23 @@ const uiText = {
   nutrition: "Valeurs nutritionnelles",
   finalRecipe: "Fiche recette",
 };
+const recipeNutrition =
+  primaryRecipeBlock?.nutrition && typeof primaryRecipeBlock.nutrition === "object"
+    ? (primaryRecipeBlock.nutrition as ContentRecord)
+    : {};
+
+const getRecipeNutritionValue = (...keys: string[]): ContentValue => {
+  for (const key of keys) {
+    const nestedValue = recipeNutrition[key];
+    if (toPositiveNumber(nestedValue) !== null) return nestedValue;
+    const rootValue =
+      primaryRecipeBlock && typeof primaryRecipeBlock === "object"
+        ? (primaryRecipeBlock as ContentRecord)[key]
+        : null;
+    if (toPositiveNumber(rootValue) !== null) return rootValue;
+  }
+  return null;
+};
 const topInfoItems = (isNonRecipeArticle
   ? []
   : [
@@ -790,8 +823,19 @@ const topInfoItems = (isNonRecipeArticle
   {
     label: "Calories",
     value:
-      toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) !== null
-        ? `${Math.round(toPositiveNumber(primaryRecipeBlock?.nutrition?.caloriesKcal) || 0)} kcal`
+      toPositiveNumber(
+        getRecipeNutritionValue("caloriesKcal", "totalCaloriesKcal", "calories", "kcal"),
+      ) !== null
+        ? `${Math.round(
+            toPositiveNumber(
+              getRecipeNutritionValue(
+                "caloriesKcal",
+                "totalCaloriesKcal",
+                "calories",
+                "kcal",
+              ),
+            ) || 0,
+          )} kcal`
         : "",
   },
 ]).filter((item) => item.value);
@@ -818,33 +862,38 @@ const nutritionItems = (isNonRecipeArticle
   : [
   {
     label: "Calories",
-    value: primaryRecipeBlock?.nutrition?.caloriesKcal,
+    value: getRecipeNutritionValue(
+      "caloriesKcal",
+      "totalCaloriesKcal",
+      "calories",
+      "kcal",
+    ),
     unit: "kcal",
   },
   {
     label: "Protéines",
-    value: primaryRecipeBlock?.nutrition?.proteinGrams,
+    value: getRecipeNutritionValue("proteinGrams", "proteins", "protein"),
     unit: "g",
   },
   {
     label: "Glucides",
-    value: primaryRecipeBlock?.nutrition?.carbohydratesGrams,
+    value: getRecipeNutritionValue("carbohydratesGrams", "carbohydrates", "carbs", "glucides"),
     unit: "g",
   },
-  { label: "Lipides", value: primaryRecipeBlock?.nutrition?.fatGrams, unit: "g" },
+  { label: "Lipides", value: getRecipeNutritionValue("fatGrams", "fat", "lipids", "lipides"), unit: "g" },
   {
     label: "Fibres",
-    value: primaryRecipeBlock?.nutrition?.fiberGrams,
+    value: getRecipeNutritionValue("fiberGrams", "fibers", "fiber", "fibres"),
     unit: "g",
   },
   {
     label: "Sucres",
-    value: primaryRecipeBlock?.nutrition?.sugarGrams,
+    value: getRecipeNutritionValue("sugarGrams", "sugars", "sugar", "sucres"),
     unit: "g",
   },
   {
     label: "Sodium",
-    value: primaryRecipeBlock?.nutrition?.sodiumMg,
+    value: getRecipeNutritionValue("sodiumMg", "sodiumMilligrams", "sodium"),
     unit: "mg",
   },
 ]).filter((item) => toPositiveNumber(item.value) !== null);
@@ -1052,6 +1101,7 @@ const relatedArticles = (
                 ingredientGroups={ingredientGroups}
                 stepGroups={stepGroupsDetailed}
                 nutritionItems={nutritionItems}
+                showNutritionFallback={!isNonRecipeArticle}
                 pinterestLink={pinterestLink}
                 collectionHref={collectionHref}
                 storyHtml=""
@@ -1438,23 +1488,31 @@ const relatedArticles = (
                       ))}
                     </div>
 
-                    {nutritionItems.length > 0 && (
+                    {!isNonRecipeArticle && (
                       <div class="recipe-detail-compact-panel">
                         <h3 class="recipe-detail-compact-section-title">
                           Valeurs nutritionnelles
                         </h3>
-                        <div class="recipe-detail-nutrition-grid">
-                          {nutritionItems.map((item) => (
-                            <div class="recipe-detail-nutrition-item">
-                              <span class="recipe-detail-nutrition-label">
-                                {item.label}
-                              </span>
-                              <span class="recipe-detail-nutrition-value">
-                                {Math.round(Number(item.value))} {item.unit}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                        {nutritionItems.length > 0 ? (
+                          <div class="recipe-detail-nutrition-grid">
+                            {nutritionItems.map((item) => (
+                              <div class="recipe-detail-nutrition-item">
+                                <span class="recipe-detail-nutrition-label">
+                                  {item.label}
+                                </span>
+                                <span class="recipe-detail-nutrition-value">
+                                  {Math.round(toPositiveNumber(item.value) || 0)}{" "}
+                                  {item.unit}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p class="recipe-detail-nutrition-empty">
+                            Valeurs nutritionnelles indisponibles pour cette
+                            recette.
+                          </p>
+                        )}
                       </div>
                     )}
                   </section>
@@ -2938,6 +2996,14 @@ const relatedArticles = (
 
   .recipe-detail-nutrition-value {
     color: #1c1c19;
+  }
+
+  .recipe-detail-nutrition-empty {
+    margin: 0;
+    color: #5c5f64;
+    font-family: "PT Serif", Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
   }
 
   .article-sidebar-column {
