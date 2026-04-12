@@ -142,7 +142,7 @@ section.home-page-section {
   }
 
   .home-page-section {
-    padding-top: 48px !important;
+    /* padding-top: 48px !important; */
   }
 
   .books-section-media {
@@ -795,7 +795,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 }
 .section_2{
-  padding-top: 12px !important;
+  /* padding-top: 12px !important; */
   background-color: #F1EFE6 !important;
 }
 @media (max-width: 320px) and (max-width: 374px) {
@@ -845,7 +845,9 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
   }
 
 }
-
+  #main-content .zero-padding{
+    padding-top: 0 !important;
+  }
 @media (min-width: 1024px) {
   .home-shell {
     padding-left: 20px;
@@ -861,6 +863,7 @@ a.inline-flex.items-center.justify-center.px-8.py-4.bg-primary-turquoise.text-pr
 
   .home-shell-width {
     padding-left: 45px;
+    /* padding-top: 50px !important; */
   }
 
   .home-main-column {
@@ -1652,7 +1655,7 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 }
 
 .home-two-column .home-main-column.home-main-column-stack {
-    padding-top: 20px;
+    padding-top: 40px;
 }
 
 .home-sidebar-sticky .pannel-data {
@@ -1795,10 +1798,10 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 }
 
 @media screen and (max-width:768px) {
-    section.home-page-section {
-        padding-top: 50px !important;
+    .mobile_top_padding{
+      padding-top: 40px !important;
     }
-
+    
     .featured-masterclass-card .featured-masterclass-panel {
         width: 100% !important;
     }
@@ -1867,15 +1870,20 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 }
 
 #main-content .section_2 {
-  padding-top: 4px !important;
+  /* padding-top: 40px !important; */
   border-top: 1px solid #dfdacd;
   border-bottom: 1px solid #dfdacd;
 }
 
-#main-content .section_2 .home-main-column.home-main-column-stack {
+/* #main-content .section_2 .home-main-column.home-main-column-stack {
   padding-top: 0 !important;
+} */
+#main-content .zero_padding_value {
+    padding-top: 40px !important;
 }
-
+#main-content .home-main-column.home-main-column-stack.mes-livres.zero_padding_books {
+    padding-top: 40px !important;
+}
 #main-content .section_2 .home-main-block {
   padding-top: 0 !important;
 }
@@ -1914,5 +1922,36 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
   .recipe-grid-home {
     grid-template-columns: minmax(0, 1fr) !important;
   }
+}
+
+/* Homepage sidebar should match recipe detail sidebar styling (non-destructive override). */
+#main-content .section_2 .home-sidebar-column {
+  background: transparent !important;
+  border-left: 1px solid #d8d2c2 !important;
+  padding-left: 14px !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#main-content .section_2 .home-sidebar-sticky {
+  gap: 0 !important;
+}
+
+#main-content .section_2 .home-sidebar-sticky .recipe-sidebar {
+  gap: 0 !important;
+}
+
+#main-content .section_2 .home-sidebar-sticky .sidebar-block {
+  background: #faf8f2 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #d8d2c2 !important;
+  margin: 0 !important;
+  overflow: hidden;
+}
+
+#main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
+  border-bottom: 0 !important;
 }
 
