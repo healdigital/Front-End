@@ -4412,6 +4412,10 @@ const relatedArticles = (
     .article-content :global(.wprm-nutrition-label-container) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .article-sidebar-mobile {
+      display: block;
+    }
   }
 
   @media (max-width: 767px) {
@@ -4486,10 +4490,6 @@ const relatedArticles = (
       font-family: var(--font-body);
       font-size: 0.95rem;
       line-height: 1.55;
-    }
-
-    .article-sidebar-mobile {
-      display: block;
     }
 
     .article-main-column > .recipe-redesign,
