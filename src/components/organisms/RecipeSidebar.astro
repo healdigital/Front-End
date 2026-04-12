@@ -15,7 +15,7 @@ interface Props {
 
 const { variant = 'full', className = '', stickyPopularRail = false, mobileVisible = false } = Astro.props as Props;
 const isFull = variant === 'full';
-const responsiveClass = mobileVisible ? 'flex lg:hidden' : 'hidden lg:flex';
+const responsiveClass = mobileVisible ? 'flex md:hidden' : 'hidden md:flex';
 const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 const workshopsApiUrl =
   import.meta.env.WORKSHOPS_CACHE_URL ||
@@ -135,11 +135,11 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       <img
         src="/images/image.png"
         alt="Bernard Laurance"
-        class="w-[130px] h-[130px] rounded-full object-cover object-top mx-auto"
+        class="w-[150px] h-[150px] rounded-full object-cover object-top mx-auto"
         loading="lazy"
         decoding="async"
-        width="130"
-        height="130"
+        width="150"
+        height="150"
       />
       <h3 class="recipe-sidebar-profile-title mt-6 font-heading text-primary-black">Bernard Laurance</h3>
       <p class="recipe-sidebar-profile-eyebrow mt-3 text-[13px] uppercase tracking-[0.15em] text-text-secondary">
