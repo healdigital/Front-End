@@ -6,7 +6,7 @@ interface Props {
 const { embedded = false } = Astro.props as Props;
 ---
 
-<section class={`relative ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
+<section class={`relative mobile_top_padding ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}>
   {!embedded && (
     <div class="section-noise-overlay absolute inset-0 pointer-events-none section_2 opacity-28" aria-hidden="true"></div>
   )}
