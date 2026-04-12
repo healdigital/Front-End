@@ -104,8 +104,7 @@ const needsImmediateTranslationBoot =
 
 if (needsImmediateTranslationBoot) {
   startTranslationInit();
-} else if (typeof window.requestIdleCallback === 'function') {
-  window.requestIdleCallback(() => startTranslationInit(), { timeout: 1200 });
 } else {
-  window.setTimeout(() => startTranslationInit(), 180);
+  // Run immediately for consistent language-switch behavior on first interaction.
+  startTranslationInit();
 }
