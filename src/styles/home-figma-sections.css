@@ -1863,16 +1863,17 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
 /* Final homepage spacing/tone corrections */
 .section_1 {
-  padding-bottom: 24px !important;
+  padding-bottom: 10px !important;
 }
 
 #main-content .section_2 {
+  padding-top: 4px !important;
   border-top: 1px solid #dfdacd;
   border-bottom: 1px solid #dfdacd;
 }
 
 #main-content .section_2 .home-main-column.home-main-column-stack {
-  padding-top: 10px !important;
+  padding-top: 0 !important;
 }
 
 #main-content .section_2 .home-main-block {
@@ -1882,12 +1883,21 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 #main-content .section_2 .home-sidebar-column {
   background: #f1efe6 !important;
   border-left: 1px solid #d8d2c2 !important;
-  padding-left: 18px !important;
-  padding-right: 14px !important;
+  padding-left: 14px !important;
+  padding-right: 12px !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
 }
 
 #main-content .section_2 .home-sidebar-sticky {
-  gap: 14px !important;
+  gap: 12px !important;
+}
+
+#main-content .section_2 .home-sidebar-sticky .sidebar-block {
+  background: #faf8f2 !important;
+  border: 1px solid #d8d2c2 !important;
+  border-radius: 14px !important;
+  overflow: hidden;
 }
 
 #main-content .section_2 .home-sidebar-sticky p.sidebar-subtitle {
