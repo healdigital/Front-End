@@ -122,6 +122,15 @@ const normalizeHref = (value: unknown): string => {
   return raw.startsWith('/') ? `https://atelier-lacuisinedebernard.com${raw}` : raw;
 };
 
+const normalizeCourseImageUrl = (value: unknown): string | null => {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('//')) return `https:${raw}`;
+  if (raw.startsWith('/')) return `https://atelier-lacuisinedebernard.com${raw}`;
+  return raw;
+};
+
 const toPositiveNumber = (value: unknown): number | undefined => {
   if (value === undefined || value === null || value === '') return undefined;
   const numeric = Number(value);
@@ -173,9 +182,10 @@ const mapVideoCourse = (item: Record<string, unknown>, index: number): VideoCour
   const shortDescription = normalizeCourseText(item.shortDescription);
   const courseUrl = normalizeHref(item.courseUrl);
   const forcedImage = getForcedCourseImage({ title, courseUrl });
+  const normalizedImage = normalizeCourseImageUrl(item.image);
   const image =
     forcedImage ||
-    (typeof item.image === 'string' && item.image.trim() ? item.image.trim() : getFallbackImage(title));
+    (normalizedImage || getFallbackImage(title));
 
   return {
     id: String(item.id || index + 1),

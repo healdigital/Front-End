@@ -11,6 +11,7 @@
     "astro": "node ./node_modules/astro/astro.js",
     "payload": "tsx server.ts",
     "build:prepared": "node scripts/build-prepared-articles.mjs",
+    "export:wp-posts": "node scripts/export-wp-posts.mjs",
     "update:prepared": "node scripts/update-prepared-article.mjs",
     "refresh:prepared": "node scripts/refresh-prepared-articles.mjs",
     "images:offload-missing": "node scripts/import-missing-spaces-images.mjs",

@@ -229,6 +229,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
                 decoding="async"
                 width="640"
                 height="368"
+                onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/masterclass-video.jpg';}"
               />
               <div class="absolute top-4 right-4 w-[68px] h-[68px] rounded-full bg-[#FAF8F2]/95 flex items-center justify-center text-[#1A2335]">
                 <Icon name="video" size="sm" />
@@ -397,12 +398,12 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
 
     const normalizeHref = (value = '', fallbackUrl = '') => {
       const raw = String(value || '').trim();
-      if (!raw) return fallbackUrl || '/ateliers/';
+      if (!raw) return fallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/';
       if (/^https?:\/\//i.test(raw)) return raw;
       return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
     };
 
-    const mapWorkshopItem = (item, fallbackUrl = '/ateliers/') => {
+    const mapWorkshopItem = (item, fallbackUrl = 'https://atelier-lacuisinedebernard.com/latelier/') => {
       if (!item || typeof item !== 'object') return null;
       const parsedDate = new Date(item.startAt || item.date || '');
       if (Number.isNaN(parsedDate.getTime())) return null;
@@ -448,7 +449,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       if (block.dataset.workshopLoaded === 'loading' || block.dataset.workshopLoaded === 'true') return;
 
       const apiUrl = String(block.dataset.workshopsApi || '').trim();
-      const fallbackUrl = String(block.dataset.workshopsFallbackUrl || '/ateliers/').trim();
+      const fallbackUrl = String(block.dataset.workshopsFallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/').trim();
       if (!apiUrl) return;
 
       block.dataset.workshopLoaded = 'loading';
@@ -583,14 +584,9 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
           }
 
           if (ctaEl instanceof HTMLAnchorElement) {
-            ctaEl.href = firstWorkshop.slug || SIDEBAR_WORKSHOP_URL;
-            if (/^https?:\/\//i.test(firstWorkshop.slug || '')) {
-              ctaEl.target = '_blank';
-              ctaEl.rel = 'noopener noreferrer';
-            } else {
-              ctaEl.removeAttribute('target');
-              ctaEl.removeAttribute('rel');
-            }
+            ctaEl.href = SIDEBAR_WORKSHOP_URL;
+            ctaEl.target = '_blank';
+            ctaEl.rel = 'noopener noreferrer';
           }
 
           block.dataset.workshopLoaded = 'true';

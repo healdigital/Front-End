@@ -3,19 +3,23 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import InfiniteGrid from "../components/InfiniteGrid.astro";
 import RecipeCard from "../components/organisms/RecipeCard.astro";
-import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
-import { buildWordPressImageFallbackCandidates, buildWpSquareVariantUrl, processArticleImageUrl } from "../utils/cdnUrlReplacer";
+import { getPreparedArchiveArticles, type PreparedArchiveArticle } from "../lib/staticArchiveData";
+import {
+  buildWordPressImageFallbackCandidates,
+  buildWpSquareVariantUrl,
+  processArticleImageUrl,
+} from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 
 const navLinks = [
   {
-    label: "Index des recettes sucrées avec photo",
-    description: "Version illustrée, idéale pour parcourir les desserts.",
+    label: "Index des recettes sucrees avec photo",
+    description: "Version illustree, ideale pour parcourir les desserts.",
     active: true,
   },
   {
-    label: "Index des recettes sucrées sans photo",
-    description: "Version compacte, centrée sur les titres des recettes.",
+    label: "Index des recettes sucrees sans photo",
+    description: "Version compacte, centree sur les titres des recettes.",
     href: "/le-sucre/",
   },
 ];
@@ -49,8 +53,88 @@ const getPrimaryRecipeBlock = (article: PreparedArchiveArticle | undefined) =>
     ? article.recipeBlocks.find((block) => block && typeof block === "object")
     : null;
 
+const normalizeToken = (value: string): string =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const extractLabels = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap((item) => extractLabels(item));
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return [record.name, record.title, record.slug, record.label]
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  }
+  return [];
+};
+
+const getArchiveFilterKey = (article: PreparedArchiveArticle): "salees" | "sucrees" | "toutes" => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const recipeBlockRecord = (recipeBlock || {}) as Record<string, unknown>;
+  const articleRecord = article as Record<string, unknown>;
+  const candidateText = [
+    ...extractLabels(recipeBlockRecord.recipeType),
+    ...extractLabels(recipeBlockRecord.dishType),
+    ...extractLabels(article?.categories),
+    ...extractLabels(articleRecord.category),
+    ...extractLabels(articleRecord.tags),
+    toText(article?.title),
+    toText(article?.excerpt),
+  ].join(" ");
+
+  const normalized = normalizeToken(candidateText);
+
+  const sweetKeywords = [
+    "sucre",
+    "dessert",
+    "sweet",
+    "gateau",
+    "cake",
+    "cookie",
+    "brioche",
+    "chocolat",
+    "galette",
+    "tarte",
+    "creme",
+    "entremet",
+    "sable",
+  ];
+  const savoryKeywords = [
+    "sale",
+    "savory",
+    "savour",
+    "omelette",
+    "quiche",
+    "gratin",
+    "soupe",
+    "salade",
+    "foie gras",
+    "poulet",
+    "poisson",
+    "courge",
+    "legume",
+  ];
+
+  const sweetScore = sweetKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const savoryScore = savoryKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+
+  if (savoryScore > sweetScore) return "salees";
+  if (sweetScore > savoryScore) return "sucrees";
+  return "toutes";
+};
+
 const formatDuration = (minutes: number): string => {
-  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
+  if (!Number.isFinite(minutes) || minutes <= 0) return "--";
   const whole = Math.round(minutes);
   if (whole >= 60) {
     const hours = Math.floor(whole / 60);
@@ -61,7 +145,7 @@ const formatDuration = (minutes: number): string => {
 };
 
 const formatRecipeTime = (article: PreparedArchiveArticle | undefined): string => {
-  if (!article) return "—";
+  if (!article) return "--";
   const recipeBlock = getPrimaryRecipeBlock(article);
   const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
   const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
@@ -72,7 +156,7 @@ const formatRecipeTime = (article: PreparedArchiveArticle | undefined): string =
   }
 
   const raw = String(article.recipe?.prepTime ?? article.prepTime ?? article.prep_time ?? "").trim();
-  if (!raw) return "—";
+  if (!raw) return "--";
   if (/[0-9].*(min|h)/i.test(raw)) return raw.toLowerCase();
   if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
   const suffix = String(article.recipe?.prepTimeFormat || "").trim();
@@ -104,50 +188,65 @@ const formatDifficulty = (article: PreparedArchiveArticle | undefined): string =
 
 const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
   const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
-  if (!raw) return `Découvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
+  if (!raw) return `Decouvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
   return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
 };
 
-const sourceEntries = getStaticArchiveEntries("recettes-sucrees");
-const articleMap = new Map(
-  getPreparedArchiveArticles()
-    .filter((article) => typeof article?.slug === "string" && article.slug.trim())
-    .map((article) => [String(article.slug).trim(), article]),
+const preparedArticles = getPreparedArchiveArticles().filter(
+  (article) =>
+    typeof article?.slug === "string" &&
+    article.slug.trim() &&
+    String((article as Record<string, unknown>)?.lang || "fr").toLowerCase() === "fr",
 );
 
-const cards = sourceEntries.map((entry) => {
-  const article = articleMap.get(entry.slug);
-  const fallbackImage = entry.fallbackImage || "";
-  const resolvedImage = processArticleImageUrl(article) || fallbackImage;
-  const squareImage = resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "";
-  const imageFallbackCandidates = Array.from(
-    new Set([
-      ...buildWordPressImageFallbackCandidates(resolvedImage),
-      squareImage,
-    ].filter(Boolean)),
-  );
-
-  return {
-    href: entry.href,
-    title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
-    excerpt: getExcerpt(article, entry.fallbackTitle || entry.slug),
-    difficulty: formatDifficulty(article),
-    time: formatRecipeTime(article),
-    image: resolvedImage || squareImage,
-    imageFallback: resolvedImage,
-    imageFallbackCandidates,
-  };
+const uniqueArticlesBySlug = new Map<string, PreparedArchiveArticle>();
+preparedArticles.forEach((article) => {
+  const slug = String(article.slug || "").trim();
+  if (!slug || uniqueArticlesBySlug.has(slug)) return;
+  uniqueArticlesBySlug.set(slug, article);
 });
+
+const cards = Array.from(uniqueArticlesBySlug.values())
+  .filter((article) => getArchiveFilterKey(article) === "sucrees")
+  .sort((a, b) => {
+    const aTime = Date.parse(String((a as Record<string, unknown>)?.publishedAt || ""));
+    const bTime = Date.parse(String((b as Record<string, unknown>)?.publishedAt || ""));
+    if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) return bTime - aTime;
+    return String(a.slug || "").localeCompare(String(b.slug || ""), "fr");
+  })
+  .map((article) => {
+    const slug = String(article.slug || "").trim();
+    const fallbackImage = processArticleImageUrl(article) || "";
+    const resolvedImage = processArticleImageUrl(article) || fallbackImage;
+    const squareImage = resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "";
+    const imageFallbackCandidates = Array.from(
+      new Set([
+        ...buildWordPressImageFallbackCandidates(resolvedImage),
+        squareImage,
+      ].filter(Boolean)),
+    );
+
+    return {
+      href: `/${slug}`,
+      title: decodeHtmlEntities(String(article?.title || slug)),
+      excerpt: getExcerpt(article, slug),
+      difficulty: formatDifficulty(article),
+      time: formatRecipeTime(article),
+      image: resolvedImage || squareImage,
+      imageFallback: resolvedImage,
+      imageFallbackCandidates,
+    };
+  });
 ---
 
-<BaseLayout title="Recettes sucrées">
+<BaseLayout title="Recettes sucrees">
   <StaticPage
-    title="Recettes sucrées"
-    subtitle="Index des recettes sucrées avec photo."
+    title="Recettes sucrees"
+    subtitle="Index des recettes sucrees avec photo."
     className="menu-page menu-page--sweet-grid"
     navLinks={navLinks}
   >
-    <InfiniteGrid gridClass="sweet-grid" ariaLabel="Recettes sucrées" totalCount={cards.length}>
+    <InfiniteGrid gridClass="sweet-grid" ariaLabel="Recettes sucrees" totalCount={cards.length}>
       {cards.map((card) => (
         <RecipeCard
           title={card.title}
@@ -158,7 +257,8 @@ const cards = sourceEntries.map((entry) => {
           description={card.excerpt}
           prepTime={card.time}
           difficulty={card.difficulty}
-          category="SUCRÉ"
+          category="SUCRE"
+          showDescription={false}
           contentClass="archive-card-content"
         />
       ))}
@@ -311,3 +411,4 @@ const cards = sourceEntries.map((entry) => {
     }
   }
 </style>
+

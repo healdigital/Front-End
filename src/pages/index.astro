@@ -18,6 +18,7 @@ import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
 const SHOP_VIDEO_URL = '/cours-video';
+const SHOP_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 const featuredVideoCourses = await loadFeaturedCourses();
 const videoCourses = featuredVideoCourses.length ? featuredVideoCourses : await loadVideoCourses();
 const homepageVideoCourses = videoCourses.slice(0, 3);
@@ -33,7 +34,7 @@ const fallbackImages = [
 
 const fallbackHeroCards = [
   { title: 'Entremet praline dubai, chantilly et ganache lactee', image: '/images/recipe-chocolate-cake.jpg', category: 'SUCRE', slug: '/entremet-praline-dubai' },
-  { title: 'Ateliers cuisine fÃ©vrier - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: '/ateliers' },
+  { title: 'Ateliers cuisine fÃ©vrier - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: SHOP_WORKSHOP_URL },
   { title: 'Omelette du curÃ© (crÃªpes, pommes de terre, foie gras poÃªlÃ©)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
   { title: 'Brioche tressÃ©e aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
   { title: 'Tarte figue sÃ©chÃ©e, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
@@ -212,7 +213,7 @@ const normalizeWorkshopStatus = (value: any): 'OPEN' | 'LIMITED' | 'SOLD_OUT' =>
 
 const normalizeWorkshopHref = (value: any): string => {
   const raw = String(value || '').trim();
-  if (!raw) return '/ateliers';
+  if (!raw) return SHOP_WORKSHOP_URL;
   if (/^https?:\/\//i.test(raw)) return raw;
   return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
 };
@@ -249,7 +250,7 @@ const mapWorkshopItem = (item: any, index: number) => {
       item.shortDescription || item.description || item.excerpt || item.summary || item.content || ''
     ),
     location: decodeEntities(item.location || ''),
-    slug: normalizeWorkshopHref(item.bookingUrl || item.slug || '/ateliers'),
+    slug: SHOP_WORKSHOP_URL,
     status: normalizeWorkshopStatus(item.status),
   };
 };
@@ -563,6 +564,7 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   const categoryLabel = getCategoryLabel(article);
   const description = getDescription(article);
   const filterKey = getFilterKey([categoryLabel, title, description].join(' '));
+  if (filterKey === 'toutes') return null;
   const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
   const image = buildWpPortraitVariantUrl(fallbackImage) || fallbackImage;
   const tagLabel = getRecipeTagLabel(categoryLabel, filterKey);
@@ -604,8 +606,12 @@ let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
 if (!Array.isArray(allArticles) || allArticles.length === 0) {
   allArticles = await getAllArticlesFromMongo();
 }
-const normalizedArticles = Array.isArray(allArticles)
-  ? allArticles
+const frArticles = Array.isArray(allArticles)
+  ? allArticles.filter((article: any) => String(article?.lang || 'fr').toLowerCase() === 'fr')
+  : [];
+const homepageArticles = frArticles.length > 0 ? frArticles : allArticles;
+const normalizedArticles = Array.isArray(homepageArticles)
+  ? homepageArticles
       .map(buildRecipeFromArticle)
       .filter((recipe): recipe is NonNullable<ReturnType<typeof buildRecipeFromArticle>> => Boolean(recipe))
   : [];
@@ -915,6 +921,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
               height="960"
               sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
               data-workshops-feature-image
+              onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/ateliers-physiques.jpg';}"
             />
             <div class="absolute bottom-4 left-4">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
@@ -941,7 +948,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}â‚¬` : '--'}</div>
               </div>
               <Button
-                href={featuredWorkshop?.slug || '/ateliers'}
+                href={SHOP_WORKSHOP_URL}
                 variant="primary"
                 size="sm"
                 class="py-[7px] text-[11px] md:text-[12px]"
@@ -967,6 +974,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                     width="960"
                     height="468"
                     sizes="(min-width: 1280px) 28vw, (min-width: 768px) 42vw, 92vw"
+                    onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/masterclass-video.jpg';}"
                   />
                 </div>
                 <div class="flex min-h-[188px] flex-col justify-between gap-5 p-5">
@@ -1022,7 +1030,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
           </div>
           <p class="text-[15px] text-[#D6DEEC] mt-3 typ-body">Chaque atelier est pens&eacute; pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p>
         </div>
-        <a href="/ateliers" class="inline-flex items-center gap-2 bg-primary-turquoise text-[#EBFAFF] px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm typ-button">
+        <a href={SHOP_WORKSHOP_URL} class="inline-flex items-center gap-2 bg-primary-turquoise text-[#EBFAFF] px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm typ-button">
           <Icon name="clock" size="sm" /> Voir les ateliers
         </a>
       </div>

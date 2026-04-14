@@ -50,9 +50,10 @@ const {
 </div>
 
 <script>
-  const roots = Array.from(document.querySelectorAll('[data-infinite-grid-root]'));
+  const setupInfiniteGrids = () => {
+    const roots = Array.from(document.querySelectorAll('[data-infinite-grid-root]'));
 
-  roots.forEach((root) => {
+    roots.forEach((root) => {
     if (!(root instanceof HTMLElement)) return;
     if (root.dataset.ready === 'true') return;
     root.dataset.ready = 'true';
@@ -156,6 +157,10 @@ const {
 
     window.addEventListener('scroll', updateTopButton, { passive: true });
   });
+  };
+
+  setupInfiniteGrids();
+  document.addEventListener('astro:page-load', setupInfiniteGrids);
 </script>
 
 <style is:global>

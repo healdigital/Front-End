@@ -5,7 +5,6 @@ import InfiniteGrid from "../components/InfiniteGrid.astro";
 import RecipeCard from "../components/organisms/RecipeCard.astro";
 import {
   getPreparedArchiveArticles,
-  getStaticArchiveEntries,
   type PreparedArchiveArticle,
 } from "../lib/staticArchiveData";
 import {
@@ -76,39 +75,135 @@ const formatDifficulty = (article: PreparedArchiveArticle | undefined): string =
   return 'Salé';
 };
 
-const sourceEntries = getStaticArchiveEntries("recettes-salees");
-const articleMap = new Map(
-  getPreparedArchiveArticles()
-    .filter((article) => typeof article?.slug === "string" && article.slug?.trim())
-    .map((article) => [String(article.slug).trim(), article]),
-);
+const normalizeToken = (value: string): string =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
-const cards = sourceEntries.map((entry) => {
-  const article = articleMap.get(entry.slug) as PreparedArchiveArticle | undefined;
-  const fallbackImage = entry.fallbackImage || "";
-  const resolvedImage = processArticleImageUrl(article) || fallbackImage;
-  const imageFallbackCandidates = Array.from(
-    new Set(
-      [
-        ...buildWordPressImageFallbackCandidates(resolvedImage),
-        fallbackImage,
-      ].filter(Boolean),
-    ),
+const extractLabels = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap((item) => extractLabels(item));
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return [record.name, record.title, record.slug, record.label]
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  }
+  return [];
+};
+
+const getPrimaryRecipeBlock = (article: PreparedArchiveArticle) =>
+  Array.isArray(article?.recipeBlocks) ? article.recipeBlocks.find(Boolean) : null;
+
+const getArchiveFilterKey = (article: PreparedArchiveArticle): "salees" | "sucrees" | "toutes" => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const recipeBlockRecord = (recipeBlock || {}) as Record<string, unknown>;
+  const articleRecord = article as Record<string, unknown>;
+  const candidateText = [
+    ...extractLabels(recipeBlockRecord.recipeType),
+    ...extractLabels(recipeBlockRecord.dishType),
+    ...extractLabels(article?.categories),
+    ...extractLabels(articleRecord.category),
+    ...extractLabels(articleRecord.tags),
+    toText(article?.title),
+    toText(article?.excerpt),
+  ].join(" ");
+
+  const normalized = normalizeToken(candidateText);
+
+  const sweetKeywords = [
+    "sucre",
+    "dessert",
+    "sweet",
+    "gateau",
+    "cake",
+    "cookie",
+    "brioche",
+    "chocolat",
+    "galette",
+    "tarte",
+    "creme",
+    "entremet",
+    "sable",
+  ];
+  const savoryKeywords = [
+    "sale",
+    "savory",
+    "savour",
+    "omelette",
+    "quiche",
+    "gratin",
+    "soupe",
+    "salade",
+    "foie gras",
+    "poulet",
+    "poisson",
+    "courge",
+    "legume",
+  ];
+
+  const sweetScore = sweetKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const savoryScore = savoryKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
   );
 
-  return {
-    href: entry.href,
-    title: decodeHtmlEntities(
-      String(article?.title || entry.fallbackTitle || entry.slug),
-    ),
-    excerpt: getExcerpt(article, entry.fallbackTitle || entry.slug),
-    prepTime: formatRecipeTime(article),
-    difficulty: formatDifficulty(article),
-    image: resolvedImage,
-    imageFallback: fallbackImage || resolvedImage,
-    imageFallbackCandidates,
-  };
+  if (savoryScore > sweetScore) return "salees";
+  if (sweetScore > savoryScore) return "sucrees";
+  return "toutes";
+};
+
+const preparedArticles = getPreparedArchiveArticles().filter(
+  (article) =>
+    typeof article?.slug === "string" &&
+    article.slug?.trim() &&
+    String((article as Record<string, unknown>)?.lang || "fr").toLowerCase() === "fr",
+);
+
+const uniqueArticlesBySlug = new Map<string, PreparedArchiveArticle>();
+preparedArticles.forEach((article) => {
+  const slug = String(article.slug || "").trim();
+  if (!slug || uniqueArticlesBySlug.has(slug)) return;
+  uniqueArticlesBySlug.set(slug, article);
 });
+
+const cards = Array.from(uniqueArticlesBySlug.values())
+  .filter((article) => getArchiveFilterKey(article) === "salees")
+  .sort((a, b) => {
+    const aTime = Date.parse(String((a as Record<string, unknown>)?.publishedAt || ""));
+    const bTime = Date.parse(String((b as Record<string, unknown>)?.publishedAt || ""));
+    if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) return bTime - aTime;
+    return String(a.slug || "").localeCompare(String(b.slug || ""), "fr");
+  })
+  .map((article) => {
+    const slug = String(article.slug || "").trim();
+    const fallbackImage = processArticleImageUrl(article) || "";
+    const resolvedImage = processArticleImageUrl(article) || fallbackImage;
+    const imageFallbackCandidates = Array.from(
+      new Set(
+        [
+          ...buildWordPressImageFallbackCandidates(resolvedImage),
+          fallbackImage,
+        ].filter(Boolean),
+      ),
+    );
+
+    return {
+      href: `/${slug}`,
+      title: decodeHtmlEntities(String(article?.title || slug)),
+      excerpt: getExcerpt(article, slug),
+      prepTime: formatRecipeTime(article),
+      difficulty: formatDifficulty(article),
+      image: resolvedImage,
+      imageFallback: fallbackImage || resolvedImage,
+      imageFallbackCandidates,
+    };
+  });
 ---
 
 <BaseLayout title="Recettes salées">
@@ -130,6 +225,7 @@ const cards = sourceEntries.map((entry) => {
           prepTime={card.prepTime}
           difficulty={card.difficulty}
           category="SALÉ"
+          showDescription={false}
           contentClass="archive-card-content"
         />
       ))}
