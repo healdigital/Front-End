@@ -209,7 +209,8 @@ const toHeroCategoryTag = (card: HeroCard): string => {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    touch-action: pan-x;
+    /* Allow vertical page scrolling even when gesture starts on carousel image. */
+    touch-action: pan-y pinch-zoom;
     scroll-padding-inline: 16px;
     scrollbar-width: none;
   }
@@ -300,6 +301,7 @@ const toHeroCategoryTag = (card: HeroCard): string => {
     const prevButtons = Array.from(carousel.querySelectorAll('[data-carousel-prev]'));
     const nextButtons = Array.from(carousel.querySelectorAll('[data-carousel-next]'));
     let touchStartX = 0;
+    let touchStartY = 0;
 
     const getStep = () => {
       const firstCard = slides[0];
@@ -362,6 +364,7 @@ const toHeroCategoryTag = (card: HeroCard): string => {
       'touchstart',
       (event) => {
         touchStartX = event.changedTouches[0]?.clientX || 0;
+        touchStartY = event.changedTouches[0]?.clientY || 0;
       },
       { passive: true },
     );
@@ -370,12 +373,20 @@ const toHeroCategoryTag = (card: HeroCard): string => {
       'touchend',
       (event) => {
         const touchEndX = event.changedTouches[0]?.clientX || 0;
-        const delta = touchStartX - touchEndX;
-        if (Math.abs(delta) < 40) {
+        const touchEndY = event.changedTouches[0]?.clientY || 0;
+        const deltaX = touchStartX - touchEndX;
+        const deltaY = touchStartY - touchEndY;
+
+        // Ignore mostly vertical gestures so page can scroll naturally.
+        if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+          return;
+        }
+
+        if (Math.abs(deltaX) < 40) {
           scrollToIndex(getActiveIndex());
           return;
         }
-        scrollToIndex(getActiveIndex() + (delta > 0 ? 1 : -1));
+        scrollToIndex(getActiveIndex() + (deltaX > 0 ? 1 : -1));
       },
       { passive: true },
     );
