@@ -12,34 +12,15 @@ import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import MediavineSlot from '../components/MediavineSlot.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
-import { loadVideoCourses } from '../lib/videoCourses';
+import { loadFeaturedCourses, loadVideoCourses } from '../lib/videoCourses';
 import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
 const SHOP_VIDEO_URL = '/cours-video';
-const videoCourses = await loadVideoCourses();
-const HOMEPAGE_VIDEO_PRIORITY = [
-  /p[aÃ¢]te feuillet[eÃ©]e invers[eÃ©]e/i,
-  /cr[eÃ¨]mes? de base/i,
-  /millefeuille/i,
-];
-const getVideoPriorityIndex = (title: string) => {
-  const index = HOMEPAGE_VIDEO_PRIORITY.findIndex((pattern) => pattern.test(title));
-  return index === -1 ? Number.POSITIVE_INFINITY : index;
-};
-const prioritizedVideoCourses = [...videoCourses].sort((a, b) => {
-  const aPriority = getVideoPriorityIndex(a.title);
-  const bPriority = getVideoPriorityIndex(b.title);
-  if (aPriority !== bPriority) return aPriority - bPriority;
-  const aPaid = a.priceType === 'paid' || a.price > 0 ? 1 : 0;
-  const bPaid = b.priceType === 'paid' || b.price > 0 ? 1 : 0;
-  if (aPaid !== bPaid) return bPaid - aPaid;
-  return a.title.localeCompare(b.title, 'fr');
-});
-const homepageVideoCourses = prioritizedVideoCourses
-  .filter((course) => getVideoPriorityIndex(course.title) !== Number.POSITIVE_INFINITY)
-  .slice(0, 3);
+const featuredVideoCourses = await loadFeaturedCourses();
+const videoCourses = featuredVideoCourses.length ? featuredVideoCourses : await loadVideoCourses();
+const homepageVideoCourses = videoCourses.slice(0, 3);
 
 const fallbackImages = [
   '/images/recipe-chocolate-cake.jpg',
