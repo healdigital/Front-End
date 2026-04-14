@@ -15,7 +15,9 @@ interface Props {
   /** Optional original image fallback if optimized variant fails. */
   imageFallback?: string;
   /** Short summary rendered in the description area. */
-  description: string;
+  description?: string;
+  /** Controls whether the description paragraph is rendered. */
+  showDescription?: boolean;
   /** Preparation time label (for example, `25 min`). */
   prepTime: string;
   /** Difficulty label shown as a status badge. */
@@ -36,6 +38,7 @@ const {
   image,
   imageFallback = image,
   description,
+  showDescription = true,
   prepTime,
   difficulty,
   category = 'RECETTE',
@@ -45,9 +48,10 @@ const {
 } = Astro.props;
 
 const MAX_LENGTH = 200;
-const truncatedDescription = description.length > MAX_LENGTH
-  ? description.slice(0, MAX_LENGTH).trim() + '...'
-  : description;
+const safeDescription = String(description || '').trim();
+const truncatedDescription = safeDescription.length > MAX_LENGTH
+  ? safeDescription.slice(0, MAX_LENGTH).trim() + '...'
+  : safeDescription;
 const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
 const shareUrl = slug;
 ---
@@ -102,9 +106,11 @@ const shareUrl = slug;
       <SocialShare url={shareUrl} title={title} class="gap-3 text-[14px]" />
     </div>
 
-    <p class="flex-1 text-text-secondary font-body text-[16px] leading-[1.7] typ-body">
-      {truncatedDescription}
-    </p>
+    {showDescription && truncatedDescription && (
+      <p class="flex-1 text-text-secondary font-body text-[16px] leading-[1.7] typ-body">
+        {truncatedDescription}
+      </p>
+    )}
 
     <a
       href={slug}

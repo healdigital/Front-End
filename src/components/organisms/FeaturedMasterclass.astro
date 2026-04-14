@@ -38,6 +38,7 @@ const featuredCourses = await loadFeaturedCourses();
                 width="960"
                 height="720"
                 sizes="(min-width: 768px) 31vw, 92vw"
+                onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/masterclass-video.jpg';}"
               />
               {(course.lessonCount || course.duration) && (
                 <div class="featured-masterclass-badges">

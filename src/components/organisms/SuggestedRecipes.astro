@@ -191,6 +191,9 @@ const totalRecipeCount = totalCount;
       const totalAvailableCount = Number(section.getAttribute('data-suggested-total-count') || '') || cards.length;
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
       const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
+      const pageLang = String(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr')
+        .toLowerCase()
+        .trim();
 
       const shuffleInPlace = (items) => {
         for (let index = items.length - 1; index > 0; index -= 1) {
@@ -441,12 +444,17 @@ const totalRecipeCount = totalCount;
 
             const recipes = [];
             records.slice(Math.max(0, offset)).forEach((record) => {
+              const recordLang = String(record?.lang || '').toLowerCase().trim();
+              if (recordLang && pageLang && recordLang !== pageLang) return;
+
               const slug = normalizeSlug(record?.slug || record?.url || '');
               const title = String(record?.title || '').trim();
               if (!slug || !title || existingSlugs.has(slug)) return;
 
               existingSlugs.add(slug);
               const categoryLabel = record?.category || record?.tags || '';
+              const filterKey = getFilterKey(categoryLabel);
+              if (filterKey === 'toutes') return;
               const timeLabel =
                 record?.prepTime ||
                 (Number.isFinite(Number(record?.readingTimeMin)) && Number(record?.readingTimeMin) > 0
@@ -473,7 +481,7 @@ const totalRecipeCount = totalCount;
                 description: record?.excerpt || record?.content || '',
                 image: toOptimizedCardImage(originalImage),
                 imageFallback: originalImage,
-                filterKey: getFilterKey(categoryLabel),
+                filterKey,
                 difficulty: toRecipeTagLabel(categoryLabel),
                 prepTime: formatRecipeTime(timeLabel),
               });

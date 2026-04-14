@@ -30,6 +30,8 @@ let deeplFailureCount = 0;
 const loadedTranslationLangs = new Set<string>();
 const unavailableDeeplEndpoints = new Set<string>();
 const deeplTranslationCache = new Map<string, Map<string, string>>();
+const ENABLE_RUNTIME_AUTO_TRANSLATION =
+  String(import.meta.env.PUBLIC_ENABLE_RUNTIME_AUTO_TRANSLATION || '0') === '1';
 
 const DEEPL_FAILURE_THRESHOLD = 3;
 const TRANSLATE_API_CHUNK_SIZE = Math.max(20, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_SIZE) || 180);
@@ -67,7 +69,8 @@ const deeplEndpoints = Array.from(
 );
 let activeDeeplEndpointIndex = 0;
 
-const hasDeeplEndpoint = (): boolean => deeplEndpoints.length > 0;
+const hasDeeplEndpoint = (): boolean =>
+  ENABLE_RUNTIME_AUTO_TRANSLATION && deeplEndpoints.length > 0;
 
 const getLanguageCache = (targetLang: string): Map<string, string> => {
   const normalized = String(targetLang || '').trim().toUpperCase();
@@ -396,6 +399,7 @@ const collectAttributeTargets = (root: HTMLElement): Array<{ element: Element; a
 };
 
 const requestDeepLTranslation = async (texts: string[], targetLang: string): Promise<string[]> => {
+  if (!ENABLE_RUNTIME_AUTO_TRANSLATION) return texts;
   if (!texts.length) return texts;
   const languageCache = getLanguageCache(targetLang);
   const resolved: string[] = new Array(texts.length);
@@ -556,6 +560,7 @@ const requestDeepLTranslation = async (texts: string[], targetLang: string): Pro
 };
 
 const translateTextNodes = async (targetLang: string, roots?: HTMLElement[]): Promise<void> => {
+  if (!ENABLE_RUNTIME_AUTO_TRANSLATION) return;
   if (!hasDeeplEndpoint() || deeplUnavailable) return;
   if (translationInProgress) return;
   translationInProgress = true;
@@ -782,6 +787,11 @@ export async function changeLanguage(newLang: string): Promise<void> {
         emitTranslationStatus('success', {
           lang: normalizedLang,
           message: 'Version originale affichée.',
+        });
+      } else if (!ENABLE_RUNTIME_AUTO_TRANSLATION) {
+        emitTranslationStatus('success', {
+          lang: normalizedLang,
+          message: 'Langue changée. Traduction automatique désactivée.',
         });
       } else if (deeplUnavailable || !hasDeeplEndpoint()) {
         emitTranslationStatus('warning', {
