@@ -1938,9 +1938,6 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
   overflow: hidden;
 }
 
-#main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
-  /* border-bottom: 0 !important; */
-}
 
 /* Final desktop override: remove accidental divider line between featured card and right sidebar. */
 @media (min-width: 1024px) {
@@ -2009,8 +2006,5 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
     margin: 0 !important;
   }
 
-  #main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
-    /* border-bottom: 0 !important; */
-  }
 }
 
