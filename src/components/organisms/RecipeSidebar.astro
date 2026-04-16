@@ -18,7 +18,7 @@ const isFull = variant === 'full';
 const responsiveClass = mobileVisible ? 'flex lg:hidden' : 'hidden lg:flex';
 // Single source for right-sidebar workshop CTA target.
 // Keep absolute URL so sidebar CTA always opens the workshop tab correctly.
-const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
+const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/les-cours/';
 const workshopsApiUrl =
   import.meta.env.WORKSHOPS_CACHE_URL ||
   process.env.WORKSHOPS_CACHE_URL ||
@@ -70,9 +70,9 @@ const sidebarBooksDescription =
   'Des livres dédiés à la pâtisserie, aux classiques et aux saveurs du monde pour continuer à cuisiner avec méthode.';
 const sidebarBooks = [
   {
-    src: '/images/book-vege-terrien.jpeg',
-    alt: 'Végéterrien',
-    href: 'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d',
+    src: '/images/book-asie-sucree.jpg',
+    alt: 'Asie sucrée',
+    href: '/mes-livres/',
   },
   {
     src: '/images/book-vege-terrien.jpeg',
@@ -452,7 +452,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
 
     const normalizeHref = (value = '', fallbackUrl = '') => {
       const raw = String(value || '').trim();
-      if (!raw) return fallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/';
+      if (!raw) return fallbackUrl || 'https://atelier-lacuisinedebernard.com/les-cours/';
       if (/^https?:\/\//i.test(raw)) return raw;
       return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
     };
@@ -474,7 +474,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       return '';
     };
 
-    const mapWorkshopItem = (item, fallbackUrl = 'https://atelier-lacuisinedebernard.com/latelier/') => {
+    const mapWorkshopItem = (item, fallbackUrl = 'https://atelier-lacuisinedebernard.com/les-cours/') => {
       if (!item || typeof item !== 'object') return null;
       const parsedDate = new Date(item.startAt || item.date || '');
       if (Number.isNaN(parsedDate.getTime())) return null;
@@ -526,7 +526,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       if (block.dataset.workshopLoaded === 'loading' || block.dataset.workshopLoaded === 'true') return;
 
       const apiUrl = String(block.dataset.workshopsApi || '').trim();
-      const fallbackUrl = String(block.dataset.workshopsFallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/').trim();
+      const fallbackUrl = String(block.dataset.workshopsFallbackUrl || 'https://atelier-lacuisinedebernard.com/les-cours/').trim();
       if (!apiUrl) return;
 
       block.dataset.workshopLoaded = 'loading';
@@ -672,7 +672,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
           }
 
           if (ctaEl instanceof HTMLAnchorElement) {
-            ctaEl.href = fallbackUrl || firstWorkshop.slug || 'https://atelier-lacuisinedebernard.com/latelier/';
+            ctaEl.href = firstWorkshop.slug || fallbackUrl || 'https://atelier-lacuisinedebernard.com/les-cours/';
             ctaEl.target = '_blank';
             ctaEl.rel = 'noopener noreferrer';
           }

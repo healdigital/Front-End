@@ -97,14 +97,14 @@ const shareUrl = slug;
   </div>
 
   <!-- Content -->
-  <div class:list={['flex flex-1 flex-col gap-4 px-6 pb-7 pt-5', contentClass]}>
-    <h3 class="font-heading text-[43px] leading-[1] text-text-primary">
-      <a href={slug} class="hover:text-primary-turquoise transition-colors">
+  <div class:list={['flex flex-1 flex-col gap-4 px-5 pb-5 pt-4', contentClass]}>
+    <h3 class="font-heading text-[34px] leading-[0.98] text-text-primary">
+      <a href={slug} class="no-underline hover:text-primary-turquoise transition-colors">
         {title}
       </a>
     </h3>
 
-    <div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-b border-[#D8D2C2] pb-4">
+    <div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-t border-[#D8D2C2] pt-4">
       <div class="flex items-center gap-2">
         <span data-recipe-meta-time>{prepTime}</span>
       </div>
@@ -120,7 +120,7 @@ const shareUrl = slug;
     {showReadMore && (
       <a
         href={slug}
-        class="inline-flex items-center gap-2 mt-2 py-[14px] text-primary-turquoise font-button text-[13px] uppercase tracking-[0.08em] hover:underline typ-button"
+        class="inline-flex items-center gap-2 mt-1 py-[10px] text-primary-turquoise font-button text-[13px] uppercase tracking-[0.08em] typ-button no-underline"
       >
         Lire la recette
       </a>
@@ -146,5 +146,12 @@ const shareUrl = slug;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+  }
+
+  .lcdb-archive-recipe-card h3 a,
+  .lcdb-archive-recipe-card h3 a:hover,
+  .lcdb-archive-recipe-card .social-share-link,
+  .lcdb-archive-recipe-card .social-share-link:hover {
+    text-decoration: none !important;
   }
 </style>
