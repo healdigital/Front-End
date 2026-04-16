@@ -59,17 +59,19 @@ const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
 const shareUrl = slug;
 ---
 
-<article class="group flex h-full w-full flex-col rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
+<article class="group lcdb-archive-recipe-card flex h-full w-full flex-col rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
   <!-- Image Container -->
   <div class:list={[
-    'relative w-full overflow-hidden',
+    'lcdb-archive-recipe-card__media relative w-full overflow-hidden',
+    imageAspect === 'square' ? 'lcdb-archive-recipe-card__media--square' : 'lcdb-archive-recipe-card__media--portrait',
     imageAspect === 'square' ? 'aspect-square' : 'aspect-[14/18]',
   ]}>
     <img
       src={image}
       alt={title}
       class:list={[
-        'w-full h-full object-center bg-[#FAF8F2] transition-transform duration-500 group-hover:scale-105',
+        'lcdb-archive-recipe-card__image w-full h-full object-center bg-[#FAF8F2] transition-transform duration-500 group-hover:scale-105',
+        imageAspect === 'square' ? 'lcdb-archive-recipe-card__image--square' : 'lcdb-archive-recipe-card__image--portrait',
         imageAspect === 'square' ? 'object-cover' : 'object-contain',
       ]}
       loading="lazy"
@@ -125,3 +127,24 @@ const shareUrl = slug;
     )}
   </div>
 </article>
+
+<style is:global>
+  .static-page .static-page-content .lcdb-archive-recipe-card__media--square {
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0;
+    flex: 0 0 auto;
+  }
+
+  .static-page .static-page-content .lcdb-archive-recipe-card__media--square > .lcdb-archive-recipe-card__image--square {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+</style>
