@@ -1488,9 +1488,7 @@ footer a.hover\:text-primary-turquoise.transition-colors {
   font-size: 14px !important;
 }
 
-.section_1 {
-  padding-bottom: 48px !important;
-}
+
 .home-main-block,
 section.relative.overflow-hidden.home-page-section.home-page-section--dark.home-render-deferred.home-workshops-section,
 section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-page-section--light.home-render-deferred,
@@ -2007,4 +2005,10 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
   }
 
 }
-
+/* .section_1 {
+  padding-bottom: 48px !important;
+} */
+section.section_2 {
+    background-color: #f1efe6!important;
+    padding-bottom: 0px !important;
+}
