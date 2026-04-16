@@ -1611,7 +1611,7 @@ const relatedArticles = (
             {
               image && !firstContentParagraphHasImage && (
                 <figure class="lcdb-surface-card article-hero-image">
-                  <img src={image} alt={imageAlt} loading="eager" />
+                  <img src={image} alt={imageAlt} loading="eager" fetchpriority="high" decoding="async" />
                 </figure>
               )
             }

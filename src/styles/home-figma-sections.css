@@ -1864,16 +1864,16 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
     }
 }
 
-/* Final homepage spacing/tone corrections */
 .section_1 {
   padding-bottom: 10px !important;
 }
 
 #main-content .section_2 {
-  /* padding-top: 40px !important; */
-  border-top: 1px solid #dfdacd;
-  border-bottom: 1px solid #dfdacd;
+  border-top: 1px solid #dfdacd !important;
+  border-bottom: 1px solid #dfdacd !important;
 }
+
+
 
 /* #main-content .section_2 .home-main-column.home-main-column-stack {
   padding-top: 0 !important;
@@ -1953,5 +1953,77 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
 #main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
   border-bottom: 0 !important;
+}
+
+/* Final desktop override: remove accidental divider line between featured card and right sidebar. */
+@media (min-width: 1024px) {
+  #main-content .section_2 .home-sidebar-column {
+    border-left: 0 !important;
+    box-shadow: none !important;
+    background: #faf8f2 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #main-content .section_2 .home-main-column {
+    border-right: 0 !important;
+  }
+}
+
+/* Final launch pass: section_2 desktop sidebar alignment and border cleanup. */
+@media (min-width: 1024px) {
+  #main-content .section_2 {
+    background-color: #f1efe6 !important;
+  }
+
+  #main-content .zero_padding_value {
+    padding-top: 14px !important;
+  }
+
+  #main-content .section_2 .home-two-column {
+    grid-template-columns: minmax(0, 1fr) 392px !important;
+    gap: 18px !important;
+    align-items: start !important;
+  }
+
+  #main-content .section_2 .home-main-column {
+    padding-right: 0 !important;
+    padding-top: 12px !important;
+    border-right: 0 !important;
+  }
+
+  #main-content .section_2 .home-sidebar-column {
+    border-left: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  #main-content .section_2 .home-sidebar-sticky {
+    position: sticky;
+    top: 16px;
+    gap: 0 !important;
+    border: 1px solid #d8d2c2 !important;
+    border-radius: 14px !important;
+    background: #faf8f2 !important;
+    overflow: hidden !important;
+  }
+
+  #main-content .section_2 .home-sidebar-sticky .recipe-sidebar {
+    gap: 0 !important;
+    background: #faf8f2 !important;
+  }
+
+  #main-content .section_2 .home-sidebar-sticky .sidebar-block {
+    background: #faf8f2 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid #d8d2c2 !important;
+    margin: 0 !important;
+  }
+
+  #main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
+    border-bottom: 0 !important;
+  }
 }
 

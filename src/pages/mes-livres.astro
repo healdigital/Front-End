@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
 
 const navLinks = [
   {
@@ -15,6 +14,49 @@ const navLinks = [
     href: "/chocolat-maison/",
   },
 ];
+
+const books = [
+  {
+    title: "Végé-Terrien",
+    cover: "/images/book-vege-terrien.jpeg",
+    alt: "Livre Végé-Terrien",
+  },
+  {
+    title: "Je n'en ferai qu'une bouchée",
+    cover: "/images/book-bouchee.jpg",
+    alt: "Livre Je n'en ferai qu'une bouchée",
+  },
+  {
+    title: "Mes desserts",
+    cover: "/images/book-mes-desserts.jpg",
+    alt: "Livre Mes desserts",
+  },
+  {
+    title: "Mon grain de sel",
+    cover: "/images/book-mon-grain-de-sel.jpg",
+    alt: "Livre Mon grain de sel",
+  },
+  {
+    title: "Je fais mon chocolat maison",
+    cover: "/images/book-je-fais-mon-chocolat-maison.png",
+    alt: "Livre Je fais mon chocolat maison",
+  },
+  {
+    title: "Scandaleusement décadent",
+    cover: "/images/book-scandaleusement-decadent.jpg",
+    alt: "Livre Scandaleusement décadent",
+  },
+  {
+    title: "Asie sucrée",
+    cover: "/images/book-asie-sucree.jpg",
+    alt: "Livre Asie sucrée",
+  },
+  {
+    title: "La cuisine de Bernard",
+    cover: "/images/book-lacuisinedebernard.jpg",
+    alt: "Livre La cuisine de Bernard",
+  },
+];
 ---
 
 <BaseLayout title="Mes livres">
@@ -24,42 +66,130 @@ const navLinks = [
     className="menu-page menu-page--books"
     navLinks={navLinks}
   >
-    <StaticPageContent
-      slug="mes-livres"
-      sourceUrl="https://lacuisinedebernard.com/mes-livres/"
-    />
+    <section class="books-library-cleanup">
+      <p class="books-library-kicker">Bibliothèque</p>
+      <h2 class="books-library-title">Les livres de Bernard</h2>
+      <p class="books-library-description">
+        Retrouvez mes ouvrages publiés chez Flammarion, Solar et Éditions de la Martinière.
+        Cette version est harmonisée pour garder une mise en page propre et cohérente, sans blocs dupliqués.
+      </p>
+
+      <div class="books-library-grid">
+        {books.map((book) => (
+          <article class="books-library-item">
+            <figure class="books-library-cover-shell">
+              <img
+                src={book.cover}
+                alt={book.alt}
+                class="books-library-cover"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="920"
+              />
+            </figure>
+            <h3 class="books-library-item-title">{book.title}</h3>
+          </article>
+        ))}
+      </div>
+    </section>
   </StaticPage>
 </BaseLayout>
 
 <style is:global>
-  .static-page.menu-page--books .static-page-content .separator:has(> a > img) {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    align-items: start;
-    justify-items: stretch;
+  .static-page.menu-page--books .static-page-body {
+    padding: clamp(20px, 3vw, 36px);
   }
 
-  .static-page.menu-page--books .static-page-content .separator:has(> a > img) > a {
+  .static-page.menu-page--books .books-library-cleanup {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .static-page.menu-page--books .books-library-kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #6d7278;
+  }
+
+  .static-page.menu-page--books .books-library-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(2.1rem, 5vw, 3.45rem);
+    line-height: 0.98;
+    color: #141d2a;
+  }
+
+  .static-page.menu-page--books .books-library-description {
+    margin: 0;
+    max-width: 58ch;
+    color: #4f5660;
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.62;
+  }
+
+  .static-page.menu-page--books .books-library-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.05rem;
+    margin-top: 0.8rem;
+    align-items: start;
+  }
+
+  .static-page.menu-page--books .books-library-item {
+    min-width: 0;
+  }
+
+  .static-page.menu-page--books .books-library-cover-shell {
+    margin: 0;
+    border: 1px solid #d8d2c2;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #faf8f2;
+    box-shadow: 0 14px 36px rgba(16, 25, 37, 0.08);
+  }
+
+  .static-page.menu-page--books .books-library-cover {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
     display: block;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
     margin: 0 !important;
   }
 
-  .static-page.menu-page--books .static-page-content .separator:has(> a > img) > a > img {
-    width: 100%;
-    height: auto;
-    display: block;
+  .static-page.menu-page--books .books-library-item-title {
+    margin: 0.7rem 0 0;
+    font-family: var(--font-body);
+    font-size: 1.08rem;
+    line-height: 1.35;
+    color: #1a2335;
   }
 
   @media (max-width: 900px) {
-    .static-page.menu-page--books .static-page-content .separator:has(> a > img) {
+    .static-page.menu-page--books .books-library-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .static-page.menu-page--books .books-library-description {
+      font-size: 17px;
     }
   }
 
   @media (max-width: 640px) {
-    .static-page.menu-page--books .static-page-content .separator:has(> a > img) {
+    .static-page.menu-page--books .books-library-grid {
       grid-template-columns: minmax(0, 1fr);
+    }
+
+    .static-page.menu-page--books .books-library-item-title {
+      font-size: 1rem;
     }
   }
 </style>
