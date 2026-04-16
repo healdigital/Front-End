@@ -66,6 +66,7 @@ const totalRecipeCount = totalCount;
   data-suggested-source={source}
   data-suggested-offset={offset}
   data-suggested-total-count={totalRecipeCount}
+  data-suggested-cards-per-page={visibleCount}
 >
   {!embedded && (
     <div
@@ -187,7 +188,10 @@ const totalRecipeCount = totalCount;
       const skeleton = section.querySelector('[data-suggested-skeleton]');
       let activeFilter = 'toutes';
       let activePage = 1;
-      const cardsPerPage = 4;
+      const cardsPerPage = Math.max(
+        1,
+        Number(section.getAttribute('data-suggested-cards-per-page') || '12') || 12,
+      );
       const totalAvailableCount = Number(section.getAttribute('data-suggested-total-count') || '') || cards.length;
       const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
       const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
