@@ -54,109 +54,121 @@ const {
     const roots = Array.from(document.querySelectorAll('[data-infinite-grid-root]'));
 
     roots.forEach((root) => {
-    if (!(root instanceof HTMLElement)) return;
-    if (root.dataset.ready === 'true') return;
-    root.dataset.ready = 'true';
+      if (!(root instanceof HTMLElement)) return;
+      if (root.dataset.ready === 'true') return;
+      root.dataset.ready = 'true';
 
-    const grid = root.querySelector('[data-infinite-grid]');
-    const sentinel = root.querySelector('[data-infinite-grid-sentinel]');
-    const loading = root.querySelector('[data-infinite-grid-loading]');
-    const counter = root.querySelector('[data-infinite-grid-counter]');
-    const topButton = root.querySelector('[data-infinite-grid-top]');
+      const grid = root.querySelector('[data-infinite-grid]');
+      const sentinel = root.querySelector('[data-infinite-grid-sentinel]');
+      const loading = root.querySelector('[data-infinite-grid-loading]');
+      const counter = root.querySelector('[data-infinite-grid-counter]');
+      const topButton = root.querySelector('[data-infinite-grid-top]');
 
-    if (!(grid instanceof HTMLElement) || !(sentinel instanceof HTMLElement)) return;
+      if (!(grid instanceof HTMLElement) || !(sentinel instanceof HTMLElement)) return;
 
-    const cards = Array.from(grid.children).filter((item) => item instanceof HTMLElement);
-    const initialCount = Number(root.dataset.initialCount || '30');
-    const batchSize = Number(root.dataset.batchSize || '24');
-    const totalCount = Number(root.dataset.totalCount || String(cards.length)) || cards.length;
-    let visibleCount = Math.min(initialCount, cards.length);
-    let observer = null;
+      const cards = Array.from(grid.children).filter((item) => item instanceof HTMLElement);
+      const initialCount = Number(root.dataset.initialCount || '30');
+      const batchSize = Number(root.dataset.batchSize || '24');
+      const totalCount = Number(root.dataset.totalCount || String(cards.length)) || cards.length;
+      let visibleCount = Math.min(initialCount, cards.length);
+      let observer = null;
 
-    const updateCounter = () => {
-      if (!(counter instanceof HTMLElement)) return;
-      counter.textContent =
-        visibleCount >= totalCount
-          ? `${totalCount} recettes affichées`
-          : `${visibleCount} / ${totalCount} recettes affichées`;
-    };
+      const updateCounter = () => {
+        if (!(counter instanceof HTMLElement)) return;
+        counter.textContent =
+          visibleCount >= totalCount
+            ? `${totalCount} recettes affichées`
+            : `${visibleCount} / ${totalCount} recettes affichées`;
+      };
 
-    const positionSentinel = () => {
-      const lastVisible = cards[Math.max(0, visibleCount - 1)];
-      if (!lastVisible) return;
-      lastVisible.insertAdjacentElement('afterend', sentinel);
-    };
+      const positionSentinel = () => {
+        const lastVisible = cards[Math.max(0, visibleCount - 1)];
+        if (!lastVisible) return;
+        lastVisible.insertAdjacentElement('afterend', sentinel);
+      };
 
-    const updateTopButton = () => {
-      if (!(topButton instanceof HTMLButtonElement)) return;
-      const shouldShow = window.scrollY > window.innerHeight * 2;
-      topButton.classList.toggle('hidden', !shouldShow);
-    };
+      const updateTopButton = () => {
+        if (!(topButton instanceof HTMLButtonElement)) return;
+        const shouldShow = window.scrollY > window.innerHeight * 2;
+        topButton.classList.toggle('hidden', !shouldShow);
+      };
 
-    const revealNextBatch = () => {
-      if (visibleCount >= cards.length) {
-        if (observer) observer.disconnect();
-        if (loading instanceof HTMLElement) loading.classList.add('hidden');
+      const revealNextBatch = () => {
+        if (visibleCount >= cards.length) {
+          if (observer) observer.disconnect();
+          if (loading instanceof HTMLElement) loading.classList.add('hidden');
+          updateCounter();
+          return;
+        }
+
+        if (loading instanceof HTMLElement) loading.classList.remove('hidden');
+
+        const nextVisible = Math.min(visibleCount + batchSize, cards.length);
+        const nextCards = cards.slice(visibleCount, nextVisible);
+
+        nextCards.forEach((card, index) => {
+          card.removeAttribute('data-hidden');
+          card.classList.add('infinite-grid-card--revealed');
+          card.style.animationDelay = `${index * 40}ms`;
+        });
+
+        visibleCount = nextVisible;
+        positionSentinel();
         updateCounter();
-        return;
-      }
 
-      if (loading instanceof HTMLElement) loading.classList.remove('hidden');
+        if (loading instanceof HTMLElement) {
+          loading.classList.toggle('hidden', visibleCount >= cards.length);
+        }
 
-      const nextVisible = Math.min(visibleCount + batchSize, cards.length);
-      const nextCards = cards.slice(visibleCount, nextVisible);
+        if (visibleCount >= cards.length && observer) {
+          observer.disconnect();
+        }
+      };
 
-      nextCards.forEach((card, index) => {
-        card.removeAttribute('data-hidden');
-        card.classList.add('infinite-grid-card--revealed');
-        card.style.animationDelay = `${index * 40}ms`;
+      cards.forEach((card, index) => {
+        if (!(card instanceof HTMLElement)) return;
+        card.dataset.infiniteCard = 'true';
+        if (index >= visibleCount) {
+          card.setAttribute('data-hidden', 'true');
+        }
       });
 
-      visibleCount = nextVisible;
-      positionSentinel();
       updateCounter();
+      positionSentinel();
+      updateTopButton();
 
-      if (loading instanceof HTMLElement) {
-        loading.classList.toggle('hidden', visibleCount >= cards.length);
-      }
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) revealNextBatch();
+          });
+        },
+        {
+          rootMargin: '0px 0px 300px 0px',
+          threshold: 0,
+        },
+      );
 
-      if (visibleCount >= cards.length && observer) {
-        observer.disconnect();
-      }
-    };
+      observer.observe(sentinel);
 
-    cards.forEach((card, index) => {
-      if (!(card instanceof HTMLElement)) return;
-      card.dataset.infiniteCard = 'true';
-      if (index >= visibleCount) {
-        card.setAttribute('data-hidden', 'true');
-      }
+      const shouldRevealFromViewport = () => {
+        const rect = sentinel.getBoundingClientRect();
+        return rect.top <= window.innerHeight + 320;
+      };
+
+      const onWindowScroll = () => {
+        updateTopButton();
+        if (shouldRevealFromViewport()) revealNextBatch();
+      };
+
+      topButton?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      window.addEventListener('scroll', onWindowScroll, { passive: true });
+      window.addEventListener('resize', onWindowScroll, { passive: true });
+      onWindowScroll();
     });
-
-    updateCounter();
-    positionSentinel();
-    updateTopButton();
-
-    observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) revealNextBatch();
-        });
-      },
-      {
-        rootMargin: '0px 0px 300px 0px',
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    topButton?.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    window.addEventListener('scroll', updateTopButton, { passive: true });
-  });
   };
 
   setupInfiniteGrids();
@@ -166,6 +178,13 @@ const {
 <style is:global>
   [data-infinite-card][data-hidden='true'] {
     display: none !important;
+  }
+
+  .infinite-grid-sentinel {
+    width: 100%;
+    height: 1px;
+    grid-column: 1 / -1;
+    pointer-events: none;
   }
 
   .infinite-grid-counter {

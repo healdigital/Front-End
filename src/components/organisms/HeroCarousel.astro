@@ -395,6 +395,11 @@ const toHeroCategoryTag = (card: HeroCard): string => {
     window.addEventListener('resize', updateDots);
     updateDots();
 
+    if (slides.length <= 1) {
+      updateDots();
+      return;
+    }
+
     // Auto-slide every few seconds, looping back to start when reaching the end.
     const AUTO_SLIDE_INTERVAL_MS = 5000;
     let autoSlideTimer = window.setInterval(() => {
@@ -417,11 +422,12 @@ const toHeroCategoryTag = (card: HeroCard): string => {
       }, AUTO_SLIDE_INTERVAL_MS);
     };
 
-    // Pause auto-slide on hover (desktop) to improve UX.
-    carousel.addEventListener('mouseenter', clearAutoSlide);
-    carousel.addEventListener('mouseleave', restartAutoSlide);
     carousel.addEventListener('touchstart', clearAutoSlide, { passive: true });
     carousel.addEventListener('touchend', restartAutoSlide, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearAutoSlide();
+      else restartAutoSlide();
+    });
   };
 
   const initHeroCarousels = () => {
