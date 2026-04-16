@@ -64,15 +64,47 @@ const sidebarProfileBullets = [
   },
 ];
 
+const sidebarBooksEyebrow = 'Bibliothèque';
+const sidebarBooksTitle = 'Les livres de Bernard';
+const sidebarBooksDescription =
+  'Des livres dédiés à la pâtisserie, aux classiques et aux saveurs du monde pour continuer à cuisiner avec méthode.';
 const sidebarBooks = [
-  { src: '/images/book-vege-terrien.jpeg', alt: 'Végéterrien' },
-  { src: '/images/book-mes-desserts.jpg', alt: 'Mes desserts de Bernard' },
-  { src: '/images/book-mon-grain-de-sel.jpg', alt: 'Mon grain de sel' },
-  { src: '/images/book-bouchee.jpg', alt: "Je n'en ferai qu'une bouchee" },
-  { src: '/images/book-asie-sucree.jpg', alt: 'Asie Sucree' },
-  { src: '/images/book-je-fais-mon-chocolat-maison.png', alt: 'Je fais mon chocolat maison' },
-  { src: '/images/book-lacuisinedebernard.jpg', alt: 'La Cuisine de Bernard' },
-  { src: '/images/book-scandaleusement-decadent.jpg', alt: 'Scandaleusement Decadent' },
+  {
+    src: '/images/book-vege-terrien.jpeg',
+    alt: 'Végéterrien',
+    href: 'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d',
+  },
+  {
+    src: '/images/book-vege-terrien.jpeg',
+    alt: 'Végéterrien',
+    href: 'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d',
+  },
+  {
+    src: '/images/book-bouchee.jpg',
+    alt: "Je n'en ferai qu'une bouchée",
+    href: 'https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21',
+  },
+  {
+    src: '/images/book-mes-desserts.jpg',
+    alt: 'Mes desserts de Bernard',
+    href: 'https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F',
+  },
+  {
+    src: '/images/book-mon-grain-de-sel.jpg',
+    alt: 'Mon grain de sel',
+    href: 'https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88',
+  },
+  {
+    src: '/images/book-je-fais-mon-chocolat-maison.png',
+    alt: 'Je fais mon chocolat maison',
+    href: 'https://lacuisinedebernard.com/produit/je-fais-mon-chocolat-maison/',
+    inset: true,
+  },
+  {
+    src: '/images/book-lacuisinedebernard.jpg',
+    alt: 'La Cuisine de Bernard',
+    href: 'https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd',
+  },
 ];
 
 const SHOP_CLUB_URL = 'https://atelier-lacuisinedebernard.com/club/';
@@ -313,24 +345,30 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
   )}
 
   {isFull && (
-    <div class="sidebar-block px-6 py-8">
-      <h4 class="sidebar-title">Mes livres de cuisine</h4>
-      <div class="grid grid-cols-3 gap-3 mt-4 sidebar-books-grid">
-        {sidebarBooks.map((book, index) => (
-          <img
-            src={book.src}
-            alt={book.alt}
-            class:list={[
-              'w-full rounded-[2px] object-contain bg-[#F7F5EF] p-1',
-              index === sidebarBooks.length - 1 && sidebarBooks.length % 3 === 1
-                ? 'col-span-3 h-[176px]'
-                : 'h-[154px]',
-            ]}
-            loading="lazy"
-            decoding="async"
-            width="220"
-            height="308"
-          />
+    <div class="sidebar-block px-6 py-8 recipe-sidebar-books-block">
+      <p class="recipe-sidebar-books-eyebrow">{sidebarBooksEyebrow}</p>
+      <h4 class="recipe-sidebar-books-title">{sidebarBooksTitle}</h4>
+      <p class="recipe-sidebar-books-description">{sidebarBooksDescription}</p>
+
+      <div class="sidebar-books-grid recipe-sidebar-books-grid mt-6">
+        {sidebarBooks.map((book) => (
+          <a
+            href={book.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class:list={['recipe-sidebar-book-card', book.inset && 'recipe-sidebar-book-card--inset']}
+            aria-label={`Découvrir le livre ${book.alt}`}
+          >
+            <img
+              src={book.src}
+              alt={book.alt}
+              class="recipe-sidebar-book-image"
+              loading="lazy"
+              decoding="async"
+              width="420"
+              height="620"
+            />
+          </a>
         ))}
       </div>
       <a href="/mes-livres" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
@@ -781,6 +819,71 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
 
   .recipe-sidebar :global(.sidebar-books-grid) {
     align-items: start;
+  }
+
+  .recipe-sidebar-books-eyebrow {
+    margin: 0;
+    color: #616773;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-family: var(--font-mono), monospace;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .recipe-sidebar-books-title {
+    margin: 10px 0 0;
+    color: #152233;
+    font-family: var(--font-heading), serif;
+    font-size: clamp(2.6rem,4.6vw,2.7rem);
+    line-height: 0.93;
+  }
+
+  .recipe-sidebar-books-description {
+    margin: 16px 0 0;
+    color: #4f5765;
+    font-family: var(--font-body), serif;
+    font-size: 17px;
+    line-height: 1.52;
+  }
+
+  .recipe-sidebar-books-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .recipe-sidebar-book-card {
+    display: block;
+    border: 1px solid #394350;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f7f5ef;
+    aspect-ratio: 3 / 5;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .recipe-sidebar-book-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(15, 31, 52, 0.16);
+  }
+
+  .recipe-sidebar-book-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .recipe-sidebar-book-card--inset {
+    padding: 12px;
+    background: #faf8f2;
+  }
+
+  .recipe-sidebar-book-card--inset .recipe-sidebar-book-image {
+    border-radius: 8px;
+    object-fit: contain;
+    background: #d9e3e6;
   }
 
   .recipe-sidebar-bullet-item {
