@@ -16,6 +16,8 @@ interface Props {
 const { variant = 'full', className = '', stickyPopularRail = false, mobileVisible = false } = Astro.props as Props;
 const isFull = variant === 'full';
 const responsiveClass = mobileVisible ? 'flex lg:hidden' : 'hidden lg:flex';
+// Single source for right-sidebar workshop CTA target.
+// Keep absolute URL so sidebar CTA always opens the workshop tab correctly.
 const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 const workshopsApiUrl =
   import.meta.env.WORKSHOPS_CACHE_URL ||
@@ -116,6 +118,7 @@ const sidebarProfileParagraphs = [
   'Chaque recette est travaillée, testée plusieurs fois si nécessaire, photographiée en pas à pas et rédigée par mes soins, pour que vous puissiez la refaire chez vous et vous régaler avec ceux que vous aimez !',
 ];
 const workshopFallbackTitle = 'Atelier à venir';
+const workshopFallbackImage = '/images/ateliers-physiques.jpg';
 const workshopFallbackDescription =
   'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.';
 const workshopUnavailableDescription =
@@ -181,6 +184,19 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
     <div class="sidebar-block px-6 py-8">
       <h4 class="sidebar-title">Ateliers de cuisine</h4>
       <div class="rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] p-6 mt-5 workshop-box " data-sidebar-workshop data-workshops-api={workshopsApiUrl} data-workshops-fallback-url={SIDEBAR_WORKSHOP_URL}>
+        <div class="mb-5 overflow-hidden rounded-[8px] border border-[#D8D2C2] bg-[#ECE6DA]">
+          <img
+            src={workshopFallbackImage}
+            alt={workshopFallbackTitle}
+            class="w-full aspect-square object-cover"
+            loading="lazy"
+            decoding="async"
+            width="640"
+            height="640"
+            data-sidebar-workshop-image
+            onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/ateliers-physiques.jpg';}"
+          />
+        </div>
         <p class="sidebar-subtitle font-mono text-[13px] uppercase tracking-[0.14em] text-[#5F6671]" data-sidebar-workshop-status>Chargement...</p>
         <div class="mt-3 grid grid-cols-[minmax(0,1fr)_74px] items-start gap-4">
           <h5 class="font-heading text-[28px] leading-[1.02] text-[#111111]" data-sidebar-workshop-title>{workshopFallbackTitle}</h5>
@@ -403,6 +419,23 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
     };
 
+    const normalizeImage = (value = '') => {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      if (raw.startsWith('/')) return `https://atelier-lacuisinedebernard.com${raw}`;
+      return '';
+    };
+
+    const resolveImageValue = (value) => {
+      if (!value) return '';
+      if (typeof value === 'string') return value;
+      if (typeof value === 'object') {
+        return String(value.url || value.src || value.sourceUrl || value.file || '').trim();
+      }
+      return '';
+    };
+
     const mapWorkshopItem = (item, fallbackUrl = 'https://atelier-lacuisinedebernard.com/latelier/') => {
       if (!item || typeof item !== 'object') return null;
       const parsedDate = new Date(item.startAt || item.date || '');
@@ -441,6 +474,12 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
         description,
         status: normalizeStatus(item.status),
         slug: normalizeHref(item.bookingUrl || item.slug, fallbackUrl),
+        image: normalizeImage(
+          resolveImageValue(item.image) ||
+          resolveImageValue(item.featuredImage) ||
+          resolveImageValue(item.coverImage) ||
+          resolveImageValue(item.thumbnail),
+        ),
       };
     };
 
@@ -465,6 +504,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
         const priceEl = block.querySelector('[data-sidebar-workshop-price]');
         const monthEl = block.querySelector('[data-sidebar-workshop-month]');
         const dayEl = block.querySelector('[data-sidebar-workshop-day]');
+        const imageEl = block.querySelector('[data-sidebar-workshop-image]');
 
         if (statusEl instanceof HTMLElement) {
           statusEl.textContent = message;
@@ -481,6 +521,10 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
         if (priceEl instanceof HTMLElement) priceEl.textContent = '--';
         if (monthEl instanceof HTMLElement) monthEl.textContent = '--';
         if (dayEl instanceof HTMLElement) dayEl.textContent = '--';
+        if (imageEl instanceof HTMLImageElement) {
+          imageEl.src = '/images/ateliers-physiques.jpg';
+          imageEl.alt = 'Atelier à venir';
+        }
       };
 
       fetch(apiUrl, {
@@ -516,6 +560,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
           const priceEl = block.querySelector('[data-sidebar-workshop-price]');
           const descriptionEl = block.querySelector('[data-sidebar-workshop-description]');
           const ctaEl = block.querySelector('[data-sidebar-workshop-cta]');
+          const imageEl = block.querySelector('[data-sidebar-workshop-image]');
 
           if (titleEl instanceof HTMLElement) {
             titleEl.textContent = firstWorkshop.title;
@@ -583,8 +628,13 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
               'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.';
           }
 
+          if (imageEl instanceof HTMLImageElement) {
+            imageEl.src = firstWorkshop.image || '/images/ateliers-physiques.jpg';
+            imageEl.alt = firstWorkshop.title || 'Atelier de cuisine';
+          }
+
           if (ctaEl instanceof HTMLAnchorElement) {
-            ctaEl.href = SIDEBAR_WORKSHOP_URL;
+            ctaEl.href = fallbackUrl || firstWorkshop.slug || 'https://atelier-lacuisinedebernard.com/latelier/';
             ctaEl.target = '_blank';
             ctaEl.rel = 'noopener noreferrer';
           }

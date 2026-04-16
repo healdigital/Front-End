@@ -18,6 +18,8 @@ interface Props {
   description?: string;
   /** Controls whether the description paragraph is rendered. */
   showDescription?: boolean;
+  /** Controls whether the bottom "Lire la recette" CTA is rendered. */
+  showReadMore?: boolean;
   /** Preparation time label (for example, `25 min`). */
   prepTime: string;
   /** Difficulty label shown as a status badge. */
@@ -39,6 +41,7 @@ const {
   imageFallback = image,
   description,
   showDescription = true,
+  showReadMore = true,
   prepTime,
   difficulty,
   category = 'RECETTE',
@@ -112,11 +115,13 @@ const shareUrl = slug;
       </p>
     )}
 
-    <a
-      href={slug}
-      class="inline-flex items-center gap-2 mt-2 py-[14px] text-primary-turquoise font-button text-[13px] uppercase tracking-[0.08em] hover:underline typ-button"
-    >
-      Lire la recette
-    </a>
+    {showReadMore && (
+      <a
+        href={slug}
+        class="inline-flex items-center gap-2 mt-2 py-[14px] text-primary-turquoise font-button text-[13px] uppercase tracking-[0.08em] hover:underline typ-button"
+      >
+        Lire la recette
+      </a>
+    )}
   </div>
 </article>
