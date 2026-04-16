@@ -1864,20 +1864,7 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
     }
 }
 
-.section_1 {
-  padding-bottom: 10px !important;
-}
 
-#main-content .section_2 {
-  border-top: 1px solid #dfdacd !important;
-  border-bottom: 1px solid #dfdacd !important;
-}
-
-
-
-/* #main-content .section_2 .home-main-column.home-main-column-stack {
-  padding-top: 0 !important;
-} */
 #main-content .zero_padding_value {
     padding-top: 40px !important;
 }
@@ -1903,8 +1890,8 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
 #main-content .section_2 .home-sidebar-sticky .sidebar-block {
   background: #faf8f2 !important;
-  border: 1px solid #d8d2c2 !important;
-  border-radius: 14px !important;
+  /* border: 1px solid #d8d2c2 !important; */
+  /* border-radius: 14px !important; */
   overflow: hidden;
 }
 
@@ -1944,15 +1931,15 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
 #main-content .section_2 .home-sidebar-sticky .sidebar-block {
   background: #faf8f2 !important;
-  border: 0 !important;
+  /* border: 0 !important;
   border-radius: 0 !important;
-  border-bottom: 1px solid #d8d2c2 !important;
+  border-bottom: 1px solid #d8d2c2 !important; */
   margin: 0 !important;
   overflow: hidden;
 }
 
 #main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
-  border-bottom: 0 !important;
+  /* border-bottom: 0 !important; */
 }
 
 /* Final desktop override: remove accidental divider line between featured card and right sidebar. */
@@ -1988,7 +1975,7 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
   #main-content .section_2 .home-main-column {
     padding-right: 0 !important;
-    padding-top: 12px !important;
+    padding-top: 40px !important;
     border-right: 0 !important;
   }
 
@@ -2003,8 +1990,8 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
     position: sticky;
     top: 16px;
     gap: 0 !important;
-    border: 1px solid #d8d2c2 !important;
-    border-radius: 14px !important;
+    /* border: 1px solid #d8d2c2 !important;
+    border-radius: 14px !important; */
     background: #faf8f2 !important;
     overflow: hidden !important;
   }
@@ -2016,14 +2003,14 @@ section.relative.bg-secondary-cream.overflow-hidden.p-4.home-page-section.home-p
 
   #main-content .section_2 .home-sidebar-sticky .sidebar-block {
     background: #faf8f2 !important;
-    border: 0 !important;
+    /* border: 0 !important;
     border-radius: 0 !important;
-    border-bottom: 1px solid #d8d2c2 !important;
+    border-bottom: 1px solid #d8d2c2 !important; */
     margin: 0 !important;
   }
 
   #main-content .section_2 .home-sidebar-sticky .sidebar-block:last-child {
-    border-bottom: 0 !important;
+    /* border-bottom: 0 !important; */
   }
 }
 
