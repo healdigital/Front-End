@@ -1,6 +1,6 @@
 LCDB Master Pending Points (Single Source of Truth)
-Updated: 2026-04-17
-Status: LOCKED (complete these before any new feature work)
+Updated: 2026-04-17 (night sync for Monday execution)
+Status: MONDAY READY (done items locked, pending items below)
 
 1) Source Files Included (Cross-Checked)
 - C:\Users\navee\Desktop\LCDB_Master_Tracker.md
@@ -26,6 +26,7 @@ Status: LOCKED (complete these before any new feature work)
 - [ ] Recipe card sizing still too large vs "actual blog" reference (desktop/mobile pass).
 - [ ] Missing book + duplicate book issue final close in both sidebar and bottom books sections.
 - [ ] Mes livres wrong route/content behavior cleanup (avoid "bizarre newsletter repeated page" path outcome).
+- [ ] Payload "last recipe portrait image" full rollout verify (field is added in Payload Admin; frontend rendering + imported data population + QA still pending).
 
 3) P0 - Security (Must Close)
 - [ ] Lock down Payload collection access control (Articles, Authors, Categories, Tags, Comments).
@@ -115,9 +116,18 @@ Status: LOCKED (complete these before any new feature work)
 - [ ] Confirm final workshop CTA target URL (/latelier/ vs exact tab URL).
 - [ ] Confirm final favicon asset file.
 - [ ] Confirm canonical import policy and expected per-language article counts.
+- [ ] Share SSH/DB export-friendly access path for stable WP Recipe Maker bulk export (without plugin crash) OR provide official full export package.
 - [ ] Mediavine side confirmation for fill/placement behavior.
 - [ ] Axeptio production values (CLIENT_ID, COOKIES_VERSION, domain policy).
 - [ ] GA production confirmation (PUBLIC_GA_MEASUREMENT_ID, property/source reference).
+- [ ] Confirm newsletter provider target implementation details (Fillout/Acumbamail final production path).
+
+13) Monday Start Queue (Execution Order)
+1. Recipe import unblock: stabilize WP Recipe Maker export path (SSH or package route), then run source count reconciliation.
+2. Multilingual/content integrity: mapping verification and listing load regression close on staging.
+3. Client visual blockers pass: card size/underline/divider/tag parity and books duplicate/missing final close with screenshot QA.
+4. Payload/frontend bridge: validate "last recipe portrait image" end-to-end (admin field -> stored data -> recipe detail render).
+5. Start P0 security hardening batch in payload-admin and front server endpoints.
 - [ ] Confirm newsletter provider target implementation details (Fillout/Acumbamail final production path).
 
 11) Explicitly Removed / Out of Scope
