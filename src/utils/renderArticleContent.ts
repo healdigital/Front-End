@@ -553,6 +553,13 @@ const renderRecipeCardBlock = (
     .filter(Boolean)
     .join('\n');
 
+  const finalRecipeMedia =
+    resolveMedia(block.finalStepImage, ['articleStep', 'articleHero', 'gallery']) ||
+    resolveMedia(block.finalImage, ['articleStep', 'articleHero', 'gallery']) ||
+    resolveMedia(block.closingImage, ['articleStep', 'articleHero', 'gallery']);
+  const finalRecipeCaption =
+    asText(block.finalStepImageCaption) || asText(block.finalImageCaption) || '';
+
   const nutritionRows = [
     {
       label: 'Calories',
@@ -670,6 +677,19 @@ const renderRecipeCardBlock = (
       ].join('\n')
     : '';
 
+  const finalRecipeImageSection = finalRecipeMedia?.url
+    ? [
+        '<section class="content-v2-block content-v2-recipe-final-image">',
+        '  <figure class="content-v2-recipe-final-image-figure">',
+        `    <img src="${escapeAttribute(finalRecipeMedia.url)}" alt="${escapeAttribute(finalRecipeMedia.alt || asText(article?.title) || title)}" loading="lazy" decoding="async" />`,
+        finalRecipeCaption ? `    <figcaption>${escapeHtml(finalRecipeCaption)}</figcaption>` : '',
+        '  </figure>',
+        '</section>',
+      ]
+        .filter(Boolean)
+        .join('\n')
+    : '';
+
   const compactRecipeCardSection = [
     '<section class="content-v2-block content-v2-recipe-card">',
     !topSummaryItems ? `  <h2>${escapeHtml(title)}</h2>` : '',
@@ -711,7 +731,14 @@ const renderRecipeCardBlock = (
     .filter(Boolean)
     .join('\n');
 
-  return [topSummarySection, ingredientSection, visualStepsSection, bonAppetitSection, compactRecipeCardSection]
+  return [
+    topSummarySection,
+    ingredientSection,
+    visualStepsSection,
+    bonAppetitSection,
+    finalRecipeImageSection,
+    compactRecipeCardSection,
+  ]
     .filter(Boolean)
     .join('\n');
 };

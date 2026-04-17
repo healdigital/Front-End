@@ -9,6 +9,8 @@ const {
   slug,
   image,
   imageAlt,
+  finalImage = "",
+  finalImageAlt = "",
   ratingLabel,
   ratingStars = [],
   articleShareLinks = [],
@@ -29,6 +31,10 @@ const heroImageFallbackCandidates = image
   : [];
 const recipeImageFallbackCandidates = image
   ? buildWordPressImageFallbackCandidates(image)
+  : [];
+const finalRecipeImageSrc = String(finalImage || image || '').trim();
+const finalRecipeImageFallbackCandidates = finalRecipeImageSrc
+  ? buildWordPressImageFallbackCandidates(finalRecipeImageSrc)
   : [];
 const visibleShareLinks = articleShareLinks.filter((link: any) => {
   const platform = String(link?.platform || '').toLowerCase();
@@ -314,17 +320,17 @@ const printLink = `/print/${slug}/?auto=1`;
   <p class="recipe-redesign__bon-appetit">Bon appétit !</p>
 
   {
-    image && (
+    finalRecipeImageSrc && (
       <figure class="recipe-redesign__final-image bon_img">
         <img
-          src={image}
-          alt={imageAlt || title}
+          src={finalRecipeImageSrc}
+          alt={finalImageAlt || imageAlt || title}
           loading="lazy"
           decoding="async"
           width="1200"
           height="1200"
           sizes="(min-width: 1280px) 980px, (min-width: 768px) 88vw, 100vw"
-          data-fallback-candidates={recipeImageFallbackCandidates.join('|')}
+          data-fallback-candidates={finalRecipeImageFallbackCandidates.join('|')}
           onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift(); this.dataset.fallbackCandidates=list.join('|'); if(next && next!==current) this.src=next;"
         />
       </figure>

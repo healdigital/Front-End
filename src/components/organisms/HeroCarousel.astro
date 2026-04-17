@@ -144,7 +144,7 @@ const toHeroCategoryTag = (card: HeroCard): string => {
               <div class="absolute inset-0 bg-gradient-to-t from-black/72 via-black/30 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6">
                 <div class="mb-3">
-                  <span class="inline-flex rounded-full bg-white/95 px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.1em] text-[#26323E]">
+                  <span class="hero-card-tag inline-flex rounded-full bg-[#F0EFE8]/95 px-[12px] py-[4px] text-[10px] font-mono uppercase tracking-[0.07em] text-[#48505D]">
                     {toHeroCategoryTag(card)}
                   </span>
                 </div>
@@ -276,6 +276,11 @@ const toHeroCategoryTag = (card: HeroCard): string => {
 
   .hero-dot.is-active {
     background: #1a2335;
+  }
+
+  .hero-card-tag {
+    font-size: 10px;
+    letter-spacing: 0.07em;
   }
 
   @media (min-width: 768px) {

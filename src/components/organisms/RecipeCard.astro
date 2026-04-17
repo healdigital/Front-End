@@ -87,10 +87,10 @@ const shareUrl = slug;
 
     <!-- Bookmark Button -->
     <button
-      class="absolute top-4 right-4 w-[54px] h-[54px] rounded-full bg-[#FAF8F2]/95 backdrop-blur-sm flex items-center justify-center text-text-primary hover:text-primary-turquoise transition-colors"
+      class="absolute top-3 right-3 w-[36px] h-[36px] rounded-full bg-[#FAF8F2]/95 backdrop-blur-sm flex items-center justify-center text-text-primary hover:text-primary-turquoise transition-colors"
       aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
     >
-      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
       </svg>
     </button>
@@ -98,17 +98,17 @@ const shareUrl = slug;
 
   <!-- Content -->
   <div class:list={['flex flex-1 flex-col gap-4 px-5 pb-5 pt-4', contentClass]}>
-    <h3 class="font-heading text-[34px] leading-[0.98] text-text-primary">
+    <h3 class="font-heading text-[26px] leading-[1.02] text-[#111111]">
       <a href={slug} class="no-underline hover:text-primary-turquoise transition-colors">
         {title}
       </a>
     </h3>
 
-    <div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-t border-[#D8D2C2] pt-4">
+    <div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-t border-[#D8D2C2] border-b-0 pt-4 pb-0 mb-0">
       <div class="flex items-center gap-2">
         <span data-recipe-meta-time>{prepTime}</span>
       </div>
-      <SocialShare url={shareUrl} title={title} class="gap-3 text-[14px]" />
+      <SocialShare url={shareUrl} title={title} class="gap-2 text-[13px]" />
     </div>
 
     {showDescription && truncatedDescription && (
@@ -149,7 +149,11 @@ const shareUrl = slug;
   }
 
   .lcdb-archive-recipe-card h3 a,
-  .lcdb-archive-recipe-card h3 a:hover,
+  .lcdb-archive-recipe-card h3 a:hover {
+    color: #111111 !important;
+    text-decoration: none !important;
+  }
+
   .lcdb-archive-recipe-card .social-share-link,
   .lcdb-archive-recipe-card .social-share-link:hover {
     text-decoration: none !important;

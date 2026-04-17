@@ -452,6 +452,27 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     text-decoration: none;
   }
 
+  .static-page.menu-page--savory-grid .static-page-content .lcdb-archive-recipe-card h3 a,
+  .static-page.menu-page--sweet-grid .static-page-content .lcdb-archive-recipe-card h3 a,
+  .static-page.menu-page--travel-grid .static-page-content .lcdb-archive-recipe-card h3 a {
+    color: #111111 !important;
+    text-decoration: none !important;
+  }
+
+  .static-page.menu-page--savory-grid .static-page-content .lcdb-archive-recipe-card .typ-meta,
+  .static-page.menu-page--sweet-grid .static-page-content .lcdb-archive-recipe-card .typ-meta,
+  .static-page.menu-page--travel-grid .static-page-content .lcdb-archive-recipe-card .typ-meta {
+    border-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .lcdb-archive-recipe-card .typ-meta {
+    border-top: 0 !important;
+    border-bottom: 1px solid #d8d2c2;
+    padding-bottom: 16px;
+  }
+
   .static-page.menu-page--travel-grid .static-page-content .penci-hide-tagupdated,
   .static-page.menu-page--travel-grid .static-page-content .grid-post-box-meta {
     display: none;
@@ -476,10 +497,10 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
   .static-page.menu-page--travel-grid .static-page-content .penci-image-holder::after {
     content: "\f02e";
     position: absolute;
-    top: 14px;
-    left: 14px;
-    width: 42px;
-    height: 42px;
+    top: 10px;
+    left: 10px;
+    width: 34px;
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -487,7 +508,7 @@ const { title, subtitle, className = '', navLinks = [] } = Astro.props;
     background: rgba(250, 248, 242, 0.95);
     color: #171f2c;
     font-family: "Font Awesome 5 Free";
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 400;
     box-shadow: 0 12px 24px rgba(8, 18, 34, 0.12);
     z-index: 2;
