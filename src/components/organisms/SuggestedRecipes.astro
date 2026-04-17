@@ -44,6 +44,12 @@ const recipeFilters = [
   { label: 'Recettes salées', value: 'salees' },
 ];
 
+const normalizedRecipeFilters = [
+  { label: 'Toutes les recettes', value: 'toutes' },
+  { label: 'Recettes sucrees', value: 'sucrees' },
+  { label: 'Recettes salees', value: 'salees' },
+];
+
 const normalizeToken = (value: string): string =>
   value
     .normalize('NFD')
@@ -82,7 +88,7 @@ const totalRecipeCount = totalCount;
     </div>
 
     <div class="flex items-center justify-start gap-4 mb-8">
-      <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
+      <FilterDropdown label="Toutes les recettes" options={normalizedRecipeFilters} />
     </div>
 
     <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid aria-busy="false">
@@ -106,6 +112,7 @@ const totalRecipeCount = totalCount;
             prepTime={recipe.prepTime}
             difficulty={recipe.difficulty}
             slug={recipe.slug}
+            showReadMore={false}
             contentClass="pb-12"
           />
         </div>

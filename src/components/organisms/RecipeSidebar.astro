@@ -19,6 +19,17 @@ const responsiveClass = mobileVisible ? 'flex lg:hidden' : 'hidden lg:flex';
 // Single source for right-sidebar workshop CTA target.
 // Keep absolute URL so sidebar CTA always opens the workshop tab correctly.
 const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
+const normalizeWorkshopUrl = (value: string | undefined | null): string => {
+  const raw = String(value || '').trim();
+  if (!raw) return SIDEBAR_WORKSHOP_URL;
+  if (/https?:\/\/atelier-lacuisinedebernard\.com\/les-cours\/?/i.test(raw)) {
+    return SIDEBAR_WORKSHOP_URL;
+  }
+  if (/^\/les-cours\/?$/i.test(raw)) {
+    return SIDEBAR_WORKSHOP_URL;
+  }
+  return raw;
+};
 const workshopsApiUrl =
   import.meta.env.WORKSHOPS_CACHE_URL ||
   process.env.WORKSHOPS_CACHE_URL ||
@@ -108,7 +119,7 @@ const sidebarBooks = [
 ];
 
 const SHOP_CLUB_URL = 'https://atelier-lacuisinedebernard.com/club/';
-const SHOP_VIDEO_URL = '/cours-video';
+const SHOP_VIDEO_URL = SIDEBAR_WORKSHOP_URL;
 const featuredVideoCourses = await loadFeaturedCourses();
 const sidebarVideoCards = repairDeepStrings(
   
@@ -135,7 +146,7 @@ const sidebarVideoCards = repairDeepStrings(
         course.shortDescription ||
         'Des techniques essentielles expliquées pas à pas pour progresser chez vous à votre rythme.',
       image: course.image || '/images/masterclass-video.jpg',
-      href: course.courseUrl || SHOP_VIDEO_URL,
+      href: normalizeWorkshopUrl(course.courseUrl || SHOP_VIDEO_URL),
       duration: course.duration || '2h',
     })),
 );
@@ -160,7 +171,7 @@ const sidebarVideoHeading = 'Mes cours vidéo';
 const sidebarVideoBadgeUnlimited = 'Accès illimité';
 const sidebarVideoBadgePremium = 'Réservé premium';
 const sidebarVideoMetaLabel = 'Vidéo 4K';
-const sidebarVideoCtaLabel = 'Voir les cours vidéo';
+const sidebarVideoCtaLabel = 'Voir les ateliers';
 const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Conseils exclusifs'];
 ---
 
@@ -315,8 +326,8 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
         ))}
       </div>
 
-      <a href="/cours-video" class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
-        Voir les cours vidéo
+      <a href={SHOP_VIDEO_URL} class="label-data inline-flex items-center gap-2 text-primary-turquoise text-[13px] uppercase tracking-[0.08em] mt-5 underline underline-offset-2 typ-button">
+        Voir les ateliers
       </a>
     </div>
   )}
