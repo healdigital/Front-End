@@ -1,0 +1,131 @@
+LCDB Master Pending Points (Single Source of Truth)
+Updated: 2026-04-17
+Status: LOCKED (complete these before any new feature work)
+
+1) Source Files Included (Cross-Checked)
+- C:\Users\navee\Desktop\LCDB_Master_Tracker.md
+- C:\Users\navee\Desktop\FRONTEND-TASKS-PRIORITY-LAUNCH.md
+- C:\Users\navee\Desktop\AUDIT.md
+- C:\Users\navee\Desktop\PERFORMANCE_AUDIT.md
+- C:\Users\navee\Desktop\DEVELOPER_AUDIT_MEMOIRE_PIPELINE.md
+- C:\Users\navee\Desktop\BRIEF-infinite-scroll.md
+- Latest client screenshot/chat points (Apr 14-16)
+
+2) P0 - Client-Facing Launch Blockers
+- [ ] Content sync finalization (WP export/import completion, source count reconciliation).
+- [ ] Multilingual source-of-truth mapping finalization (same recipe across language switch, deterministic behavior).
+- [ ] Sweet/Savory classification hardening (avoid uncategorized/mis-tagged items).
+- [ ] Fix "rest of recipes not loading" end-to-end on staging with full dataset.
+- [ ] Sweet/Savory pages final parity QA (3-up desktop, no intro text, correct cards/tags).
+- [ ] Courses/workshops right sidebar final QA (photo visible, CTA works, no layout break).
+- [ ] Workshop links global replace: remove les-cours target everywhere required by client.
+- [ ] Carousel still moving issue final close (desktop/mobile gesture and autoplay behavior).
+- [ ] Favicon change (final asset not yet locked in pending closure).
+- [ ] Remove underlines where client requested (cards/link style parity).
+- [ ] Keep bar between title and tags on recipe cards exactly per screenshot.
+- [ ] Recipe card sizing still too large vs "actual blog" reference (desktop/mobile pass).
+- [ ] Missing book + duplicate book issue final close in both sidebar and bottom books sections.
+- [ ] Mes livres wrong route/content behavior cleanup (avoid "bizarre newsletter repeated page" path outcome).
+
+3) P0 - Security (Must Close)
+- [ ] Lock down Payload collection access control (Articles, Authors, Categories, Tags, Comments).
+- [ ] Add robust Users collection access/roles enforcement.
+- [ ] Remove hardcoded Payload secret fallback, require env.
+- [ ] Remove Mongo URI logging from config.
+- [ ] Replace wildcard CORS with strict allowlist in server.
+- [ ] Replace wildcard CORS in translate endpoint.
+- [ ] Add rate limiting for /api/translate.
+- [ ] Add CSRF protection in Express server.
+- [ ] Add security headers (helmet).
+- [ ] Upgrade vulnerable packages (Payload >= 3.80 and audit critical/high path).
+- [ ] Run dependency security remediation pass (pnpm audit fix + manual non-breaking upgrades).
+- [ ] Reduce high body parser limits where not required.
+
+4) P1 - Performance / Build Stability
+- [ ] Remove full FontAwesome CSS bundle dependency (switch to scoped icons/SVG strategy).
+- [ ] Large JSON strategy: optimize search-index.json and home-recipes-index.json loading/compression/chunking.
+- [ ] Image optimization backlog (WebP/AVIF/srcset/consistent dimensions).
+- [ ] Remove duplicate heavy assets in books/images inventory.
+- [ ] Replace oversized decorative texture assets and ensure optimized files are used.
+- [ ] CSS loading split and critical-path cleanup.
+- [ ] Improve build-time network timeout handling for workshop/video fetch warnings.
+- [ ] Verify gzip/brotli static compression in deployment stack.
+- [ ] Improve Docker layer caching behavior for build speed consistency.
+- [ ] Dockerfile package-manager alignment (npm ci vs pnpm --frozen-lockfile) and deploy parity fix.
+
+5) P1 - SEO / AEO
+- [ ] Canonical/hreflang completeness pass for all supported languages/pages.
+- [ ] Add pagination rel=prev / rel=next coverage.
+- [ ] JSON-LD consistency pass (Recipe/Article/Collection page types).
+- [ ] Resolve duplicate-route/trailing-slash indexing strategy.
+- [ ] Fix AEO gaps from audit (aggregateRating/FAQ/author authority fields where applicable).
+- [ ] Validate sitemap strategy and metadata consistency.
+
+6) P2 - Frontend Quality / Consistency
+- [ ] Remaining typography coherence final pass (exact screenshot parity).
+- [ ] Final books section visual parity with client-provided sidebar design.
+- [ ] Non-recipe pages (voyages/reportages/static pages) rendering QA sweep.
+- [ ] Resolve UTF/mojibake issues globally (broken accents/encoded strings).
+- [ ] Remove remaining @ts-nocheck hotspots.
+- [ ] Resolve TODO stubs in src/lib/recipes.ts.
+- [ ] Remove duplicate/competing component patterns.
+- [ ] Header/search/menu alignment consistency across desktop/tablet/mobile.
+- [ ] Newsletter modal final responsive fit (no crop/overflow, correct CTA behavior).
+- [ ] Ensure bottom books section does not show duplicates.
+- [ ] Remove legacy/stale environment sample files not used by current stack (e.g. .env.local.example if present).
+
+7) P2 - Payload Modeling / Data Integrity
+- [ ] Comments model normalization (embedded array strategy vs standalone collection decision and migration).
+- [ ] Email field validation/normalization consistency.
+- [ ] Slug auto-generation strategy consistency.
+- [ ] Media upload validation and fallback policy consistency.
+- [ ] Relationship integrity/indexing and hook error handling cleanup.
+
+8) P2 - Testing / QA / CI
+- [ ] Setup CI pipeline (build + typecheck + lint).
+- [ ] Add baseline unit/integration tests for critical utils/routes.
+- [ ] Add E2E coverage for critical flows (recipe load, search, translation, consent, sidebar widgets).
+- [ ] Infinite-scroll acceptance criteria full QA close (all checklist points in brief file).
+
+8.1) Additional Explicit Items From Frontend Launch Tracker
+- [ ] Create src/pages/404.astro custom not-found page.
+- [ ] Ensure all public queries enforce published-only filter (_status: published) where applicable.
+- [ ] Axeptio integration operational pass: vendor mapping + consent-mode v2 + deny/accept behavior verification.
+- [ ] Configure and verify PUBLIC_AXEPTIO_CLIENT_ID, PUBLIC_AXEPTIO_COOKIES_VERSION, PUBLIC_AXEPTIO_COOKIE_DOMAIN.
+- [ ] Configure and verify PUBLIC_GA_MEASUREMENT_ID.
+- [ ] Remove unused dependencies listed in tracker (@payloadcms/db-postgres, @payloadcms/richtext-slate) if still unused.
+- [ ] Add CAPTCHA on public comment submission flow.
+- [ ] Clean remaining debug console.log hotspots in src/lib/mongo.server.ts.
+- [ ] Replace high-volume any typings with concrete interfaces in highest-impact files.
+- [ ] Complete i18n architecture decision (current client-side approach vs Astro-native routing migration path).
+
+9) P3 - UX / Feature Backlog (From Tracker/Audit)
+- [ ] Recipe rating system (data model + UI + anti-duplicate).
+- [ ] Ingredient archive pages.
+- [ ] Visual consistency full sweep (legacy + redesign surfaces).
+- [ ] Center article images rule where required.
+- [ ] Full recipe cards parity vs original blog reference.
+- [ ] Consolidate color/token systems into one consistent design token layer.
+- [ ] Font loading strategy hardening (license/source reliability decision).
+- [ ] Dark mode support.
+- [ ] Legacy article migration to V2 Lexical editor (paused by client).
+- [ ] Expand test coverage from near-zero to practical baseline.
+
+10) Needs Client / Third-Party Input (Blocking)
+- [ ] Confirm final workshop CTA target URL (/latelier/ vs exact tab URL).
+- [ ] Confirm final favicon asset file.
+- [ ] Confirm canonical import policy and expected per-language article counts.
+- [ ] Mediavine side confirmation for fill/placement behavior.
+- [ ] Axeptio production values (CLIENT_ID, COOKIES_VERSION, domain policy).
+- [ ] GA production confirmation (PUBLIC_GA_MEASUREMENT_ID, property/source reference).
+- [ ] Confirm newsletter provider target implementation details (Fillout/Acumbamail final production path).
+
+11) Explicitly Removed / Out of Scope
+- [x] compta-convert.heal-digital.com check (removed from this front-end/payload pending board).
+
+12) Execution Order (Locked)
+1. P0 client blockers (content/load/link/visual regressions).
+2. P0 security hardening.
+3. P1 performance/build stability.
+4. P1 SEO/AEO.
+5. P2 quality/testing + remaining UI parity.

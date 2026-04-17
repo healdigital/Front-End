@@ -99,6 +99,8 @@ interface RecipeBlock extends ContentRecord {
   blockType?: string;
   ingredients?: RecipeIngredientRow[];
   steps?: RecipeStepRow[];
+  finalStepImage?: ContentValue;
+  finalStepImageCaption?: ContentValue;
   difficulty?: ContentValue;
   cuisine?: ContentValue;
   dishType?: ContentValue;
@@ -772,6 +774,7 @@ const stepGroupsDetailed: DetailedRecipeStepGroup[] = stepGroups.map((group) => 
     stepNumber: absoluteStepNumber++,
   })),
 }));
+const finalRecipeImage = resolveRecipeMedia(primaryRecipeBlock?.finalStepImage);
 const uiText = {
   home: "Accueil",
   recipes: "Recettes",
@@ -1092,6 +1095,8 @@ const relatedArticles = (
                 slug={slug}
                 image={image}
                 imageAlt={imageAlt}
+                finalImage={finalRecipeImage?.url || ""}
+                finalImageAlt={finalRecipeImage?.alt || ""}
                 ratingLabel={ratingLabel}
                 ratingStars={ratingStars}
                 articleShareLinks={articleShareLinks}

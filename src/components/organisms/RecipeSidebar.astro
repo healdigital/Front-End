@@ -18,7 +18,7 @@ const isFull = variant === 'full';
 const responsiveClass = mobileVisible ? 'flex lg:hidden' : 'hidden lg:flex';
 // Single source for right-sidebar workshop CTA target.
 // Keep absolute URL so sidebar CTA always opens the workshop tab correctly.
-const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/les-cours/';
+const SIDEBAR_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
 const workshopsApiUrl =
   import.meta.env.WORKSHOPS_CACHE_URL ||
   process.env.WORKSHOPS_CACHE_URL ||
@@ -220,7 +220,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
           <img
             src={workshopFallbackImage}
             alt={workshopFallbackTitle}
-            class="w-full aspect-square object-cover"
+            class="w-full aspect-[16/10] object-cover"
             loading="lazy"
             decoding="async"
             width="640"
@@ -272,15 +272,15 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
               <img
                 src={course.image}
                 alt={course.title}
-                class="w-full h-[184px] object-cover"
+                class="w-full aspect-[16/10] object-cover"
                 loading="lazy"
                 decoding="async"
                 width="640"
                 height="368"
                 onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/masterclass-video.jpg';}"
               />
-              <div class="absolute top-4 right-4 w-[68px] h-[68px] rounded-full bg-[#FAF8F2]/95 flex items-center justify-center text-[#1A2335]">
-                <Icon name="video" size="sm" />
+              <div class="absolute top-3 right-3 w-[44px] h-[44px] rounded-full bg-[#FAF8F2]/95 flex items-center justify-center text-[#1A2335]">
+                <Icon name="video" size="sm" class="w-[14px] h-[14px]" />
               </div>
             </div>
 
@@ -452,7 +452,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
 
     const normalizeHref = (value = '', fallbackUrl = '') => {
       const raw = String(value || '').trim();
-      if (!raw) return fallbackUrl || 'https://atelier-lacuisinedebernard.com/les-cours/';
+      if (!raw) return fallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/';
       if (/^https?:\/\//i.test(raw)) return raw;
       return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
     };
@@ -474,7 +474,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       return '';
     };
 
-    const mapWorkshopItem = (item, fallbackUrl = 'https://atelier-lacuisinedebernard.com/les-cours/') => {
+    const mapWorkshopItem = (item, fallbackUrl = 'https://atelier-lacuisinedebernard.com/latelier/') => {
       if (!item || typeof item !== 'object') return null;
       const parsedDate = new Date(item.startAt || item.date || '');
       if (Number.isNaN(parsedDate.getTime())) return null;
@@ -526,7 +526,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
       if (block.dataset.workshopLoaded === 'loading' || block.dataset.workshopLoaded === 'true') return;
 
       const apiUrl = String(block.dataset.workshopsApi || '').trim();
-      const fallbackUrl = String(block.dataset.workshopsFallbackUrl || 'https://atelier-lacuisinedebernard.com/les-cours/').trim();
+      const fallbackUrl = String(block.dataset.workshopsFallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/').trim();
       if (!apiUrl) return;
 
       block.dataset.workshopLoaded = 'loading';
@@ -672,7 +672,7 @@ const sidebarClubItems = ['Échanges passionnés', 'Recettes avancées', 'Consei
           }
 
           if (ctaEl instanceof HTMLAnchorElement) {
-            ctaEl.href = firstWorkshop.slug || fallbackUrl || 'https://atelier-lacuisinedebernard.com/les-cours/';
+            ctaEl.href = firstWorkshop.slug || fallbackUrl || 'https://atelier-lacuisinedebernard.com/latelier/';
             ctaEl.target = '_blank';
             ctaEl.rel = 'noopener noreferrer';
           }

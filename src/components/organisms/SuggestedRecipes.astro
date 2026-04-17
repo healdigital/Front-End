@@ -85,7 +85,7 @@ const totalRecipeCount = totalCount;
       <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
     </div>
 
-    <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid aria-busy="false">
+    <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid aria-busy="false">
       {recipes.map((recipe, index) => (
         <div
           class:list={['suggested-card-shell h-full', index >= visibleCount && 'hidden']}
@@ -113,7 +113,7 @@ const totalRecipeCount = totalCount;
     </div>
 
     <div
-      class={`hidden suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6 mt-6`}
+      class={`hidden suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6 mt-6`}
       data-suggested-skeleton
       aria-hidden="true"
     >

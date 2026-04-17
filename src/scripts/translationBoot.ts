@@ -31,21 +31,19 @@ const showTranslationStatus = (
   message: string,
   timeoutRef: { current: number | null },
 ): void => {
-  if (!translationStatusEl || !translationStatusTextEl || !message) return;
+  // Client request: disable on-screen translation toast notifications.
+  // Keep event wiring intact, but never render status UI.
+  if (!translationStatusEl) return;
   if (timeoutRef.current) {
     window.clearTimeout(timeoutRef.current);
     timeoutRef.current = null;
   }
 
-  translationStatusEl.hidden = false;
-  translationStatusEl.dataset.state = state;
-  translationStatusTextEl.textContent = message;
-
-  if (state !== 'loading') {
-    timeoutRef.current = window.setTimeout(() => {
-      translationStatusEl.hidden = true;
-    }, state === 'error' ? 5200 : 3200);
-  }
+  translationStatusEl.hidden = true;
+  translationStatusEl.dataset.state = '';
+  if (translationStatusTextEl) translationStatusTextEl.textContent = '';
+  void state;
+  void message;
 };
 
 async function initTranslations(): Promise<void> {
