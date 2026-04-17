@@ -42,8 +42,8 @@ const fallbackHeroCards = [
 
 const recipeFilters = [
   { label: 'Toutes les recettes', value: 'toutes' },
-  { label: 'Recettes sucrées', value: 'sucrees' },
-  { label: 'Recettes salées', value: 'salees' },
+  { label: 'Recettes sucrï¿½es', value: 'sucrees' },
+  { label: 'Recettes salï¿½es', value: 'salees' },
 ];
 
 const fallbackRecipes = [
@@ -497,16 +497,16 @@ const getFilterKey = (sourceLabel: string): string => {
 
 const getRecipeTagLabel = (categoryLabel: string, filterKeyHint = ''): string => {
   const filterKey = filterKeyHint || getFilterKey(categoryLabel);
-  if (filterKey === 'sucrees') return 'SUCRÉ';
-  if (filterKey === 'salees') return 'SALÉ';
+  if (filterKey === 'sucrees') return 'SUCRï¿½';
+  if (filterKey === 'salees') return 'SALï¿½';
 
   const fallback = normalizeToken(categoryLabel);
   if (!fallback) return 'ARTICLE';
   if (fallback.includes('atelier')) return 'ATELIERS';
   if (fallback.includes('voyage')) return 'VOYAGES';
   if (fallback.includes('reportage')) return 'REPORTAGES';
-  if (fallback.includes('selection')) return 'SÉLECTIONS';
-  if (fallback.includes('video')) return 'VIDÉOS';
+  if (fallback.includes('selection')) return 'Sï¿½LECTIONS';
+  if (fallback.includes('video')) return 'VIDï¿½OS';
 
   return String(categoryLabel).trim().toUpperCase() || 'ARTICLE';
 };
@@ -675,7 +675,7 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             </div>
 
             <article class="group rounded-lg overflow-hidden flex flex-col md:flex-row bg-[#FAF8F2]">
-              <div class="relative overflow-hidden md:w-[55%]">
+              <div class="relative overflow-hidden">
                 <a href={featuredRecipe.slug} class="block h-full" aria-label={featuredRecipe.title}>
                   <img
                     src={featuredRecipe.image}
