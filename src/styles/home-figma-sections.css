@@ -2018,3 +2018,57 @@ section.section_2 {
 .home-shell .lcdb-archive-recipe-card .social-share-link {
   font-size: 0.92rem !important;
 }
+
+/* 2026-04-17: scoped featured card padding/alignment fix (section_2 only). */
+@media (min-width: 1024px) {
+  #main-content .section_2 .home-main-block > article.group.rounded-lg {
+    display: grid !important;
+    grid-template-columns: minmax(0, 54%) minmax(0, 46%) !important;
+    align-items: stretch !important;
+    min-height: 520px !important;
+    border: 1px solid #d8d2c2 !important;
+    border-radius: 10px !important;
+    background: #faf8f2 !important;
+    overflow: hidden !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.relative {
+    height: 100% !important;
+    min-height: 520px !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.relative img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.p-6 {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    padding: 22px 24px 18px !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.p-6 h3 {
+    margin-top: 0 !important;
+    line-height: 1.05 !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.p-6 .typ-meta {
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #d8d2c2 !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.p-6 p.typ-body {
+    margin-top: 12px !important;
+    line-height: 1.56 !important;
+  }
+
+  #main-content .section_2 .home-main-block > article.group.rounded-lg > div.p-6 a.typ-button {
+    margin-top: 10px !important;
+    text-decoration: none !important;
+  }
+}

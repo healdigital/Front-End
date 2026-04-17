@@ -27,10 +27,17 @@ const languageLabels: Record<string, string> = {
 
 const supportedLanguages = ['fr', 'en', 'es', 'pt-br', 'ar'];
 const currentLang = supportedLanguages.includes(lang) ? lang : 'fr';
-const languageLabel = languageLabels[currentLang];
+const stableLanguageLabels: Record<string, string> = {
+  fr: 'Francais',
+  en: 'English',
+  es: 'Espanol',
+  'pt-br': 'Portugues',
+  ar: 'Arabe',
+};
+const languageLabel = stableLanguageLabels[currentLang] || stableLanguageLabels.fr;
 const languageOptions = supportedLanguages.map((code) => ({
   code,
-  label: languageLabels[code],
+  label: stableLanguageLabels[code] || stableLanguageLabels.fr,
 }));
 
 const navItems = [

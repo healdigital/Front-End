@@ -7,7 +7,7 @@ interface Props {
 
 const {
   url = Astro.url.href,
-  title = 'Découvrez cet article',
+  title = 'Decouvrez cet article',
   class: className,
 } = Astro.props;
 
@@ -44,7 +44,7 @@ const shareLinks = [
   .social-share {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     flex-wrap: wrap;
   }
 
@@ -58,7 +58,7 @@ const shareLinks = [
     justify-content: center;
     text-decoration: none;
     transition: color 0.2s ease, transform 0.2s ease;
-    font-size: 0.9rem;
+    font-size: 0.78rem;
     line-height: 1;
     box-shadow: none;
     appearance: none;
@@ -95,7 +95,7 @@ const shareLinks = [
       const currentTitle =
         root.getAttribute('data-share-title') ||
         document.title ||
-        'Découvrez cet article';
+        'Decouvrez cet article';
 
       root.querySelectorAll('[data-share-platform]').forEach((link) => {
         if (!(link instanceof HTMLAnchorElement)) return;
