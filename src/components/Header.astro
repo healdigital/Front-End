@@ -847,6 +847,25 @@ const accountItems = [
     setLanguageLoading(false);
   }
 
+  function resolveArticleLanguageRedirectPath(selectedLang) {
+    if (!selectedLang) return null;
+    const currentPath = window.location?.pathname || '/';
+    const languageMap = window.__lcdbArticleLanguageMap;
+    if (!languageMap || typeof languageMap !== 'object') return null;
+
+    const nextPathRaw = languageMap[selectedLang];
+    const nextPath = typeof nextPathRaw === 'string' ? nextPathRaw.trim() : '';
+    if (!nextPath) return null;
+
+    const normalizePath = (value) => {
+      const path = String(value || '/').trim();
+      return path.endsWith('/') ? path : `${path}/`;
+    };
+
+    if (normalizePath(nextPath) === normalizePath(currentPath)) return null;
+    return nextPath;
+  }
+
   function applyLanguageSelection(selectedLang) {
     if (!selectedLang) return;
     syncLanguageMenu(selectedLang);
@@ -858,6 +877,12 @@ const accountItems = [
     try {
       localStorage.setItem(LANGUAGE_STORAGE_KEY, selectedLang);
     } catch {}
+
+    const redirectPath = resolveArticleLanguageRedirectPath(selectedLang);
+    if (redirectPath) {
+      window.location.assign(redirectPath);
+      return;
+    }
 
     const changeLanguage = window.__lcdbChangeLanguage;
     if (typeof changeLanguage === 'function') {
