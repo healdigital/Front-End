@@ -413,6 +413,32 @@ export async function getStaticPaths() {
       typeof item.slug === "string" ? item.slug : item?.slug?.current || "";
     return normalizeSlugLocal(decodeSafeSlug(raw));
   };
+  const getCoreSlug = (slugValue: string): string => {
+    const normalized = normalizeSlugLocal(slugValue);
+    const recipePrefixed = normalized.match(
+      /^(en|es|ar|pt-br|pt|zh-hans)\/recipe\/(.+)$/i,
+    );
+    if (recipePrefixed) return normalizeSlugLocal(recipePrefixed[2]);
+    const langPrefixed = normalized.match(/^(en|es|ar|pt-br|pt|zh-hans)\/(.+)$/i);
+    if (langPrefixed) return normalizeSlugLocal(langPrefixed[2]);
+    return normalized;
+  };
+  const extractRecipeIdFromContent = (value: ContentValue): string => {
+    const text =
+      typeof value === "string" ? value : JSON.stringify(value ?? "");
+    if (!text) return "";
+    const patterns = [
+      /wprm[_-]recipe[_-]?(?:id)?\D*(\d{2,})/i,
+      /data-recipe-id=["']?(\d{2,})/i,
+      /wprm-recipe-container\D*(\d{2,})/i,
+      /wprm_print=?(\d{2,})/i,
+    ];
+    for (const pattern of patterns) {
+      const match = pattern.exec(text);
+      if (match?.[1]) return String(match[1]).trim().toLowerCase();
+    }
+    return "";
+  };
   const toArticlePath = (slugValue: string): string =>
     slugValue ? `/${normalizeSlugLocal(slugValue)}/` : "/";
   const getArticleImageKey = (item: ArticleEntry): string => {
@@ -438,13 +464,16 @@ export async function getStaticPaths() {
       item?.recipeId ||
       item?.recipe_id ||
       "";
-    return String(direct || "")
+    const directKey = String(direct || "")
       .trim()
       .toLowerCase();
+    if (directKey) return directKey;
+    return extractRecipeIdFromContent(item?.content);
   };
   const buildLanguageSlugMapBySlug = (items: ArticleEntry[]) => {
     type Descriptor = {
       slug: string;
+      coreSlug: string;
       lang: string;
       path: string;
       recipeKey: string;
@@ -460,6 +489,7 @@ export async function getStaticPaths() {
         );
         return {
           slug,
+          coreSlug: getCoreSlug(slug),
           lang,
           path: toArticlePath(slug),
           recipeKey: getArticleRecipeKey(item),
@@ -469,6 +499,7 @@ export async function getStaticPaths() {
       .filter((item): item is Descriptor => Boolean(item));
 
     const bySlug = new Map<string, Descriptor[]>();
+    const byCoreSlug = new Map<string, Descriptor[]>();
     const byRecipe = new Map<string, Descriptor[]>();
     const byImage = new Map<string, Descriptor[]>();
 
@@ -476,6 +507,12 @@ export async function getStaticPaths() {
       const slugGroup = bySlug.get(descriptor.slug) || [];
       slugGroup.push(descriptor);
       bySlug.set(descriptor.slug, slugGroup);
+
+      if (descriptor.coreSlug) {
+        const coreGroup = byCoreSlug.get(descriptor.coreSlug) || [];
+        coreGroup.push(descriptor);
+        byCoreSlug.set(descriptor.coreSlug, coreGroup);
+      }
 
       if (descriptor.recipeKey) {
         const recipeGroup = byRecipe.get(descriptor.recipeKey) || [];
@@ -499,6 +536,9 @@ export async function getStaticPaths() {
       };
 
       (bySlug.get(descriptor.slug) || []).forEach(addTarget);
+      if (descriptor.coreSlug) {
+        (byCoreSlug.get(descriptor.coreSlug) || []).forEach(addTarget);
+      }
       if (descriptor.recipeKey) {
         (byRecipe.get(descriptor.recipeKey) || []).forEach(addTarget);
       }
@@ -541,7 +581,7 @@ export async function getStaticPaths() {
   return articles
     .map((item) => {
       const slugValue = getArticleSlugValue(item);
-      if (!slugValue) return null;
+      if (!slugValue || slugValue.includes("/")) return null;
       const languageSlugMap = languageSlugMapBySlug.get(slugValue) || {};
       return {
         params: { slug: slugValue },
