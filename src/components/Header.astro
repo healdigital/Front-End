@@ -850,20 +850,61 @@ const accountItems = [
   function resolveArticleLanguageRedirectPath(selectedLang) {
     if (!selectedLang) return null;
     const currentPath = window.location?.pathname || '/';
-    const languageMap = window.__lcdbArticleLanguageMap;
-    if (!languageMap || typeof languageMap !== 'object') return null;
+    const languageMapRaw =
+      window.__lcdbArticleLanguageMap &&
+      typeof window.__lcdbArticleLanguageMap === 'object'
+        ? window.__lcdbArticleLanguageMap
+        : null;
+    const languageMap = {};
+    if (languageMapRaw) {
+      Object.entries(languageMapRaw).forEach(([key, value]) => {
+        if (!key || typeof value !== 'string') return;
+        languageMap[String(key).trim().toLowerCase()] = value;
+      });
+    }
 
-    const nextPathRaw = languageMap[selectedLang];
+    const normalizedLang = String(selectedLang || '').trim().toLowerCase();
+    const langAliases =
+      normalizedLang === 'pt'
+        ? ['pt', 'pt-br']
+        : normalizedLang === 'pt-br'
+          ? ['pt-br', 'pt']
+          : [normalizedLang];
+    const nextPathRaw = langAliases.map((code) => languageMap[code]).find(Boolean);
     const nextPath = typeof nextPathRaw === 'string' ? nextPathRaw.trim() : '';
-    if (!nextPath) return null;
 
     const normalizePath = (value) => {
       const path = String(value || '/').trim();
       return path.endsWith('/') ? path : `${path}/`;
     };
 
-    if (normalizePath(nextPath) === normalizePath(currentPath)) return null;
-    return nextPath;
+    if (nextPath) {
+      if (normalizePath(nextPath) === normalizePath(currentPath)) return null;
+      return nextPath;
+    }
+
+    const isArticlePage = Boolean(window.__lcdbIsArticlePage || Object.keys(languageMap).length);
+    if (!isArticlePage) return null;
+
+    // Fallback: derive WordPress-style language route from current article slug.
+    const recipePathMatch = currentPath.match(
+      /^\/(en|es|ar|pt-br|pt|zh-hans)\/recipe\/([^/]+)\/?$/i,
+    );
+    const articlePathMatch = currentPath.match(/^\/(?:articles\/)?([^/]+)\/?$/i);
+    const currentArticleSlug =
+      (recipePathMatch && recipePathMatch[2]) ||
+      (articlePathMatch && articlePathMatch[1]) ||
+      '';
+
+    if (!currentArticleSlug) return null;
+
+    const targetPath =
+      normalizedLang === 'fr'
+        ? `/${currentArticleSlug}/`
+        : `/${normalizedLang}/recipe/${currentArticleSlug}/`;
+
+    if (normalizePath(targetPath) === normalizePath(currentPath)) return null;
+    return targetPath;
   }
 
   function applyLanguageSelection(selectedLang) {
