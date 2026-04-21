@@ -93,6 +93,22 @@ export async function getStaticPaths() {
     return [];
   }
 
+  const normalizeSlugLocal = (value: ContentValue) =>
+    String(value || '').replace(/^\/+|\/+$/g, '');
+  const decodeSafeSlugLocal = (value: string) => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  };
+  const normalizeLanguageCodeLocal = (value: ContentValue) => {
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+    if (!raw) return 'fr';
+    return raw;
+  };
+
   const staticBuildLimit = (() => {
     const envLimit = Number(process.env.MAX_SSG_ARTICLES);
     return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
@@ -102,6 +118,147 @@ export async function getStaticPaths() {
     const normalized = String(value || '').replace(/^\/+|\/+$/g, '');
     if (!normalized || normalized.includes('/')) return '';
     return normalized;
+  };
+  const toPath = (value: string) => {
+    const normalized = normalizeSlugLocal(value);
+    return normalized ? `/${normalized}/` : '/';
+  };
+  const getArticleSlugValue = (item: ArticleEntry) => {
+    const raw = typeof item?.slug === 'string' ? item.slug : item?.slug?.current || '';
+    return normalizeSlugLocal(decodeSafeSlugLocal(raw));
+  };
+  const getCoreSlug = (slugValue: string): string => {
+    const normalized = normalizeSlugLocal(slugValue);
+    const recipePrefixed = normalized.match(
+      /^(en|es|ar|pt-br|pt|zh-hans)\/recipe\/(.+)$/i,
+    );
+    if (recipePrefixed) return normalizeSlugLocal(recipePrefixed[2]);
+    const langPrefixed = normalized.match(/^(en|es|ar|pt-br|pt|zh-hans)\/(.+)$/i);
+    if (langPrefixed) return normalizeSlugLocal(langPrefixed[2]);
+    return normalized;
+  };
+  const extractRecipeIdFromContent = (value: ContentValue): string => {
+    const text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+    if (!text) return '';
+    const patterns = [
+      /wprm[_-]recipe[_-]?(?:id)?\D*(\d{2,})/i,
+      /data-recipe-id=["']?(\d{2,})/i,
+      /wprm-recipe-container\D*(\d{2,})/i,
+      /wprm_print=?(\d{2,})/i,
+    ];
+    for (const pattern of patterns) {
+      const match = pattern.exec(text);
+      if (match?.[1]) return String(match[1]).trim().toLowerCase();
+    }
+    return '';
+  };
+  const getArticleImageKey = (item: ArticleEntry): string =>
+    String(
+      (item as Record<string, unknown>)?.featured_img_url ||
+        (item?.featuredImage as Record<string, unknown>)?.url ||
+        (item?.featuredMedia as Record<string, unknown>)?.url ||
+        (item?.featured_image as Record<string, unknown>)?.url ||
+        '',
+    )
+      .trim()
+      .toLowerCase();
+  const getArticleRecipeKey = (item: ArticleEntry): string =>
+    (() => {
+      const directKey = String(
+      (item as Record<string, unknown>)?.wprmId ||
+        (item as Record<string, unknown>)?.wprm_id ||
+        (item as Record<string, unknown>)?.wprmRecipeId ||
+        (item as Record<string, unknown>)?.wprm_recipe_id ||
+        (item as Record<string, unknown>)?.recipeId ||
+        (item as Record<string, unknown>)?.recipe_id ||
+        '',
+    )
+      .trim()
+      .toLowerCase();
+      if (directKey) return directKey;
+      return extractRecipeIdFromContent(item?.content);
+    })();
+  const buildLanguageSlugMapByRouteSlug = (items: ArticleEntry[]) => {
+    type Descriptor = {
+      slug: string;
+      coreSlug: string;
+      routeSlug: string;
+      lang: string;
+      path: string;
+      recipeKey: string;
+      imageKey: string;
+    };
+
+    const descriptors: Descriptor[] = (Array.isArray(items) ? items : [])
+      .map((item) => {
+        const slugValue = getArticleSlugValue(item);
+        if (!slugValue) return null;
+        return {
+          slug: slugValue,
+          coreSlug: getCoreSlug(slugValue),
+          routeSlug: toRouteSlug(slugValue),
+          lang: normalizeLanguageCodeLocal(item?.lang || item?.language || item?.locale),
+          path: toPath(slugValue),
+          recipeKey: getArticleRecipeKey(item),
+          imageKey: getArticleImageKey(item),
+        };
+      })
+      .filter((item): item is Descriptor => Boolean(item));
+
+    const bySlug = new Map<string, Descriptor[]>();
+    const byCoreSlug = new Map<string, Descriptor[]>();
+    const byRecipe = new Map<string, Descriptor[]>();
+    const byImage = new Map<string, Descriptor[]>();
+
+    for (const descriptor of descriptors) {
+      const slugGroup = bySlug.get(descriptor.slug) || [];
+      slugGroup.push(descriptor);
+      bySlug.set(descriptor.slug, slugGroup);
+
+      if (descriptor.coreSlug) {
+        const coreGroup = byCoreSlug.get(descriptor.coreSlug) || [];
+        coreGroup.push(descriptor);
+        byCoreSlug.set(descriptor.coreSlug, coreGroup);
+      }
+
+      if (descriptor.recipeKey) {
+        const recipeGroup = byRecipe.get(descriptor.recipeKey) || [];
+        recipeGroup.push(descriptor);
+        byRecipe.set(descriptor.recipeKey, recipeGroup);
+      }
+
+      if (descriptor.imageKey) {
+        const imageGroup = byImage.get(descriptor.imageKey) || [];
+        imageGroup.push(descriptor);
+        byImage.set(descriptor.imageKey, imageGroup);
+      }
+    }
+
+    const mapByRouteSlug = new Map<string, Record<string, string>>();
+    for (const descriptor of descriptors) {
+      if (!descriptor.routeSlug) continue;
+      const mapping: Record<string, string> = {};
+      const addTarget = (candidate: Descriptor) => {
+        if (!candidate?.lang || !candidate?.path) return;
+        mapping[candidate.lang] = candidate.path;
+      };
+
+      (bySlug.get(descriptor.slug) || []).forEach(addTarget);
+      if (descriptor.coreSlug) {
+        (byCoreSlug.get(descriptor.coreSlug) || []).forEach(addTarget);
+      }
+      if (descriptor.recipeKey) {
+        (byRecipe.get(descriptor.recipeKey) || []).forEach(addTarget);
+      }
+      if (descriptor.imageKey) {
+        (byImage.get(descriptor.imageKey) || []).forEach(addTarget);
+      }
+      addTarget(descriptor);
+
+      mapByRouteSlug.set(descriptor.routeSlug, mapping);
+    }
+
+    return mapByRouteSlug;
   };
 
   let articles: ArticleEntry[] = await getAllArticlesFromMongo();
@@ -116,15 +273,19 @@ export async function getStaticPaths() {
   if (!Array.isArray(articles)) {
     return [];
   }
+  const languageSlugMapByRouteSlug = buildLanguageSlugMapByRouteSlug(articles);
 
   return articles
     .map((article) => {
-      const rawSlug = typeof article?.slug === 'string' ? article.slug : article?.slug?.current;
-      const slug = toRouteSlug(rawSlug);
+      const slugValue = getArticleSlugValue(article);
+      const slug = toRouteSlug(slugValue);
       if (!slug) return null;
       return {
         params: { slug },
-        props: { article: { ...article } },
+        props: {
+          article: { ...article },
+          languageSlugMap: languageSlugMapByRouteSlug.get(slug) || {},
+        },
       };
     })
     .filter(Boolean);
@@ -132,9 +293,10 @@ export async function getStaticPaths() {
 
 interface Props {
   article: ArticleEntry;
+  languageSlugMap?: Record<string, string>;
 }
 
-let { article } = Astro.props as Props;
+let { article, languageSlugMap = {} } = Astro.props as Props;
 
 if (!article) {
   const slugParam = Astro.params.slug;
@@ -445,6 +607,10 @@ const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw 
   <NewsletterModal triggerId="open-newsletter-article-content" id="newsletter-modal-article-content" />
   <NewsletterModal triggerId="open-newsletter-article-inline" id="newsletter-modal-article-inline" />
 </BaseLayout>
+
+<script is:inline>
+  window.__lcdbArticleLanguageMap = {JSON.stringify(languageSlugMap)};
+</script>
 
 <style>
   .article-mobile-author-card,
