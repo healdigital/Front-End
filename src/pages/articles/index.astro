@@ -41,7 +41,8 @@ const toText = (value: any): string => {
 
 const articleSlug = (article: any) => {
   const raw = typeof article?.slug === 'string' ? article.slug : article?.slug?.current;
-  return String(raw || '').replace(/^\/+|\/+$/g, '');
+  const normalized = String(raw || '').replace(/^\/+|\/+$/g, '');
+  return normalized.includes('/') ? '' : normalized;
 };
 
 const getTitle = (article: any) => toText(article?.title) || 'Article sans titre';
