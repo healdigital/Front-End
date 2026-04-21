@@ -413,15 +413,19 @@ export async function getStaticPaths() {
       typeof item.slug === "string" ? item.slug : item?.slug?.current || "";
     return normalizeSlugLocal(decodeSafeSlug(raw));
   };
+  const normalizeRecipeSlugToken = (value: string): string =>
+    normalizeSlugLocal(decodeSafeSlug(value))
+      .replace(/^wprm[-_/]+/i, "")
+      .replace(/^recipe[-_/]+/i, "");
   const getCoreSlug = (slugValue: string): string => {
     const normalized = normalizeSlugLocal(slugValue);
     const recipePrefixed = normalized.match(
       /^(en|es|ar|pt-br|pt|zh-hans)\/recipe\/(.+)$/i,
     );
-    if (recipePrefixed) return normalizeSlugLocal(recipePrefixed[2]);
+    if (recipePrefixed) return normalizeRecipeSlugToken(recipePrefixed[2]);
     const langPrefixed = normalized.match(/^(en|es|ar|pt-br|pt|zh-hans)\/(.+)$/i);
-    if (langPrefixed) return normalizeSlugLocal(langPrefixed[2]);
-    return normalized;
+    if (langPrefixed) return normalizeRecipeSlugToken(langPrefixed[2]);
+    return normalizeRecipeSlugToken(normalized);
   };
   const extractRecipeIdFromContent = (value: ContentValue): string => {
     const text =
@@ -469,6 +473,32 @@ export async function getStaticPaths() {
       .toLowerCase();
     if (directKey) return directKey;
     return extractRecipeIdFromContent(item?.content);
+  };
+  const hasRenderableRecipeData = (item: ArticleEntry): boolean => {
+    if (!item || typeof item !== "object") return false;
+
+    const recipeBlocks = Array.isArray(item?.recipeBlocks)
+      ? (item.recipeBlocks as Array<Record<string, unknown>>)
+      : [];
+    const hasRecipeBlocks = recipeBlocks.some((block) => {
+      if (!block || typeof block !== "object") return false;
+      const ingredients = Array.isArray(block.ingredients)
+        ? block.ingredients
+        : [];
+      const steps = Array.isArray(block.steps) ? block.steps : [];
+      return ingredients.length > 0 || steps.length > 0;
+    });
+    if (hasRecipeBlocks) return true;
+
+    const contentText =
+      typeof item?.content === "string"
+        ? item.content
+        : JSON.stringify(item?.content ?? "");
+    if (!contentText) return false;
+
+    return /wprm-recipe|content-v2-recipe|recipe-ingredients|recipe-steps/i.test(
+      contentText,
+    );
   };
   const buildLanguageSlugMapBySlug = (items: ArticleEntry[]) => {
     type Descriptor = {
@@ -577,15 +607,63 @@ export async function getStaticPaths() {
   if (!Array.isArray(articles)) return [];
 
   const languageSlugMapBySlug = buildLanguageSlugMapBySlug(articles);
+  const fallbackByCoreSlug = new Map<string, ArticleEntry>();
+  const fallbackByRecipeKey = new Map<string, ArticleEntry>();
+  const fallbackByImageKey = new Map<string, ArticleEntry>();
+  const upsertFallback = (
+    map: Map<string, ArticleEntry>,
+    key: string,
+    candidate: ArticleEntry,
+  ) => {
+    if (!key) return;
+
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, candidate);
+      return;
+    }
+
+    const existingLang = normalizeLanguageCode(
+      existing?.lang || existing?.language || existing?.locale,
+    );
+    const candidateLang = normalizeLanguageCode(
+      candidate?.lang || candidate?.language || candidate?.locale,
+    );
+    if (existingLang !== "fr" && candidateLang === "fr") {
+      map.set(key, candidate);
+    }
+  };
+
+  for (const entry of articles) {
+    if (!hasRenderableRecipeData(entry)) continue;
+
+    const entrySlug = getArticleSlugValue(entry);
+    const coreSlug = getCoreSlug(entrySlug);
+    const recipeKey = getArticleRecipeKey(entry);
+    const imageKey = getArticleImageKey(entry);
+
+    upsertFallback(fallbackByCoreSlug, coreSlug, entry);
+    upsertFallback(fallbackByRecipeKey, recipeKey, entry);
+    upsertFallback(fallbackByImageKey, imageKey, entry);
+  }
 
   return articles
     .map((item) => {
       const slugValue = getArticleSlugValue(item);
       if (!slugValue || slugValue.includes("/")) return null;
       const languageSlugMap = languageSlugMapBySlug.get(slugValue) || {};
+      const fallbackRecipeArticle =
+        fallbackByCoreSlug.get(getCoreSlug(slugValue)) ||
+        fallbackByRecipeKey.get(getArticleRecipeKey(item)) ||
+        fallbackByImageKey.get(getArticleImageKey(item)) ||
+        null;
       return {
         params: { slug: slugValue },
-        props: { article: { ...item, slug: slugValue }, languageSlugMap },
+        props: {
+          article: { ...item, slug: slugValue },
+          languageSlugMap,
+          fallbackRecipeArticle,
+        },
       };
     })
     .filter(Boolean);
@@ -594,9 +672,11 @@ export async function getStaticPaths() {
 interface Props {
   article: ArticleEntry;
   languageSlugMap?: Record<string, string>;
+  fallbackRecipeArticle?: ArticleEntry | null;
 }
 
-let { article, languageSlugMap = {} } = Astro.props as Props;
+let { article, languageSlugMap = {}, fallbackRecipeArticle = null } =
+  Astro.props as Props;
 
 if (!article) {
   throw new Error("Article data missing at build time");
@@ -614,6 +694,57 @@ if (slug && !processArticleImageUrl(article)) {
       ...hydratedArticle,
     };
   }
+}
+
+const hasRenderableRecipeData = (entry: ArticleEntry | null | undefined): boolean => {
+  if (!entry || typeof entry !== "object") return false;
+  const recipeBlocks = Array.isArray(entry?.recipeBlocks) ? entry.recipeBlocks : [];
+  if (
+    recipeBlocks.some((block) => {
+      if (!block || typeof block !== "object") return false;
+      const ingredients = Array.isArray((block as RecipeBlock).ingredients)
+        ? (block as RecipeBlock).ingredients
+        : [];
+      const steps = Array.isArray((block as RecipeBlock).steps)
+        ? (block as RecipeBlock).steps
+        : [];
+      return ingredients.length > 0 || steps.length > 0;
+    })
+  ) {
+    return true;
+  }
+
+  const contentText =
+    typeof entry?.content === "string"
+      ? entry.content
+      : JSON.stringify(entry?.content ?? "");
+  return /wprm-recipe|content-v2-recipe|recipe-ingredients|recipe-steps/i.test(
+    contentText,
+  );
+};
+
+if (
+  fallbackRecipeArticle &&
+  hasRenderableRecipeData(fallbackRecipeArticle) &&
+  !hasRenderableRecipeData(article)
+) {
+  article = {
+    ...fallbackRecipeArticle,
+    ...article,
+    recipeBlocks:
+      Array.isArray(article?.recipeBlocks) && article.recipeBlocks.length > 0
+        ? article.recipeBlocks
+        : fallbackRecipeArticle.recipeBlocks,
+    content:
+      toText(article?.content).trim().length > 0
+        ? article.content
+        : fallbackRecipeArticle.content,
+    featuredImage: article?.featuredImage || fallbackRecipeArticle.featuredImage,
+    featuredMedia: article?.featuredMedia || fallbackRecipeArticle.featuredMedia,
+    featured_image:
+      article?.featured_image || fallbackRecipeArticle.featured_image,
+    slug: article?.slug || fallbackRecipeArticle.slug,
+  };
 }
 
 const getExcerpt = () => {
@@ -1102,6 +1233,19 @@ const introText =
 const hasStoryContent = false;
 const content = renderArticleContent(article);
 const sanitizedContent = sanitizeTrustedHtml(content);
+const fallbackContentText = (excerptText || introText || "").trim();
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+const displayContentHtml = sanitizedContent.trim()
+  ? sanitizedContent
+  : fallbackContentText
+    ? `<p>${escapeHtml(fallbackContentText)}</p>`
+    : "<p>Contenu en cours de synchronisation.</p>";
 const firstContentParagraphHtml =
   content.match(/<p\b[^>]*>[\s\S]*?<\/p>/i)?.[0] || "";
 const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(
@@ -1809,7 +1953,7 @@ const relatedArticles = (
                 class="article-content typ-body"
                 data-article-title={title}
                 data-article-summary={excerptText}
-                set:html={sanitizedContent}
+                set:html={displayContentHtml}
               />
             </article>
           </div>
