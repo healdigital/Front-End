@@ -986,6 +986,22 @@ html[data-club-member="true"] .content_desktop_hint {
   display: none !important;
   min-height: 0 !important;
 }
+
+@media only screen and (max-width: 399px) {
+  div.recipe-redesign,
+  div.recipe-redesign > section,
+  div.recipe-redesign__steps,
+  div.recipe-redesign__steps > .recipe-redesign__step-group {
+    display: block !important;
+  }
+}
+
+@media only screen and (max-width: 359px) {
+  .recipe-redesign__recipe-card {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
  
 .article-intro-meta .article-intro-meta-item {
     display: flex;
