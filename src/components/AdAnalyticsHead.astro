@@ -3,7 +3,7 @@ interface Props {
   loadAds?: boolean;
 }
 
-const { loadAds = false } = Astro.props;
+const { loadAds: _loadAds = false } = Astro.props;
 
 const mediavineScriptSrc = import.meta.env.PUBLIC_MEDIAVINE_SCRIPT_SRC;
 const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
@@ -16,11 +16,21 @@ const axeptioMediavineVendor = import.meta.env.PUBLIC_AXEPTIO_MEDIAVINE_VENDOR |
 const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
 ---
 
-{(loadAds && mediavineScriptSrc) && (
+{mediavineScriptSrc && (
   <>
     <link rel="preconnect" href="https://scripts.mediavine.com" />
     <link rel="dns-prefetch" href="//scripts.mediavine.com" />
   </>
+)}
+
+{mediavineScriptSrc && (
+  <script
+    type="text/javascript"
+    async="async"
+    data-noptimize="1"
+    data-cfasync="false"
+    src={mediavineScriptSrc}
+  />
 )}
 
 {gaMeasurementId && (
@@ -33,7 +43,6 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
 <script
   is:inline
   define:vars={{
-    loadAds,
     mediavineScriptSrc,
     gaMeasurementId,
     hasAxeptioConfig,
@@ -73,7 +82,6 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
   };
 
   var lcdbGaLoaded = false;
-  var lcdbMediavineLoaded = false;
   var lcdbAdSlotObservers = [];
 
   var splitVendorNames = function (rawValue, fallbackValues) {
@@ -133,20 +141,7 @@ const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
   };
 
   var loadMediavine = function () {
-    if (!loadAds || !mediavineScriptSrc || window.__lcdbClubMember || lcdbMediavineLoaded) return;
-    if (document.querySelector('script[data-lcdb-mediavine="true"]')) {
-      lcdbMediavineLoaded = true;
-      return;
-    }
-    lcdbMediavineLoaded = true;
-    var mediavineScript = document.createElement('script');
-    mediavineScript.type = 'text/javascript';
-    mediavineScript.async = true;
-    mediavineScript.src = mediavineScriptSrc;
-    mediavineScript.setAttribute('data-noptimize', '1');
-    mediavineScript.setAttribute('data-cfasync', 'false');
-    mediavineScript.setAttribute('data-lcdb-mediavine', 'true');
-    document.head.appendChild(mediavineScript);
+    if (!mediavineScriptSrc) return;
     window.setTimeout(function () { refreshAdSlotVisibility(); }, 2500);
     window.setTimeout(function () { refreshAdSlotVisibility(); }, 6000);
     window.setTimeout(function () { refreshAdSlotVisibility(); }, 12000);
