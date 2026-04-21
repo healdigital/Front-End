@@ -17,6 +17,10 @@ const pathToSlug = (path: string): string => {
   if (!trimmed) return '';
   if (trimmed.startsWith('print/')) return '';
   if (trimmed.startsWith('articles/')) return trimmed.slice('articles/'.length).replace(/^\/+|\/+$/g, '');
+  const wpLangMatch = trimmed.match(/^(fr|en|es|pt-br|ar)\/recipe\/([^/]+)$/i);
+  if (wpLangMatch) {
+    return `${wpLangMatch[1].toLowerCase()}/recipe/${wpLangMatch[2]}`;
+  }
   if (trimmed.includes('/')) return '';
   return trimmed;
 };

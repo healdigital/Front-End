@@ -35,7 +35,8 @@
     "import:articles": "node scripts/import-articles-with-refs.mjs",
     "prepare:articles": "node scripts/import-articles-to-payload.mjs",
     "import:articles-payload": "node scripts/import-payload-api.mjs",
-    "import:with-relationships": "node scripts/import-with-relationships.mjs"
+    "import:with-relationships": "node scripts/import-with-relationships.mjs",
+    "import:wprm-json": "node scripts/import-wprm-json-to-mongo.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
