@@ -88,19 +88,27 @@ const toText = (value: ContentValue): string => {
 };
 
 const normalizeSlug = (value: ContentValue) => String(value || '').replace(/^\/+|\/+$/g, '');
-
 export async function getStaticPaths() {
   if (import.meta.env.DEV) {
     return [];
   }
 
-  const normalize = (value: ContentValue) => String(value || '').replace(/^\/+|\/+$/g, '');
+  const staticBuildLimit = (() => {
+    const envLimit = Number(process.env.MAX_SSG_ARTICLES);
+    return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+  })();
+
+  const toRouteSlug = (value: ContentValue) => {
+    const normalized = String(value || '').replace(/^\/+|\/+$/g, '');
+    if (!normalized || normalized.includes('/')) return '';
+    return normalized;
+  };
 
   let articles: ArticleEntry[] = await getAllArticlesFromMongo();
   if (!articles || articles.length === 0) {
     const response = await payloadFetch<ArticleEntry>({
       collection: 'articles',
-      query: { depth: 2, limit: getBuildLimit() },
+      query: { depth: 2, limit: staticBuildLimit },
     });
     articles = response;
   }
@@ -111,11 +119,12 @@ export async function getStaticPaths() {
 
   return articles
     .map((article) => {
-      const slug = normalize(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+      const rawSlug = typeof article?.slug === 'string' ? article.slug : article?.slug?.current;
+      const slug = toRouteSlug(rawSlug);
       if (!slug) return null;
       return {
         params: { slug },
-        props: { article: { ...article, slug } },
+        props: { article: { ...article } },
       };
     })
     .filter(Boolean);

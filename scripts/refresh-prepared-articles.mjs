@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import 'dotenv/config';
 
 const preparedPath = path.join(process.cwd(), 'prepared-articles.json');
 
@@ -164,15 +165,138 @@ const ensureIds = (doc) => {
   };
 };
 
-const dedupeBySlug = (items) => {
+const normalizeLang = (value) => String(value || 'fr').trim().toLowerCase();
+
+const toPlainString = (value) => {
+  if (typeof value === 'string') return value;
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '';
+  }
+};
+
+const normalizeDate = (doc) =>
+  doc?.date || doc?.modified || doc?.publishedAt || doc?.createdAt || null;
+
+const normalizeAuthor = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string' || typeof value === 'number') {
+    return { id: value };
+  }
+
+  if (typeof value === 'object') {
+    const id = value?.id || value?._id || null;
+    const name = value?.name || value?.fullName || value?.displayName || null;
+    const slug = value?.slug || null;
+    const email = value?.email || null;
+    return { id, name, slug, email };
+  }
+
+  return null;
+};
+
+const normalizeTaxonomyItems = (items) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((entry) => {
+      if (!entry) return null;
+
+      if (typeof entry === 'string' || typeof entry === 'number') {
+        return { id: entry, name: null, slug: null };
+      }
+
+      if (typeof entry === 'object') {
+        return {
+          id: entry?.id || entry?._id || null,
+          name: entry?.name || null,
+          slug: entry?.slug || null,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const toAbsoluteUrl = (value, apiBase) => {
+  const input = toPlainString(value).trim();
+  if (!input) return '';
+  if (/^https?:\/\//i.test(input)) return input;
+
+  try {
+    return new URL(input, `${apiBase}/`).toString();
+  } catch {
+    return input;
+  }
+};
+
+const normalizeFeaturedImage = (doc, apiBase) => {
+  const featuredImage = doc?.featured_image || doc?.featuredImage || null;
+  const featuredMedia = doc?.featuredMedia || null;
+
+  if (featuredImage && typeof featuredImage === 'object') {
+    const url = toAbsoluteUrl(featuredImage?.url || featuredImage?.src || '', apiBase);
+    if (url || featuredImage?.id || featuredImage?.width || featuredImage?.height) {
+      return {
+        id: featuredImage?.id || featuredImage?._id || null,
+        url,
+        width: featuredImage?.width || null,
+        height: featuredImage?.height || null,
+        alt: featuredImage?.alt || '',
+      };
+    }
+  }
+
+  if (featuredMedia && typeof featuredMedia === 'object') {
+    return {
+      id: featuredMedia?.id || featuredMedia?._id || null,
+      url: toAbsoluteUrl(featuredMedia?.url || featuredMedia?.thumbnailURL || '', apiBase),
+      width: featuredMedia?.width || null,
+      height: featuredMedia?.height || null,
+      alt: featuredMedia?.alt || '',
+    };
+  }
+
+  if (typeof doc?.featured_img_url === 'string' && doc.featured_img_url.trim()) {
+    return {
+      id: null,
+      url: toAbsoluteUrl(doc.featured_img_url, apiBase),
+      width: null,
+      height: null,
+      alt: '',
+    };
+  }
+
+  return null;
+};
+
+const toLegacyPreparedArticle = (doc, apiBase) => ({
+  _id: doc?._id || doc?.id || null,
+  slug: normalizeSlug(typeof doc?.slug === 'string' ? doc.slug : doc?.slug?.current),
+  lang: normalizeLang(doc?.lang || doc?.language || doc?.locale),
+  title: toPlainString(doc?.title),
+  content: toPlainString(doc?.content ?? doc?.contentV2 ?? doc?.body ?? ''),
+  excerpt: toPlainString(doc?.excerpt ?? ''),
+  date: normalizeDate(doc),
+  author: normalizeAuthor(doc?.author),
+  categories: normalizeTaxonomyItems(doc?.categories),
+  tags: normalizeTaxonomyItems(doc?.tags),
+  featured_image: normalizeFeaturedImage(doc, apiBase),
+});
+
+const dedupeByLangAndSlug = (items) => {
   const seen = new Set();
   const deduped = [];
   for (const item of items) {
-    const slug = normalizeSlug(
-      typeof item.slug === 'string' ? item.slug : item.slug?.current,
-    );
-    if (!slug || seen.has(slug)) continue;
-    seen.add(slug);
+    const slug = normalizeSlug(item?.slug);
+    const lang = normalizeLang(item?.lang || item?.language || item?.locale);
+    const key = `${lang}::${slug}`;
+    if (!slug || seen.has(key)) continue;
+    seen.add(key);
     deduped.push(item);
   }
   return deduped;
@@ -213,7 +337,8 @@ const main = async () => {
   }
 
   const output = limit ? allDocs.slice(0, limit) : allDocs;
-  const deduped = dedupeBySlug(output);
+  const legacyPrepared = output.map((doc) => toLegacyPreparedArticle(doc, apiBases[0]));
+  const deduped = dedupeByLangAndSlug(legacyPrepared);
 
   fs.writeFileSync(preparedPath, JSON.stringify(deduped, null, 2));
   console.log(`Wrote ${deduped.length} articles to prepared-articles.json`);
