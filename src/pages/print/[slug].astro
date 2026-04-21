@@ -87,6 +87,8 @@ const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, 
 
 export async function getStaticPaths() {
   let articles: any[] = [];
+  const normalizeSlugLocal = (value: any) =>
+    String(value || "").replace(/^\/+|\/+$/g, "");
 
   const decodeSafe = (value: string) => {
     try {
@@ -117,15 +119,17 @@ export async function getStaticPaths() {
   if (!Array.isArray(articles)) return [];
 
   return articles
-    .filter((item: any) => item?.slug)
     .map((item: any) => {
-      const rawSlug = typeof item.slug === "string" ? item.slug : item.slug?.current || "";
-      const slugValue = decodeSafe(rawSlug);
+      const rawSlug =
+        typeof item?.slug === "string" ? item.slug : item?.slug?.current || "";
+      const slugValue = normalizeSlugLocal(decodeSafe(rawSlug));
+      if (!slugValue) return null;
       return {
         params: { slug: slugValue },
         props: { article: { ...item, slug: slugValue } },
       };
-    });
+    })
+    .filter(Boolean);
 }
 
 interface Props {
