@@ -1984,8 +1984,9 @@ const relatedArticles = (
   />
 </BaseLayout>
 
-<script is:inline>
-  window.__lcdbArticleLanguageMap = {JSON.stringify(languageSlugMap)};
+<script define:vars={{ languageSlugMap }}>
+  window.__lcdbIsArticlePage = true;
+  window.__lcdbArticleLanguageMap = languageSlugMap;
 </script>
 
 <script>
