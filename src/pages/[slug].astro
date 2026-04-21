@@ -539,15 +539,16 @@ export async function getStaticPaths() {
   const languageSlugMapBySlug = buildLanguageSlugMapBySlug(articles);
 
   return articles
-    .filter((item): item is ArticleEntry => Boolean(item?.slug))
     .map((item) => {
       const slugValue = getArticleSlugValue(item);
+      if (!slugValue) return null;
       const languageSlugMap = languageSlugMapBySlug.get(slugValue) || {};
       return {
         params: { slug: slugValue },
         props: { article: { ...item, slug: slugValue }, languageSlugMap },
       };
-    });
+    })
+    .filter(Boolean);
 }
 
 interface Props {
