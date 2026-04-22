@@ -169,7 +169,7 @@ const hasUsableArticleImage = (article: ArticleRecord): boolean =>
       article?.featuredImageUrl,
   );
 
-const shouldUseLocalJson = (): boolean => process.env.USE_LOCAL_JSON === '1';
+export const shouldUseLocalJson = (): boolean => process.env.USE_LOCAL_JSON === '1';
 
 const backfillPreparedArticleMediaFields = async (articles: ArticleRecord[]): Promise<ArticleRecord[]> => {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
