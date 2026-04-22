@@ -318,6 +318,7 @@ if (!article) {
 
 const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
 if (slug && !processArticleImageUrl(article) && !shouldUseLocalJson()) {
+  
   const hydratedArticle = await getArticleBySlugFromMongo(slug);
   if (hydratedArticle) {
     article = {
