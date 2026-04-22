@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { payloadFetch } from '../../lib/payload.client';
-import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from '../../lib/mongo.server';
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo, shouldUseLocalJson } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 import { renderArticleContent } from '../../utils/renderArticleContent';
 import { sanitizeTrustedHtml } from '../../utils/trustedHtml';
@@ -300,7 +300,7 @@ let { article, languageSlugMap = {} } = Astro.props as Props;
 
 if (!article) {
   const slugParam = Astro.params.slug;
-  if (slugParam) {
+  if (slugParam && !shouldUseLocalJson()) {
     article = await getArticleBySlugFromMongo(slugParam);
     if (!article) {
       const fallback = await payloadFetch<ArticleEntry>({
@@ -317,7 +317,7 @@ if (!article) {
 }
 
 const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
-if (slug && !processArticleImageUrl(article)) {
+if (slug && !processArticleImageUrl(article) && !shouldUseLocalJson()) {
   const hydratedArticle = await getArticleBySlugFromMongo(slug);
   if (hydratedArticle) {
     article = {
