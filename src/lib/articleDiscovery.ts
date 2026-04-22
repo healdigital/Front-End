@@ -1,6 +1,6 @@
 import { getAllArticlesFromMongo } from './mongo.server';
 import { getPopularSlugViewMap } from './googleAnalytics';
-import { buildWpSquareVariantUrl, processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import { processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 type SidebarArticle = {
@@ -67,7 +67,10 @@ const normalizeToken = (value: string): string =>
     .toLowerCase()
     .trim();
 
+const isObjectId = (value: string): boolean => /^[0-9a-f]{24}$/i.test(value);
+
 const toSidebarTag = (source: string): string => {
+  if (!source || isObjectId(source)) return 'RECETTE';
   const normalized = normalizeToken(source);
   if (!normalized) return 'RECETTE';
   if (/(sucre|dessert|sweet|gateau|cake|cookie|brioche|chocolat|tarte|entremet|creme|praline|sable)/.test(normalized)) {
@@ -164,7 +167,7 @@ export async function getPopularSidebarArticles(limit = 5, lang = 'fr'): Promise
       const slug = getSlug(article);
       const title = getTitle(article);
       const imageSource = processArticleImageUrl(article as ArticleImageInput);
-      const image = buildWpSquareVariantUrl(imageSource, 500) || imageSource;
+      const image = replaceCdnUrl(imageSource) || imageSource || '';
       const gaScore = gaRanking.get(slug) || 0;
       return {
         article,
