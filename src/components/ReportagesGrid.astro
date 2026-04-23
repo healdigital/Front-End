@@ -1,6 +1,7 @@
 ---
 import { getAllArticlesFromMongo } from "../lib/mongo.server";
 import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -47,7 +48,8 @@ const articleSlug = (article: Record<string, unknown>): string =>
       : (article?.slug as { current?: string } | undefined)?.current,
   );
 
-const titleOf = (article: Record<string, unknown>): string => toText(article?.title) || "Article";
+const titleOf = (article: Record<string, unknown>): string =>
+  decodeHtmlEntities(toText(article?.title) || "Article");
 
 const dateLabelOf = (article: Record<string, unknown>): string => {
   const raw = String(article?.date || article?.publishedAt || article?.modified || "").trim();
