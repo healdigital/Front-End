@@ -1,0 +1,173 @@
+---
+import { getAllArticlesFromMongo } from "../lib/mongo.server";
+import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
+import fs from "node:fs";
+import path from "node:path";
+
+interface ReportageCard {
+  slug: string;
+  title: string;
+  image: string;
+  dateLabel: string;
+}
+
+const REPORTAGE_CATEGORY_IDS = new Set([
+  "697b43a92e3ee7dc031e656a", // Report
+  "697b43a92e3ee7dc031e656b", // Reportage
+  "697b43a92e3ee7dc031e6551", // Arabic reportage
+]);
+
+const stripHtml = (value: string): string =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value === "string") return stripHtml(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["rendered", "value", "text", "title", "name", "label"]) {
+      const text = toText(record[key]);
+      if (text) return text;
+    }
+  }
+  return "";
+};
+
+const normalizeSlug = (value: unknown): string => String(value || "").replace(/^\/+|\/+$/g, "");
+
+const articleSlug = (article: Record<string, unknown>): string =>
+  normalizeSlug(
+    typeof article?.slug === "string"
+      ? article.slug
+      : (article?.slug as { current?: string } | undefined)?.current,
+  );
+
+const titleOf = (article: Record<string, unknown>): string => toText(article?.title) || "Article";
+
+const dateLabelOf = (article: Record<string, unknown>): string => {
+  const raw = String(article?.date || article?.publishedAt || article?.modified || "").trim();
+  if (!raw) return "";
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleDateString("fr-FR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const readCategoryIds = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string" || typeof value === "number") {
+    return [String(value).trim()].filter(Boolean);
+  }
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return ["_id", "id", "value", "categoryId", "categoryID"]
+      .map((key) => String(record[key] || "").trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const categoryIdsOf = (article: Record<string, unknown>): string[] => {
+  const ids = new Set<string>();
+  const categories = Array.isArray(article?.categories) ? article.categories : [];
+
+  for (const category of categories) {
+    for (const id of readCategoryIds(category)) ids.add(id);
+  }
+
+  for (const id of readCategoryIds(article?.category)) ids.add(id);
+  for (const id of readCategoryIds(article?.categoryId)) ids.add(id);
+
+  return Array.from(ids);
+};
+
+const isReportageArticle = (article: Record<string, unknown>): boolean => {
+  const categoryIds = categoryIdsOf(article);
+  return categoryIds.some((id) => REPORTAGE_CATEGORY_IDS.has(id));
+};
+
+const getSourceArticles = async (): Promise<Record<string, unknown>[]> => {
+  if (process.env.USE_LOCAL_JSON === "1") {
+    try {
+      const preparedPath = path.join(process.cwd(), "prepared-articles.json");
+      const raw = fs.readFileSync(preparedPath, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item) => !item?._status || item._status === "published");
+      }
+    } catch (error) {
+      console.error("[reportages] Failed to read prepared-articles.json, fallback to Mongo:", error);
+    }
+  }
+  const mongoArticles = await getAllArticlesFromMongo();
+  return Array.isArray(mongoArticles) ? (mongoArticles as Record<string, unknown>[]) : [];
+};
+
+const allArticles = await getSourceArticles();
+
+const cards: ReportageCard[] = (Array.isArray(allArticles) ? allArticles : [])
+  .filter((article): article is Record<string, unknown> => Boolean(article && typeof article === "object"))
+  .filter((article) => isReportageArticle(article))
+  .map((article) => {
+    const slug = articleSlug(article);
+    const title = titleOf(article);
+    const image = replaceCdnUrl(processArticleImageUrl(article as Record<string, unknown>) || "");
+    const dateLabel = dateLabelOf(article);
+    return { slug, title, image, dateLabel };
+  })
+  .filter((card) => Boolean(card.slug && card.title && card.image));
+
+const dedupedCards = Array.from(
+  cards.reduce((acc, card) => {
+    if (!acc.has(card.slug)) acc.set(card.slug, card);
+    return acc;
+  }, new Map<string, ReportageCard>()).values(),
+);
+---
+
+{dedupedCards.length > 0 ? (
+  <div id="pencifeatured_cat_reportages" class="penci-featured-cat-sc">
+    <section class="home-featured-cat mag-cat-style-13">
+      <div class="home-featured-cat-wrapper">
+        <div class="home-featured-cat-content pwf-id-default style-13">
+          <ul class="penci-grid penci-grid-maglayout penci-fea-cat-style-13">
+            {dedupedCards.map((card) => (
+              <li class="grid-style">
+                <article class="item hentry">
+                  <div class="thumbnail">
+                    <a
+                      class="penci-image-holder penci-lazy"
+                      style={`background-image:url('${card.image}');`}
+                      href={`/${card.slug}`}
+                      title={card.title}
+                    />
+                  </div>
+                  <div class="grid-header-box">
+                    <h2 class="grid-title entry-title">
+                      <a href={`/${card.slug}`}>{card.title}</a>
+                    </h2>
+                    {card.dateLabel && (
+                      <div class="penci-hide-tagupdated">
+                        <time class="entry-date published">{card.dateLabel}</time>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+) : (
+  <p>Aucun reportage trouve pour le moment.</p>
+)}
