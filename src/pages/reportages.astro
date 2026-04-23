@@ -1,18 +1,15 @@
 ﻿---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+import ReportagesGrid from "../components/ReportagesGrid.astro";
 ---
 
 <BaseLayout title="Reportages">
   <StaticPage
     title="Reportages"
-    subtitle="Reportages"
+    subtitle="Interviews, reportages et coulisses gastronomiques."
     className="menu-page menu-page--travel-grid"
   >
-    <StaticPageContent
-      slug="reportages"
-      sourceUrl="https://lacuisinedebernard.com/reportages/"
-    />
+    <ReportagesGrid />
   </StaticPage>
 </BaseLayout>
