@@ -1,21 +1,11 @@
-name: Deploy via Coolify Webhook
+name: Deploy Static Site (Scaleway Disabled)
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Coolify deploy webhook
-        env:
-          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
-        run: |
-          if [ -z "$COOLIFY_DEPLOY_WEBHOOK" ]; then
-            echo "COOLIFY_DEPLOY_WEBHOOK secret is not set."
-            exit 1
-          fi
-          curl --fail --show-error --silent -X POST "$COOLIFY_DEPLOY_WEBHOOK"
-          echo "Deployment webhook triggered."
+      - name: Disabled
+        run: echo "Scaleway deploy workflow disabled. Use Coolify deploy webhook instead."
