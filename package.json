@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "check:i18n-coverage": "node scripts/check-i18n-coverage.mjs",
     "fix:vite-optimize": "node scripts/fix-vite-optimize-deps.mjs",
     "prebuild": "node scripts/fix-vite-optimize-deps.mjs",
     "dev": "node scripts/dev-site.mjs",

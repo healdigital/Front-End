@@ -18,26 +18,19 @@ interface Props {
 const { lang = 'fr' } = Astro.props;
 
 const languageLabels: Record<string, string> = {
-  fr: 'Français',
-  en: 'English',
-  es: 'Español',
-  'pt-br': 'Português',
-  ar: 'العربية',
+  fr: 'Français (France)',
+  en: 'English (UK)',
+  es: 'Español (España)',
+  'pt-br': 'Português (Portugal)',
+  ar: 'العربية الفصحى',
 };
 
 const supportedLanguages = ['fr', 'en', 'es', 'pt-br', 'ar'];
 const currentLang = supportedLanguages.includes(lang) ? lang : 'fr';
-const stableLanguageLabels: Record<string, string> = {
-  fr: 'Francais',
-  en: 'English',
-  es: 'Espanol',
-  'pt-br': 'Portugues',
-  ar: 'Arabe',
-};
-const languageLabel = stableLanguageLabels[currentLang] || stableLanguageLabels.fr;
+const languageLabel = languageLabels[currentLang] || languageLabels.fr;
 const languageOptions = supportedLanguages.map((code) => ({
   code,
-  label: stableLanguageLabels[code] || stableLanguageLabels.fr,
+  label: languageLabels[code] || languageLabels.fr,
 }));
 
 const navItems = [
