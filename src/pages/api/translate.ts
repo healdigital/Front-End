@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 
-const DEFAULT_DEEPL_URL = 'https://api.deepl.com/v2/translate';
+const DEEPL_PRO_URL = 'https://api.deepl.com/v2/translate';
+const DEEPL_FREE_URL = 'https://api-free.deepl.com/v2/translate';
 const DEFAULT_DEEPL_ALLOWED_HOSTS = ['api.deepl.com', 'api-free.deepl.com'];
 const DEFAULT_ALLOWED_ORIGINS = [
   'https://lacuisinedebernard.com',
@@ -10,8 +11,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'http://127.0.0.1:4321',
 ];
 const isDev = import.meta.env.DEV;
-// Dev-only API route. In production (pure SSG), this must be prerendered to avoid SSR.
-export const prerender = !isDev;
+// Translate API needs runtime request handling for POST/headers.
+export const prerender = false;
 
 const languageMap: Record<string, string> = {
   en: 'EN-GB',
@@ -74,7 +75,14 @@ const assertAllowedOrigin = (
   request: Request,
 ): { allowed: true; origin: string } | { allowed: false; origin: string | null } => {
   const requestOrigin = getRequestOrigin(request);
-  if (!requestOrigin) return { allowed: false, origin: null };
+  const serverOrigin = normalizeOrigin(request.url);
+
+  // Same-origin browser/dev-server requests may not include Origin/Referer.
+  // Allow them by falling back to the request URL origin.
+  if (!requestOrigin) {
+    if (serverOrigin) return { allowed: true, origin: serverOrigin };
+    return { allowed: false, origin: null };
+  }
 
   const allowedOrigins = parseAllowedOrigins(request);
   if (!allowedOrigins.has(requestOrigin)) return { allowed: false, origin: requestOrigin };
@@ -91,10 +99,14 @@ const parseAllowedDeepLHosts = (): Set<string> => {
   return new Set([...DEFAULT_DEEPL_ALLOWED_HOSTS, ...configuredHosts]);
 };
 
+const isLikelyDeepLFreeKey = (apiKey: string): boolean => apiKey.trim().toLowerCase().endsWith(':fx');
+
 const resolveDeepLApiUrl = (
   value: string | undefined,
+  apiKey: string,
 ): { ok: true; value: string } | { ok: false; error: string } => {
-  const target = value && value.trim().length > 0 ? value.trim() : DEFAULT_DEEPL_URL;
+  const defaultUrl = isLikelyDeepLFreeKey(apiKey) ? DEEPL_FREE_URL : DEEPL_PRO_URL;
+  const target = value && value.trim().length > 0 ? value.trim() : defaultUrl;
 
   let parsed: URL;
   try {
@@ -197,7 +209,6 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const apiKey = process.env.DEEPL_API_KEY;
-  const apiUrlResult = resolveDeepLApiUrl(process.env.DEEPL_API_URL);
 
   if (!apiKey) {
     return withCors(
@@ -208,6 +219,8 @@ export const POST: APIRoute = async ({ request }) => {
       originCheck.origin,
     );
   }
+
+  const apiUrlResult = resolveDeepLApiUrl(process.env.DEEPL_API_URL, apiKey);
 
   if (!apiUrlResult.ok) {
     return withCors(
@@ -300,7 +313,6 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const params = new URLSearchParams();
-  params.append('auth_key', apiKey);
   params.append('target_lang', targetLang);
   texts.forEach((text) => params.append('text', text));
 
@@ -308,6 +320,7 @@ export const POST: APIRoute = async ({ request }) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `DeepL-Auth-Key ${apiKey.trim()}`,
     },
     body: params,
   });
