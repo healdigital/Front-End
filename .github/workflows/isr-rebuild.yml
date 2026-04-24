@@ -1,4 +1,5 @@
 name: Payload Update Snapshot
+# Metadata bump to trigger a fresh workflow commit.
 
 on:
   push:
