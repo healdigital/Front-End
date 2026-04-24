@@ -72,6 +72,43 @@ const apiBases = buildApiBaseCandidates(rawApiBase);
 
 const decodeSafe = (value) => {
   try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/g, '');
+    const lowerPath = path.toLowerCase();
+
+    if (!path || path === '/') {
+      parsed.pathname = '/api';
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (lowerPath.endsWith('/api')) {
+      const withoutApiPath = path.slice(0, -4) || '/';
+      parsed.pathname = withoutApiPath;
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (!lowerPath.endsWith('/api')) {
+      if (lowerPath.includes('/api/')) {
+        parsed.pathname = path.slice(0, lowerPath.indexOf('/api/') + 4);
+        add(parsed.toString());
+      }
+
+      parsed.pathname = `${path}/api`;
+      add(parsed.toString());
+    }
+  } catch {
+    // keep raw candidate for non-standard URL inputs
+  }
+
+  return candidates;
+};
+
+const apiBases = buildApiBaseCandidates(rawApiBase);
+
+const decodeSafe = (value) => {
+  try {
     return decodeURIComponent(value);
   } catch {
     return value;
