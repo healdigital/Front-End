@@ -4,9 +4,33 @@ import { BUILD_ONLY_ARTICLE_PAGES } from '../utils/buildFlags';
 
 export async function GET() {
   const baseUrl = import.meta.env.PUBLIC_SITE_URL || 'https://lacuisinedebernard.com';
+  const canonicalBase = 'https://lacuisinedebernard.com';
   const urls = [];
   const today = new Date().toISOString().split('T')[0];
   const includeCategoryAndTagRoutes = !BUILD_ONLY_ARTICLE_PAGES;
+  const isProductionCanonical = (() => {
+    try {
+      const parsed = new URL(baseUrl);
+      return parsed.origin === canonicalBase;
+    } catch {
+      return false;
+    }
+  })();
+
+  // Never expose staging domains in sitemap payloads.
+  if (!isProductionCanonical) {
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`,
+      {
+        headers: {
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600',
+          'X-Robots-Tag': 'noindex, nofollow',
+        },
+      },
+    );
+  }
 
   // Root home
   urls.push({
@@ -61,11 +85,16 @@ export async function GET() {
   }
 
   if (Array.isArray(articles)) {
+    const seenUrls = new Set<string>();
     articles.forEach((article: any) => {
       const slug = typeof article.slug === 'string' ? article.slug : article.slug?.current;
-      if (!slug) return;
+      const normalizedSlug = String(slug || '').replace(/^\/+|\/+$/g, '');
+      if (!normalizedSlug || normalizedSlug.includes('/')) return;
+      const loc = `${baseUrl}/${normalizedSlug}`;
+      if (seenUrls.has(loc)) return;
+      seenUrls.add(loc);
       urls.push({
-        loc: `${baseUrl}/${slug}`,
+        loc,
         priority: '0.8',
         changefreq: 'weekly',
         lastmod: article.modified || article.updated || article.date || today,
