@@ -4,14 +4,6 @@ name: Payload Update Snapshot
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'scripts/**'
-      - 'server.mjs'
-      - 'server.ts'
-      - 'payload.config.ts'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
   repository_dispatch:
     types: [ payload-update ]
   workflow_dispatch:
