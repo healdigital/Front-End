@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import 'dotenv/config';
 
 const preparedPath = path.join(process.cwd(), 'prepared-articles.json');
 
@@ -18,6 +17,74 @@ const pageSize = Number(process.env.PAYLOAD_PAGE_SIZE) || 100;
 const depth = Number(process.env.PAYLOAD_DEPTH) || 2;
 const limit = Number(process.env.PAYLOAD_LIMIT) || 0;
 const requestTimeoutMs = Number(process.env.PAYLOAD_FETCH_TIMEOUT_MS) || 15000;
+
+const normalizeBase = (value) =>
+  typeof value === 'string' ? value.trim().replace(/\/+$/g, '') : '';
+
+const buildApiBaseCandidates = (value) => {
+  const normalized = normalizeBase(value);
+  if (!normalized) return [];
+
+  const candidates = [];
+  const seen = new Set();
+  const add = (candidate) => {
+    const clean = normalizeBase(candidate);
+    if (!clean || seen.has(clean)) return;
+    seen.add(clean);
+    candidates.push(clean);
+  };
+
+  add(normalized);
+
+  try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/g, '');
+    const lowerPath = path.toLowerCase();
+
+    if (!path || path === '/') {
+      parsed.pathname = '/api';
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (lowerPath.endsWith('/api')) {
+      const withoutApiPath = path.slice(0, -4) || '/';
+      parsed.pathname = withoutApiPath;
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (!lowerPath.endsWith('/api')) {
+      if (lowerPath.includes('/api/')) {
+        parsed.pathname = path.slice(0, lowerPath.indexOf('/api/') + 4);
+        add(parsed.toString());
+      }
+
+      parsed.pathname = `${path}/api`;
+      add(parsed.toString());
+    }
+  } catch {
+    // keep raw candidate for non-standard URL inputs
+  }
+
+  return candidates;
+};
+
+const apiBases = buildApiBaseCandidates(rawApiBase);
+
+const fetchWithTimeout = async (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
 
 const normalizeBase = (value) =>
   typeof value === 'string' ? value.trim().replace(/\/+$/g, '') : '';
@@ -147,35 +214,6 @@ const fetchPage = async (page) => {
   qs.set('page', String(page));
   qs.set('depth', String(depth));
   return fetchPayloadJSON('/articles', qs);
-};
-
-const normalizeSlug = (value) =>
-  typeof value === 'string' ? value.trim().replace(/^\/+|\/+$/g, '') : '';
-
-const normalizeId = (value) => (value ? String(value).trim() : '');
-
-const ensureIds = (doc) => {
-  const existingId = doc?.id ?? doc?._id ?? doc?.doc?.id ?? doc?.doc?._id ?? '';
-  const normalizedId = normalizeId(existingId);
-  if (!normalizedId) return doc;
-  return {
-    ...doc,
-    id: doc?.id || normalizedId,
-    _id: doc?._id || normalizedId,
-  };
-};
-
-const normalizeLang = (value) => String(value || 'fr').trim().toLowerCase();
-
-const toPlainString = (value) => {
-  if (typeof value === 'string') return value;
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return '';
-  }
 };
 
 const normalizeDate = (doc) =>
