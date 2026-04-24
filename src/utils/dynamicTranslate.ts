@@ -34,17 +34,29 @@ const ENABLE_RUNTIME_AUTO_TRANSLATION =
   String(import.meta.env.PUBLIC_ENABLE_RUNTIME_AUTO_TRANSLATION || '1') === '1';
 
 const DEEPL_FAILURE_THRESHOLD = 3;
-const TRANSLATE_API_CHUNK_SIZE = Math.max(20, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_SIZE) || 180);
+const BACKEND_MAX_TEXTS_PER_REQUEST = 45;
+const TRANSLATE_API_CHUNK_SIZE = Math.min(
+  BACKEND_MAX_TEXTS_PER_REQUEST,
+  Math.max(1, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_SIZE) || BACKEND_MAX_TEXTS_PER_REQUEST),
+);
 const TRANSLATE_API_MAX_ENCODED_CHARS = Math.max(5000, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_MAX_CHARS) || 45000);
 
 const DEFAULT_TRANSLATE_ENDPOINT = 'https://admin.lacuisinedebernard.com/api';
+const DEFAULT_LOCAL_BACKEND_TRANSLATE_ENDPOINT = 'http://localhost:3000/api';
 
-const rawDeeplEndpoints = [
-  import.meta.env.PUBLIC_TRANSLATE_API_URL,
-  import.meta.env.PUBLIC_PAYLOAD_API_URL,
-  import.meta.env.DEV ? '/api' : '',
-  DEFAULT_TRANSLATE_ENDPOINT,
-];
+// In local development, prefer the Payload backend on :3000.
+// This avoids Astro static endpoint limitations for POST routes.
+const rawDeeplEndpoints = import.meta.env.DEV
+  ? [
+      DEFAULT_LOCAL_BACKEND_TRANSLATE_ENDPOINT,
+      import.meta.env.PUBLIC_TRANSLATE_API_URL,
+      import.meta.env.PUBLIC_PAYLOAD_API_URL,
+    ]
+  : [
+      import.meta.env.PUBLIC_TRANSLATE_API_URL,
+      import.meta.env.PUBLIC_PAYLOAD_API_URL,
+      DEFAULT_TRANSLATE_ENDPOINT,
+    ];
 
 const normalizeDeeplEndpoint = (endpoint: string): string => {
   if (!endpoint) return '';
