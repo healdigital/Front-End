@@ -97,7 +97,12 @@ const normalizedArticles = (Array.isArray(allArticles) ? allArticles : [])
       categories: getCategories(article),
     };
   })
-  .filter(Boolean);
+  .filter(Boolean)
+  .sort((a: any, b: any) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return dateB - dateA;
+  });
 
 const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
 const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);

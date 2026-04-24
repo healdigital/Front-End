@@ -1,0 +1,32 @@
+[
+  {
+    "_id": {
+      "$oid": "697b43ab2e3ee7dc031e6785"
+    },
+    "slug": "admin",
+    "author_id": 1,
+    "email": "contact@lacuisinedebernard.com",
+    "name": "Bernard"
+  },
+  {
+    "_id": {
+      "$oid": "697b43ab2e3ee7dc031e6786"
+    },
+    "slug": "leoturbet",
+    "author_id": 4,
+    "email": "leo.turbetdelof@gmail.com",
+    "name": "Léo TD"
+  },
+  {
+    "_id": {
+      "$oid": "697b43ab2e3ee7dc031e6787"
+    },
+    "slug": "leoturbetdelof",
+    "author_id": 5,
+    "email": "l.turbetdelof@circulartransformation.com",
+    "name": "Leo Turbet Delof",
+    "updatedAt": {
+      "$date": "2026-02-06T14:21:50.076Z"
+    }
+  }
+]

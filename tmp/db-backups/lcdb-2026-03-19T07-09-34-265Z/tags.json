@@ -1,0 +1,4694 @@
+[
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e657b"
+  },
+  "slug": "sale",
+  "term_id": 18,
+  "language": "fr",
+  "name": "salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e657c"
+  },
+  "slug": "sucre",
+  "term_id": 19,
+  "language": "fr",
+  "name": "sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e657d"
+  },
+  "slug": "tarte-sucre",
+  "term_id": 20,
+  "language": "fr",
+  "name": "tarte sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e657e"
+  },
+  "slug": "voyage",
+  "term_id": 21,
+  "language": "fr",
+  "name": "voyage"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e657f"
+  },
+  "slug": "reportage",
+  "term_id": 22,
+  "language": "fr",
+  "name": "reportage"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6580"
+  },
+  "slug": "asie-oceanie-sale",
+  "term_id": 23,
+  "language": "fr",
+  "name": "asie-océanie salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6581"
+  },
+  "slug": "europe-sucre",
+  "term_id": 24,
+  "language": "fr",
+  "name": "europe sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6582"
+  },
+  "slug": "europe-sale",
+  "term_id": 25,
+  "language": "fr",
+  "name": "europe salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6583"
+  },
+  "slug": "afrique-moyen-orient-sale",
+  "term_id": 26,
+  "language": "fr",
+  "name": "afrique moyen-orient salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6584"
+  },
+  "slug": "les-ameriques-sale",
+  "term_id": 27,
+  "language": "fr",
+  "name": "les amériques salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6585"
+  },
+  "slug": "france-sale",
+  "term_id": 28,
+  "language": "fr",
+  "name": "france salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6586"
+  },
+  "slug": "les-ameriques-sucre",
+  "term_id": 29,
+  "language": "fr",
+  "name": "les amériques sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6587"
+  },
+  "slug": "cake-sucre",
+  "term_id": 30,
+  "language": "fr",
+  "name": "cake sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6588"
+  },
+  "slug": "les-ameriques",
+  "term_id": 31,
+  "language": "fr",
+  "name": "les amériques"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6589"
+  },
+  "slug": "france-sucre",
+  "term_id": 32,
+  "language": "fr",
+  "name": "france sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e658a"
+  },
+  "slug": "asie-oceanie-sucre",
+  "term_id": 33,
+  "language": "fr",
+  "name": "asie-océanie sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e658b"
+  },
+  "slug": "vegetarien",
+  "term_id": 34,
+  "language": "fr",
+  "name": "végétarien"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e658c"
+  },
+  "slug": "tarte-sale",
+  "term_id": 35,
+  "language": "fr",
+  "name": "tarte salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e658d"
+  },
+  "slug": "macaron",
+  "term_id": 36,
+  "language": "fr",
+  "name": "macaron"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e658e"
+  },
+  "slug": "afrique-moyen-orient-sucre",
+  "term_id": 37,
+  "language": "fr",
+  "name": "afrique moyen-orient sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e658f"
+  },
+  "slug": "avocats",
+  "term_id": 38,
+  "language": "fr",
+  "name": "avocats"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6590"
+  },
+  "slug": "perou",
+  "term_id": 39,
+  "language": "fr",
+  "name": "Pérou"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6591"
+  },
+  "slug": "chocolat",
+  "term_id": 40,
+  "language": "fr",
+  "name": "chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6592"
+  },
+  "slug": "oeufs-de-cabillauds",
+  "term_id": 41,
+  "language": "fr",
+  "name": "oeufs de cabillauds"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6593"
+  },
+  "slug": "recette",
+  "term_id": 42,
+  "language": "fr",
+  "name": "recette"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6594"
+  },
+  "slug": "recette-de-tarama",
+  "term_id": 43,
+  "language": "fr",
+  "name": "recette de tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6595"
+  },
+  "slug": "tarama",
+  "term_id": 44,
+  "language": "fr",
+  "name": "tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6596"
+  },
+  "slug": "interviews",
+  "term_id": 45,
+  "language": "fr",
+  "name": "interviews"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6597"
+  },
+  "slug": "poulet-aux-noix-de-cajou",
+  "term_id": 46,
+  "language": "fr",
+  "name": "poulet aux noix de cajou"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6598"
+  },
+  "slug": "recette-epicee",
+  "term_id": 47,
+  "language": "fr",
+  "name": "recette épicée"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6599"
+  },
+  "slug": "recette-thai",
+  "term_id": 48,
+  "language": "fr",
+  "name": "recette thaï"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e659a"
+  },
+  "slug": "granola-bars-recipe-whole-foods",
+  "term_id": 49,
+  "language": "fr",
+  "name": "granola bars recipe whole foods"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e659b"
+  },
+  "slug": "whole-foods-market",
+  "term_id": 50,
+  "language": "fr",
+  "name": "Whole foods market"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e659c"
+  },
+  "slug": "ramadan",
+  "term_id": 51,
+  "language": "fr",
+  "name": "ramadan"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e659d"
+  },
+  "slug": "rose-de-tunis",
+  "term_id": 52,
+  "language": "fr",
+  "name": "Rose de Tunis"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e659e"
+  },
+  "slug": "zlabbias",
+  "term_id": 53,
+  "language": "fr",
+  "name": "zlabbias"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e659f"
+  },
+  "slug": "zlabias",
+  "term_id": 54,
+  "language": "fr",
+  "name": "Zlabias"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a0"
+  },
+  "slug": "zlebbias",
+  "term_id": 55,
+  "language": "fr",
+  "name": "zlebbias"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a1"
+  },
+  "slug": "flan-parisien",
+  "term_id": 56,
+  "language": "fr",
+  "name": "Flan parisien"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a2"
+  },
+  "slug": "flan-patissier",
+  "term_id": 57,
+  "language": "fr",
+  "name": "flan pâtissier"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a3"
+  },
+  "slug": "poudre-a-creme",
+  "term_id": 58,
+  "language": "fr",
+  "name": "poudre à crème"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a4"
+  },
+  "slug": "u",
+  "term_id": 59,
+  "language": "fr",
+  "name": "u"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a5"
+  },
+  "slug": "casa-olympe",
+  "term_id": 60,
+  "language": "fr",
+  "name": "casa olympe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a6"
+  },
+  "slug": "interview-culinaire",
+  "term_id": 61,
+  "language": "fr",
+  "name": "interview culinaire"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a7"
+  },
+  "slug": "olympe-versini",
+  "term_id": 62,
+  "language": "fr",
+  "name": "Olympe Versini"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a8"
+  },
+  "slug": "kouignettes-aux-framboises",
+  "term_id": 63,
+  "language": "fr",
+  "name": "kouignettes aux framboises"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65a9"
+  },
+  "slug": "larnicol",
+  "term_id": 64,
+  "language": "fr",
+  "name": "larnicol"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65aa"
+  },
+  "slug": "mini-kouign-amann",
+  "term_id": 65,
+  "language": "fr",
+  "name": "mini-kouign amann"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ab"
+  },
+  "slug": "atelier-de-bernard",
+  "term_id": 66,
+  "language": "fr",
+  "name": "atelier de bernard"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ac"
+  },
+  "slug": "atelier-de-cuisine",
+  "term_id": 67,
+  "language": "fr",
+  "name": "atelier de cuisine"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ad"
+  },
+  "slug": "cours-de-cuisine",
+  "term_id": 68,
+  "language": "fr",
+  "name": "cours de cuisine"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ae"
+  },
+  "slug": "macarons-cafe-chocolat",
+  "term_id": 69,
+  "language": "fr",
+  "name": "macarons café-chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65af"
+  },
+  "slug": "macarons-opera",
+  "term_id": 70,
+  "language": "fr",
+  "name": "macarons opéra"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b0"
+  },
+  "slug": "creme-aux-truffes",
+  "term_id": 71,
+  "language": "fr",
+  "name": "crème aux truffes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b1"
+  },
+  "slug": "mascarpone",
+  "term_id": 72,
+  "language": "fr",
+  "name": "mascarpone"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b2"
+  },
+  "slug": "ravioles-de-foie-gras",
+  "term_id": 73,
+  "language": "fr",
+  "name": "ravioles de foie gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b3"
+  },
+  "slug": "truffes-noires",
+  "term_id": 74,
+  "language": "fr",
+  "name": "truffes noires"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b4"
+  },
+  "slug": "l",
+  "term_id": 75,
+  "language": "fr",
+  "name": "l"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b5"
+  },
+  "slug": "amandes-ameres",
+  "term_id": 76,
+  "language": "fr",
+  "name": "amandes amères"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b6"
+  },
+  "slug": "epeautre",
+  "term_id": 77,
+  "language": "fr",
+  "name": "épeautre"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b7"
+  },
+  "slug": "sables-epeautre-amandes",
+  "term_id": 78,
+  "language": "fr",
+  "name": "sablés épeautre amandes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b8"
+  },
+  "slug": "sables-naturalia",
+  "term_id": 79,
+  "language": "fr",
+  "name": "sablés naturalia"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65b9"
+  },
+  "slug": "anchois",
+  "term_id": 80,
+  "language": "fr",
+  "name": "anchois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ba"
+  },
+  "slug": "croque-olympe",
+  "term_id": 81,
+  "language": "fr",
+  "name": "Croque-Olympe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65bb"
+  },
+  "slug": "pecorino",
+  "term_id": 82,
+  "language": "fr",
+  "name": "pecorino"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65bc"
+  },
+  "slug": "clafoutis-aux-cerises",
+  "term_id": 83,
+  "language": "fr",
+  "name": "clafoutis aux cerises"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65bd"
+  },
+  "slug": "clafoutis-classique",
+  "term_id": 84,
+  "language": "fr",
+  "name": "clafoutis classique"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65be"
+  },
+  "slug": "jardin-des-bauches",
+  "term_id": 85,
+  "language": "fr",
+  "name": "jardin des bauches"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65bf"
+  },
+  "slug": "lagostina",
+  "term_id": 86,
+  "language": "fr",
+  "name": "lagostina"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c0"
+  },
+  "slug": "risottiera",
+  "term_id": 87,
+  "language": "fr",
+  "name": "risottiera"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c1"
+  },
+  "slug": "diamants",
+  "term_id": 88,
+  "language": "fr",
+  "name": "diamants"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c2"
+  },
+  "slug": "recette-des-diamants",
+  "term_id": 89,
+  "language": "fr",
+  "name": "recette des diamants"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c3"
+  },
+  "slug": "vanille",
+  "term_id": 90,
+  "language": "fr",
+  "name": "vanille"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c4"
+  },
+  "slug": "domes-au-chocolat",
+  "term_id": 91,
+  "language": "fr",
+  "name": "dômes au chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c5"
+  },
+  "slug": "fondant-au-chocolat",
+  "term_id": 92,
+  "language": "fr",
+  "name": "fondant au chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c6"
+  },
+  "slug": "gateau-sans-farine",
+  "term_id": 93,
+  "language": "fr",
+  "name": "gâteau sans farine"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c7"
+  },
+  "slug": "banoffee-pie",
+  "term_id": 94,
+  "language": "fr",
+  "name": "banoffee pie"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c8"
+  },
+  "slug": "crevettes-piquantes",
+  "term_id": 95,
+  "language": "fr",
+  "name": "crevettes piquantes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65c9"
+  },
+  "slug": "curry-rouge",
+  "term_id": 96,
+  "language": "fr",
+  "name": "curry rouge"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ca"
+  },
+  "slug": "poudre-de-curry",
+  "term_id": 97,
+  "language": "fr",
+  "name": "poudre de curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65cb"
+  },
+  "slug": "recette-express",
+  "term_id": 98,
+  "language": "fr",
+  "name": "recette \"express\""
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65cc"
+  },
+  "slug": "demain-est-une-autre-vie",
+  "term_id": 99,
+  "language": "fr",
+  "name": "demain est une autre vie"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65cd"
+  },
+  "slug": "thierry-serfaty",
+  "term_id": 100,
+  "language": "fr",
+  "name": "thierry serfaty"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ce"
+  },
+  "slug": "piquillos",
+  "term_id": 101,
+  "language": "fr",
+  "name": "piquillos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65cf"
+  },
+  "slug": "piquillos-farcis-au-thon",
+  "term_id": 102,
+  "language": "fr",
+  "name": "piquillos farcis au thon"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d0"
+  },
+  "slug": "galette-de-riz",
+  "term_id": 103,
+  "language": "fr",
+  "name": "galette de riz"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d1"
+  },
+  "slug": "khao-tang",
+  "term_id": 104,
+  "language": "fr",
+  "name": "khao tang"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d2"
+  },
+  "slug": "satay-recette",
+  "term_id": 105,
+  "language": "fr",
+  "name": "satay recette"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d3"
+  },
+  "slug": "macaron-au-citron",
+  "term_id": 106,
+  "language": "fr",
+  "name": "macaron au citron"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d4"
+  },
+  "slug": "macarons",
+  "term_id": 107,
+  "language": "fr",
+  "name": "macarons"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d5"
+  },
+  "slug": "recette-macaron-citron",
+  "term_id": 108,
+  "language": "fr",
+  "name": "recette macaron citron"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d6"
+  },
+  "slug": "lait-de-coco",
+  "term_id": 109,
+  "language": "fr",
+  "name": "lait de coco"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d7"
+  },
+  "slug": "poulet",
+  "term_id": 110,
+  "language": "fr",
+  "name": "poulet"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d8"
+  },
+  "slug": "soupe-thai",
+  "term_id": 111,
+  "language": "fr",
+  "name": "soupe thaï"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65d9"
+  },
+  "slug": "tom-kah-gai",
+  "term_id": 112,
+  "language": "fr",
+  "name": "tom kah gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65da"
+  },
+  "slug": "tom-kha-gai",
+  "term_id": 113,
+  "language": "fr",
+  "name": "tom kha gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65db"
+  },
+  "slug": "recette-de-tartare-saumon",
+  "term_id": 114,
+  "language": "fr",
+  "name": "recette de tartare saumon"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65dc"
+  },
+  "slug": "tartare-de-saumon",
+  "term_id": 115,
+  "language": "fr",
+  "name": "Tartare de saumon"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65dd"
+  },
+  "slug": "fruits-secs",
+  "term_id": 116,
+  "language": "fr",
+  "name": "fruits secs"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65de"
+  },
+  "slug": "sable",
+  "term_id": 117,
+  "language": "fr",
+  "name": "sablé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65df"
+  },
+  "slug": "sables",
+  "term_id": 118,
+  "language": "fr",
+  "name": "sablés"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e0"
+  },
+  "slug": "sables-aux-fruits-secs",
+  "term_id": 119,
+  "language": "fr",
+  "name": "sablés aux fruits secs"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e1"
+  },
+  "slug": "curry-massaman",
+  "term_id": 120,
+  "language": "fr",
+  "name": "curry massaman"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e2"
+  },
+  "slug": "curry-massamann",
+  "term_id": 121,
+  "language": "fr",
+  "name": "curry massamann"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e3"
+  },
+  "slug": "curry-matsaman",
+  "term_id": 122,
+  "language": "fr",
+  "name": "curry matsaman"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e4"
+  },
+  "slug": "curry-recette",
+  "term_id": 123,
+  "language": "fr",
+  "name": "curry recette"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e5"
+  },
+  "slug": "sweet",
+  "term_id": 142,
+  "language": "en",
+  "name": "sweet"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e6"
+  },
+  "slug": "sweet-cake",
+  "term_id": 143,
+  "language": "en",
+  "name": "sweet cake"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e7"
+  },
+  "slug": "cherry-clafoutis",
+  "term_id": 145,
+  "language": "en",
+  "name": "cherry clafoutis"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e8"
+  },
+  "slug": "classic-clafoutis",
+  "term_id": 146,
+  "language": "en",
+  "name": "classic clafoutis"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65e9"
+  },
+  "slug": "dirty",
+  "term_id": 281,
+  "language": "en",
+  "name": "dirty"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ea"
+  },
+  "slug": "sucre-es",
+  "term_id": 306,
+  "language": "es",
+  "name": "sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65eb"
+  },
+  "slug": "facile",
+  "term_id": 364,
+  "language": "fr",
+  "name": "Facile"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ec"
+  },
+  "slug": "abordable",
+  "term_id": 365,
+  "language": "fr",
+  "name": "Abordable"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ed"
+  },
+  "slug": "cher",
+  "term_id": 372,
+  "language": "fr",
+  "name": "cher"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ee"
+  },
+  "slug": "easy",
+  "term_id": 373,
+  "language": "en",
+  "name": "Easy"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ef"
+  },
+  "slug": "dear",
+  "term_id": 374,
+  "language": "en",
+  "name": "dear"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f0"
+  },
+  "slug": "sucio",
+  "term_id": 375,
+  "language": "es",
+  "name": "sucio"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f1"
+  },
+  "slug": "facil",
+  "term_id": 377,
+  "language": "es",
+  "name": "Fácil"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f2"
+  },
+  "slug": "querido",
+  "term_id": 378,
+  "language": "es",
+  "name": "querido"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f3"
+  },
+  "slug": "noel",
+  "term_id": 379,
+  "language": "fr",
+  "name": "Noël"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f4"
+  },
+  "slug": "bon-marche",
+  "term_id": 413,
+  "language": "fr",
+  "name": "Bon marché"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f5"
+  },
+  "slug": "barato",
+  "term_id": 414,
+  "language": "es",
+  "name": "Barato"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f6"
+  },
+  "slug": "cheap",
+  "term_id": 415,
+  "language": "en",
+  "name": "Cheap"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f7"
+  },
+  "slug": "salty-europe",
+  "term_id": 438,
+  "language": "en",
+  "name": "salty europe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f8"
+  },
+  "slug": "salty-france",
+  "term_id": 439,
+  "language": "en",
+  "name": "salty france"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65f9"
+  },
+  "slug": "europa-salada",
+  "term_id": 440,
+  "language": "es",
+  "name": "europa salada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65fa"
+  },
+  "slug": "francia-salada",
+  "term_id": 441,
+  "language": "es",
+  "name": "francia salada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65fb"
+  },
+  "slug": "africa-medio-oriente-salado",
+  "term_id": 475,
+  "language": "es",
+  "name": "áfrica medio oriente salado"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65fc"
+  },
+  "slug": "africa-middle-east-salty",
+  "term_id": 476,
+  "language": "en",
+  "name": "africa middle east salty"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65fd"
+  },
+  "slug": "asequible",
+  "term_id": 491,
+  "language": "es",
+  "name": "Asequible"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65fe"
+  },
+  "slug": "affordable",
+  "term_id": 492,
+  "language": "en",
+  "name": "Affordable"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e65ff"
+  },
+  "slug": "torta-dulce",
+  "term_id": 508,
+  "language": "es",
+  "name": "torta dulce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6600"
+  },
+  "slug": "sweet-pie",
+  "term_id": 517,
+  "language": "en",
+  "name": "sweet pie"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6601"
+  },
+  "slug": "tarta-dulce",
+  "term_id": 518,
+  "language": "es",
+  "name": "tarta dulce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6602"
+  },
+  "slug": "asia-oceania-salty",
+  "term_id": 582,
+  "language": "en",
+  "name": "asia-oceania salty"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6603"
+  },
+  "slug": "asia-oceania-salado",
+  "term_id": 583,
+  "language": "es",
+  "name": "asia-oceanía salado"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6604"
+  },
+  "slug": "sucre-zh-hans",
+  "term_id": 716,
+  "language": "zh-hans",
+  "name": "sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6605"
+  },
+  "slug": "sucre-pt-br",
+  "term_id": 718,
+  "language": "pt-br",
+  "name": "sucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6606"
+  },
+  "slug": "sale-pt-br",
+  "term_id": 740,
+  "language": "pt-br",
+  "name": "salé"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6607"
+  },
+  "slug": "bolo-doce",
+  "term_id": 741,
+  "language": "pt-br",
+  "name": "bolo doce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6608"
+  },
+  "slug": "asia-oceania-salgada",
+  "term_id": 3621,
+  "language": "pt-br",
+  "name": "asia-oceania salgada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6609"
+  },
+  "slug": "cod-eggs",
+  "term_id": 3733,
+  "language": "en",
+  "name": "cod eggs"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e660a"
+  },
+  "slug": "recipe",
+  "term_id": 3734,
+  "language": "en",
+  "name": "recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e660b"
+  },
+  "slug": "tarama-recipe",
+  "term_id": 3735,
+  "language": "en",
+  "name": "tarama recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e660c"
+  },
+  "slug": "tarama-en",
+  "term_id": 3736,
+  "language": "en",
+  "name": "tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e660d"
+  },
+  "slug": "huevas-de-bacalao",
+  "term_id": 3737,
+  "language": "es",
+  "name": "huevas de bacalao"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e660e"
+  },
+  "slug": "receta",
+  "term_id": 3738,
+  "language": "es",
+  "name": "receta"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e660f"
+  },
+  "slug": "receta-de-tarama",
+  "term_id": 3739,
+  "language": "es",
+  "name": "receta de tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6610"
+  },
+  "slug": "tarama-es",
+  "term_id": 3740,
+  "language": "es",
+  "name": "tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6611"
+  },
+  "slug": "europa-salgada",
+  "term_id": 3741,
+  "language": "pt-br",
+  "name": "europa salgada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6612"
+  },
+  "slug": "ovas-de-bacalhau",
+  "term_id": 3742,
+  "language": "pt-br",
+  "name": "ovas de bacalhau"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6613"
+  },
+  "slug": "receita",
+  "term_id": 3743,
+  "language": "pt-br",
+  "name": "receita"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6614"
+  },
+  "slug": "receita-de-tarama",
+  "term_id": 3744,
+  "language": "pt-br",
+  "name": "receita de tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6615"
+  },
+  "slug": "tarama-pt-br",
+  "term_id": 3745,
+  "language": "pt-br",
+  "name": "tarama"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6616"
+  },
+  "slug": "حلو",
+  "term_id": 3768,
+  "language": "ar",
+  "name": "حلو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6617"
+  },
+  "slug": "facil-pt-br",
+  "term_id": 3773,
+  "language": "pt-br",
+  "name": "Fácil"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6618"
+  },
+  "slug": "acessivel",
+  "term_id": 3774,
+  "language": "pt-br",
+  "name": "Acessível"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6619"
+  },
+  "slug": "سهل",
+  "term_id": 3775,
+  "language": "ar",
+  "name": "سهل"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e661a"
+  },
+  "slug": "بأسعار-معقولة،-ميسور،-متناول-اليد",
+  "term_id": 3776,
+  "language": "ar",
+  "name": "بأسعار معقولة، ميسور، متناول اليد"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e661b"
+  },
+  "slug": "متسخ",
+  "term_id": 3778,
+  "language": "ar",
+  "name": "متسخ"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e661c"
+  },
+  "slug": "كعكة-محلاة",
+  "term_id": 3796,
+  "language": "ar",
+  "name": "كعكة محلاة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e661d"
+  },
+  "slug": "كلافوتيس-الكرز",
+  "term_id": 3860,
+  "language": "ar",
+  "name": "كلافوتيس الكرز"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e661e"
+  },
+  "slug": "كلافوتيس-كلاسيك",
+  "term_id": 3861,
+  "language": "ar",
+  "name": "كلافوتيس كلاسيك"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e661f"
+  },
+  "slug": "clafoutis-de-cereza",
+  "term_id": 3862,
+  "language": "es",
+  "name": "clafoutis de cereza"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6620"
+  },
+  "slug": "clafoutis-clasico",
+  "term_id": 3863,
+  "language": "es",
+  "name": "clafoutis clásico"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6621"
+  },
+  "slug": "clafoutis-de-cereja",
+  "term_id": 3864,
+  "language": "pt-br",
+  "name": "clafoutis de cereja"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6622"
+  },
+  "slug": "clafoutis-classico",
+  "term_id": 3865,
+  "language": "pt-br",
+  "name": "clafoutis clássico"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6623"
+  },
+  "slug": "أفريقيا-الشرق-الأوسط-مالح",
+  "term_id": 3884,
+  "language": "ar",
+  "name": "أفريقيا الشرق الأوسط مالح"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6624"
+  },
+  "slug": "يسافر",
+  "term_id": 3885,
+  "language": "ar",
+  "name": "يسافر"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6625"
+  },
+  "slug": "travel",
+  "term_id": 3887,
+  "language": "en",
+  "name": "travel"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6626"
+  },
+  "slug": "salgado-do-medio-oriente-de-africa",
+  "term_id": 3888,
+  "language": "pt-br",
+  "name": "salgado do médio oriente de áfrica"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6627"
+  },
+  "slug": "viagens",
+  "term_id": 3889,
+  "language": "pt-br",
+  "name": "viagens"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6628"
+  },
+  "slug": "sweet-europe",
+  "term_id": 3976,
+  "language": "en",
+  "name": "sweet europe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6629"
+  },
+  "slug": "doce-europa",
+  "term_id": 3977,
+  "language": "pt-br",
+  "name": "doce europa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e662a"
+  },
+  "slug": "أوروبا-الحلوة",
+  "term_id": 3982,
+  "language": "ar",
+  "name": "أوروبا الحلوة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e662b"
+  },
+  "slug": "dulce-europa",
+  "term_id": 3983,
+  "language": "es",
+  "name": "dulce europa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e662c"
+  },
+  "slug": "فطيرة-حلوة",
+  "term_id": 3986,
+  "language": "ar",
+  "name": "فطيرة حلوة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e662d"
+  },
+  "slug": "torta-doce",
+  "term_id": 3987,
+  "language": "pt-br",
+  "name": "torta doce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e662e"
+  },
+  "slug": "relatorio",
+  "term_id": 3988,
+  "language": "pt-br",
+  "name": "relatório"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e662f"
+  },
+  "slug": "informe",
+  "term_id": 3990,
+  "language": "es",
+  "name": "informe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6630"
+  },
+  "slug": "سوق-جيد",
+  "term_id": 3991,
+  "language": "ar",
+  "name": "سوق جيد"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6631"
+  },
+  "slug": "barato-pt-br",
+  "term_id": 3992,
+  "language": "pt-br",
+  "name": "Barato"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6632"
+  },
+  "slug": "viaje",
+  "term_id": 3993,
+  "language": "es",
+  "name": "viaje"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6633"
+  },
+  "slug": "ريبورتاج",
+  "term_id": 3994,
+  "language": "ar",
+  "name": "ريبورتاج"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6634"
+  },
+  "slug": "reportage-en",
+  "term_id": 3996,
+  "language": "en",
+  "name": "reportage"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6635"
+  },
+  "slug": "آسيا-وأوقيانوسيا-المالحة",
+  "term_id": 3997,
+  "language": "ar",
+  "name": "آسيا وأوقيانوسيا المالحة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6636"
+  },
+  "slug": "أوروبا-المالحة",
+  "term_id": 7398,
+  "language": "ar",
+  "name": "أوروبا المالحة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6637"
+  },
+  "slug": "as-americas-doces",
+  "term_id": 7399,
+  "language": "pt-br",
+  "name": "as américas doces"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6638"
+  },
+  "slug": "as-americas",
+  "term_id": 7400,
+  "language": "pt-br",
+  "name": "as américas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6639"
+  },
+  "slug": "las-dulces-americas",
+  "term_id": 7401,
+  "language": "es",
+  "name": "las dulces américas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e663a"
+  },
+  "slug": "las-americas",
+  "term_id": 7402,
+  "language": "es",
+  "name": "las américas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e663b"
+  },
+  "slug": "امريكا-حلوة",
+  "term_id": 7403,
+  "language": "ar",
+  "name": "امريكا حلوة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e663c"
+  },
+  "slug": "الأمريكتان",
+  "term_id": 7404,
+  "language": "ar",
+  "name": "الأمريكتان"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e663d"
+  },
+  "slug": "the-sweet-americas",
+  "term_id": 7405,
+  "language": "en",
+  "name": "the sweet americas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e663e"
+  },
+  "slug": "the-americas",
+  "term_id": 7406,
+  "language": "en",
+  "name": "the americas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e663f"
+  },
+  "slug": "معكرون",
+  "term_id": 7407,
+  "language": "ar",
+  "name": "معكرون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6640"
+  },
+  "slug": "boton",
+  "term_id": 7408,
+  "language": "es",
+  "name": "botón"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6641"
+  },
+  "slug": "button",
+  "term_id": 7409,
+  "language": "en",
+  "name": "button"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6642"
+  },
+  "slug": "botao",
+  "term_id": 7410,
+  "language": "pt-br",
+  "name": "botão"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6643"
+  },
+  "slug": "نباتي",
+  "term_id": 7453,
+  "language": "ar",
+  "name": "نباتي"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6644"
+  },
+  "slug": "فرنسا-المالحة",
+  "term_id": 7454,
+  "language": "ar",
+  "name": "فرنسا المالحة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6645"
+  },
+  "slug": "فطيرة-لذيذة",
+  "term_id": 7455,
+  "language": "ar",
+  "name": "فطيرة لذيذة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6646"
+  },
+  "slug": "vegetarian",
+  "term_id": 7456,
+  "language": "en",
+  "name": "vegetarian"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6647"
+  },
+  "slug": "vegetariano",
+  "term_id": 7457,
+  "language": "pt-br",
+  "name": "vegetariano"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6648"
+  },
+  "slug": "savory-pie",
+  "term_id": 7458,
+  "language": "en",
+  "name": "savory pie"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6649"
+  },
+  "slug": "france-salgado",
+  "term_id": 7459,
+  "language": "pt-br",
+  "name": "frança salgada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e664a"
+  },
+  "slug": "vegetariano-es",
+  "term_id": 7460,
+  "language": "es",
+  "name": "vegetariano"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e664b"
+  },
+  "slug": "tarte-picante",
+  "term_id": 7461,
+  "language": "pt-br",
+  "name": "tarte picante"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e664c"
+  },
+  "slug": "pastel-salado",
+  "term_id": 7462,
+  "language": "es",
+  "name": "pastel salado"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e664d"
+  },
+  "slug": "حليب-جوز-الهند",
+  "term_id": 7468,
+  "language": "ar",
+  "name": "حليب جوز الهند"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e664e"
+  },
+  "slug": "مسمان-كاري",
+  "term_id": 7469,
+  "language": "ar",
+  "name": "مسمان كاري"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e664f"
+  },
+  "slug": "ماسامان-كاري",
+  "term_id": 7470,
+  "language": "ar",
+  "name": "ماسامان كاري"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6650"
+  },
+  "slug": "ماتسامان-كاري",
+  "term_id": 7471,
+  "language": "ar",
+  "name": "ماتسامان كاري"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6651"
+  },
+  "slug": "وصفة-الكاري",
+  "term_id": 7472,
+  "language": "ar",
+  "name": "وصفة الكاري"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6652"
+  },
+  "slug": "coconut-milk",
+  "term_id": 7473,
+  "language": "en",
+  "name": "coconut milk"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6653"
+  },
+  "slug": "massaman-curry",
+  "term_id": 7474,
+  "language": "en",
+  "name": "massaman curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6654"
+  },
+  "slug": "massamann-curry",
+  "term_id": 7475,
+  "language": "en",
+  "name": "massamann curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6655"
+  },
+  "slug": "matsaman-curry",
+  "term_id": 7476,
+  "language": "en",
+  "name": "matsaman curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6656"
+  },
+  "slug": "curry-recipe",
+  "term_id": 7477,
+  "language": "en",
+  "name": "curry recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6657"
+  },
+  "slug": "leite-de-coco",
+  "term_id": 7478,
+  "language": "pt-br",
+  "name": "leite de coco"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6658"
+  },
+  "slug": "caril-massaman",
+  "term_id": 7479,
+  "language": "pt-br",
+  "name": "caril massaman"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6659"
+  },
+  "slug": "caril-massamann",
+  "term_id": 7480,
+  "language": "pt-br",
+  "name": "caril massamann"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e665a"
+  },
+  "slug": "caril-de-matsaman",
+  "term_id": 7481,
+  "language": "pt-br",
+  "name": "caril de matsaman"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e665b"
+  },
+  "slug": "receita-de-caril",
+  "term_id": 7482,
+  "language": "pt-br",
+  "name": "receita de caril"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e665c"
+  },
+  "slug": "leche-de-coco",
+  "term_id": 7483,
+  "language": "es",
+  "name": "leche de coco"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e665d"
+  },
+  "slug": "curry-massaman-es",
+  "term_id": 7484,
+  "language": "es",
+  "name": "curry massaman"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e665e"
+  },
+  "slug": "massamann-curry-es",
+  "term_id": 7485,
+  "language": "es",
+  "name": "massamann curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e665f"
+  },
+  "slug": "curry-matsaman-es",
+  "term_id": 7486,
+  "language": "es",
+  "name": "curry matsaman"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6660"
+  },
+  "slug": "receta-de-curry",
+  "term_id": 7487,
+  "language": "es",
+  "name": "receta de curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6661"
+  },
+  "slug": "chicken",
+  "term_id": 7521,
+  "language": "en",
+  "name": "chicken"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6662"
+  },
+  "slug": "thai-soup",
+  "term_id": 7522,
+  "language": "en",
+  "name": "Thai soup"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6663"
+  },
+  "slug": "tom-kah-gai-en",
+  "term_id": 7523,
+  "language": "en",
+  "name": "tom kah gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6664"
+  },
+  "slug": "tom-kha-gai-en",
+  "term_id": 7524,
+  "language": "en",
+  "name": "tom kha gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6665"
+  },
+  "slug": "معكرون-الليمون",
+  "term_id": 7525,
+  "language": "ar",
+  "name": "معكرون الليمون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6666"
+  },
+  "slug": "حلوى-الماكرون",
+  "term_id": 7526,
+  "language": "ar",
+  "name": "حلوى الماكرون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6667"
+  },
+  "slug": "وصفة-معكرون-الليمون",
+  "term_id": 7527,
+  "language": "ar",
+  "name": "وصفة معكرون الليمون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6668"
+  },
+  "slug": "galinha",
+  "term_id": 7528,
+  "language": "pt-br",
+  "name": "galinha"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6669"
+  },
+  "slug": "sopa-tailandesa",
+  "term_id": 7529,
+  "language": "pt-br",
+  "name": "Sopa tailandesa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e666a"
+  },
+  "slug": "tom-kah-gai-pt-br",
+  "term_id": 7530,
+  "language": "pt-br",
+  "name": "tom kah gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e666b"
+  },
+  "slug": "tom-kha-gai-pt-br",
+  "term_id": 7531,
+  "language": "pt-br",
+  "name": "tom kha gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e666c"
+  },
+  "slug": "lemon-macaroon",
+  "term_id": 7532,
+  "language": "en",
+  "name": "lemon macaroon"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e666d"
+  },
+  "slug": "macaroons",
+  "term_id": 7533,
+  "language": "en",
+  "name": "macaroons"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e666e"
+  },
+  "slug": "lemon-macaroon-recipe",
+  "term_id": 7534,
+  "language": "en",
+  "name": "lemon macaroon recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e666f"
+  },
+  "slug": "pollo",
+  "term_id": 7535,
+  "language": "es",
+  "name": "pollo"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6670"
+  },
+  "slug": "sopa-tailandesa-es",
+  "term_id": 7536,
+  "language": "es",
+  "name": "Sopa tailandesa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6671"
+  },
+  "slug": "tom-kah-gai-es",
+  "term_id": 7537,
+  "language": "es",
+  "name": "tom kah gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6672"
+  },
+  "slug": "tom-kha-gai-es",
+  "term_id": 7538,
+  "language": "es",
+  "name": "tom kha gai"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6673"
+  },
+  "slug": "macaroon-de-limao",
+  "term_id": 7539,
+  "language": "pt-br",
+  "name": "macaroon de limão"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6674"
+  },
+  "slug": "macaroons-pt-br",
+  "term_id": 7540,
+  "language": "pt-br",
+  "name": "macaroons"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6675"
+  },
+  "slug": "receita-de-macaroon-de-limao",
+  "term_id": 7541,
+  "language": "pt-br",
+  "name": "receita de macaroon de limão"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6676"
+  },
+  "slug": "دجاج",
+  "term_id": 7542,
+  "language": "ar",
+  "name": "دجاج"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6677"
+  },
+  "slug": "حساء-تايلاندي",
+  "term_id": 7543,
+  "language": "ar",
+  "name": "حساء تايلاندي"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6678"
+  },
+  "slug": "توم-كاه-مثلي-الجنس",
+  "term_id": 7544,
+  "language": "ar",
+  "name": "توم كاه مثلي الجنس"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6679"
+  },
+  "slug": "توم-خا-جاي",
+  "term_id": 7545,
+  "language": "ar",
+  "name": "توم خا جاي"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e667a"
+  },
+  "slug": "macarron-de-limon",
+  "term_id": 7546,
+  "language": "es",
+  "name": "macarrón de limón"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e667b"
+  },
+  "slug": "macarrones",
+  "term_id": 7547,
+  "language": "es",
+  "name": "macarrones"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e667c"
+  },
+  "slug": "receta-de-macarrones-de-limon",
+  "term_id": 7548,
+  "language": "es",
+  "name": "receta de macarrones de limón"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e667d"
+  },
+  "slug": "the-salty-americas",
+  "term_id": 7554,
+  "language": "en",
+  "name": "the salty americas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e667e"
+  },
+  "slug": "الأمريكتين-مالح",
+  "term_id": 7555,
+  "language": "ar",
+  "name": "الأمريكتين مالح"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e667f"
+  },
+  "slug": "las-americas-saladas",
+  "term_id": 7556,
+  "language": "es",
+  "name": "las américas saladas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6680"
+  },
+  "slug": "as-americas-salgadas",
+  "term_id": 7557,
+  "language": "pt-br",
+  "name": "as américas salgadas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6681"
+  },
+  "slug": "المحامين",
+  "term_id": 7563,
+  "language": "ar",
+  "name": "المحامين"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6682"
+  },
+  "slug": "بيرو",
+  "term_id": 7564,
+  "language": "ar",
+  "name": "بيرو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6683"
+  },
+  "slug": "lawyers",
+  "term_id": 7565,
+  "language": "en",
+  "name": "lawyers"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6684"
+  },
+  "slug": "peru",
+  "term_id": 7566,
+  "language": "en",
+  "name": "Peru"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6685"
+  },
+  "slug": "advogados",
+  "term_id": 7567,
+  "language": "pt-br",
+  "name": "advogados"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6686"
+  },
+  "slug": "peru-pt-br",
+  "term_id": 7568,
+  "language": "pt-br",
+  "name": "Peru"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6687"
+  },
+  "slug": "abogados",
+  "term_id": 7569,
+  "language": "es",
+  "name": "abogados"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6688"
+  },
+  "slug": "peru-es",
+  "term_id": 7570,
+  "language": "es",
+  "name": "Perú"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6689"
+  },
+  "slug": "بيض-سمك-القد",
+  "term_id": 7572,
+  "language": "ar",
+  "name": "بيض سمك القد"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e668a"
+  },
+  "slug": "وصفة",
+  "term_id": 7573,
+  "language": "ar",
+  "name": "وصفة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e668b"
+  },
+  "slug": "وصفة-الطرامة",
+  "term_id": 7574,
+  "language": "ar",
+  "name": "وصفة الطرامة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e668c"
+  },
+  "slug": "تراما",
+  "term_id": 7575,
+  "language": "ar",
+  "name": "تراما"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e668d"
+  },
+  "slug": "cashew-chicken",
+  "term_id": 7576,
+  "language": "en",
+  "name": "cashew chicken"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e668e"
+  },
+  "slug": "spicy-recipe",
+  "term_id": 7577,
+  "language": "en",
+  "name": "spicy recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e668f"
+  },
+  "slug": "thai-recipe",
+  "term_id": 7578,
+  "language": "en",
+  "name": "Thai recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6690"
+  },
+  "slug": "galinha-com-castanhas-de-caju",
+  "term_id": 7579,
+  "language": "pt-br",
+  "name": "galinha com castanhas de caju"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6691"
+  },
+  "slug": "receita-picante",
+  "term_id": 7580,
+  "language": "pt-br",
+  "name": "receita picante"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6692"
+  },
+  "slug": "receita-tailandesa",
+  "term_id": 7581,
+  "language": "pt-br",
+  "name": "Receita tailandesa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6693"
+  },
+  "slug": "pollo-con-anacardos",
+  "term_id": 7582,
+  "language": "es",
+  "name": "pollo con anacardos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6694"
+  },
+  "slug": "receta-picante",
+  "term_id": 7583,
+  "language": "es",
+  "name": "receta picante"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6695"
+  },
+  "slug": "receta-tailandesa",
+  "term_id": 7584,
+  "language": "es",
+  "name": "Receta tailandesa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6696"
+  },
+  "slug": "دجاج-الكاجو",
+  "term_id": 7585,
+  "language": "ar",
+  "name": "دجاج الكاجو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6697"
+  },
+  "slug": "وصفة-حارة",
+  "term_id": 7586,
+  "language": "ar",
+  "name": "وصفة حارة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6698"
+  },
+  "slug": "الوصفة-التايلاندية",
+  "term_id": 7587,
+  "language": "ar",
+  "name": "الوصفة التايلاندية"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6699"
+  },
+  "slug": "بيكويلوس",
+  "term_id": 7588,
+  "language": "ar",
+  "name": "بيكويلوس"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e669a"
+  },
+  "slug": "فلفل-بيكويللو-محشو-بالتونة",
+  "term_id": 7589,
+  "language": "ar",
+  "name": "فلفل بيكويللو محشو بالتونة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e669b"
+  },
+  "slug": "truffle-cream",
+  "term_id": 7590,
+  "language": "en",
+  "name": "truffle cream"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e669c"
+  },
+  "slug": "mascarpone-en",
+  "term_id": 7591,
+  "language": "en",
+  "name": "mascarpone"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e669d"
+  },
+  "slug": "ravioli-of-foie-gras",
+  "term_id": 7592,
+  "language": "en",
+  "name": "ravioli of foie gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e669e"
+  },
+  "slug": "black-truffles",
+  "term_id": 7593,
+  "language": "en",
+  "name": "black truffles"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e669f"
+  },
+  "slug": "olympe-versini-pt-br",
+  "term_id": 7594,
+  "language": "pt-br",
+  "name": "Olympe Versini"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a0"
+  },
+  "slug": "anchova",
+  "term_id": 7595,
+  "language": "pt-br",
+  "name": "anchova"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a1"
+  },
+  "slug": "croque-olympe-pt-br",
+  "term_id": 7596,
+  "language": "pt-br",
+  "name": "Croque-Olympe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a2"
+  },
+  "slug": "pecorino-pt-br",
+  "term_id": 7597,
+  "language": "pt-br",
+  "name": "pecorino"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a3"
+  },
+  "slug": "creme-de-trufas",
+  "term_id": 7598,
+  "language": "pt-br",
+  "name": "creme de trufas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a4"
+  },
+  "slug": "mascarpone-pt-br",
+  "term_id": 7599,
+  "language": "pt-br",
+  "name": "mascarpone"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a5"
+  },
+  "slug": "الروبيان-بالبهارات",
+  "term_id": 7600,
+  "language": "ar",
+  "name": "الروبيان بالبهارات"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a6"
+  },
+  "slug": "foie-gras-ravioli",
+  "term_id": 7601,
+  "language": "pt-br",
+  "name": "foie gras ravioli"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a7"
+  },
+  "slug": "trufas-negras",
+  "term_id": 7602,
+  "language": "pt-br",
+  "name": "trufas negras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a8"
+  },
+  "slug": "الكاري-الأحمر",
+  "term_id": 7603,
+  "language": "ar",
+  "name": "الكاري الأحمر"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66a9"
+  },
+  "slug": "مسحوق-الكاري",
+  "term_id": 7604,
+  "language": "ar",
+  "name": "مسحوق الكاري"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66aa"
+  },
+  "slug": "وصفة-سريعة",
+  "term_id": 7605,
+  "language": "ar",
+  "name": "وصفة سريعة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ab"
+  },
+  "slug": "olympe-versini-es",
+  "term_id": 7606,
+  "language": "es",
+  "name": "Olympe Versini"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ac"
+  },
+  "slug": "anchoa",
+  "term_id": 7607,
+  "language": "es",
+  "name": "anchoa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ad"
+  },
+  "slug": "croque-olympe-es",
+  "term_id": 7608,
+  "language": "es",
+  "name": "Croque-Olympe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ae"
+  },
+  "slug": "pecorino-es",
+  "term_id": 7609,
+  "language": "es",
+  "name": "pecorino"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66af"
+  },
+  "slug": "crema-de-trufa",
+  "term_id": 7610,
+  "language": "es",
+  "name": "crema de trufa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b0"
+  },
+  "slug": "mascarpone-es",
+  "term_id": 7611,
+  "language": "es",
+  "name": "mascarpone"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b1"
+  },
+  "slug": "raviolis-de-foie-gras",
+  "term_id": 7612,
+  "language": "es",
+  "name": "raviolis de foie gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b2"
+  },
+  "slug": "spicy-shrimps",
+  "term_id": 7613,
+  "language": "en",
+  "name": "spicy shrimps"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b3"
+  },
+  "slug": "trufas-negras-es",
+  "term_id": 7614,
+  "language": "es",
+  "name": "trufas negras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b4"
+  },
+  "slug": "red-curry",
+  "term_id": 7615,
+  "language": "en",
+  "name": "red curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b5"
+  },
+  "slug": "curry-powder",
+  "term_id": 7616,
+  "language": "en",
+  "name": "curry powder"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b6"
+  },
+  "slug": "express-recipe",
+  "term_id": 7617,
+  "language": "en",
+  "name": "express\" recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b7"
+  },
+  "slug": "camarao-picante",
+  "term_id": 7618,
+  "language": "pt-br",
+  "name": "camarão picante"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b8"
+  },
+  "slug": "أوليمب-فيرسيني",
+  "term_id": 7619,
+  "language": "ar",
+  "name": "أوليمب فيرسيني"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66b9"
+  },
+  "slug": "caril-vermelho",
+  "term_id": 7620,
+  "language": "pt-br",
+  "name": "caril vermelho"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ba"
+  },
+  "slug": "الأنشوجة",
+  "term_id": 7621,
+  "language": "ar",
+  "name": "الأنشوجة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66bb"
+  },
+  "slug": "caril-em-po",
+  "term_id": 7622,
+  "language": "pt-br",
+  "name": "caril em pó"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66bc"
+  },
+  "slug": "receita-expresso",
+  "term_id": 7623,
+  "language": "pt-br",
+  "name": "receita \"expresso"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66bd"
+  },
+  "slug": "كروك-أوليمب",
+  "term_id": 7624,
+  "language": "ar",
+  "name": "كروك أوليمب"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66be"
+  },
+  "slug": "بيكورينو",
+  "term_id": 7625,
+  "language": "ar",
+  "name": "بيكورينو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66bf"
+  },
+  "slug": "كريم-الكمأة",
+  "term_id": 7626,
+  "language": "ar",
+  "name": "كريم الكمأة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c0"
+  },
+  "slug": "مسكربون",
+  "term_id": 7627,
+  "language": "ar",
+  "name": "مسكربون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c1"
+  },
+  "slug": "رافيولي-فوا-جرا",
+  "term_id": 7628,
+  "language": "ar",
+  "name": "رافيولي فوا جرا"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c2"
+  },
+  "slug": "الكمأ-الأسود",
+  "term_id": 7629,
+  "language": "ar",
+  "name": "الكمأ الأسود"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c3"
+  },
+  "slug": "olympe-versini-en",
+  "term_id": 7630,
+  "language": "en",
+  "name": "Olympe Versini"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c4"
+  },
+  "slug": "anchovy",
+  "term_id": 7631,
+  "language": "en",
+  "name": "anchovy"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c5"
+  },
+  "slug": "croque-olympe-en",
+  "term_id": 7632,
+  "language": "en",
+  "name": "Croque-Olympe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c6"
+  },
+  "slug": "pecorino-en",
+  "term_id": 7633,
+  "language": "en",
+  "name": "pecorino"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c7"
+  },
+  "slug": "camarones-picantes",
+  "term_id": 7634,
+  "language": "es",
+  "name": "camarones picantes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c8"
+  },
+  "slug": "curry-rojo",
+  "term_id": 7635,
+  "language": "es",
+  "name": "curry rojo"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66c9"
+  },
+  "slug": "polvo-de-curry",
+  "term_id": 7636,
+  "language": "es",
+  "name": "polvo de curry"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ca"
+  },
+  "slug": "receta-expres",
+  "term_id": 7637,
+  "language": "es",
+  "name": "receta \"exprés\"."
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66cb"
+  },
+  "slug": "christmas",
+  "term_id": 7638,
+  "language": "en",
+  "name": "Christmas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66cc"
+  },
+  "slug": "piquillos-en",
+  "term_id": 7639,
+  "language": "en",
+  "name": "piquillos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66cd"
+  },
+  "slug": "piquillos-stuffed-with-tuna",
+  "term_id": 7640,
+  "language": "en",
+  "name": "piquillos stuffed with tuna"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ce"
+  },
+  "slug": "navidad",
+  "term_id": 7641,
+  "language": "es",
+  "name": "Navidad"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66cf"
+  },
+  "slug": "piquillos-pt-br",
+  "term_id": 7642,
+  "language": "pt-br",
+  "name": "piquillos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d0"
+  },
+  "slug": "piquillos-recheados-com-atum",
+  "term_id": 7643,
+  "language": "pt-br",
+  "name": "piquillos recheados com atum"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d1"
+  },
+  "slug": "العزيز",
+  "term_id": 7644,
+  "language": "ar",
+  "name": "العزيز"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d2"
+  },
+  "slug": "عيد-الميلاد",
+  "term_id": 7645,
+  "language": "ar",
+  "name": "عيد الميلاد"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d3"
+  },
+  "slug": "piquillos-es",
+  "term_id": 7646,
+  "language": "es",
+  "name": "piquillos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d4"
+  },
+  "slug": "piquillos-rellenos-de-atun",
+  "term_id": 7647,
+  "language": "es",
+  "name": "piquillos rellenos de atún"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d5"
+  },
+  "slug": "querido-pt-br",
+  "term_id": 7648,
+  "language": "pt-br",
+  "name": "querido"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d6"
+  },
+  "slug": "natal",
+  "term_id": 7649,
+  "language": "pt-br",
+  "name": "Natal"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d7"
+  },
+  "slug": "africa-oriente-medio-dulce",
+  "term_id": 7650,
+  "language": "es",
+  "name": "áfrica oriente medio dulce"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d8"
+  },
+  "slug": "أفريقيا-الشرق-الأوسط-الحلو",
+  "term_id": 7651,
+  "language": "ar",
+  "name": "أفريقيا الشرق الأوسط الحلو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66d9"
+  },
+  "slug": "africa-middle-east-sweet",
+  "term_id": 7652,
+  "language": "en",
+  "name": "africa middle east sweet"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66da"
+  },
+  "slug": "doce-do-medio-oriente-de-africa",
+  "term_id": 7653,
+  "language": "pt-br",
+  "name": "doce do médio oriente de áfrica"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66db"
+  },
+  "slug": "banane",
+  "term_id": 8342,
+  "language": "fr",
+  "name": "banane"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66dc"
+  },
+  "slug": "noix-de-coco",
+  "term_id": 8343,
+  "language": "fr",
+  "name": "noix de coco"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66dd"
+  },
+  "slug": "chantilly",
+  "term_id": 8344,
+  "language": "fr",
+  "name": "chantilly"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66de"
+  },
+  "slug": "noisettes",
+  "term_id": 8345,
+  "language": "fr",
+  "name": "noisettes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66df"
+  },
+  "slug": "receta-de-tartar-de-salmon",
+  "term_id": 8365,
+  "language": "es",
+  "name": "receta de tartar de salmón"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e0"
+  },
+  "slug": "tartar-de-salmon",
+  "term_id": 8366,
+  "language": "es",
+  "name": "Tartar de salmón"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e1"
+  },
+  "slug": "fruta-seca",
+  "term_id": 8368,
+  "language": "pt-br",
+  "name": "fruta seca"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e2"
+  },
+  "slug": "biscoitos",
+  "term_id": 8369,
+  "language": "pt-br",
+  "name": "biscoitos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e3"
+  },
+  "slug": "biscoitos-pt-br",
+  "term_id": 8370,
+  "language": "pt-br",
+  "name": "biscoitos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e4"
+  },
+  "slug": "biscoitos-de-frutos-secos",
+  "term_id": 8371,
+  "language": "pt-br",
+  "name": "biscoitos de frutos secos"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e5"
+  },
+  "slug": "salmon-tartar-recipe",
+  "term_id": 8372,
+  "language": "en",
+  "name": "salmon tartar recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e6"
+  },
+  "slug": "salmon-tartar",
+  "term_id": 8373,
+  "language": "en",
+  "name": "Salmon Tartar"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e7"
+  },
+  "slug": "فواكه-جافة",
+  "term_id": 8375,
+  "language": "ar",
+  "name": "فواكه جافة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e8"
+  },
+  "slug": "رمل",
+  "term_id": 8376,
+  "language": "ar",
+  "name": "رمل"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66e9"
+  },
+  "slug": "كعكة-الغريبة",
+  "term_id": 8377,
+  "language": "ar",
+  "name": "كعكة الغريبة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ea"
+  },
+  "slug": "dry-fruits",
+  "term_id": 8378,
+  "language": "en",
+  "name": "dry fruits"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66eb"
+  },
+  "slug": "shortbread",
+  "term_id": 8379,
+  "language": "en",
+  "name": "shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ec"
+  },
+  "slug": "كعكة-الغريبة-مع-الفواكه-المجففة",
+  "term_id": 8380,
+  "language": "ar",
+  "name": "كعكة الغريبة مع الفواكه المجففة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ed"
+  },
+  "slug": "shortbread-en",
+  "term_id": 8381,
+  "language": "en",
+  "name": "shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ee"
+  },
+  "slug": "shortbread-with-dried-fruits",
+  "term_id": 8382,
+  "language": "en",
+  "name": "shortbread with dried fruits"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ef"
+  },
+  "slug": "وصفة-تارتار-السلمون",
+  "term_id": 8383,
+  "language": "ar",
+  "name": "وصفة تارتار السلمون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f0"
+  },
+  "slug": "فطيرة-السلمون",
+  "term_id": 8384,
+  "language": "ar",
+  "name": "فطيرة السلمون"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f1"
+  },
+  "slug": "fruta-desecada",
+  "term_id": 8386,
+  "language": "es",
+  "name": "fruta desecada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f2"
+  },
+  "slug": "shortbread-es",
+  "term_id": 8387,
+  "language": "es",
+  "name": "shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f3"
+  },
+  "slug": "shortbread-es-2",
+  "term_id": 8388,
+  "language": "es",
+  "name": "shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f4"
+  },
+  "slug": "galletas-de-frutas-secas",
+  "term_id": 8389,
+  "language": "es",
+  "name": "galletas de frutas secas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f5"
+  },
+  "slug": "receita-de-tartaro-de-salmao",
+  "term_id": 8390,
+  "language": "pt-br",
+  "name": "receita de tártaro de salmão"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f6"
+  },
+  "slug": "tartaro-de-salmao",
+  "term_id": 8391,
+  "language": "pt-br",
+  "name": "Tártaro de salmão"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f7"
+  },
+  "slug": "chocolat-ar",
+  "term_id": 8865,
+  "language": "ar",
+  "name": "chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f8"
+  },
+  "slug": "chocolat-en",
+  "term_id": 8866,
+  "language": "en",
+  "name": "chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66f9"
+  },
+  "slug": "chocolat-pt-br",
+  "term_id": 8867,
+  "language": "pt-br",
+  "name": "chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66fa"
+  },
+  "slug": "chocolat-es",
+  "term_id": 8868,
+  "language": "es",
+  "name": "chocolat"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66fb"
+  },
+  "slug": "entrevistas",
+  "term_id": 8887,
+  "language": "es",
+  "name": "entrevistas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66fc"
+  },
+  "slug": "bolo-de-arroz",
+  "term_id": 8888,
+  "language": "pt-br",
+  "name": "bolo de arroz"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66fd"
+  },
+  "slug": "khao-tang-pt-br",
+  "term_id": 8889,
+  "language": "pt-br",
+  "name": "khao tang"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66fe"
+  },
+  "slug": "receita-satay",
+  "term_id": 8890,
+  "language": "pt-br",
+  "name": "receita satay"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e66ff"
+  },
+  "slug": "pastel-de-arroz",
+  "term_id": 8891,
+  "language": "es",
+  "name": "pastel de arroz"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6700"
+  },
+  "slug": "khao-tang-es",
+  "term_id": 8892,
+  "language": "es",
+  "name": "khao tang"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6701"
+  },
+  "slug": "receta-de-satay",
+  "term_id": 8893,
+  "language": "es",
+  "name": "receta de satay"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6702"
+  },
+  "slug": "المقابلات",
+  "term_id": 8894,
+  "language": "ar",
+  "name": "المقابلات"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6703"
+  },
+  "slug": "interviews-en",
+  "term_id": 8896,
+  "language": "en",
+  "name": "interviews"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6704"
+  },
+  "slug": "تكسير-الأرز",
+  "term_id": 8897,
+  "language": "ar",
+  "name": "تكسير الأرز"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6705"
+  },
+  "slug": "خاو-تانغ",
+  "term_id": 8898,
+  "language": "ar",
+  "name": "خاو تانغ"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6706"
+  },
+  "slug": "وصفة-الساتيه",
+  "term_id": 8899,
+  "language": "ar",
+  "name": "وصفة الساتيه"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6707"
+  },
+  "slug": "entrevistas-pt-br",
+  "term_id": 8900,
+  "language": "pt-br",
+  "name": "entrevistas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6708"
+  },
+  "slug": "rice-cake",
+  "term_id": 8902,
+  "language": "en",
+  "name": "rice cake"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6709"
+  },
+  "slug": "khao-tang-en",
+  "term_id": 8903,
+  "language": "en",
+  "name": "khao tang"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e670a"
+  },
+  "slug": "satay-recipe",
+  "term_id": 8904,
+  "language": "en",
+  "name": "satay recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e670b"
+  },
+  "slug": "macarrones-de-cafe-y-chocolate",
+  "term_id": 8905,
+  "language": "es",
+  "name": "macarrones de café y chocolate"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e670c"
+  },
+  "slug": "opera-macarrones",
+  "term_id": 8906,
+  "language": "es",
+  "name": "ópera macarrones"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e670d"
+  },
+  "slug": "اللوز-المر",
+  "term_id": 8907,
+  "language": "ar",
+  "name": "اللوز المر"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e670e"
+  },
+  "slug": "تهجئة",
+  "term_id": 8908,
+  "language": "ar",
+  "name": "تهجئة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e670f"
+  },
+  "slug": "كعكة-اللوز-الحنطة",
+  "term_id": 8909,
+  "language": "ar",
+  "name": "كعكة اللوز الحنطة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6710"
+  },
+  "slug": "ناتشوراليا-الغريبة",
+  "term_id": 8910,
+  "language": "ar",
+  "name": "ناتشوراليا الغريبة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6711"
+  },
+  "slug": "bitter-almonds",
+  "term_id": 8911,
+  "language": "en",
+  "name": "bitter almonds"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6712"
+  },
+  "slug": "spelt",
+  "term_id": 8912,
+  "language": "en",
+  "name": "spelt"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6713"
+  },
+  "slug": "spelt-almond-shortbread",
+  "term_id": 8913,
+  "language": "en",
+  "name": "spelt almond shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6714"
+  },
+  "slug": "naturalia-shortbread",
+  "term_id": 8914,
+  "language": "en",
+  "name": "naturalia shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6715"
+  },
+  "slug": "معكرون-القهوة-والشوكولاته",
+  "term_id": 8915,
+  "language": "ar",
+  "name": "معكرون القهوة والشوكولاته"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6716"
+  },
+  "slug": "معكرون-الأوبرا",
+  "term_id": 8916,
+  "language": "ar",
+  "name": "معكرون الأوبرا"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6717"
+  },
+  "slug": "amendoas-amargas",
+  "term_id": 8917,
+  "language": "pt-br",
+  "name": "amêndoas amargas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6718"
+  },
+  "slug": "soletrada",
+  "term_id": 8918,
+  "language": "pt-br",
+  "name": "soletrada"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6719"
+  },
+  "slug": "pao-curto-de-amendoa-espelta",
+  "term_id": 8919,
+  "language": "pt-br",
+  "name": "pão curto de amêndoa espelta"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e671a"
+  },
+  "slug": "pao-naturalia-shortbread",
+  "term_id": 8920,
+  "language": "pt-br",
+  "name": "pão naturalia shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e671b"
+  },
+  "slug": "coffee-and-chocolate-macaroons",
+  "term_id": 8921,
+  "language": "en",
+  "name": "coffee and chocolate macaroons"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e671c"
+  },
+  "slug": "opera-macaroons",
+  "term_id": 8922,
+  "language": "en",
+  "name": "opera macaroons"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e671d"
+  },
+  "slug": "macarroes-de-cafe-e-chocolate",
+  "term_id": 8923,
+  "language": "pt-br",
+  "name": "macarrões de café e chocolate"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e671e"
+  },
+  "slug": "macaroons-de-opera",
+  "term_id": 8924,
+  "language": "pt-br",
+  "name": "macaroons de ópera"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e671f"
+  },
+  "slug": "almendras-amargas",
+  "term_id": 8925,
+  "language": "es",
+  "name": "almendras amargas"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6720"
+  },
+  "slug": "espelta",
+  "term_id": 8926,
+  "language": "es",
+  "name": "espelta"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6721"
+  },
+  "slug": "galletas-de-espelta-y-almendras",
+  "term_id": 8927,
+  "language": "es",
+  "name": "galletas de espelta y almendras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6722"
+  },
+  "slug": "naturalia-shortbread-es",
+  "term_id": 8928,
+  "language": "es",
+  "name": "naturalia shortbread"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6723"
+  },
+  "slug": "الماس",
+  "term_id": 8929,
+  "language": "ar",
+  "name": "الماس"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6724"
+  },
+  "slug": "وصفة-الماس",
+  "term_id": 8930,
+  "language": "ar",
+  "name": "وصفة الماس"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6725"
+  },
+  "slug": "فانيلا",
+  "term_id": 8931,
+  "language": "ar",
+  "name": "فانيلا"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6726"
+  },
+  "slug": "l-pt-br",
+  "term_id": 8932,
+  "language": "pt-br",
+  "name": "l"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6727"
+  },
+  "slug": "banoffee-pie-en",
+  "term_id": 8933,
+  "language": "en",
+  "name": "banoffee pie"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6728"
+  },
+  "slug": "قباب-الشوكولاتة",
+  "term_id": 8934,
+  "language": "ar",
+  "name": "قباب الشوكولاتة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6729"
+  },
+  "slug": "الشوكولاته-فندان",
+  "term_id": 8935,
+  "language": "ar",
+  "name": "الشوكولاته فندان"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e672a"
+  },
+  "slug": "كعكة-خالية-من-الدقيق",
+  "term_id": 8936,
+  "language": "ar",
+  "name": "كعكة خالية من الدقيق"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e672b"
+  },
+  "slug": "tarte-de-banoffee",
+  "term_id": 8937,
+  "language": "pt-br",
+  "name": "tarte de banoffee"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e672c"
+  },
+  "slug": "l-es",
+  "term_id": 8938,
+  "language": "es",
+  "name": "l"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e672d"
+  },
+  "slug": "chocolate-domes",
+  "term_id": 8939,
+  "language": "en",
+  "name": "chocolate domes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e672e"
+  },
+  "slug": "chocolate-fondant",
+  "term_id": 8940,
+  "language": "en",
+  "name": "chocolate fondant"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e672f"
+  },
+  "slug": "flourless-cake",
+  "term_id": 8941,
+  "language": "en",
+  "name": "flourless cake"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6730"
+  },
+  "slug": "tarta-de-banoffee",
+  "term_id": 8942,
+  "language": "es",
+  "name": "tarta de banoffee"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6731"
+  },
+  "slug": "diamonds",
+  "term_id": 8943,
+  "language": "en",
+  "name": "diamonds"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6732"
+  },
+  "slug": "diamond-recipe",
+  "term_id": 8944,
+  "language": "en",
+  "name": "diamond recipe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6733"
+  },
+  "slug": "vanilla",
+  "term_id": 8945,
+  "language": "en",
+  "name": "vanilla"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6734"
+  },
+  "slug": "cupulas-de-chocolate",
+  "term_id": 8946,
+  "language": "pt-br",
+  "name": "cúpulas de chocolate"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6735"
+  },
+  "slug": "fondant-de-chocolate",
+  "term_id": 8947,
+  "language": "pt-br",
+  "name": "fondant de chocolate"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6736"
+  },
+  "slug": "bolo-sem-fartura",
+  "term_id": 8948,
+  "language": "pt-br",
+  "name": "bolo sem fartura"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6737"
+  },
+  "slug": "cupulas-de-chocolate-es",
+  "term_id": 8949,
+  "language": "es",
+  "name": "cúpulas de chocolate"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6738"
+  },
+  "slug": "diamantes",
+  "term_id": 8950,
+  "language": "pt-br",
+  "name": "diamantes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6739"
+  },
+  "slug": "receita-de-diamante",
+  "term_id": 8951,
+  "language": "pt-br",
+  "name": "receita de diamante"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e673a"
+  },
+  "slug": "fondant-de-chocolate-es",
+  "term_id": 8952,
+  "language": "es",
+  "name": "fondant de chocolate"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e673b"
+  },
+  "slug": "pastel-sin-harina",
+  "term_id": 8953,
+  "language": "es",
+  "name": "pastel sin harina"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e673c"
+  },
+  "slug": "baunilha",
+  "term_id": 8954,
+  "language": "pt-br",
+  "name": "baunilha"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e673d"
+  },
+  "slug": "بانف-فطيرة",
+  "term_id": 8955,
+  "language": "ar",
+  "name": "بانف فطيرة"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e673e"
+  },
+  "slug": "diamantes-es",
+  "term_id": 8956,
+  "language": "es",
+  "name": "diamantes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e673f"
+  },
+  "slug": "receta-del-diamante",
+  "term_id": 8957,
+  "language": "es",
+  "name": "receta del diamante"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6740"
+  },
+  "slug": "vainilla",
+  "term_id": 8958,
+  "language": "es",
+  "name": "vainilla"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6741"
+  },
+  "slug": "flan-parisino",
+  "term_id": 8959,
+  "language": "es",
+  "name": "Flan parisino"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6742"
+  },
+  "slug": "raspberry-kouignettes",
+  "term_id": 8960,
+  "language": "en",
+  "name": "raspberry kouignettes"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6743"
+  },
+  "slug": "larnicol-en",
+  "term_id": 8961,
+  "language": "en",
+  "name": "larnicol"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6744"
+  },
+  "slug": "flan-de-hojaldre",
+  "term_id": 8962,
+  "language": "es",
+  "name": "flan de hojaldre"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6745"
+  },
+  "slug": "mini-kouign-amann-en",
+  "term_id": 8963,
+  "language": "en",
+  "name": "mini-kouign amann"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6746"
+  },
+  "slug": "crema-en-polvo",
+  "term_id": 8964,
+  "language": "es",
+  "name": "crema en polvo"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6747"
+  },
+  "slug": "أ",
+  "term_id": 8965,
+  "language": "ar",
+  "name": "أ"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6748"
+  },
+  "slug": "kouignettes-de-framboesa",
+  "term_id": 8966,
+  "language": "pt-br",
+  "name": "kouignettes de framboesa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6749"
+  },
+  "slug": "larnicol-pt-br",
+  "term_id": 8967,
+  "language": "pt-br",
+  "name": "larnicol"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e674a"
+  },
+  "slug": "mini-kouign-amann-pt-br",
+  "term_id": 8968,
+  "language": "pt-br",
+  "name": "mini-kouign amann"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e674b"
+  },
+  "slug": "u-en",
+  "term_id": 8969,
+  "language": "en",
+  "name": "u"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e674c"
+  },
+  "slug": "فطيرة-الباريسية",
+  "term_id": 8970,
+  "language": "ar",
+  "name": "فطيرة الباريسية"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e674d"
+  },
+  "slug": "معجنات-الكاسترد",
+  "term_id": 8971,
+  "language": "ar",
+  "name": "معجنات الكاسترد"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e674e"
+  },
+  "slug": "مسحوق-كريم",
+  "term_id": 8972,
+  "language": "ar",
+  "name": "مسحوق كريم"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e674f"
+  },
+  "slug": "kouignettes-de-frambuesa",
+  "term_id": 8973,
+  "language": "es",
+  "name": "kouignettes de frambuesa"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6750"
+  },
+  "slug": "larnicol-es",
+  "term_id": 8974,
+  "language": "es",
+  "name": "larnicol"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6751"
+  },
+  "slug": "mini-kouign-amann-es",
+  "term_id": 8975,
+  "language": "es",
+  "name": "mini-kouign amann"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6752"
+  },
+  "slug": "u-pt-br",
+  "term_id": 8976,
+  "language": "pt-br",
+  "name": "u"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6753"
+  },
+  "slug": "parisian-flan",
+  "term_id": 8977,
+  "language": "en",
+  "name": "Parisian flan"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6754"
+  },
+  "slug": "pastry-flan",
+  "term_id": 8978,
+  "language": "en",
+  "name": "pastry flan"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6755"
+  },
+  "slug": "cream-powder",
+  "term_id": 8979,
+  "language": "en",
+  "name": "cream powder"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6756"
+  },
+  "slug": "كونيغيت-التوت",
+  "term_id": 8980,
+  "language": "ar",
+  "name": "كونيغيت التوت"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6757"
+  },
+  "slug": "لارنيكول",
+  "term_id": 8981,
+  "language": "ar",
+  "name": "لارنيكول"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6758"
+  },
+  "slug": "ميني-كوين-امان",
+  "term_id": 8982,
+  "language": "ar",
+  "name": "ميني كوين امان"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6759"
+  },
+  "slug": "أنا",
+  "term_id": 8983,
+  "language": "ar",
+  "name": "أنا"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e675a"
+  },
+  "slug": "u-es",
+  "term_id": 8984,
+  "language": "es",
+  "name": "u"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e675b"
+  },
+  "slug": "flan-parisiense",
+  "term_id": 8985,
+  "language": "pt-br",
+  "name": "Flan parisiense"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e675c"
+  },
+  "slug": "flan-de-pastelaria",
+  "term_id": 8986,
+  "language": "pt-br",
+  "name": "flan de pastelaria"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e675d"
+  },
+  "slug": "creme-em-po",
+  "term_id": 8987,
+  "language": "pt-br",
+  "name": "creme em pó"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e675e"
+  },
+  "slug": "l-en",
+  "term_id": 8988,
+  "language": "en",
+  "name": "l"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e675f"
+  },
+  "slug": "sorbet-glace",
+  "term_id": 9059,
+  "language": "fr",
+  "name": "Sorbet et Glace"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6760"
+  },
+  "slug": "sorbet-glace-en",
+  "term_id": 9060,
+  "language": "en",
+  "name": "Sorbet &amp; Glace"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6761"
+  },
+  "slug": "sorbet-glace-pt-br",
+  "term_id": 9061,
+  "language": "pt-br",
+  "name": "Sorbet &amp; Glace"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6762"
+  },
+  "slug": "sorbet-glace-es",
+  "term_id": 9062,
+  "language": "es",
+  "name": "Sorbet &amp; Glace"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6763"
+  },
+  "slug": "soupe",
+  "term_id": 9063,
+  "language": "fr",
+  "name": "Soupe"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6764"
+  },
+  "slug": "buche",
+  "term_id": 9064,
+  "language": "fr",
+  "name": "Buche"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6765"
+  },
+  "slug": "حلو-2",
+  "term_id": 9961,
+  "language": "fr",
+  "name": "حلو"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6766"
+  },
+  "slug": "automne",
+  "term_id": 9962,
+  "language": "fr",
+  "name": "automne"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6767"
+  },
+  "slug": "fall-en",
+  "term_id": 9963,
+  "language": "en",
+  "name": "Fall"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6768"
+  },
+  "slug": "outono-pt-br",
+  "term_id": 9964,
+  "language": "pt-br",
+  "name": "outono"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6769"
+  },
+  "slug": "otono-es",
+  "term_id": 9965,
+  "language": "es",
+  "name": "otoño"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e676a"
+  },
+  "slug": "atuomne",
+  "term_id": 9972,
+  "language": "fr",
+  "name": "atuomne"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e676b"
+  },
+  "slug": "خريف",
+  "term_id": 9982,
+  "language": "ar",
+  "name": "خريف"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e676c"
+  },
+  "slug": "noel-2",
+  "term_id": 10405,
+  "language": "fr",
+  "name": "noel"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e676d"
+  },
+  "slug": "fois-gras-de-noel",
+  "term_id": 10408,
+  "language": "fr",
+  "name": "Fois Gras de Noël"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e676e"
+  },
+  "slug": "buche-de-noel",
+  "term_id": 10409,
+  "language": "fr",
+  "name": "Bûche de Noël"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e676f"
+  },
+  "slug": "galette-des-rois",
+  "term_id": 10442,
+  "language": "fr",
+  "name": "Galette des rois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6770"
+  },
+  "slug": "plats-foie-gras",
+  "term_id": 10449,
+  "language": "fr",
+  "name": "plats Foie Gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6771"
+  },
+  "slug": "plats-foie-gras-ar",
+  "term_id": 10450,
+  "language": "ar",
+  "name": "plats Foie Gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6772"
+  },
+  "slug": "plats-foie-gras-en",
+  "term_id": 10451,
+  "language": "en",
+  "name": "plats Foie Gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6773"
+  },
+  "slug": "plats-foie-gras-pt-br",
+  "term_id": 10452,
+  "language": "pt-br",
+  "name": "plats Foie Gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6774"
+  },
+  "slug": "plats-foie-gras-es",
+  "term_id": 10453,
+  "language": "es",
+  "name": "plats Foie Gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6775"
+  },
+  "slug": "accompagnement-foie-gras",
+  "term_id": 10519,
+  "language": "fr",
+  "name": "Accompagnement Foie Gras"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6776"
+  },
+  "slug": "galettes-des-rois",
+  "term_id": 10526,
+  "language": "fr",
+  "name": "galettes des rois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6777"
+  },
+  "slug": "galette-des-rois-ar",
+  "term_id": 10527,
+  "language": "ar",
+  "name": "Galette des rois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6778"
+  },
+  "slug": "selection-du-moment",
+  "term_id": 10529,
+  "language": "fr",
+  "name": "Selection du moment"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6779"
+  },
+  "slug": "galette-des-rois-pt-br",
+  "term_id": 10533,
+  "language": "pt-br",
+  "name": "Galette des rois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e677a"
+  },
+  "slug": "galette-des-rois-en",
+  "term_id": 10534,
+  "language": "en",
+  "name": "Galette des rois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e677b"
+  },
+  "slug": "galette-des-rois-es",
+  "term_id": 10535,
+  "language": "es",
+  "name": "Galette des rois"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e677c"
+  },
+  "slug": "tarte",
+  "term_id": 10559,
+  "language": "fr",
+  "name": "Tarte",
+  "updatedAt": {
+    "$date": "2026-02-17T06:29:05.354Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e677d"
+  },
+  "slug": "cookies",
+  "term_id": 10562,
+  "language": "fr",
+  "name": "cookies"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e677e"
+  },
+  "slug": "sucre-2",
+  "term_id": 10569,
+  "language": "fr",
+  "name": "SUCRÉ"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e677f"
+  },
+  "slug": "qucre",
+  "term_id": 10570,
+  "language": "fr",
+  "name": "qucré"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6780"
+  },
+  "slug": "sal",
+  "term_id": 10623,
+  "language": "fr",
+  "name": "sal"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6781"
+  },
+  "slug": "selection-galette-janvier",
+  "term_id": 10690,
+  "language": "fr",
+  "name": "Selection Galette Janvier"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6782"
+  },
+  "slug": "sake",
+  "term_id": 10730,
+  "language": "fr",
+  "name": "saké"
+},
+{
+  "_id": {
+    "$oid": "697b43a92e3ee7dc031e6784"
+  },
+  "slug": "je-fais-mon-chocolat-maison",
+  "term_id": 11010,
+  "language": "fr",
+  "name": "Je fais mon chocolat maison"
+}
+]

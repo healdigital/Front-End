@@ -1,0 +1,67 @@
+[
+  {
+    "_id": {
+      "$oid": "697b227c491a7f63c7dbc14f"
+    },
+    "createdAt": {
+      "$date": "2026-01-29T09:03:56.200Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T16:20:03.597Z"
+    },
+    "email": "atoolsood@gmail.com",
+    "salt": "911d6c18c50662c484d5fd7afa2bf7aedd31fe05fa4d470b6394f42c7d839ffd",
+    "hash": "fb1a60a2887a2ed8305e0675860867e1a75efce22debe77fd69c00b1f25786f9b1e0e5e60979b6a494a74d588e4e5d6f6accd4d3fcf5261c0e67ce3db23be6bcd5573aa20220c1c48492068c5571e814b955007eff60cc4bdf69679892a131bc6316e3601adf2c0c4f40714ade4b5e3b5e7042c92dd7850315d4516dfcb5f399a713dd608a8ed5723f781df8599083909f7fc3678106471ffebe39f0ecd47e38d1a588a1f3ba68a30dc4e92dba0601fde5dd8ce80a65f95249cc2346d765eb925287f86f2fbd578e7fb1f809894f7ecea364984a4ebef04e95644b99c813263632b27c0d7c37629928b1a94e6f3e086891d01d6b7235c83e103a4b31b7c58260b33cc555733a77ec5cf5f7a8d565eca88b48d9d4371887d6e87240e96a900ffb0786a80e951b5569c2dee0ba7411770496b04b9cb2b7c324a80066368051fb1c89dfa5a89f34d199fcbea29df618e0cd66f59c28222cbb9a340494ed1bfe94f74a1a35b9ae7eac75e36a7541cddafad621f5b5e177b07aa270176ea39bf1e25053a2e1fc6f6493200f983408d9ac02bfb7c6ee6fa3e1c6247b0c2373aa2c6cf68de32e4f449aecb609c5e601b2acb84bab5c793bd0733e7fe0e8a4d11fb35932146ba636713bd93997f0af1da6dab1e59ff152a3f7b51385af7811059d0939974e63c9a5864addef79872e4a324638a4b6143c89435d032386450c7af5dc3958",
+    "loginAttempts": 0,
+    "__v": 0,
+    "sessions": [
+      {
+        "id": "9f5954af-df78-4d9b-b912-07108687fdd4",
+        "createdAt": {
+          "$date": "2026-03-18T14:06:40.330Z"
+        },
+        "expiresAt": {
+          "$date": "2026-03-18T16:06:40.330Z"
+        }
+      },
+      {
+        "id": "b17f66e1-4fa1-4a9d-a696-f89dec5c2d5e",
+        "createdAt": {
+          "$date": "2026-03-18T14:06:57.665Z"
+        },
+        "expiresAt": {
+          "$date": "2026-03-18T16:06:57.665Z"
+        }
+      }
+    ],
+    "lockUntil": null
+  },
+  {
+    "_id": {
+      "$oid": "69835e5248a24268ed975fab"
+    },
+    "createdAt": {
+      "$date": "2026-02-04T14:57:22.730Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-13T13:35:51.251Z"
+    },
+    "email": "contact@lacuisinedebernard.com",
+    "salt": "fc48af1535460a952de6f064a1ebdddd951ff3c65faaf925ad6aa52617bf6cdc",
+    "hash": "8d83636ef0e96b7eda3928298e2b138d29229fcdcbca9a1e69e3fd9c4cd09d58c78847e1986e63925ede7cfe98922d1252b37563f8b63f52e33f558616b26d0e11657e197b224d2e57774908292b8de94da8cb65dd6dcf622459248233fd33ecd1e31bbcc80bea9144a23b2ec1322fcb9dd809f98cb6c75ff68ba9045c5dacf38bb7f178ce899107c7d30be5dc9a1efacf6e55f28630c0ef398c7e15923f76b27216e9ab4d25536a79d80ef8a23fe103ac4cd266c03d9bdd3b8c49487065600506dee9467057a6d8380cd0edee3664b8d547a826684bef8e65394903556dcc09a9c14185056de9ad5982743d6ea1d7c91107f43b2e53dec0223cd612ad91f1a2adf6b1e07fb20f53aa47eae41c1ac95d113089b8a570efac1acd498f306a76d57817820b30343d12b1e939c97df4d20bb9fd55c29f648b0f68b46fcca7bcb11d2c5eb51d28e862fd74fcd09e723eef93e473510d329e6212ddd9c898bb8db9c84adb2f81caddbee30338991675669892d8f68f46fc90d5ed8564270bbcedc1c63b808ed9184f38bf1c686c6e0edca5bacfb1b373b15bba4feb495be84053b7493c1c6693c8c1e5289bbd5fee270d3404cd94baf87cccf65fecab8e0cf0c09314766ba24806326b384dda17ecddfdd05543ebe8a667571d7b4bc77226a8561ef2838d52882a535a37bc162b4d937fa157a4b071b79727c5a9ca8757a95be3804f",
+    "loginAttempts": 0,
+    "__v": 0,
+    "sessions": [
+      {
+        "id": "12a0ce7b-76a9-4c88-b45e-f2c47a5ffc68",
+        "createdAt": {
+          "$date": "2026-03-18T13:57:10.736Z"
+        },
+        "expiresAt": {
+          "$date": "2026-03-18T15:57:10.736Z"
+        }
+      }
+    ],
+    "lockUntil": null
+  }
+]

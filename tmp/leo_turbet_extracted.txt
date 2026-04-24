@@ -1,0 +1,342 @@
+
+Leo Turbet-Delof8:41 PM
+Yes but the font weight is not the same
+
+Please check these kinds of change in all the website
+This design is werid
+
+It would need be to cehenrent with the rest
+Same UI/UX
+Wednesday, Mar 18
+Atul Sood10:19 AM
+Hi Leo,
+Okay, I will check this
+LT
+Leo Turbet-DelofMar 17, 2026 | 8:41 PM
+Yes but the font weight is not the same
+LT
+Leo Turbet-DelofMar 17, 2026 | 8:43 PM
+Please check these kinds of change in all the website
+Okay, I will change this
+LT
+Leo Turbet-DelofMar 17, 2026 | 8:43 PM
+This design is werid
+LT
+Leo Turbet-DelofMar 17, 2026 | 8:44 PM
+It would need be to cehenrent with the rest
+LT
+Leo Turbet-DelofMar 17, 2026 | 8:44 PM
+Same UI/UX
+Atul Sood11:56 AM
+I checked and the font currently being used is a paid font, which is why it’s not working properly.If you have a license for it, please share it and I’ll integrate it.Otherwise, I can use a similar free font (like Inter) that will give a very close look.
+LT
+Leo Turbet-DelofMar 17, 2026 | 8:41 PM
+Yes but the font weight is not the same
+LT
+Leo Turbet-Delof2:13 PM
+Inter is too generic
+Urgent please
+Change this design
+
+It looks really bad..
+Seems there’s a gradient
+Here too
+
+Çan you remove these buttons ?
+
+I’ll meet the client this afternoon
+Is it possible to generate ingredients pages archives ?
+Atul Sood2:46 PM
+Let me check this
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:21 PM
+Is it possible to generate ingredients pages archives ?
+Maison Neue is a paid font, so we can’t use it without a proper license.I’ll check and try to find a closer alternative that matches the design better than Inter.
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:13 PM
+Inter is too generic
+Okay, I will change
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:14 PM
+Change this design
+I’ve updated the design for the payload admin. You can check it now.
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:15 PM
+Here too
+Atul Sood3:01 PM
+Just to clarify regarding the ingredients archive pages — do you mean that for each ingredient there should be a separate page (like an archive), where all recipes/articles using that ingredient are listed?
+Or are you referring to something else, like showing all ingredients within a single article page?
+Please confirm so I can check it correctly.
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:21 PM
+Is it possible to generate ingredients pages archives ?
+Atul Sood3:33 PM
+I’ve also updated the design and removed the gradient/colors to make it cleaner. Please check if this looks better now.
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:14 PM
+Change this design
+Atul Sood3:41 PM
+Yes, I’ve hidden the buttons you mentioned.
+LT
+Leo Turbet-DelofMar 18, 2026 | 2:19 PM
+Çan you remove these buttons ?
+Yes, this is possible.
+Right now, ingredients in the editor are stored as free-text recipe fields, not as a separate taxonomy like categories or tags. So we can build ingredient archive pages, but first we need to normalize ingredient names and create clean slugs, then generate pages like /ingredient/... that list all recipes using that ingredient.
+The first version can be built from the structured recipe data already in the system. Later, if needed, we can extend it to older legacy content as well.
+Leo Turbet-Delof5:59 PM
+Hey
+I would need to connect Newsletter to Accumbamail
+Atul Sood6:21 PM
+Okay i will connect but can you please provide the details for Accumbamail.
+
+Leo Turbet-Delof7:40 PM
+We would need to put 14:18
+
+As image format
+Atul Sood7:44 PM
+Can you please confirm which exact list/form should be connected to the newsletter popup on the article page.If possible, please send the exact form link or embed code for the correct one
+
+Okay, I will udpate this
+Leo Turbet-Delof7:46 PM
+Centered pictures with 512px width
+
+Leo Turbet-Delof7:52 PM
+We would need to have stick Header
+We dont have all recipes, many are empty
+And pictures are missing too
+
+Spaces are not the same
+Keep only Facebook/Instagram
+Atul Sood8:09 PM
+Yes, I’m currently working on exporting the recipes and fixing their format.
+Also, based on the links you shared, only around 300 recipes are getting exported. So I’m checking all articles directly on the WordPress site to make sure everything is included and that all data (including images) gets imported correctly.
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:55 PM
+We dont have all recipes, many are empty
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:55 PM
+And pictures are missing too
+Okay, I will update this
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:52 PM
+We would need to have stick Header
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:58 PM
+Keep only Facebook/Instagram
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:57 PM
+Spaces are not the same
+LT
+Leo Turbet-Delof8:10 PM
+We would need this on the homepage
+
+We can remove this
+Atul Sood8:11 PM
+Okay, just to confirm — you want this to be added on the homepage, not on the article detail page, right?
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:10 PM
+We would need this on the homepage
+LT
+Leo Turbet-Delof8:11 PM
+About Popular recipes, do you think we can find a way ?
+Both
+Atul Sood8:11 PM
+Okay
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:11 PM
+Both
+LT
+Leo Turbet-Delof8:11 PM
+We have issue with all accent
+
+Atul Sood8:12 PM
+Yes, I think we can definitely find a way for Popular Recipes.
+We can base it on criteria like most viewed recipes, latest recipes, or even manually select featured ones. Let me know which option you’d prefer, and I’ll implement it accordingly.
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:11 PM
+About Popular recipes, do you think we can find a way ?
+LT
+Leo Turbet-Delof8:12 PM
+We would need to add recipes excerpt
+For this text
+
+Atul Sood8:14 PM
+Okay
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:12 PM
+We would need to add recipes excerpt
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:13 PM
+For this text
+LT
+Leo Turbet-Delof8:14 PM
+https://staging.lacuisinedebernard.com/le-sale/
+Why we have a first picture ?
+And need to improve list view
+Atul Sood8:16 PM
+In this case, if we select “with photo”, then all recipes will display with images.
+If we select “without photo”, only the first recipe will have an image, and the rest will appear in a grid without images.
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:14 PM
+https://staging.lacuisinedebernard.com/le-sale/
+Why we have a first picture ?
+Show more
+Done
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:52 PM
+We would need to have stick Header
+Done
+LT
+Leo Turbet-DelofMar 18, 2026 | 7:58 PM
+Keep only Facebook/Instagram
+LT
+Leo Turbet-Delof8:17 PM
+List view more like this
+
+Atul Sood8:18 PM
+Okay, I will update the list view
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:17 PM
+List view more like this
+LT
+Leo Turbet-Delof8:19 PM
+For the carrousel, can we made something that move ?
+Auto loop for every few seconds
+Atul Sood8:20 PM
+Yes, We can add auto slider
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:19 PM
+For the carrousel, can we made something that move ?
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:19 PM
+Auto loop for every few seconds
+LT
+Leo Turbet-Delof8:20 PM
+https://staging.lacuisinedebernard.com/recettes-salees/
+For this, we would need 3 by rows
+This kind of card
+
+Only title without pictures
+Atul SoodMar 18, 2026 | 8:16 PM
+In this case, if we select “with photo”, then all recipes will display with images.
+If we select “without photo”, only the first recipe will have an image, and the rest will appear in a grid without images.
+Show more
+Atul Sood8:22 PM
+Okay, I will update
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:20 PM
+https://staging.lacuisinedebernard.com/recettes-salees/
+For this, we would need 3 by rows
+Show more
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:22 PM
+This kind of card
+LT
+Leo Turbet-Delof8:23 PM
+You can remove "Decouvrir son univers"
+
+Atul Sood8:24 PM
+Okay
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:23 PM
+You can remove "Decouvrir son univers"
+LT
+Leo Turbet-Delof8:25 PM
+Can you remove all the english from the french version ?
+put Sweet and Savory in French
+Atul Sood8:25 PM
+Okay, I will remove
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:25 PM
+Can you remove all the english from the french version ?
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:25 PM
+put Sweet and Savory in French
+Done
+
+Leo Turbet-Delof8:27 PM
+We can remove this on homepage :
+
+Seems most of the recipes are not there
+The content
+Atul Sood8:29 PM
+Yes, I’m currently working on exporting the recipes and fixing their format.
+The issue is only with the existing recipes. Newly added ones don’t have this problem, so I’m adjusting the export based on the editor structure to ensure all recipes are formatted correctly.
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:28 PM
+Seems most of the recipes are not there
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:28 PM
+The content
+LT
+Leo Turbet-Delof8:29 PM
+Seems we dont have points in the ingredient
+
+Atul Sood8:31 PM
+Yes, because the recipe content is coming in a single format, I’m separating it according to the editor structure so that all recipes can be handled and displayed correctly.
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:29 PM
+Seems we dont have points in the ingredient
+image.png 
+
+LT
+Leo Turbet-Delof8:32 PM
+The recipe card need to be the same than here finally
+
+The recipe cards on staging are way to big
+Atul Sood8:33 PM
+Just to confirm — should I keep the design exactly like this
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:32 PM
+The recipe card need to be the same than here finally
+Could you please list all the changes you want? I will take note of everything and prioritize implementing these points first thing tomorrow morning.
+LT
+Leo Turbet-Delof8:37 PM
+https://lacuisinedebernard.com/nusszopf-brioche-tressee-aux-noix/
+https://staging.lacuisinedebernard.com/nusszopf-brioche-tressee-aux-noix/
+Spaces, Points from the list
+
+Leo Turbet-Delof8:43 PM
+Why do we have sticky on this ? It's removing our futures Ads
+
+https://staging.lacuisinedebernard.com/search/?q=aubergine
+Seems we have UTF issue
+
+In Admin :
+Upload photos in bulk and have each step created from all the imported photos. It takes too long to upload images one by one.
+
+We forgot to add Ingredient Heading
+
+Leo Turbet-Delof8:54 PM
+Can we add random recipes, not always the same :
+Capture d’écran 2026-03-18 à 16.23.48.png 
+
+By the way, this design is nice for Index
+LT
+Leo Turbet-DelofMar 18, 2026 | 8:54 PM
+Can we add random recipes, not always the same :
+Can we add arrows on the side for the Carousel ?
+The actual side bar is white, it needs to be the same than the figma
+
+With same spaces
+Leo Turbet-Delof9:11 PM
+Issue on the right, no border
+
+We would need to keep only the time tags in the recipe card
+
+I’ll make you a list with everything after the meeting
+Can you put these arrows on all the website
+
+Can we try 3 recipes in a row ?
+Leo Turbet-Delof9:32 PM
+2 files 
+
+We woud need to add these tags at the top
+Leo Turbet-Delof12:56 AM
+lcb_feedback_tracker.html 
+lcb_feedback_tracker.html
+
+Leo Turbet-Delof12:12 PM
+Hey
+How is it going for the blog ?
+Do you think we can fix the recipes content + Recipes card ? Like having these 2 for all recipes

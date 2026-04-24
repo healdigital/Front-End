@@ -1,0 +1,193 @@
+[
+{
+  "_id": {
+    "$oid": "69a02354b89cf480e39035fa"
+  },
+  "createdAt": {
+    "$date": "2026-02-26T10:41:24.218Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T10:45:17.008Z"
+  },
+  "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1.png",
+  "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1.png",
+  "mimeType": "image/png",
+  "filesize": 2614608,
+  "width": 1536,
+  "height": 1024,
+  "focalX": 50,
+  "focalY": 50,
+  "sizes": {
+    "thumb": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-320x320.png",
+      "width": 320,
+      "height": 320,
+      "mimeType": "image/png",
+      "filesize": 226545,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-320x320.png"
+    },
+    "cardPortrait": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-900x600.png",
+      "width": 900,
+      "height": 600,
+      "mimeType": "image/png",
+      "filesize": 1170256,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-900x600.png"
+    },
+    "articleHero": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-1536x1024.png",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/png",
+      "filesize": 3316803,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-1536x1024.png"
+    },
+    "articleStep": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-1280x853.png",
+      "width": 1280,
+      "height": 853,
+      "mimeType": "image/png",
+      "filesize": 2334149,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-1280x853.png"
+    },
+    "gallery": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-1400x933.png",
+      "width": 1400,
+      "height": 933,
+      "mimeType": "image/png",
+      "filesize": 2785671,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-1400x933.png"
+    }
+  },
+  "__v": 0,
+  "alt": "Featured",
+  "thumbnailURL": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-1-320x320.png"
+},
+{
+  "_id": {
+    "$oid": "69a15bf0374bde77ab834faf"
+  },
+  "createdAt": {
+    "$date": "2026-02-27T08:55:12.108Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T11:03:10.553Z"
+  },
+  "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3.png",
+  "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3.png",
+  "mimeType": "image/png",
+  "filesize": 2614608,
+  "width": 1536,
+  "height": 1024,
+  "focalX": 50,
+  "focalY": 50,
+  "sizes": {
+    "thumb": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-320x320.png",
+      "width": 320,
+      "height": 320,
+      "mimeType": "image/png",
+      "filesize": 226545,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-320x320.png"
+    },
+    "cardPortrait": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-900x600.png",
+      "width": 900,
+      "height": 600,
+      "mimeType": "image/png",
+      "filesize": 1170256,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-900x600.png"
+    },
+    "articleHero": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-1536x1024.png",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/png",
+      "filesize": 3316803,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-1536x1024.png"
+    },
+    "articleStep": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-1280x853.png",
+      "width": 1280,
+      "height": 853,
+      "mimeType": "image/png",
+      "filesize": 2334149,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-1280x853.png"
+    },
+    "gallery": {
+      "url": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-1400x933.png",
+      "width": 1400,
+      "height": 933,
+      "mimeType": "image/png",
+      "filesize": 2785671,
+      "filename": "be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-1400x933.png"
+    }
+  },
+  "__v": 0,
+  "alt": "Featured_image",
+  "thumbnailURL": "/api/media/file/be0ff1f9-5f32-4ef3-9cf7-0b05f01ac013-3-320x320.png"
+},
+{
+  "_id": {
+    "$oid": "69b7fd88f04966a44f03d2d1"
+  },
+  "createdAt": {
+    "$date": "2026-03-16T12:54:32.231Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-16T12:54:32.231Z"
+  },
+  "alt": "Featured",
+  "url": "/api/media/file/IMG_6762-2-scaled%201.png",
+  "filename": "IMG_6762-2-scaled 1.png",
+  "mimeType": "image/png",
+  "filesize": 1828956,
+  "width": 877,
+  "height": 1127,
+  "focalX": 50,
+  "focalY": 50,
+  "sizes": {
+    "thumb": {
+      "url": "/api/media/file/IMG_6762-2-scaled%201-320x320.png",
+      "width": 320,
+      "height": 320,
+      "mimeType": "image/png",
+      "filesize": 262245,
+      "filename": "IMG_6762-2-scaled 1-320x320.png"
+    },
+    "cardPortrait": {
+      "url": "/api/media/file/IMG_6762-2-scaled%201-877x1127.png",
+      "width": 877,
+      "height": 1127,
+      "mimeType": "image/png",
+      "filesize": 2232801,
+      "filename": "IMG_6762-2-scaled 1-877x1127.png"
+    },
+    "articleHero": {
+      "url": "/api/media/file/IMG_6762-2-scaled%201-877x1127.png",
+      "width": 877,
+      "height": 1127,
+      "mimeType": "image/png",
+      "filesize": 2232801,
+      "filename": "IMG_6762-2-scaled 1-877x1127.png"
+    },
+    "articleStep": {
+      "url": "/api/media/file/IMG_6762-2-scaled%201-877x1127.png",
+      "width": 877,
+      "height": 1127,
+      "mimeType": "image/png",
+      "filesize": 2232801,
+      "filename": "IMG_6762-2-scaled 1-877x1127.png"
+    },
+    "gallery": {
+      "url": "/api/media/file/IMG_6762-2-scaled%201-877x1127.png",
+      "width": 877,
+      "height": 1127,
+      "mimeType": "image/png",
+      "filesize": 2232801,
+      "filename": "IMG_6762-2-scaled 1-877x1127.png"
+    }
+  },
+  "__v": 0
+}
+]

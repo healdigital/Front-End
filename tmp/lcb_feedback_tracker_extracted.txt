@@ -1,0 +1,181 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.wrap { padding: 1rem 0 2rem; }
+.header { margin-bottom: 1.5rem; }
+.header h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.filter-btn { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+.filter-btn:hover { background: var(--color-background-secondary); }
+.filter-btn.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+.filter-btn.active.p1 { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+.filter-btn.active.p2 { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+.filter-btn.active.p3 { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+.stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.stat-val.red { color: #A32D2D; }
+.stat-val.amber { color: #854F0B; }
+.stat-val.green { color: #3B6D11; }
+.section { margin-bottom: 1.5rem; }
+.section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-secondary); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.item { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px 14px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; transition: border-color 0.15s; }
+.item:hover { border-color: var(--color-border-secondary); }
+.item.done { opacity: 0.45; }
+.item.done .item-title { text-decoration: line-through; }
+.priority { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.p1 .priority { background: #E24B4A; }
+.p2 .priority { background: #BA7517; }
+.p3 .priority { background: #639922; }
+.item-body { flex: 1; min-width: 0; }
+.item-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.item-id { font-size: 11px; color: var(--color-text-tertiary); font-weight: 500; min-width: 28px; }
+.item-title { font-size: 14px; color: var(--color-text-primary); font-weight: 400; line-height: 1.4; }
+.item-meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; align-items: center; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 0.5px solid; font-weight: 400; }
+.tag-cat { background: var(--color-background-secondary); border-color: var(--color-border-tertiary); color: var(--color-text-secondary); }
+.tag-p1 { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+.tag-p2 { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+.tag-p3 { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+.tag-time { color: var(--color-text-tertiary); border: none; padding: 0; font-size: 11px; }
+.item-note { font-size: 12px; color: var(--color-text-secondary); margin-top: 5px; line-height: 1.5; }
+.check { width: 18px; height: 18px; border-radius: 4px; border: 0.5px solid var(--color-border-secondary); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--color-background-primary); transition: all 0.15s; margin-top: 1px; }
+.check:hover { border-color: var(--color-border-primary); }
+.check.checked { background: var(--color-background-secondary); }
+.check svg { display: none; }
+.check.checked svg { display: block; }
+.empty { text-align: center; padding: 2rem; color: var(--color-text-secondary); font-size: 14px; }
+.progress-bar { height: 4px; background: var(--color-background-secondary); border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+.progress-fill { height: 100%; background: #639922; border-radius: 2px; transition: width 0.3s; }
+La Cuisine de Bernard — Dev Feedback Tracker
+Migration WordPress → Astro  ·  Atul Sood (Macrew Technologies)  ·  March 18, 2026
+Total items
+28
+Critical
+0
+Important
+0
+Done
+0
+All
+P1 — Critical
+P2 — Important
+P3 — Nice to have
+Content
+UI / Layout
+Bugs
+Admin
+const items = [
+  {id:'#01', title:'Fix UTF-8 encoding — accents broken site-wide', note:'Affects "à", "é", "ô", "â", etc. Also affects search results (HTML entities not decoded, e.g. &rsquo;). Must fix at data import level AND rendering layer.', priority:'P1', cat:'Bug', time:'15:41 / 16:13'},
+  {id:'#02', title:'Missing recipe content — most recipes are empty', note:'Large number of recipes have no body content on staging. Likely a data migration/sync issue. Blocking QA of almost all other items.', priority:'P1', cat:'Content', time:'15:22'},
+  {id:'#03', title:'Missing images site-wide', note:'Recipe cards, article images, and steps are missing. Check media import pipeline.', priority:'P1', cat:'Bug', time:'15:22'},
+  {id:'#04', title:'Sticky header', note:'Header must remain fixed at top on scroll across all pages.', priority:'P1', cat:'UI/Layout', time:'15:22'},
+  {id:'#05', title:'Ingredient bullets missing on recipe page', note:'Ingredients should display as a bulleted list. Currently rendering as plain text with no list markers. Also: ingredient group headings (e.g. "For the brioche", "For the filling") defined in admin are not showing on front-end.', priority:'P1', cat:'Bug', time:'15:59 / 16:13'},
+  {id:'#06', title:'Ingredient spacing broken vs original', note:'No visual separation between ingredient groups (e.g. "Pour le thangzong" / "Pour la brioche" / "Pour le fourrage"). Compare: lacuisinedebernard.com/nusszopf vs staging equivalent.', priority:'P1', cat:'Bug', time:'16:07'},
+  {id:'#07', title:'Remove all English text from French version', note:'Translate "Sweet" → "Sucré" and "Savory" → "Salé". Audit entire site for any other English strings leaking into the FR version.', priority:'P1', cat:'Bug', time:'15:55'},
+  {id:'#08', title:'Recipe cards: format with image (portrait), like original', note:'Cards must show the recipe photo. Current staging cards are too large — resize to match the original site card dimensions. Reference: original "Cake de l\'impossible" page.', priority:'P2', cat:'UI/Layout', time:'15:10 / 16:02'},
+  {id:'#09', title:'Article images: centered, 512px width', note:'All inline images inside article/recipe body should be centered with a max-width of 512px.', priority:'P2', cat:'UI/Layout', time:'15:16'},
+  {id:'#10', title:'Sidebar: keep only Facebook and Instagram icons', note:'Remove all social icons except Facebook and Instagram. Also remove the "Découvrir son univers" link entirely.', priority:'P2', cat:'UI/Layout', time:'15:22 / 15:53'},
+  {id:'#11', title:'Remove "Découvrir son univers" link from sidebar', note:'Already noted in #10 but flagged separately at 15:53 with visual reference.', priority:'P2', cat:'UI/Layout', time:'15:53'},
+  {id:'#12', title:'Fix ateliers section design on homepage', note:'Section on dark background (workshop cards with dates AVR.5, AVR.12) has display/design issues. Review layout and card rendering.', priority:'P2', cat:'UI/Layout', time:'15:35'},
+  {id:'#13', title:'Add Newsletter block to homepage', note:'Newsletter signup block ("Abonnez-vous à La Cuisine de Bernard", photo of Bernard, email field + "S\'ABONNER" button) must be added to the homepage.', priority:'P2', cat:'UI/Layout', time:'15:40'},
+  {id:'#14', title:'Remove "S v" button from header nav', note:'Unknown nav button with Bernard thumbnail — remove entirely.', priority:'P2', cat:'UI/Layout', time:'15:40'},
+  {id:'#15', title:'Recipe card excerpts (truncated intro text)', note:'Recipe cards should display a short excerpt/intro text, truncated with "LIRE LA SUITE". See card reference at 15:43.', priority:'P2', cat:'UI/Layout', time:'15:42'},
+  {id:'#16', title:'Remove hero image at top of category pages (e.g. /le-sale/)', note:'The first large image at the top of category listing pages should be removed.', priority:'P2', cat:'UI/Layout', time:'15:44'},
+  {id:'#17', title:'List view: table layout with columns', note:'List view should be a proper table: CATÉGORIE | RECETTE | PRÉPARATION | DIFFICULTÉ. Reference screenshot at 15:47 (Sablé Méga Pistache 45min MOYEN, etc.)', priority:'P2', cat:'UI/Layout', time:'15:47 / 15:44'},
+  {id:'#18', title:'Carousel: auto-loop every few seconds', note:'Homepage recipe carousel should auto-scroll in a continuous loop with configurable interval.', priority:'P2', cat:'UI/Layout', time:'15:49'},
+  {id:'#19', title:'/recettes-salees/: 3 cards per row, title only, no photos', note:'Grid layout on the savory recipes page: 3 columns, card shows only recipe title (no image, no description). Category listing pages may need the same treatment.', priority:'P2', cat:'UI/Layout', time:'15:50'},
+  {id:'#20', title:'Remove grid/list toggle buttons from homepage', note:'The ⊞ / ≡ toggle buttons on the homepage should be removed entirely.', priority:'P2', cat:'UI/Layout', time:'15:57'},
+  {id:'#21', title:'Remove sticky sidebar (blocking ad space)', note:'The right sidebar is sticky and covers the ad zone. Remove sticky behavior so advertising blocks can render properly.', priority:'P2', cat:'Bug', time:'16:13'},
+  {id:'#22', title:'Sidebar: fix background color and spacing to match Figma', note:'Sidebar is currently plain white — must match the Figma spec (beige/cream background, correct internal spacing).', priority:'P2', cat:'UI/Layout', time:'16:24'},
+  {id:'#23', title:'"Vous aimerez aussi": randomize recipes each load', note:'The "You might also like" section always shows the same 3 recipes. Should pull a random selection on each page load.', priority:'P3', cat:'UI/Layout', time:'16:24'},
+  {id:'#24', title:'Carousel: add left/right navigation arrows', note:'Add ← → arrow buttons on both sides of the carousel. Apply to all carousels site-wide (homepage + article pages).', priority:'P3', cat:'UI/Layout', time:'16:24 / 16:41'},
+  {id:'#25', title:'Recipe cards: keep only time tag, remove V/GF/DF tags', note:'In recipe cards, only show the time/duration tag (e.g. "45 mins"). Remove dietary tags (V, GF, DF, etc.).', priority:'P3', cat:'UI/Layout', time:'16:41'},
+  {id:'#26', title:'Recipe cards: fix missing right border', note:'Cards are missing their right-side border. Visible on tablet view (see IMG_2189). Check CSS border on .recipe-card.', priority:'P3', cat:'Bug', time:'16:41'},
+  {id:'#27', title:'Homepage recipe grid: 3 recipes per row', note:'Switch from 2-per-row to 3-per-row grid on the homepage recipe listing.', priority:'P3', cat:'UI/Layout', time:'16:41'},
+  {id:'#28', title:'Recipe page: move category tags to top', note:'Tags (e.g. RECETTE, SALÉ, #SALÉ) currently appear at the bottom of the recipe card. Move them to the top, just below the title or above the meta info.', priority:'P3', cat:'UI/Layout', time:'17:02'},
+  {id:'#29', title:'Popular recipes section (homepage + article pages)', note:'Find a solution to surface "Popular recipes" dynamically — on the homepage sidebar and on individual recipe pages. Discuss approach with Leo (view count? manual curation?).', priority:'P3', cat:'Content', time:'15:41'},
+  {id:'#30', title:'Admin: bulk photo upload for recipe steps', note:'Currently images must be uploaded one-by-one per step. Build a bulk upload that creates one step entry per uploaded image automatically.', priority:'P3', cat:'Admin', time:'16:13'},
+];
+
+let done = new Set();
+let activeFilter = 'all';
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.textContent.startsWith(f === 'all' ? 'All' : f.split(' ')[0])) b.classList.add('active');
+  });
+  render();
+}
+
+function toggle(id) {
+  if (done.has(id)) done.delete(id);
+  else done.add(id);
+  updateStats();
+  render();
+}
+
+function updateStats() {
+  const p1 = items.filter(i => i.priority === 'P1' && !done.has(i.id)).length;
+  const p2 = items.filter(i => i.priority === 'P2' && !done.has(i.id)).length;
+  document.getElementById('s-total').textContent = items.length;
+  document.getElementById('s-p1').textContent = p1;
+  document.getElementById('s-p2').textContent = p2;
+  document.getElementById('s-done').textContent = done.size;
+  document.getElementById('progress').style.width = Math.round(done.size / items.length * 100) + '%';
+}
+
+function render() {
+  const filtered = items.filter(i => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'P1') return i.priority === 'P1';
+    if (activeFilter === 'P2') return i.priority === 'P2';
+    if (activeFilter === 'P3') return i.priority === 'P3';
+    return i.cat === activeFilter;
+  });
+
+  const groups = {'P1': [], 'P2': [], 'P3': []};
+  filtered.forEach(i => groups[i.priority].push(i));
+
+  const labels = {'P1':'P1 — Critical (ship blockers)', 'P2':'P2 — Important (pre-launch)', 'P3':'P3 — Nice to have (post-launch)'};
+  let html = '';
+
+  ['P1','P2','P3'].forEach(p => {
+    if (!groups[p].length) return;
+    html += `<div class="section"><div class="section-title">${labels[p]}</div>`;
+    groups[p].forEach(item => {
+      const isDone = done.has(item.id);
+      const tagClass = item.priority === 'P1' ? 'tag-p1' : item.priority === 'P2' ? 'tag-p2' : 'tag-p3';
+      html += `<div class="item p${p[1]}${isDone ? ' done' : ''}">
+        <div class="priority"></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-id">${item.id}</span>
+            <span class="item-title">${item.title}</span>
+          </div>
+          <div class="item-meta">
+            <span class="tag ${tagClass}">${item.priority}</span>
+            <span class="tag tag-cat">${item.cat}</span>
+            <span class="tag tag-time">${item.time}</span>
+          </div>
+          ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
+        </div>
+        <div class="check${isDone ? ' checked' : ''}" onclick="toggle('${item.id}')">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2 5l2.5 2.5L8 3" stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if (!html) html = '<div class="empty">No items match this filter.</div>';
+  document.getElementById('list').innerHTML = html;
+}
+
+updateStats();
+render();
