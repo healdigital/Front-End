@@ -3,6 +3,9 @@ import SEO from "../components/SEO.astro";
 import Header from "../components/Header.astro";
 import GlobalAbout from "../components/GlobalAbout.astro";
 import GlobalFooter from "../components/GlobalFooter.astro";
+import ClubLoginModal from '../components/ClubLoginModal.astro';
+import AdAnalyticsHead from '../components/AdAnalyticsHead.astro';
+import NewsletterModal from "../components/organisms/NewsletterModal.astro";
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -13,61 +16,72 @@ interface Props {
   slug?: string;
   lang?: string;
   image?: string;
-  jsonLd?: any[];
+  jsonLd?: Array<Record<string, unknown>>;
+  loadAds?: boolean;
+  showGlobalAbout?: boolean;
 }
 
-const { title, description, canonical, slug, lang = 'en', image, jsonLd = [] } = Astro.props;
-const mediavineScriptSrc = import.meta.env.PUBLIC_MEDIAVINE_SCRIPT_SRC;
-const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+const {
+  title,
+  description,
+  canonical,
+  slug,
+  lang = 'fr',
+  image,
+  jsonLd = [],
+  loadAds = false,
+  showGlobalAbout = true,
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang={lang} data-lang={lang}>
   <head>
+    <script is:inline>
+      (function () {
+        const { pathname, search, hash } = window.location;
+        if (!pathname || pathname === '/' || pathname.endsWith('/')) return;
+        if (/\.[a-z0-9]+$/i.test(pathname)) return;
+        window.location.replace(`${pathname}/${search}${hash}`);
+      })();
+    </script>
     <SEO
       title={title}
       description={description}
       canonical={canonical}
       slug={slug}
+      lang={lang}
       image={image}
     />
+    <link rel="preconnect" href="https://lcdb.fra1.digitaloceanspaces.com" crossorigin />
+    <link rel="dns-prefetch" href="//lcdb.fra1.digitaloceanspaces.com" />
+    <AdAnalyticsHead loadAds={loadAds} />
     
     {jsonLd && jsonLd.length > 0 && jsonLd.map(schema => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     ))}
-    {mediavineScriptSrc && (
-      <script async src={mediavineScriptSrc}></script>
-    )}
-    {gaMeasurementId && (
-      <>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
-        <script is:inline define:vars={{ gaMeasurementId }}>
-          window.dataLayer = window.dataLayer || [];
-          function gtag() { dataLayer.push(arguments); }
-          gtag('js', new Date());
-          gtag('config', gaMeasurementId);
-        </script>
-      </>
-    )}
   </head>
   <body>
     <Header lang={lang} />
+    <div class="lcdb-translation-status" data-translation-status hidden role="status" aria-live="polite" aria-atomic="true">
+      <div class="lcdb-translation-status__inner">
+        <span class="lcdb-translation-status__dot" aria-hidden="true"></span>
+        <p class="lcdb-translation-status__text" data-translation-status-text></p>
+      </div>
+    </div>
     <slot />
-    <GlobalAbout />
+    {showGlobalAbout && <GlobalAbout />}
+    <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
+    <NewsletterModal id="newsletter-modal-exit" autoOpenMode="exit-intent" />
+    <ClubLoginModal />
     <GlobalFooter currentLang={lang} />
   </body>
 </html>
 
 <script>
-  import { initializeTranslations, setupLanguageSwitcher, watchLanguageChanges, changeLanguage, getCurrentLanguage } from '../utils/dynamicTranslate';
+  import '../scripts/translationBoot';
+</script>
 
-  // Initialize translations on page load
-  async function init() {
-    await initializeTranslations();
-    setupLanguageSwitcher();
-    watchLanguageChanges();
-    await changeLanguage(getCurrentLanguage());
-  }
-
-  init().catch(error => console.error('Failed to initialize translations:', error));
+<script>
+  import '../scripts/clubAuth';
 </script>

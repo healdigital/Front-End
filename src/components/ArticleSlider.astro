@@ -6,7 +6,7 @@ interface Props {
 }
 
 const { articles = [] } = Astro.props;
-const sliderArticles = articles.slice(0, 12); // Show 12 articles (4 visible at a time)
+const sliderArticles = articles.slice(0, 12);
 
 const getArticleSlug = (article: any) => {
   if (!article) return '';
@@ -16,97 +16,216 @@ const getArticleSlug = (article: any) => {
 };
 ---
 
-<div class="w-full bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-gray-800 dark:to-gray-900 py-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Slider Container - Show 4 items at a time -->
-    <div class="relative overflow-hidden">
-      <div id="article-slider" class="flex transition-transform duration-500 ease-out gap-4">
+<section class="border-b border-border-primary bg-secondary-cream/45 py-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mb-5 flex items-center gap-4">
+      <p class="text-[13px] uppercase tracking-[0.14em] text-text-tertiary">À découvrir</p>
+      <div class="hidden h-px flex-1 bg-border-primary md:block"></div>
+    </div>
+
+    <div class="relative overflow-hidden" data-article-slider>
+      <div id="article-slider" class="flex gap-4 transition-transform duration-500 ease-out will-change-transform">
         {sliderArticles.map((article) => {
-          const imageUrl = processArticleImageUrl(article) || 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(article.title);
+          const imageUrl =
+            processArticleImageUrl(article) ||
+            'https://via.placeholder.com/640x420?text=' + encodeURIComponent(article.title);
           const articleSlug = getArticleSlug(article);
           return (
-          <div class="min-w-[calc(25%-1rem)] flex-shrink-0">
-            <a href={`/${articleSlug}`} class="block relative group h-64 rounded-lg overflow-hidden">
-              {/* Article Image */}
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt={article.title}
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              ) : (
-                <div class="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-                  <i class="fas fa-image w-16 h-16 text-gray-400"></i>
+            <article class="min-w-full sm:min-w-[calc(50%-0.5rem)] xl:min-w-[calc(25%-0.75rem)]">
+              <a
+                href={`/${articleSlug}`}
+                class="group block overflow-hidden rounded-[12px] border border-border-primary bg-primary-white shadow-[0_8px_24px_rgba(17,17,17,0.05)] transition-transform duration-200 hover:-translate-y-[2px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-turquoise/60"
+              >
+                <div class="relative aspect-[1.15] overflow-hidden bg-secondary-beige-light">
+                  <img
+                    src={imageUrl}
+                    alt={article.title}
+                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                    width="640"
+                    height="420"
+                    sizes="(min-width: 1280px) 22vw, (min-width: 640px) 46vw, 92vw"
+                  />
                 </div>
-              )}
 
-              <!-- Title Overlay at Bottom -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end">
-                <h3 class="text-white text-lg sm:text-xl font-bold p-4 group-hover:underline line-clamp-2">
-                  {article.title}
-                </h3>
-              </div>
-            </a>
-          </div>
+                <div class="p-5">
+                  <h3 class="line-clamp-2 font-heading text-[32px] leading-[0.98] text-text-primary">
+                    {article.title}
+                  </h3>
+                </div>
+              </a>
+            </article>
           );
         })}
       </div>
 
-      <!-- Navigation Buttons -->
       <button
         id="slider-prev"
-        class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full p-2 z-10 transition-all shadow-lg -translate-x-4"
-        aria-label="Previous"
+        class="article-slider-arrow article-slider-arrow--prev"
+        aria-label="Article précédent"
+        type="button"
       >
-        <i class="fas fa-chevron-left w-6 h-6"></i>
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="article-slider-arrow-icon article-slider-arrow-icon--prev"
+          loading="lazy"
+          decoding="async"
+          width="48"
+          height="48"
+        />
       </button>
 
       <button
         id="slider-next"
-        class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full p-2 z-10 transition-all shadow-lg translate-x-4"
-        aria-label="Next"
+        class="article-slider-arrow article-slider-arrow--next"
+        aria-label="Article suivant"
+        type="button"
       >
-        <i class="fas fa-chevron-right w-6 h-6"></i>
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="article-slider-arrow-icon article-slider-arrow-icon--next"
+          loading="lazy"
+          decoding="async"
+          width="48"
+          height="48"
+        />
       </button>
     </div>
   </div>
-</div>
+</section>
 
 <script>
+  const sliderRoot = document.querySelector('[data-article-slider]');
   const slider = document.getElementById('article-slider');
   const prevBtn = document.getElementById('slider-prev');
   const nextBtn = document.getElementById('slider-next');
 
-  let currentIndex = 0;
-  const totalItems = 12;
-  const itemsPerView = 4;
-  const maxIndex = Math.ceil(totalItems - itemsPerView);
+  if (sliderRoot instanceof HTMLElement && slider instanceof HTMLElement) {
+    let currentIndex = 0;
+    let autoplayInterval;
 
-  const updateSlider = (index: number) => {
-    if (slider) {
+    const getItemsPerView = () => {
+      if (window.innerWidth >= 1280) return 4;
+      if (window.innerWidth >= 640) return 2;
+      return 1;
+    };
+
+    const getMaxIndex = () => Math.max(0, slider.children.length - getItemsPerView());
+
+    const updateSlider = (index) => {
+      const itemsPerView = getItemsPerView();
       const offset = index * (100 / itemsPerView);
       slider.style.transform = `translateX(-${offset}%)`;
-    }
-  };
+      const maxIndex = getMaxIndex();
+      if (prevBtn instanceof HTMLButtonElement) {
+        prevBtn.disabled = maxIndex === 0;
+      }
+      if (nextBtn instanceof HTMLButtonElement) {
+        nextBtn.disabled = maxIndex === 0;
+      }
+    };
 
-  const nextSlide = () => {
-    currentIndex = Math.min(currentIndex + 1, maxIndex);
-    updateSlider(currentIndex);
-  };
+    const nextSlide = () => {
+      const maxIndex = getMaxIndex();
+      currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+      updateSlider(currentIndex);
+    };
 
-  const prevSlide = () => {
-    currentIndex = Math.max(currentIndex - 1, 0);
-    updateSlider(currentIndex);
-  };
+    const prevSlide = () => {
+      const maxIndex = getMaxIndex();
+      currentIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
+      updateSlider(currentIndex);
+    };
 
-  prevBtn?.addEventListener('click', prevSlide);
-  nextBtn?.addEventListener('click', nextSlide);
+    const stopAutoplay = () => {
+      if (autoplayInterval) {
+        window.clearInterval(autoplayInterval);
+        autoplayInterval = undefined;
+      }
+    };
 
-  updateSlider(0);
+    const startAutoplay = () => {
+      stopAutoplay();
+      if (slider.children.length <= getItemsPerView()) return;
+      autoplayInterval = window.setInterval(nextSlide, 6000);
+    };
+
+    prevBtn?.addEventListener('click', prevSlide);
+    nextBtn?.addEventListener('click', nextSlide);
+    sliderRoot.addEventListener('mouseenter', stopAutoplay);
+    sliderRoot.addEventListener('mouseleave', startAutoplay);
+    sliderRoot.addEventListener('focusin', stopAutoplay);
+    sliderRoot.addEventListener('focusout', startAutoplay);
+    window.addEventListener('resize', () => {
+      currentIndex = Math.min(currentIndex, getMaxIndex());
+      updateSlider(currentIndex);
+      startAutoplay();
+    });
+
+    updateSlider(0);
+    startAutoplay();
+  }
 </script>
 
 <style>
-  #article-slider {
-    will-change: transform;
+  .article-slider-arrow {
+    position: absolute;
+    top: 50%;
+    width: 52px;
+    height: 52px;
+    border: 0;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 10;
+    transform: translateY(-50%);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .article-slider-arrow:hover:not(:disabled) {
+    transform: translateY(calc(-50% - 1px));
+  }
+
+  .article-slider-arrow:disabled,
+  .article-slider-arrow[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .article-slider-arrow--prev {
+    left: -8px;
+  }
+
+  .article-slider-arrow--next {
+    right: -8px;
+  }
+
+  .article-slider-arrow-icon {
+    display: block;
+    height: 48px;
+    width: 48px;
+  }
+
+  .article-slider-arrow-icon--prev {
+    transform: rotate(-90deg);
+  }
+
+  .article-slider-arrow-icon--next {
+    transform: rotate(90deg);
+  }
+
+  @media (max-width: 639px) {
+    .article-slider-arrow--prev {
+      left: 4px;
+    }
+
+    .article-slider-arrow--next {
+      right: 4px;
+    }
   }
 </style>

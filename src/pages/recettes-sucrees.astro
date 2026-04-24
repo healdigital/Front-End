@@ -1,23 +1,414 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+import InfiniteGrid from "../components/InfiniteGrid.astro";
+import RecipeCard from "../components/organisms/RecipeCard.astro";
+import { getPreparedArchiveArticles, type PreparedArchiveArticle } from "../lib/staticArchiveData";
+import {
+  buildWordPressImageFallbackCandidates,
+  buildWpSquareVariantUrl,
+  processArticleImageUrl,
+} from "../utils/cdnUrlReplacer";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
+
+const navLinks = [
+  {
+    label: "Index des recettes sucrees avec photo",
+    description: "Version illustree, ideale pour parcourir les desserts.",
+    active: true,
+  },
+  {
+    label: "Index des recettes sucrees sans photo",
+    description: "Version compacte, centree sur les titres des recettes.",
+    href: "/le-sucre/",
+  },
+];
+
+const stripHtml = (value: string) =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value === "string") return decodeHtmlEntities(stripHtml(value));
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(record.children)) {
+      return record.children.map((child) => toText(child)).filter(Boolean).join(" ");
+    }
+  }
+  return "";
+};
+
+const getPrimaryRecipeBlock = (article: PreparedArchiveArticle | undefined) =>
+  Array.isArray(article?.recipeBlocks)
+    ? article.recipeBlocks.find((block) => block && typeof block === "object")
+    : null;
+
+const normalizeToken = (value: string): string =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const extractLabels = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap((item) => extractLabels(item));
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return [record.name, record.title, record.slug, record.label]
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  }
+  return [];
+};
+
+const getArchiveFilterKey = (article: PreparedArchiveArticle): "salees" | "sucrees" | "toutes" => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const recipeBlockRecord = (recipeBlock || {}) as Record<string, unknown>;
+  const articleRecord = article as Record<string, unknown>;
+  const candidateText = [
+    ...extractLabels(recipeBlockRecord.recipeType),
+    ...extractLabels(recipeBlockRecord.dishType),
+    ...extractLabels(article?.categories),
+    ...extractLabels(articleRecord.category),
+    ...extractLabels(articleRecord.tags),
+    toText(article?.title),
+    toText(article?.excerpt),
+  ].join(" ");
+
+  const normalized = normalizeToken(candidateText);
+
+  const sweetKeywords = [
+    "sucre",
+    "dessert",
+    "sweet",
+    "gateau",
+    "cake",
+    "cookie",
+    "brioche",
+    "chocolat",
+    "galette",
+    "tarte",
+    "creme",
+    "entremet",
+    "sable",
+  ];
+  const savoryKeywords = [
+    "sale",
+    "savory",
+    "savour",
+    "omelette",
+    "quiche",
+    "gratin",
+    "soupe",
+    "salade",
+    "foie gras",
+    "poulet",
+    "poisson",
+    "courge",
+    "legume",
+  ];
+
+  const sweetScore = sweetKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const savoryScore = savoryKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+
+  if (savoryScore > sweetScore) return "salees";
+  if (sweetScore > savoryScore) return "sucrees";
+  return "toutes";
+};
+
+const formatDuration = (minutes: number): string => {
+  if (!Number.isFinite(minutes) || minutes <= 0) return "--";
+  const whole = Math.round(minutes);
+  if (whole >= 60) {
+    const hours = Math.floor(whole / 60);
+    const mins = whole % 60;
+    return mins > 0 ? `${hours}h${String(mins).padStart(2, "0")}` : `${hours}h`;
+  }
+  return `${whole} min`;
+};
+
+const formatRecipeTime = (article: PreparedArchiveArticle | undefined): string => {
+  if (!article) return "--";
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
+  const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
+
+  if (Number.isFinite(prep) && prep > 0) {
+    const total = prep + (Number.isFinite(cook) && cook > 0 ? cook : 0);
+    return formatDuration(total || prep);
+  }
+
+  const raw = String(article.recipe?.prepTime ?? article.prepTime ?? article.prep_time ?? "").trim();
+  if (!raw) return "--";
+  if (/[0-9].*(min|h)/i.test(raw)) return raw.toLowerCase();
+  if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
+  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
+  return suffix ? `${raw} ${suffix}`.trim() : raw;
+};
+
+const formatDifficulty = (article: PreparedArchiveArticle | undefined): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const raw = String(recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "")
+    .trim()
+    .toLowerCase();
+
+  switch (raw) {
+    case "easy":
+    case "facile":
+      return "Facile";
+    case "medium":
+    case "moyen":
+    case "moyenne":
+      return "Moyen";
+    case "hard":
+    case "difficult":
+    case "difficile":
+      return "Difficile";
+    default:
+      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "Recette";
+  }
+};
+
+const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return `Decouvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
+  return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
+};
+
+const preparedArticles = getPreparedArchiveArticles().filter(
+  (article) =>
+    typeof article?.slug === "string" &&
+    article.slug.trim() &&
+    String((article as Record<string, unknown>)?.lang || "fr").toLowerCase() === "fr",
+);
+
+const uniqueArticlesBySlug = new Map<string, PreparedArchiveArticle>();
+preparedArticles.forEach((article) => {
+  const slug = String(article.slug || "").trim();
+  if (!slug || uniqueArticlesBySlug.has(slug)) return;
+  uniqueArticlesBySlug.set(slug, article);
+});
+
+const cards = Array.from(uniqueArticlesBySlug.values())
+  .filter((article) => getArchiveFilterKey(article) === "sucrees")
+  .sort((a, b) => {
+    const aTime = Date.parse(String((a as Record<string, unknown>)?.publishedAt || ""));
+    const bTime = Date.parse(String((b as Record<string, unknown>)?.publishedAt || ""));
+    if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) return bTime - aTime;
+    return String(a.slug || "").localeCompare(String(b.slug || ""), "fr");
+  })
+  .map((article) => {
+    const slug = String(article.slug || "").trim();
+    const fallbackImage = processArticleImageUrl(article) || "";
+    const resolvedImage = processArticleImageUrl(article) || fallbackImage;
+    const squareImage = resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "";
+    const imageFallbackCandidates = Array.from(
+      new Set([
+        ...buildWordPressImageFallbackCandidates(resolvedImage),
+        squareImage,
+      ].filter(Boolean)),
+    );
+
+    return {
+      href: `/${slug}`,
+      title: decodeHtmlEntities(String(article?.title || slug)),
+      excerpt: getExcerpt(article, slug),
+      difficulty: formatDifficulty(article),
+      time: formatRecipeTime(article),
+      image: resolvedImage || squareImage,
+      imageFallback: resolvedImage,
+      imageFallbackCandidates,
+    };
+  });
 ---
 
-<BaseLayout title="Sweet Recipes (with photos)">
-  <StaticPage title="Sweet Recipes (with photos)" subtitle="Index of sweet recipes">
-    <StaticPageContent
-      slug="recettes-sucrees"
-      sourceUrl="https://lacuisinedebernard.com/recettes-sucrees/"
-    >
-      <p>We are rebuilding this sweet index with the new content system.</p>
-      <p>
-        Until then, browse the latest recipes or search for a specific dessert.
-      </p>
-      <ul>
-        <li><a href="/articles">Browse latest recipes</a></li>
-        <li><a href="/search">Search the site</a></li>
-      </ul>
-    </StaticPageContent>
+<BaseLayout title="Recettes sucrees">
+  <StaticPage
+    title="Recettes sucrees"
+    subtitle="Index des recettes sucrees avec photo."
+    className="menu-page menu-page--sweet-grid"
+    navLinks={navLinks}
+  >
+    <InfiniteGrid gridClass="sweet-grid" ariaLabel="Recettes sucrees" totalCount={cards.length}>
+      {cards.map((card) => (
+        <RecipeCard
+          title={card.title}
+          slug={card.href}
+          image={card.image}
+          imageFallback={card.imageFallback}
+          imageAspect="square"
+          description={card.excerpt}
+          prepTime={card.time}
+          difficulty={card.difficulty}
+          category="SUCRE"
+          showDescription={false}
+          showReadMore={false}
+          contentClass="archive-card-content"
+        />
+      ))}
+    </InfiniteGrid>
   </StaticPage>
 </BaseLayout>
+
+<style is:global>
+  .menu-page--sweet-grid .static-page-body {
+    padding: clamp(14px, 2.2vw, 24px);
+  }
+
+  .menu-page--sweet-grid .sweet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    max-width: 1220px;
+    margin-inline: auto;
+  }
+
+  .menu-page--sweet-grid .sweet-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d8d2c2;
+    border-radius: 14px;
+    background: #f8f5ee;
+    overflow: hidden;
+    box-shadow: 0 14px 32px rgba(14, 24, 39, 0.06);
+  }
+
+  .menu-page--sweet-grid .sweet-card-media-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    line-height: 0;
+  }
+
+  .menu-page--sweet-grid .sweet-card-media {
+    position: relative;
+    aspect-ratio: 4 / 4.7;
+    overflow: hidden;
+    background: #ece5d8;
+    line-height: 0;
+  }
+
+  .menu-page--sweet-grid .sweet-card-image {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top;
+    display: block;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .menu-page--sweet-grid .sweet-card-image--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a7569;
+    font-size: 0.92rem;
+  }
+
+  .menu-page--sweet-grid .sweet-card-badge {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: #67d5cf;
+    color: #1a2335;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(24, 37, 57, 0.18);
+  }
+
+  .menu-page--sweet-grid .sweet-card-badge svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .menu-page--sweet-grid .sweet-card-content {
+    padding: 0.9rem 0.9rem 1rem;
+  }
+
+  .menu-page--sweet-grid .sweet-card-meta {
+    margin: 0;
+    color: #787161;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menu-page--sweet-grid .sweet-card-title {
+    margin: 0.62rem 0 0;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(120, 113, 97, 0.18);
+    font-family: var(--font-maison);
+    font-size: 1.75rem;
+    line-height: 1.18;
+    color: #26231c;
+  }
+
+  .menu-page--sweet-grid .sweet-card-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .menu-page--sweet-grid .sweet-card-excerpt {
+    margin: 0.9rem 0 0;
+    color: #655f54;
+    font-size: 0.98rem;
+    line-height: 1.72;
+  }
+
+  .menu-page--sweet-grid .sweet-card-cta {
+    display: inline-flex;
+    margin-top: 1rem;
+    color: #54b6b1;
+    font-family: var(--font-button);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1100px) {
+    .menu-page--sweet-grid .sweet-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 760px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .menu-page--sweet-grid .sweet-grid {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 380px;
+    }
+
+    .menu-page--sweet-grid .sweet-card-title {
+      font-size: 1.45rem;
+    }
+  }
+</style>

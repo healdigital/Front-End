@@ -26,51 +26,58 @@ const includesAny = (values: string[], targets: string[]) =>
 const sweetKeywords = ['sweet', 'dessert', 'cake', 'cookie', 'chocolate', 'tarte', 'pastry'];
 const savoryKeywords = ['savory', 'salty', 'meat', 'fish', 'chicken', 'pasta', 'salad'];
 
-const sweetArticles = allArticles.filter((article: any) =>
-  includesAny(articleCategories(article), sweetKeywords)
-);
-const savoryArticles = allArticles.filter((article: any) =>
-  includesAny(articleCategories(article), savoryKeywords)
-);
+const sweetArticles = allArticles.filter((article: any) => includesAny(articleCategories(article), sweetKeywords));
+const savoryArticles = allArticles.filter((article: any) => includesAny(articleCategories(article), savoryKeywords));
 
 const displaySweet = sweetArticles.length > 0 ? sweetArticles.slice(0, 6) : allArticles.slice(0, 6);
 const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : allArticles.slice(6, 12);
+
+const getArticleTitle = (article: any) =>
+  typeof article?.title === 'string'
+    ? article.title
+    : article?.title?.rendered || article?.title?.value || 'Recette';
+
+const getArticleSlug = (article: any) => article.slug?.current || article.slug || article._id;
+const getExcerpt = (article: any, fallback: string) =>
+  article?.excerpt?.[0]?.children?.[0]?.text ||
+  article?.excerpt?.rendered?.replace(/<[^>]*>/g, '').trim() ||
+  fallback;
 ---
 
-<!-- Sweet Recipes Section -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-orange-200 dark:border-orange-800">
-  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-    Sweet Recipes 🍰
+<section class="mx-auto max-w-7xl border-t border-border-primary px-4 py-16 sm:px-6 lg:px-8">
+  <h2 class="mb-12 text-center font-heading text-[42px] leading-none text-text-primary md:text-[50px]">
+    Recettes sucrées
   </h2>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
     {displaySweet.map((article) => (
-      <a href={`/${article.slug?.current || article.slug || article._id}`} class="group">
-        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden">
-          <!-- Image -->
-          <div class="relative overflow-hidden h-48">
+      <a href={`/${getArticleSlug(article)}`} class="group">
+        <article class="overflow-hidden rounded-[10px] border border-border-primary bg-primary-white shadow-[0_6px_18px_rgba(17,17,17,0.04)] transition duration-300 group-hover:-translate-y-[2px] group-hover:shadow-[0_10px_24px_rgba(17,17,17,0.08)]">
+          <div class="relative h-48 overflow-hidden bg-[#efe9dc]">
             {processArticleImageUrl(article) ? (
               <img
                 src={processArticleImageUrl(article)}
-                alt={article.title}
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                alt={getArticleTitle(article)}
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="384"
+                sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
               />
             ) : (
-              <div class="w-full h-full bg-gradient-to-br from-pink-200 to-orange-200 flex items-center justify-center">
-                <svg class="w-12 h-12 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                </svg>
+              <div class="flex h-full w-full items-center justify-center text-primary-turquoise">
+                <i class="fas fa-utensils text-4xl" aria-hidden="true"></i>
               </div>
             )}
           </div>
 
-          <!-- Content -->
           <div class="p-4">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2 mb-2">
-              {article.title}
+            <h3 class="mb-2 text-lg font-semibold text-text-primary transition-colors duration-200 group-hover:text-primary-turquoise line-clamp-2">
+              {getArticleTitle(article)}
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-              {article.excerpt?.[0]?.children?.[0]?.text || 'Delicious sweet recipe'}
+            <p class="text-sm text-text-secondary line-clamp-2">
+              {getExcerpt(article, 'Délicieuse recette sucrée.')}
             </p>
           </div>
         </article>
@@ -79,40 +86,40 @@ const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : a
   </div>
 </section>
 
-<!-- Savory Recipes Section -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t-2 border-green-200 dark:border-green-800">
-  <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-    Savory Recipes 🍲
+<section class="mx-auto max-w-7xl border-t border-border-primary px-4 py-16 sm:px-6 lg:px-8">
+  <h2 class="mb-12 text-center font-heading text-[42px] leading-none text-text-primary md:text-[50px]">
+    Recettes salées
   </h2>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
     {displaySavory.map((article) => (
-      <a href={`/${article.slug?.current || article.slug || article._id}`} class="group">
-        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden">
-          <!-- Image -->
-          <div class="relative overflow-hidden h-48">
+      <a href={`/${getArticleSlug(article)}`} class="group">
+        <article class="overflow-hidden rounded-[10px] border border-border-primary bg-primary-white shadow-[0_6px_18px_rgba(17,17,17,0.04)] transition duration-300 group-hover:-translate-y-[2px] group-hover:shadow-[0_10px_24px_rgba(17,17,17,0.08)]">
+          <div class="relative h-48 overflow-hidden bg-[#efe9dc]">
             {processArticleImageUrl(article) ? (
               <img
                 src={processArticleImageUrl(article)}
-                alt={article.title}
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                alt={getArticleTitle(article)}
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="384"
+                sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
               />
             ) : (
-              <div class="w-full h-full bg-gradient-to-br from-green-200 to-blue-200 flex items-center justify-center">
-                <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                </svg>
+              <div class="flex h-full w-full items-center justify-center text-primary-turquoise">
+                <i class="fas fa-utensils text-4xl" aria-hidden="true"></i>
               </div>
             )}
           </div>
 
-          <!-- Content -->
           <div class="p-4">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2 mb-2">
-              {article.title}
+            <h3 class="mb-2 text-lg font-semibold text-text-primary transition-colors duration-200 group-hover:text-primary-turquoise line-clamp-2">
+              {getArticleTitle(article)}
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-              {article.excerpt?.[0]?.children?.[0]?.text || 'Delicious savory recipe'}
+            <p class="text-sm text-text-secondary line-clamp-2">
+              {getExcerpt(article, 'Délicieuse recette salée.')}
             </p>
           </div>
         </article>
@@ -120,19 +127,3 @@ const displaySavory = savoryArticles.length > 0 ? savoryArticles.slice(0, 6) : a
     ))}
   </div>
 </section>
-
-<style>
-  section:nth-child(1) h2 {
-    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  section:nth-child(2) h2 {
-    background: linear-gradient(135deg, #48dbfb 0%, #1dd1a1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-</style>

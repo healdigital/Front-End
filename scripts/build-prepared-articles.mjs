@@ -14,10 +14,12 @@ async function run() {
     for (const p of posts) {
       const slug = typeof p.slug === 'string' ? p.slug : p.slug?.current || '';
       if (!slug) continue;
+      const lang = String(p.lang || p.language || p.locale || 'fr').trim().toLowerCase();
 
       articles.push({
         _id: p._id || p.id || undefined,
         slug,
+        lang,
         title: p.title,
         content: p.content,
         excerpt: p.excerpt,
@@ -29,7 +31,6 @@ async function run() {
         featured_img_url: p.featured_img_url,
         featured_image: p.featured_image,
         featuredImageUrl: p.featuredImageUrl,
-        lang: p.lang,
       });
     }
   }
@@ -37,8 +38,9 @@ async function run() {
   const seen = new Set();
   const deduped = [];
   for (const a of articles) {
-    if (seen.has(a.slug)) continue;
-    seen.add(a.slug);
+    const dedupeKey = `${a.lang || 'fr'}::${a.slug}`;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
     deduped.push(a);
   }
 

@@ -1,0 +1,290 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { decodeHtmlEntities } from '../utils/decodeHtmlEntities';
+import { sanitizeTrustedHtml } from '../utils/trustedHtml';
+
+type EmbedKind = 'iframe' | 'mv';
+
+interface EmbedToken {
+  html: string;
+  type: EmbedKind;
+}
+
+interface VideoCard {
+  embedHtml: string;
+  title: string;
+  type: EmbedKind;
+}
+
+const filePath = path.resolve(
+  process.cwd(),
+  'src',
+  'content',
+  'static-pages',
+  'videos.html',
+);
+
+const rawHtml = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+
+const stripTags = (value: string): string => String(value || '').replace(/<[^>]*>/g, ' ');
+
+const normalizeWhitespace = (value: string): string =>
+  String(value || '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const cleanTitle = (value: string): string =>
+  normalizeWhitespace(decodeHtmlEntities(stripTags(value))).replace(/\s+:/g, ':');
+
+const escapeAttribute = (value: string): string =>
+  String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+const sanitizeEmbedHtml = (value: string, title: string): string => {
+  let html = sanitizeTrustedHtml(String(value || '').trim());
+  if (!html) return '';
+
+  if (/^<iframe\b/i.test(html)) {
+    html = html.replace(/\s(?:width|height|style)="[^"]*"/gi, '');
+
+    if (!/\btitle=/i.test(html)) {
+      html = html.replace(
+        /<iframe\b/i,
+        `<iframe title="${escapeAttribute(title)}"`,
+      );
+    }
+
+    if (!/\bloading=/i.test(html)) {
+      html = html.replace(/<iframe\b/i, '<iframe loading="lazy"');
+    }
+
+    if (!/\breferrerpolicy=/i.test(html)) {
+      html = html.replace(
+        /<iframe\b/i,
+        '<iframe referrerpolicy="strict-origin-when-cross-origin"',
+      );
+    }
+  }
+
+  return html;
+};
+
+const tokenRegex =
+  /<(h2|h3)\b[^>]*>([\s\S]*?)<\/\1>|<div\b[^>]*class="[^"]*mv-video-target[^"]*"[^>]*><\/div>|<iframe\b[\s\S]*?<\/iframe>/gi;
+
+const videoCards: VideoCard[] = [];
+const queuedEmbeds: EmbedToken[] = [];
+let currentTitle = '';
+let lastAssignedType: EmbedKind | '' = '';
+let lastWasHeadingAssigned = false;
+
+// The source HTML is malformed. We reconstruct cards from the heading/embed stream
+// and ignore duplicate fallback embeds that appear right after a resolved heading.
+if (rawHtml) {
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenRegex.exec(rawHtml))) {
+    const headingTag = match[1];
+
+    if (headingTag) {
+      const title = cleanTitle(match[2]);
+      if (!title) continue;
+
+      if (queuedEmbeds.length > 0) {
+        const embed = queuedEmbeds.shift();
+        if (embed) {
+          videoCards.push({
+            embedHtml: sanitizeEmbedHtml(embed.html, title),
+            title,
+            type: embed.type,
+          });
+          currentTitle = '';
+          lastAssignedType = embed.type;
+          lastWasHeadingAssigned = false;
+        }
+      } else {
+        currentTitle = title;
+        lastWasHeadingAssigned = false;
+      }
+
+      continue;
+    }
+
+    const embedHtml = match[0];
+    const embedType: EmbedKind = /^<iframe\b/i.test(embedHtml) ? 'iframe' : 'mv';
+
+    if (currentTitle) {
+      videoCards.push({
+        embedHtml: sanitizeEmbedHtml(embedHtml, currentTitle),
+        title: currentTitle,
+        type: embedType,
+      });
+      currentTitle = '';
+      lastAssignedType = embedType;
+      lastWasHeadingAssigned = true;
+      continue;
+    }
+
+    if (lastWasHeadingAssigned && lastAssignedType && lastAssignedType !== embedType) {
+      continue;
+    }
+
+    queuedEmbeds.push({
+      html: embedHtml,
+      type: embedType,
+    });
+    lastWasHeadingAssigned = false;
+  }
+}
+
+const visibleVideos = videoCards.filter((item) => item.title && item.embedHtml);
+---
+
+{visibleVideos.length > 0 ? (
+  <section class="videos-library" data-no-translate="true">
+    <div class="videos-library-head">
+      <p class="videos-library-kicker">{visibleVideos.length} videos in the archive</p>
+      <p class="videos-library-note">
+        Facebook lives and cooking demos, rebuilt into a cleaner two-column layout.
+      </p>
+    </div>
+
+    <div class="videos-grid">
+      {visibleVideos.map((video, index) => (
+        <article class="video-card">
+          <div class="video-card-header">
+            <p class="video-card-index">Video {String(index + 1).padStart(2, '0')}</p>
+            <h2 class="video-card-title">{video.title}</h2>
+          </div>
+
+          <div class="video-card-media">
+            <div
+              class:list={[
+                'video-card-embed',
+                video.type === 'mv' ? 'video-card-embed--mediavine' : 'video-card-embed--iframe',
+              ]}
+              set:html={video.embedHtml}
+            />
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+) : (
+  <div class="videos-empty-state">
+    <p>Video library import is unavailable right now.</p>
+  </div>
+)}
+
+<style>
+  .videos-library {
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .videos-library-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .videos-library-kicker {
+    margin: 0;
+    color: var(--lcdb-accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .videos-library-note {
+    margin: 0;
+    color: var(--lcdb-muted);
+    max-width: 44rem;
+  }
+
+  .videos-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .video-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--lcdb-border);
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, rgba(250, 248, 242, 0.98), rgba(250, 247, 240, 0.96));
+    box-shadow: 0 18px 36px rgba(17, 25, 39, 0.08);
+  }
+
+  .video-card-header {
+    padding: 1.15rem 1.15rem 1rem;
+  }
+
+  .video-card-index {
+    margin: 0 0 0.35rem;
+    color: var(--lcdb-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .video-card-title {
+    margin: 0;
+    color: #1a2335;
+    font-family: var(--font-heading);
+    font-size: clamp(1.35rem, 2.1vw, 1.75rem);
+    line-height: 1.14;
+  }
+
+  .video-card-media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    min-width: 0;
+    overflow: hidden;
+    background: #111927;
+  }
+
+  .video-card-embed {
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-card-embed--mediavine {
+    background: linear-gradient(180deg, #0f1722 0%, #171f2e 100%);
+  }
+
+  .video-card-media :global(iframe),
+  .video-card-media :global(.mv-video-target) {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0;
+    min-height: 100%;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .videos-empty-state {
+    color: var(--lcdb-muted);
+  }
+
+  @media (min-width: 900px) {
+    .videos-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

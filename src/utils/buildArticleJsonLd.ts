@@ -1,5 +1,33 @@
-export function buildArticleJsonLd(article: any, domain: string = 'https://lacuisinedebernard.com') {
-  const stripHtml = (html: string) => html?.replace(/<[^>]*>/g, "").trim() || "";
+type TextLike = string | null | undefined | { rendered?: string | null };
+type TaxonomyLike = { name?: string | null };
+type ArticleJsonLdInput = {
+  author_name?: string | null;
+  blog_images?: { large?: string | null } | null;
+  category_names?: TaxonomyLike[] | null;
+  date?: string | null;
+  excerpt?: TextLike;
+  featured_image_src?: string | null;
+  lang?: string | null;
+  locale?: string | null;
+  modified?: string | null;
+  slug?: string | null;
+  tag_names?: TaxonomyLike[] | null;
+  title?: TextLike;
+};
+
+const stripHtml = (html: string) => html?.replace(/<[^>]*>/g, "").trim() || "";
+
+const normalizeLanguage = (value: string | null | undefined): string => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+  if (['fr', 'en', 'es', 'pt-br', 'ar'].includes(raw)) return raw;
+  return 'fr';
+};
+
+export function buildArticleJsonLd(
+  article: ArticleJsonLdInput,
+  domain: string = 'https://lacuisinedebernard.com',
+) {
 
   const getTitle = () => {
     if (typeof article.title === 'string') return article.title;
@@ -20,8 +48,9 @@ export function buildArticleJsonLd(article: any, domain: string = 'https://lacui
   const modifiedDate = article.modified || publicDate;
   const author = article.author_name || 'La Cuisine De Bernard';
   const category = article.category_names?.[0]?.name || 'Recipe';
-  const tags = article.tag_names?.map((t: any) => t.name) || [];
+  const tags = article.tag_names?.map((tag) => tag.name).filter(Boolean) || [];
   const articleUrl = `${domain}/${article.slug}`;
+  const language = normalizeLanguage(article.lang || article.locale);
 
   return {
     '@context': 'https://schema.org',
@@ -62,11 +91,18 @@ export function buildArticleJsonLd(article: any, domain: string = 'https://lacui
     },
     'articleSection': category,
     'keywords': tags.join(', '),
-    'inLanguage': 'en'
+    'inLanguage': language
   };
 }
 
-export function buildBreadcrumbJsonLd(title: string, domain: string = 'https://lacuisinedebernard.com') {
+export function buildBreadcrumbJsonLd(
+  title: string,
+  slug: string,
+  domain: string = 'https://lacuisinedebernard.com',
+) {
+  const normalizedSlug = String(slug || '').replace(/^\/+|\/+$/g, '');
+  const articleUrl = normalizedSlug ? `${domain}/${normalizedSlug}` : domain;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -80,14 +116,8 @@ export function buildBreadcrumbJsonLd(title: string, domain: string = 'https://l
       {
         '@type': 'ListItem',
         'position': 2,
-        'name': 'Articles',
-        'item': `${domain}/articles`
-      },
-      {
-        '@type': 'ListItem',
-        'position': 3,
         'name': title,
-        'item': `${domain}/${title.toLowerCase().replace(/\s+/g, '-')}`
+        'item': articleUrl
       }
     ]
   };

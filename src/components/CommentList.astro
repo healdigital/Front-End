@@ -1,7 +1,16 @@
----
+﻿---
 // CommentList.astro - Modern Comment Display
+interface CommentEntry {
+  author?: string;
+  content?: string;
+  createdAt?: string;
+  date?: string;
+  rating?: number;
+  text?: string;
+}
+
 interface Props {
-  comments?: any[];
+  comments?: CommentEntry[];
   slug?: string;
 }
 
@@ -9,7 +18,7 @@ const { comments = [], slug = '' } = Astro.props;
 
 // Calculate average rating from comments
 const avgRating = comments.length > 0
-  ? comments.reduce((sum: number, c: any) => sum + (c.rating || 5), 0) / comments.length
+  ? comments.reduce((sum: number, comment) => sum + (comment.rating || 5), 0) / comments.length
   : 0;
 const avgRatingDisplay = avgRating.toFixed(1);
 ---
@@ -22,7 +31,7 @@ const avgRatingDisplay = avgRating.toFixed(1);
         <svg class="comment-icon" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.05 1.05 4.42L2 22l5.58-1.05C9.95 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zM13 16h-2v-2h2v2zm0-4h-2V6h2v6z"/>
         </svg>
-        Comments ({comments.length})
+        Commentaires ({comments.length})
       </h3>
       {comments.length > 0 && (
         <div class="rating-summary">
@@ -46,18 +55,18 @@ const avgRatingDisplay = avgRating.toFixed(1);
   <!-- Comments List -->
   <div class="comments-list">
     {comments.length > 0 ? (
-      comments.map((comment: any, index: number) => (
+      comments.map((comment) => (
         <div class="comment-card">
           <div class="comment-avatar">
             <div class="avatar-circle">
-              {(comment.author || 'Anonymous').charAt(0).toUpperCase()}
+              {(comment.author || 'Anonyme').charAt(0).toUpperCase()}
             </div>
           </div>
 
           <div class="comment-content">
             <div class="comment-header">
               <div class="comment-author">
-                <span class="author-name">{comment.author || 'Anonymous'}</span>
+                <span class="author-name">{comment.author || 'Anonyme'}</span>
                 {comment.rating && (
                   <div class="comment-rating">
                     {Array.from({ length: comment.rating }, () => (
@@ -69,7 +78,7 @@ const avgRatingDisplay = avgRating.toFixed(1);
                 )}
               </div>
               <div class="comment-date">
-                {new Date(comment.createdAt || comment.date).toLocaleDateString('en-US', {
+                {new Date(comment.createdAt || comment.date).toLocaleDateString('fr-FR', {
                   year: 'numeric',
                   month: 'short',
                   day: 'numeric',
@@ -79,7 +88,7 @@ const avgRatingDisplay = avgRating.toFixed(1);
               </div>
             </div>
 
-            <div class="comment-text" set:html={comment.text || comment.content}></div>
+            <div class="comment-text whitespace-pre-line">{comment.text || comment.content}</div>
           </div>
         </div>
       ))
@@ -88,8 +97,8 @@ const avgRatingDisplay = avgRating.toFixed(1);
         <svg class="no-comments-icon" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.05 1.05 4.42L2 22l5.58-1.05C9.95 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zM13 16h-2v-2h2v2zm0-4h-2V6h2v6z"/>
         </svg>
-        <h4>No comments yet</h4>
-        <p>Be the first to share your thoughts about this recipe!</p>
+        <h4>Aucun commentaire pour le moment</h4>
+        <p>Soyez la première personne à partager votre avis sur cette recette.</p>
       </div>
     )}
   </div>
@@ -98,7 +107,7 @@ const avgRatingDisplay = avgRating.toFixed(1);
 <style>
   .comments-container {
     margin: 3rem 0;
-    background: #ffffff;
+    background: #faf8f2;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -106,8 +115,8 @@ const avgRatingDisplay = avgRating.toFixed(1);
   }
 
   .comments-header {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #f8f5ee 0%, #f2ede3 100%);
+    border-bottom: 1px solid #d8d2c2;
     padding: 2rem;
   }
 
@@ -132,14 +141,14 @@ const avgRatingDisplay = avgRating.toFixed(1);
   .comment-icon {
     width: 24px;
     height: 24px;
-    color: #6366f1;
+    color: #54b6b1;
   }
 
   .rating-summary {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: #ffffff;
+    background: #faf8f2;
     padding: 0.75rem 1.25rem;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
@@ -195,14 +204,14 @@ const avgRatingDisplay = avgRating.toFixed(1);
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    color: white;
+    background: linear-gradient(135deg, #54b6b1 0%, #3fa7a2 100%);
+    color: #faf8f2;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 1.125rem;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 4px 12px rgba(84, 182, 177, 0.22);
   }
 
   .comment-content {
@@ -352,4 +361,4 @@ const avgRatingDisplay = avgRating.toFixed(1);
     }
   }
 </style>
-</style>
+

@@ -1,0 +1,777 @@
+
+
+===== PAGE 1 =====
+
+Functional UX Audit — Recipe
+Builder (Payload Admin)
+Date: 20260226
+Target:admin.lacuisinedebernard.com  — Articles Collection / Recipe Builder
+Goal: Make recipe creation as simple as possible, accessible on one single page
+1. Current State
+1.1 Page architecture
+Article Page
+├── [Always visible] Title*, Slug*
+├── Status bar (Draft / Save Draft / Publish changes)
+│
+├── Tab 1 — Content
+│   ├── Short Excerpt (textarea)
+│   └── Content Rich Text (visual editor)
+│
+├── Tab 2 — Recipe
+│   └── Recipe Blocks (array)
+│       └── [+ Add Recipe Block] → modal → "Recipe Card"
+│           ├── Title*
+│           ├── Difficulty* (select)
+│           ├── Preparation Time Minutes* (number)
+│           ├── Cooking Time Minutes* (number)
+│           ├── Servings Count (number)
+│           ├── Servings (text, display label)
+│           ├── Recipe Type (select)
+│           ├── Dish Type (text)
+│           ├── Cuisine (text)
+│           ├── Ingredients* (array)
+Functional UX Audit — Recipe Builder (Payload Admin)
+1
+
+===== PAGE 2 =====
+
+│           │   └── [+ Add Ingredient]
+│           ├── Steps* (array)
+│           │   └── [+ Add Step] (instruction + optional phot
+o)
+│           ├── Nutrition
+│           │   ├── Total Calories Kcal
+│           │   ├── Calories Kcal (per serving, auto-calc)
+│           │   ├── Protein Grams
+│           │   ├── Carbohydrates Grams
+│           │   ├── Fat Grams
+│           │   ├── Fiber Grams
+│           │   ├── Sugar Grams
+│           │   └── Sodium Mg
+│           ├── Tips (rich text)
+│           └── Personal Notes (rich text)
+│
+├── Tab 3 — Images
+│   ├── Featured Media (upload / pick existing)
+│   └── Image Blocks (array)
+│
+├── Tab 4 — SEO
+│   ├── Seo Title
+│   ├── Seo Description
+│   └── Seo Image
+│
+└── Tab 5 — Metadata
+    ├── Ready for publication (checkbox)
+    ├── Lang* (select)
+    ├── Date* (date picker)
+    ├── Last Modified (auto)
+    ├── Original Link
+    ├── Author (relation)
+    ├── Categories (relation)
+    └── Tags (relation)
+Functional UX Audit — Recipe Builder (Payload Admin)
+2
+
+===== PAGE 3 =====
+
+1.2 Current user flow to create a recipe
+Step Action Tab Clicks
+1 Enter the title — 1
+2 Write the excerpt Content 2
+3 Add the featured image Images 2
+4 Click on Recipe Recipe 1
+5 Click “Add Recipe Block” Recipe 1
+6 Choose “Recipe Card” in the modalRecipe 1
+7 Fill recipe title, times, etc. Recipe 8
+8 Add each ingredient Recipe n × 2
+9 Add each step + photo Recipe n × 3
+10 Fill nutrition 8 fields) Recipe 8
+11 Go to SEO tab SEO 1
+12 Go to Metadata tab for tags/authorMetadata 5
+13 Publish — 1
+Total: 35+ clicks minimum + navigation across 5 tabs for a basic recipe.
+2. Identified UX Problems
+P1 — Critical
+# Problem Impact Severity
+1 5 tabs = loss of context
+The user must jump
+across 5 tabs to create a
+single recipe. No global
+view, no visible progress.
+Critical
+2 Recipe Card hidden
+behind a block system
+You must click “Add
+Recipe Block” →  pick
+“Recipe Card” in a modal
+→  before even starting.
+Yet thereʼs only one block
+type.
+Critical
+Functional UX Audit — Recipe Builder (Payload Admin)
+3
+
+===== PAGE 4 =====
+
+# Problem Impact Severity
+3 Featured image separated
+from the recipe
+The main image sits in a
+separate tab Images,
+disconnected from the
+content it illustrates.
+Critical
+4 Tags/Categories/Author
+buried in Metadata
+These are essential fields
+for a recipe but placed in
+the last tab, so theyʼre
+often forgotten.
+Critical
+P2 — Major
+# Problem Impact Severity
+5 “Content” tab is
+almost empty
+Only Short Excerpt + Rich Text.
+For recipes, the content is the
+recipe (ingredients + steps). This
+tab has no clear added value.
+Major
+6 No guided flow
+No visual indication of progress.
+The user doesnʼt know whatʼs left
+to fill.
+Major
+7
+Nutrition = 8
+fields stacked
+vertically
+Takes too much vertical space.
+No compact layout 24 or 42
+grid).
+Major
+8 Slug displayed
+permanently
+Wastes top-of-page space even
+though itʼs auto-generated.
+Should be hidden/collapsible.
+Major
+P3 — Minor
+# Problem Impact Severity
+9 SEO  3 fields in a
+dedicated tab
+Could be an
+accordion/collapsible section at
+the bottom. A full tab for 3 fields
+is disproportionate.
+Minor
+10
+“Recipe Card” title
+redundant with
+Article title
+Two “Title” fields: one for the
+article, one for the recipe card.
+Confusing for the user.
+Minor
+Functional UX Audit — Recipe Builder (Payload Admin)
+4
+
+===== PAGE 5 =====
+
+# Problem Impact Severity
+11
+Servings Count +
+Servings (display)
+is confusing
+Two fields for servings: a
+number and a text label. The
+label should be auto-generated.
+Minor
+12 “Image Blocks” in
+Images tab
+Unclear purpose — step photos
+already exist in Steps. What is
+this extra field for?
+Minor
+3. Proposal: One-Page “Recipe-First” Layout
+3.1 Guiding principles
+Everything on one page — vertical scroll rather than tabs. Scrolling is natural;
+tabs are not.
+Visual sections — clear separators with section titles and collapsible groups.
+Recipe-first — the recipe is the main content, not a “block” to add.
+Auto-generated fields — Slug, SEO title, per-serving calories computed
+automatically.
+Progressive disclosure — advanced fields SEO, detailed nutrition, personal
+notes) go into collapsible sections at the bottom.
+3.2 Wireframe — Overview
+┌────────────────────────────────────────────────────────────
+─────┐
+│ ← Articles    Creamy coffee cream                   [Draft 
+▾] [Publish] │
+├────────────────────────────────────────────────────────────
+─────┤
+│                                                               
+│
+│  ┌─── HEADER ─────────────────────────────────────────────┐   
+│
+│  │                                                         
+Functional UX Audit — Recipe Builder (Payload Admin)
+5
+
+===== PAGE 6 =====
+
+│    │
+│  │  Recipe title *                                          
+│    │
+│  │  ┌─────────────────────────────────────────────────┐     
+│    │
+│  │  │ Creamy coffee cream                              │     
+│    │
+│  │  └─────────────────────────────────────────────────┘     
+│    │
+│  │                                                         
+│    │
+│  │  Short description *                                    
+│    │
+│  │  ┌─────────────────────────────────────────────────┐     
+│    │
+│  │  │ A silky, coffee-forward cream for desserts...    │     
+│    │
+│  │  └─────────────────────────────────────────────────┘     
+│    │
+│  │                                                         
+│    │
+│  │  ┌──────────────────────┐                               
+│    │
+│  │  │                      │  Author: [Bernard ▾]          
+│    │
+│  │  │   📷  Featured image  │  Language: [French ▾]         
+│    │
+│  │  │   (drag & drop)      │                               
+│    │
+│  │  │                      │  Categories: [Desserts ×] [+] 
+│    │
+│  │  │                      │  Tags: [Coffee ×] [Cream ×] 
+[+] │   │
+│  │  └──────────────────────┘                               
+│    │
+│  │                                                         
+Functional UX Audit — Recipe Builder (Payload Admin)
+6
+
+===== PAGE 7 =====
+
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── QUICK INFO ─────────────────────────────────────────┐   
+│
+│  │                                                         
+│    │
+│  │  ⏱  Prep     ⏱  Cook     🍽  Servings     📊  Difficulty    
+│    │
+│  │  ┌──────┐   ┌──────┐   ┌──────┐       ┌──────────┐     │   
+│
+│  │  │20 min│   │35 min│   │  4   │       │Medium  ▾ │     │   
+│
+│  │  └──────┘   └──────┘   └──────┘       └──────────┘     │   
+│
+│  │                                                         
+│    │
+│  │  Type: [Savory ▾]  Dish: [Dessert    ]  Cuisine: [Frenc
+h]│   │
+│  │                                                         
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── INGREDIENTS ────────────────────────────────────────┐   
+│
+│  │                                                         
+│    │
+│  │  ┌─────────────┬──────────┬────────┬──────┐            │   
+│
+│  │  │ Ingredient  │ Quantity │ Unit   │      │            │   
+│
+│  │  ├─────────────┼──────────┼────────┼──────┤            │   
+Functional UX Audit — Recipe Builder (Payload Admin)
+7
+
+===== PAGE 8 =====
+
+│
+│  │  │ Cream       │ 200      │ ml   ▾  │ ⋮  🗑 │            
+│    │
+│  │  │ Coffee      │ 50       │ ml   ▾  │ ⋮  🗑 │            
+│    │
+│  │  │ Sugar       │ 30       │ g    ▾  │ ⋮  🗑 │            
+│    │
+│  │  └─────────────┴──────────┴────────┴──────┘            │   
+│
+│  │                                                         
+│    │
+│  │  [+ Add ingredient]                                     
+│    │
+│  │                                                         
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── STEPS ───────────────────────────────────────────────
+┐    │
+│  │                                                         
+│    │
+│  │  ┌─ Step 1 ────────────────────────────────────────┐    
+│    │
+│  │  │  ┌──────────────────────────────────────────┐    │    
+│    │
+│  │  │  │ Heat the cream in a saucepan on medium... │    │    
+│    │
+│  │  │  └──────────────────────────────────────────┘    │    
+│    │
+│  │  │  [ 📷  Add photo (optional)]     [ ⋮ ] [ 🗑 ]          │    
+│    │
+│  │  └─────────────────────────────────────────────────┘    
+│    │
+│  │                                                         
+Functional UX Audit — Recipe Builder (Payload Admin)
+8
+
+===== PAGE 9 =====
+
+│    │
+│  │  [+ Add step]                                           
+│    │
+│  │                                                         
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── ARTICLE CONTENT (optional) ─ ▾ collapsible ──────────
+┐    │
+│  │  Rich Text Editor (intro/story/context...)               
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── NUTRITION ─ ▾ collapsible ───────────────────────────
+┐    │
+│  │  Total calories | Cal/serving (auto) | Protein | Carbs    
+│    │
+│  │  Fat | Fiber | Sugar | Sodium                              
+│
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── TIPS & NOTES ─ ▾ collapsible ────────────────────────
+┐    │
+│  │  Tips (rich text) + Personal notes (rich text)           
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── SEO ─ ▾ collapsible ─────────────────────────────────
+Functional UX Audit — Recipe Builder (Payload Admin)
+9
+
+===== PAGE 10 =====
+
+┐    │
+│  │  SEO Title / SEO Description / SEO Image (auto-generate
+d)│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+│  ┌─── PUBLICATION ─ ▾ collapsible ─────────────────────────
+┐    │
+│  │  Publish date / Original link / Ready for publication    
+│    │
+│  └─────────────────────────────────────────────────────────
+┘    │
+│                                                               
+│
+├────────────────────────────────────────────────────────────
+─────┤
+│                    [Save draft]                    [Publis
+h]    │
+└────────────────────────────────────────────────────────────
+─────┘
+3.3 Header section details
+┌────────────────────────────────────────────────────────────
+──────┐
+│  Recipe title *                                               
+│
+│  ┌─────────────────────────────────────────────────────────
+──┐   │
+│  │ Creamy coffee cream                                        
+│   │
+│  └─────────────────────────────────────────────────────────
+──┘   │
+│  slug: creamy-coffee-cream  [edit]                            
+Functional UX Audit — Recipe Builder (Payload Admin)
+10
+
+===== PAGE 11 =====
+
+│
+│                                                               
+│
+│  Short description *                                          
+│
+│  ┌─────────────────────────────────────────────────────────
+──┐   │
+│  │ A silky, coffee-forward cream for desserts and cakes.      
+│   │
+│  └─────────────────────────────────────────────────────────
+──┘   │
+│                                                               
+│
+│  ┌──────────────────┐    ┌─────────────────────────────────
+──┐  │
+│  │ Featured image   │    │  Author     [Bernard         ▾]    
+│  │
+│  │ (drop zone)      │    │  Language   [French (fr)     ▾]    
+│  │
+│  └──────────────────┘    │  Categories [Desserts ×]     [+]   
+│  │
+│                          │  Tags       [Coffee ×][Cream ×]
+[+] │  │
+│                          └─────────────────────────────────
+──┘  │
+└────────────────────────────────────────────────────────────
+──────┘
+Key changes:
+Slug is inline under the title in small text, editable on click
+Featured image sits next to metadata (author, language, categories, tags)
+Two-column layout for better density
+3.4 “Quick info” section details
+Functional UX Audit — Recipe Builder (Payload Admin)
+11
+
+===== PAGE 12 =====
+
+┌────────────────────────────────────────────────────────────
+──────┐
+│  QUICK INFO                                                   
+│
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────
+──┐ │
+│  │ ⏱  Prep     │ │ ⏱  Cook     │ │ 🍽  Servings │ │ 📊  Diffi
+culty │ │
+│  │  20 min    │ │  35 min    │ │     4      │ │  Medium   ▾   
+│ │
+│  └────────────┘ └────────────┘ └────────────┘ └────────────
+──┘ │
+│                                                               
+│
+│  Type  [Savory ▾]     Dish [Dessert]     Cuisine [French]     
+│
+└────────────────────────────────────────────────────────────
+──────┘
+Key changes:
+4 primary fields on one line (visual cards)
+3 secondary fields underneath, inline
+Everything visible at a glance
+3.5 Ingredients details (table layout)
+┌────────────────────────────────────────────────────────────
+──────┐
+│  INGREDIENTS                                                  
+│
+│  ┌──────────────────┬──────────┬──────────┬────┬───┐          
+│
+│  │ Ingredient       │ Quantity │ Unit     │ ⋮   │ 🗑  │        
+│
+Functional UX Audit — Recipe Builder (Payload Admin)
+12
+
+===== PAGE 13 =====
+
+│  ├──────────────────┼──────────┼──────────┼────┼───┤          
+│
+│  │ Heavy cream      │ 200      │ ml     ▾  │ ⋮   │ 🗑  │       
+│
+│  │ Espresso coffee  │ 50       │ ml     ▾  │ ⋮   │ 🗑  │       
+│
+│  │ Granulated sugar │ 30       │ g      ▾  │ ⋮   │ 🗑  │       
+│
+│  │ Gelatin          │ 2        │ sheets ▾  │ ⋮   │ 🗑  │       
+│
+│  └──────────────────┴──────────┴──────────┴────┴───┘          
+│
+│                                                               
+│
+│  [+ Add ingredient]                 [Paste from text 📋 ]      
+│
+└────────────────────────────────────────────────────────────
+──────┘
+Key changes:
+Compact table instead of stacked items
+Drag handle ( ⋮ ) to reorder
+“Paste from text” to quickly import copied ingredient lists
+3.6 Steps details
+┌────────────────────────────────────────────────────────────
+──────┐
+│  STEPS                                                        
+│
+│  ┌─ 1 ─────────────────────────────────────────────────────
+─┐   │
+│  │ ⋮   ┌─────────────────────────────────────────────────┐   
+│   │
+Functional UX Audit — Recipe Builder (Payload Admin)
+13
+
+===== PAGE 14 =====
+
+│  │    │ Heat the cream in a saucepan on medium heat...   │   
+│   │
+│  │    └─────────────────────────────────────────────────┘   
+│   │
+│  │    [ 📷  Photo] Caption: [The cream starts simmering...] 
+[ 🗑 ] │  │
+│  └─────────────────────────────────────────────────────────
+─┘   │
+│                                                               
+│
+│  [+ Add step]                                                 
+│
+└────────────────────────────────────────────────────────────
+──────┘
+Key changes:
+Step number clearly visible
+Textarea always visible (no collapse)
+Photo + caption inline under the text
+Drag handle to reorder
+3.7 Collapsible sections (bottom of the page)
+┌────────────────────────────────────────────────────────────
+──────┐
+│  ▸ ARTICLE CONTENT (optional)                     [open]      
+│
+│    Rich text for intro / personal story                       
+│
+├────────────────────────────────────────────────────────────
+──────┤
+│  ▸ NUTRITION (8 fields)                            [open]     
+│
+│    Compact 4×2 grid + auto-calculated calories/serving        
+Functional UX Audit — Recipe Builder (Payload Admin)
+14
+
+===== PAGE 15 =====
+
+│
+├────────────────────────────────────────────────────────────
+──────┤
+│  ▸ TIPS & NOTES                                  [open]       
+│
+│    Tips + personal notes                                      
+│
+├────────────────────────────────────────────────────────────
+──────┤
+│  ▸ SEO                                           [open]       
+│
+│    Auto-generated — edit only if needed                       
+│
+├────────────────────────────────────────────────────────────
+──────┤
+│  ▸ PUBLICATION                                   [open]       
+│
+│    Date, original link, “ready for publication” checkbox      
+│
+└────────────────────────────────────────────────────────────
+──────┘
+4. Before / After Comparison
+Criteria Current Proposed
+Navigation 5 tabs 1-page scroll
+Clicks to start the recipe 3 Recipe tab →  Add Block →
+Recipe Card) 0 (already there)
+Featured image Separate tab Inline in header
+Tags / Categories /
+Author Metadata tab (last) Header (immediately visible)
+Slug Full-width field always visible Inline under title, editable on
+click
+Nutrition 8 stacked fields 42 grid, collapsible section
+Functional UX Audit — Recipe Builder (Payload Admin)
+15
+
+===== PAGE 16 =====
+
+Criteria Current Proposed
+SEO Dedicated tab 3 fields) Collapsible section, auto-
+generated
+Fields visible on load 3 (title, slug, excerpt) 15 (all essentials)
+Progress None Visual sections = natural
+progression
+Estimated time to create a
+recipe 810 min 45 min
+5. Implementation Recommendations (Payload CMS)
+5.1 Structural changes
+Remove the tab system — replace with Payload collapsible  groups
+Remove “Recipe Blocks” array — recipe fields become direct fields in the
+collection (no intermediary block)
+Merge “Content” and “Recipe” — article rich text becomes an optional
+collapsible section
+Merge “Images” — featured media moves into the header
+SEO →  collapsible section with default values auto-generated from title +
+excerpt
+Split “Metadata”:
+Author, Categories, Tags →  header
+Language →  header
+Date, Original Link, Ready for publication →  collapsible “Publication”
+section
+5.2 Section order on the page
+1. HEADER         — Title, Slug (inline), Excerpt, Image, Aut
+hor, Language, Categories, Tags
+2. QUICK INFO     — Prep, Cook, Servings, Difficulty, Type, D
+Functional UX Audit — Recipe Builder (Payload Admin)
+16
+
+===== PAGE 17 =====
+
+ish, Cuisine
+3. INGREDIENTS    — Compact table, drag & drop, text import
+4. STEPS          — Numbered cards, optional photo, drag & dr
+op
+5. CONTENT        — [collapsible] Free rich text (intro, stor
+y...)
+6. NUTRITION      — [collapsible] 4×2 grid
+7. TIPS           — [collapsible] Tips + personal notes
+8. SEO            — [collapsible] Auto-generated
+9. PUBLICATION    — [collapsible] Date, link, publication che
+ckbox
+5.3 Fields to auto-generate
+Field Source
+Slug Title (kebab-case)
+SEO Title Title + “ Recipe”
+SEO DescriptionExcerpt (trimmed to 160 chars)
+Calories/servingTotal Calories / Servings Count
+Servings displayServings Count + “ servings”
+5.4 Quick wins (without a full redesign)
+If a full refactor isnʼt possible immediately, here are fast improvements:
+Remove the block system — replace Recipe Blocks  array with direct fields in
+the Recipe tab
+Merge Images + Content tabs — move Featured Media to the top of the
+Content tab
+Move Tags/Categories/Author into the Content tab or a sidebar
+Add SEO auto-generation using Payload hooks beforeChange
+Nutrition grid layout via custom admin CSS Payload supports custom CSS
+Functional UX Audit — Recipe Builder (Payload Admin)
+17
+
+===== PAGE 18 =====
+
+6. Alternative Mockup — Sidebar Layout
+For wide screens, an alternative with a fixed sidebar:
+┌──────────────────────────────────────────┬─────────────────
+────┐
+│                                          │                    
+│
+│  TITLE                                   │  FEATURED IMAGE    
+│
+│  ┌──────────────────────────────────┐    │  ┌──────────────
+─┐  │
+│  │ Creamy coffee cream              │    │  │   (preview)   
+│  │
+│  └──────────────────────────────────┘    │  └──────────────
+─┘  │
+│  slug: creamy-coffee-cream               │  [Change]          
+│
+│                                          │                    
+│
+│  EXCERPT                                 │  METADATA          
+│
+│  ┌──────────────────────────────────┐    │  Author  [Bernar
+d▾] │
+│  │ A silky coffee cream...          │    │  Lang    [FR     
+▾] │
+│  └──────────────────────────────────┘    │  Difficulty [Med 
+▾] │
+│                                          │  Type    [Savory 
+▾] │
+│  QUICK INFO                               │  Dish    [Desse
+rt ] │
+│  ┌────────┐┌────────┐┌────────┐┌──────┐ │  Cuisine [FR      
+] │
+│  │Prep    ││Cook    ││Servings││Diff. │ │                     
+│
+Functional UX Audit — Recipe Builder (Payload Admin)
+18
+
+===== PAGE 19 =====
+
+│  └────────┘└────────┘└────────┘└──────┘ │  CATEGORIES         
+│
+│                                          │  [Desserts ×]  
+[+]  │
+│  INGREDIENTS                             │                    
+│
+│  ┌────────────┬──────┬──────┬──┐        │  TAGS               
+│
+│  │ Cream      │ 200  │ ml ▾ │ 🗑 │        │  [Coffee ×]         
+│
+│  │ Coffee     │ 50   │ ml ▾ │ 🗑 │        │  [Cream ×]     
+[+]  │
+│  └────────────┴──────┴──────┴──┘        │                     
+│
+│  [+ Ingredient]                          │  PUBLICATION       
+│
+│                                          │  Date [2026-02-2
+6]  │
+│  STEPS                                   │  ☐ Ready to publ
+ish │
+│  ┌─ 1 ────────────────────────────┐     │                     
+│
+│  │ Heat the cream...              │     │  SEO (auto)         
+│
+│  │ [ 📷  Photo]                 [ 🗑 ] │     │  Title [Cream
+y...]  │
+│  └────────────────────────────────┘     │  Desc  [Learn...]   
+│
+│  [+ Step]                                │                    
+│
+│                                          │                    
+│
+│  ▸ Article content (collapsible)         │                    
+│
+│  ▸ Nutrition (collapsible)               │                    
+│
+Functional UX Audit — Recipe Builder (Payload Admin)
+19
+
+===== PAGE 20 =====
+
+│  ▸ Tips & Notes (collapsible)            │                    
+│
+├──────────────────────────────────────────┴─────────────────
+────┤
+│                    [Save draft]          [Publish]            
+│
+└────────────────────────────────────────────────────────────
+────┘
+Advantages of this variant:
+Fixed sidebar keeps metadata visible while scrolling
+Image always stays in view
+Main content (ingredients, steps) gets more space
+Feels similar to WordPress / WP Recipe Maker layouts
+7. Summary of Recommendations
+Priority Action Effort
+P1 Remove Recipe Card block system, use direct fields Medium
+P1 Merge 5 tabs into 1 page with sections Medium
+P1 Move Image + Tags + Categories + Author into headerLow
+P2 Sidebar layout for wide screens Medium
+P2 Ingredients in a compact table Low
+P2 Nutrition in a collapsible 42 grid Low
+P2 SEO auto-generation (hooks) Low
+P3 Paste/import ingredients from text Medium
+P3 Inline editable slug Low
+P3 Visual progress indicator Medium
+Functional UX Audit — Recipe Builder (Payload Admin)
+20

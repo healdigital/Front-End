@@ -1,0 +1,298 @@
+---
+interface Props {
+  loadAds?: boolean;
+}
+
+const { loadAds: _loadAds = false } = Astro.props;
+
+const mediavineScriptSrc = import.meta.env.PUBLIC_MEDIAVINE_SCRIPT_SRC;
+const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+const axeptioClientId = import.meta.env.PUBLIC_AXEPTIO_CLIENT_ID;
+const axeptioCookiesVersion = import.meta.env.PUBLIC_AXEPTIO_COOKIES_VERSION;
+const axeptioCookieDomain = import.meta.env.PUBLIC_AXEPTIO_COOKIE_DOMAIN;
+const axeptioScriptSrc = import.meta.env.PUBLIC_AXEPTIO_SCRIPT_SRC || '//static.axept.io/sdk.js';
+const axeptioGaVendor = import.meta.env.PUBLIC_AXEPTIO_GA_VENDOR || 'google_analytics';
+const axeptioMediavineVendor = import.meta.env.PUBLIC_AXEPTIO_MEDIAVINE_VENDOR || 'mediavine';
+const hasAxeptioConfig = Boolean(axeptioClientId && axeptioCookiesVersion);
+---
+
+{mediavineScriptSrc && (
+  <>
+    <link rel="preconnect" href="https://scripts.mediavine.com" />
+    <link rel="dns-prefetch" href="//scripts.mediavine.com" />
+  </>
+)}
+
+{mediavineScriptSrc && (
+  <script
+    type="text/javascript"
+    async="async"
+    data-noptimize="1"
+    data-cfasync="false"
+    src={mediavineScriptSrc}
+  />
+)}
+
+{gaMeasurementId && (
+  <>
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+  </>
+)}
+
+<script
+  is:inline
+  define:vars={{
+    mediavineScriptSrc,
+    gaMeasurementId,
+    hasAxeptioConfig,
+    axeptioClientId,
+    axeptioCookiesVersion,
+    axeptioCookieDomain,
+    axeptioScriptSrc,
+    axeptioGaVendor,
+    axeptioMediavineVendor,
+  }}
+>
+  window.__lcdbClubMember = (function () {
+    try {
+      var raw = document.cookie.split('; ').find(function (row) {
+        return row.indexOf('lcdb_club=') === 0;
+      });
+      if (!raw) return false;
+      var token = raw.split('=').slice(1).join('=');
+      var parts = token.split('.');
+      if (parts.length !== 3) return false;
+      var payloadPart = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      var padding = payloadPart.length % 4;
+      if (padding) payloadPart += '='.repeat(4 - padding);
+      var payload = JSON.parse(atob(payloadPart));
+      if (!payload || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return false;
+      if (payload.iss !== 'atelier-lacuisinedebernard.com') return false;
+      document.documentElement.setAttribute('data-club-member', 'true');
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () {
+    window.dataLayer.push(arguments);
+  };
+
+  var lcdbGaLoaded = false;
+  var lcdbAdSlotObservers = [];
+
+  var splitVendorNames = function (rawValue, fallbackValues) {
+    var source = String(rawValue || '').trim();
+    var values = source
+      ? source.split(',').map(function (value) { return value.trim(); }).filter(Boolean)
+      : fallbackValues;
+    return values.map(function (value) { return String(value || '').trim().toLowerCase(); }).filter(Boolean);
+  };
+
+  var gaVendorNames = splitVendorNames(axeptioGaVendor, [
+    'google_analytics',
+    'google-analytics',
+    'ga4',
+    'google_analytics_4',
+  ]);
+
+  var mediavineVendorNames = splitVendorNames(axeptioMediavineVendor, [
+    'mediavine',
+    'mediavine_ads',
+    'mediavine-advertising',
+  ]);
+
+  var hasGrantedVendor = function (choices, vendorNames) {
+    if (!choices || typeof choices !== 'object') return false;
+    return vendorNames.some(function (vendorName) {
+      if (choices[vendorName] === true) return true;
+      return Object.keys(choices).some(function (key) {
+        return key.toLowerCase() === vendorName && choices[key] === true;
+      });
+    });
+  };
+
+  var updateGoogleConsent = function (analyticsGranted, adsGranted) {
+    if (!window.gtag) return;
+    window.gtag('consent', 'update', {
+      analytics_storage: analyticsGranted ? 'granted' : 'denied',
+      ad_storage: adsGranted ? 'granted' : 'denied',
+      ad_user_data: adsGranted ? 'granted' : 'denied',
+      ad_personalization: adsGranted ? 'granted' : 'denied',
+    });
+  };
+
+  var loadGoogleAnalytics = function () {
+    if (!gaMeasurementId || lcdbGaLoaded) return;
+    lcdbGaLoaded = true;
+    var firstScript = document.getElementsByTagName('script')[0];
+    var gaScript = document.createElement('script');
+    gaScript.async = true;
+    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaMeasurementId;
+    gaScript.setAttribute('data-lcdb-ga', 'true');
+    firstScript.parentNode.insertBefore(gaScript, firstScript);
+    window.gtag('js', new Date());
+    window.gtag('config', gaMeasurementId, {
+      anonymize_ip: true,
+    });
+  };
+
+  var loadMediavine = function () {
+    if (!mediavineScriptSrc) return;
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 2500);
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 6000);
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 12000);
+  };
+
+  var getAdSlots = function () {
+    return Array.prototype.slice.call(document.querySelectorAll('[data-lcdb-ad-slot="true"]'));
+  };
+
+  var nodeHasRenderableAd = function (node) {
+    if (!(node instanceof HTMLElement)) return false;
+    if (node.querySelector('iframe, ins, img, video')) return true;
+    var text = (node.textContent || '').trim();
+    return text.length > 24;
+  };
+
+  var syncInnerAdBoxStates = function (slot) {
+    if (!(slot instanceof HTMLElement)) return;
+    Array.prototype.slice.call(slot.querySelectorAll('.mv-ad-box, .mvp-ad')).forEach(function (box) {
+      if (!(box instanceof HTMLElement)) return;
+      box.setAttribute('data-lcdb-ad-box-state', nodeHasRenderableAd(box) ? 'filled' : 'empty');
+    });
+  };
+
+  var slotHasRenderableAd = function (slot) {
+    if (!(slot instanceof HTMLElement)) return false;
+    if (slot.querySelector('iframe, ins, img, video')) return true;
+    var adBoxes = Array.prototype.slice.call(slot.querySelectorAll('.mv-ad-box, .mvp-ad'));
+    return adBoxes.some(function (box) { return nodeHasRenderableAd(box); });
+  };
+
+  var syncAdWrapperState = function (slot, isFilled) {
+    var wrapper = slot && slot.closest ? slot.closest('[data-mediavine]') : null;
+    if (!(wrapper instanceof HTMLElement)) return;
+    wrapper.setAttribute('data-lcdb-ad-wrapper-state', isFilled ? 'filled' : 'empty');
+  };
+
+  var refreshAdSlotVisibility = function () {
+    getAdSlots().forEach(function (slot) {
+      syncInnerAdBoxStates(slot);
+      var filled = slotHasRenderableAd(slot);
+      slot.setAttribute('data-lcdb-ad-state', filled ? 'filled' : 'empty');
+      syncAdWrapperState(slot, filled);
+    });
+  };
+
+  var setAllAdSlotStates = function (state) {
+    getAdSlots().forEach(function (slot) {
+      slot.setAttribute('data-lcdb-ad-state', state);
+      syncAdWrapperState(slot, state === 'filled');
+    });
+  };
+
+  var watchAdSlots = function () {
+    lcdbAdSlotObservers.forEach(function (observer) { observer.disconnect(); });
+    lcdbAdSlotObservers = [];
+
+    getAdSlots().forEach(function (slot) {
+      if (!(slot instanceof HTMLElement)) return;
+      slot.setAttribute('data-lcdb-ad-state', 'pending');
+      var observer = new MutationObserver(function () {
+        syncInnerAdBoxStates(slot);
+        var filled = slotHasRenderableAd(slot);
+        slot.setAttribute('data-lcdb-ad-state', filled ? 'filled' : 'empty');
+        syncAdWrapperState(slot, filled);
+      });
+      observer.observe(slot, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+      lcdbAdSlotObservers.push(observer);
+    });
+  };
+
+  var applyConsentChoices = function (choices) {
+    var analyticsGranted = hasGrantedVendor(choices, gaVendorNames);
+    var adsGranted = hasGrantedVendor(choices, mediavineVendorNames);
+    updateGoogleConsent(analyticsGranted, adsGranted);
+    if (analyticsGranted) loadGoogleAnalytics();
+    if (adsGranted) {
+      setAllAdSlotStates('pending');
+      loadMediavine();
+    } else {
+      setAllAdSlotStates('empty');
+    }
+  };
+
+  if (hasAxeptioConfig) {
+    window.axeptioSettings = {
+      clientId: axeptioClientId,
+      cookiesVersion: axeptioCookiesVersion,
+      ...(axeptioCookieDomain ? { cookieDomain: axeptioCookieDomain } : {}),
+      googleConsentMode: {
+        default: {
+          analytics_storage: 'denied',
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          wait_for_update: 500,
+        },
+      },
+    };
+
+    window._axcb = window._axcb || [];
+    window._axcb.push(function (axeptio) {
+      axeptio.on('cookies:complete', function (choices) {
+        applyConsentChoices(choices);
+      });
+
+      axeptio.on('consent:saved', function (payload) {
+        var vendorChoices =
+          payload &&
+          payload.consent &&
+          payload.consent.preferences &&
+          payload.consent.preferences.vendors;
+        applyConsentChoices(vendorChoices || {});
+      });
+    });
+
+    if (!document.querySelector('script[data-lcdb-axeptio="true"]')) {
+      var firstScript = document.getElementsByTagName('script')[0];
+      var axeptioScript = document.createElement('script');
+      axeptioScript.async = true;
+      axeptioScript.src = axeptioScriptSrc;
+      axeptioScript.setAttribute('data-lcdb-axeptio', 'true');
+      firstScript.parentNode.insertBefore(axeptioScript, firstScript);
+    }
+  } else {
+    if (gaMeasurementId) {
+      window.gtag('consent', 'default', {
+        analytics_storage: 'granted',
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+      });
+      loadGoogleAnalytics();
+    }
+    loadMediavine();
+  }
+
+  watchAdSlots();
+  if (window.__lcdbClubMember) {
+    refreshAdSlotVisibility();
+  }
+  document.addEventListener('astro:page-load', function () {
+    watchAdSlots();
+    window.setTimeout(function () { refreshAdSlotVisibility(); }, 1500);
+  });
+
+  window.openAxeptioCookies = function () {
+    window.dispatchEvent(new CustomEvent('overlayOpenCookies'));
+  };
+</script>

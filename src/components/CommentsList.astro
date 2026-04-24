@@ -1,4 +1,4 @@
----
+﻿---
 interface Props {
   slug: string;
 }
@@ -6,106 +6,126 @@ interface Props {
 const { slug } = Astro.props;
 ---
 
-<div id="comments-list-container" class="mt-12 pt-8 border-t border-gray-700">
-  <h2 class="text-2xl font-bold text-white mb-6">💬 Comments (<span id="comment-count">0</span>)</h2>
-  <div id="comments-display" class="space-y-6">
-    <p class="text-gray-400">Loading comments...</p>
+<div id="comments-list-container" class="mt-12 border-t border-border-primary pt-8">
+  <h2 class="mb-6 font-heading text-[32px] leading-none text-text-primary">
+    Commentaires (<span id="comment-count">0</span>)
+  </h2>
+  <div id="comments-display" class="space-y-6" role="status" aria-live="polite">
+    <p class="text-text-secondary">Chargement des commentaires...</p>
   </div>
 </div>
 
 <script define:vars={{ slug }}>
-  console.log('%c📝 CommentsList Component Started', 'color: orange; font-size: 16px;');
-  console.log('Slug:', slug);
-  
+  const EMPTY_MESSAGE = 'Aucun commentaire pour le moment. Soyez le premier à partager votre avis.';
+  const ERROR_PREFIX = 'Impossible de charger les commentaires pour le moment';
+  const COMMENTS_REFRESH_KEY = '__lcdbCommentsRefreshTimer';
+
+  function clearElement(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
+  }
+
+  function appendParagraph(container, className, text) {
+    const paragraph = document.createElement('p');
+    paragraph.className = className;
+    paragraph.textContent = text;
+    container.appendChild(paragraph);
+  }
+
+  function renderComments(container, comments) {
+    clearElement(container);
+
+    if (comments.length === 0) {
+      appendParagraph(container, 'text-text-secondary', EMPTY_MESSAGE);
+      return;
+    }
+
+    comments.forEach((comment) => {
+      const article = document.createElement('article');
+      article.className = 'rounded-[10px] border border-border-primary bg-secondary-beige-light p-5';
+
+      const header = document.createElement('div');
+      header.className = 'mb-2 flex items-center justify-between gap-4';
+
+      const title = document.createElement('h3');
+      title.className = 'font-body text-[16px] font-semibold text-text-primary';
+      title.textContent = comment.author || 'Anonyme';
+
+      const time = document.createElement('time');
+      time.className = 'text-[12px] uppercase tracking-[0.12em] text-text-secondary';
+      time.textContent = new Date(comment.date).toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+
+      header.append(title, time);
+      article.appendChild(header);
+
+      if (comment.email) {
+        appendParagraph(article, 'mb-3 text-[12px] text-text-secondary', comment.email);
+      }
+
+      appendParagraph(article, 'leading-[1.75] whitespace-pre-line text-text-secondary', comment.content || '');
+
+      if (comment.approved === false) {
+        appendParagraph(
+          article,
+          'mt-3 text-[12px] uppercase tracking-[0.12em] text-status-premium',
+          'En attente de modération',
+        );
+      }
+
+      container.appendChild(article);
+    });
+  }
+
   async function loadComments() {
-    console.log('%c🔄 Fetching comments...', 'color: blue; font-weight: bold;');
+    const container = document.getElementById('comments-display');
+    const countEl = document.getElementById('comment-count');
+
+    if (!(container instanceof HTMLElement) || !(countEl instanceof HTMLElement)) {
+      return;
+    }
+
     try {
       const url = `/api/comments?slug=${encodeURIComponent(slug)}`;
-      console.log('No API URL:', url);
-      
-      const response = await fetch(url);
-      console.log('Response Status:', response.status);
-      console.log('Response OK:', response.ok);
-      
+      const response = await fetch(url, { cache: 'no-store' });
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const comments = await response.json();
-      console.log('%c✅ API Response:', 'color: green; font-weight: bold;', comments);
-      console.log(`Got ${comments.length} comments`);
-      
-      const container = document.getElementById('comments-display');
-      const countEl = document.getElementById('comment-count');
-      
-      console.log('Container found:', !!container);
-      console.log('Count element found:', !!countEl);
-      
-      if (!container) {
-        console.error('❌ comments-display container not found in DOM');
-        return;
-      }
-      
-      if (!countEl) {
-        console.error('❌ comment-count element not found in DOM');
-        return;
-      }
-      
-      countEl.textContent = comments.length;
-      console.log('Updated comment count to:', comments.length);
-      
-      if (!comments || comments.length === 0) {
-        console.log('No comments, showing empty message');
-        container.innerHTML = '<p class="text-gray-400">No comments yet. Be the first!</p>';
-        return;
-      }
-      
-      console.log('Building HTML for comments...');
-      let html = '';
-      comments.forEach((comment, index) => {
-        console.log(`  Comment ${index + 1}:`, comment.author);
-        const date = new Date(comment.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
-        
-        html += `
-          <div class="bg-gray-700 rounded-lg p-5 border-l-4 border-orange-400">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-white">${comment.author || 'Anonymous'}</h3>
-              <time class="text-sm text-gray-400">${date}</time>
-            </div>
-            ${comment.email ? `<p class="text-xs text-gray-500 mb-3">✉️ ${comment.email}</p>` : ''}
-            <p class="text-gray-300 leading-relaxed">${comment.content || ''}</p>
-            ${comment.approved === false ? '<p class="mt-2 text-xs text-yellow-400">⏳ Awaiting approval</p>' : ''}
-          </div>
-        `;
-      });
-      
-      console.log('Setting innerHTML...');
-      container.innerHTML = html;
-      console.log('%c✨ Rendered successfully!', 'color: green; font-size: 14px;');
-      
+      const commentList = Array.isArray(comments) ? comments : [];
+      countEl.textContent = String(commentList.length);
+      renderComments(container, commentList);
     } catch (error) {
-      console.error('%c❌ CommentsList Error:', 'color: red; font-weight: bold;', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      const container = document.getElementById('comments-display');
-      if (container) {
-        container.innerHTML = `<p class="text-red-400">Error loading comments: ${error.message}</p>`;
-      }
+      const message = error instanceof Error ? error.message : 'Erreur inconnue';
+      clearElement(container);
+      appendParagraph(container, 'text-status-error', `${ERROR_PREFIX} (${message}).`);
     }
   }
-  
-  console.log('%c⏱️ Starting initial load...', 'color: purple;');
-  
-  // Load immediately when script runs
-  loadComments();
-  
-  // Reload every 5 seconds to show new comments
-  setInterval(() => {
-    console.log('%c🔄 Auto-refreshing comments...', 'color: blue;');
+
+  function stopCommentsRefresh() {
+    const timerId = window[COMMENTS_REFRESH_KEY];
+    if (typeof timerId === 'number') {
+      window.clearInterval(timerId);
+      delete window[COMMENTS_REFRESH_KEY];
+    }
+  }
+
+  function startCommentsRefresh() {
+    stopCommentsRefresh();
     loadComments();
-  }, 5000);
+    window[COMMENTS_REFRESH_KEY] = window.setInterval(() => {
+      loadComments();
+    }, 15000);
+  }
+
+  startCommentsRefresh();
+  document.addEventListener('astro:page-load', startCommentsRefresh);
+  document.addEventListener('astro:before-swap', stopCommentsRefresh);
 </script>
+

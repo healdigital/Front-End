@@ -1,23 +1,238 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
+import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
+
+type RecipeBlock = {
+  preparationTimeMinutes?: number | string;
+  cookingTimeMinutes?: number | string;
+  difficulty?: string;
+};
+
+const navLinks = [
+  {
+    label: "Index des recettes sucrées avec photo",
+    description: "Version illustrée, idéale pour parcourir les desserts.",
+    href: "/recettes-sucrees/",
+  },
+  {
+    label: "Index des recettes sucrées sans photo",
+    description: "Version compacte, centrée sur les titres des recettes.",
+    active: true,
+  },
+];
+
+const getPrimaryRecipeBlock = (article: PreparedArchiveArticle | undefined): RecipeBlock | null => {
+  if (!article || !Array.isArray(article.recipeBlocks)) return null;
+  return (article.recipeBlocks.find((block) => block && typeof block === "object") as RecipeBlock) || null;
+};
+
+const formatDuration = (minutes: number): string => {
+  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
+  const whole = Math.round(minutes);
+  if (whole >= 60) {
+    const hours = Math.floor(whole / 60);
+    const mins = whole % 60;
+    return mins > 0 ? `${hours}h${String(mins).padStart(2, "0")}` : `${hours}h`;
+  }
+  return `${whole} min`;
+};
+
+const formatPreparation = (article: PreparedArchiveArticle | undefined): string => {
+  if (!article) return "—";
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
+  const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
+
+  if (Number.isFinite(prep) && prep > 0) {
+    const total = prep + (Number.isFinite(cook) && cook > 0 ? cook : 0);
+    return formatDuration(total || prep);
+  }
+
+  const raw = String(article.recipe?.prepTime ?? article.prepTime ?? article.prep_time ?? "").trim();
+  if (!raw) return "—";
+  if (/[0-9].*(min|h)/i.test(raw)) return raw.toLowerCase();
+  if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
+  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
+  return suffix ? `${raw} ${suffix}`.trim() : raw;
+};
+
+const formatDifficulty = (article: PreparedArchiveArticle | undefined): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const raw = String(recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "")
+    .trim()
+    .toLowerCase();
+
+  switch (raw) {
+    case "easy":
+    case "facile":
+      return "Facile";
+    case "medium":
+    case "moyen":
+    case "moyenne":
+      return "Moyen";
+    case "hard":
+    case "difficult":
+    case "difficile":
+      return "Difficile";
+    default:
+      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "—";
+  }
+};
+
+const sourceEntries = getStaticArchiveEntries("le-sucre");
+const articleMap = new Map(
+  getPreparedArchiveArticles()
+    .filter((article) => typeof article?.slug === "string" && article.slug.trim())
+    .map((article) => [String(article.slug).trim(), article]),
+);
+
+const rows = sourceEntries.map((entry) => {
+  const article = articleMap.get(entry.slug);
+  return {
+    href: entry.href,
+    title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
+    preparation: formatPreparation(article),
+    difficulty: formatDifficulty(article),
+  };
+});
 ---
 
-<BaseLayout title="Sweet Recipes (without photos)">
-  <StaticPage title="Sweet Recipes (without photos)" subtitle="Index of sweet recipes">
-    <StaticPageContent
-      slug="le-sucre"
-      sourceUrl="https://lacuisinedebernard.com/le-sucre/"
-    >
-      <p>This text-only sweet index is being rebuilt.</p>
-      <p>
-        Use the main sweet index or search to find the recipes you need.
-      </p>
-      <ul>
-        <li><a href="/recettes-sucrees">Sweet recipes with photos</a></li>
-        <li><a href="/search">Search the site</a></li>
-      </ul>
-    </StaticPageContent>
+<BaseLayout title="Le sucré">
+  <StaticPage
+    title="Le sucré"
+    subtitle="Index des recettes sucrées sans photo."
+    className="menu-page menu-page--recipe-table menu-page--le-sucre"
+    navLinks={navLinks}
+  >
+    <div class="menu-table" role="table" aria-label="Index des recettes sucrées">
+      <div class="menu-table-head" role="rowgroup">
+        <div class="menu-table-row menu-table-row--head" role="row">
+          <span class="menu-table-cell menu-table-cell--recipe" role="columnheader">Recette</span>
+          <span class="menu-table-cell menu-table-cell--prep" role="columnheader">Préparation</span>
+          <span class="menu-table-cell menu-table-cell--difficulty" role="columnheader">Difficulté</span>
+        </div>
+      </div>
+
+      <div class="menu-table-body" role="rowgroup">
+        {rows.map((row) => (
+          <a class="menu-table-row menu-table-row--item" role="row" href={row.href}>
+            <span class="menu-table-cell menu-table-cell--recipe" role="cell">{row.title}</span>
+            <span class="menu-table-cell menu-table-cell--prep" role="cell">{row.preparation}</span>
+            <span class="menu-table-cell menu-table-cell--difficulty" role="cell">{row.difficulty}</span>
+          </a>
+        ))}
+      </div>
+    </div>
   </StaticPage>
 </BaseLayout>
+
+<style is:global>
+  .menu-page--le-sucre .static-page-body {
+    padding: clamp(18px, 2.6vw, 30px);
+  }
+
+  .menu-page--le-sucre .menu-table {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .menu-page--le-sucre .menu-table-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2.5fr) minmax(120px, 0.9fr) minmax(120px, 0.9fr);
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .menu-page--le-sucre .menu-table-row--head {
+    padding: 0 1rem 0.45rem;
+    border-bottom: 1px solid rgba(26, 35, 53, 0.12);
+    color: #6b7280;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menu-page--le-sucre .menu-table-row--item {
+    padding: 0.95rem 1rem;
+    border: 1px solid #d8d2c2;
+    border-radius: 14px;
+    background: #faf8f2;
+    color: #1a2335;
+    text-decoration: none;
+    box-shadow: 0 10px 24px rgba(14, 24, 39, 0.05);
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .menu-page--le-sucre .menu-table-row--item:hover {
+    transform: translateY(-1px);
+    border-color: #2ec4b6;
+    background: rgba(46, 196, 182, 0.04);
+    box-shadow: 0 16px 30px rgba(14, 24, 39, 0.08);
+  }
+
+  .menu-page--le-sucre .menu-table-cell {
+    min-width: 0;
+  }
+
+  .menu-page--le-sucre .menu-table-cell--recipe {
+    font-family: var(--font-maison);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .menu-page--le-sucre .menu-table-cell--prep,
+  .menu-page--le-sucre .menu-table-cell--difficulty {
+    color: #4b5563;
+    font-size: 0.94rem;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 900px) {
+    .menu-page--le-sucre .menu-table-row {
+      grid-template-columns: minmax(0, 1.8fr) minmax(100px, 0.9fr) minmax(100px, 0.9fr);
+      gap: 0.75rem;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .menu-page--le-sucre .menu-table-row--head {
+      display: none;
+    }
+
+    .menu-page--le-sucre .menu-table-row--item {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.55rem;
+      padding: 1rem;
+    }
+
+    .menu-page--le-sucre .menu-table-cell {
+      display: grid;
+      gap: 0.18rem;
+    }
+
+    .menu-page--le-sucre .menu-table-cell--prep::before,
+    .menu-page--le-sucre .menu-table-cell--difficulty::before {
+      color: #6b7280;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .menu-page--le-sucre .menu-table-cell--prep::before {
+      content: "Préparation";
+    }
+
+    .menu-page--le-sucre .menu-table-cell--difficulty::before {
+      content: "Difficulté";
+    }
+  }
+</style>

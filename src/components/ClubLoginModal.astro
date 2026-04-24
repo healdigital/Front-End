@@ -1,0 +1,284 @@
+---
+import Icon from './atoms/Icon.astro';
+---
+
+<dialog
+  id="club-login-modal"
+  class="club-modal fixed inset-0 z-50 hidden items-center justify-center bg-transparent overflow-hidden"
+  aria-modal="true"
+  aria-labelledby="club-modal-title"
+>
+  <div class="club-modal-panel" data-modal-panel>
+    <button
+      id="club-modal-close"
+      class="club-modal-close"
+      aria-label="Fermer"
+      type="button"
+    >
+      <Icon name="close" size="sm" class="w-5 h-5" />
+    </button>
+
+    <div class="club-modal-accent" aria-hidden="true"></div>
+
+    <div class="club-modal-content">
+      <h2 id="club-modal-title" class="club-modal-title">Connexion Club</h2>
+      <p class="club-modal-subtitle">
+        Identifiez-vous pour profiter de votre expérience sans publicité.
+      </p>
+
+      <form id="club-modal-form" class="club-modal-form" novalidate>
+        <div class="club-modal-field">
+          <label class="sr-only" for="club-modal-email">Adresse email</label>
+          <input
+            type="email"
+            id="club-modal-email"
+            name="email"
+            class="club-modal-input"
+            placeholder="Votre adresse email"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="club-modal-field">
+          <label class="sr-only" for="club-modal-password">Mot de passe</label>
+          <input
+            type="password"
+            id="club-modal-password"
+            name="password"
+            class="club-modal-input"
+            placeholder="Votre mot de passe"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <p
+          id="club-modal-error"
+          class="club-modal-error hidden"
+          role="alert"
+          aria-live="polite"
+        ></p>
+
+        <button type="submit" id="club-modal-submit" class="club-modal-submit">
+          Se connecter
+        </button>
+      </form>
+
+      <p class="club-modal-join">
+        Pas encore membre ?&nbsp;
+        <a
+          href="https://atelier-lacuisinedebernard.com/club/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="club-modal-join-link"
+        >
+          Rejoindre le Club
+        </a>
+      </p>
+    </div>
+  </div>
+</dialog>
+
+<style is:global>
+  #club-login-modal {
+    border: 0;
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background: transparent;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  #club-login-modal::backdrop {
+    background: rgba(28, 30, 36, 0.84);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+  }
+
+  #club-login-modal[open]::backdrop {
+    opacity: 1;
+  }
+
+  #club-login-modal.flex {
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
+  .club-modal-panel {
+    position: relative;
+    width: min(100%, 420px);
+    background: #f3f0ea;
+    box-shadow: 0 24px 56px rgba(10, 18, 28, 0.28);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  #club-login-modal[open] .club-modal-panel {
+    animation: club-modal-fade-in 0.28s ease forwards;
+  }
+
+  @keyframes club-modal-fade-in {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .club-modal-accent {
+    height: 4px;
+    background: #bba86b;
+  }
+
+  .club-modal-content {
+    padding: 36px 36px 32px;
+  }
+
+  .club-modal-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .club-modal-subtitle {
+    margin: 10px 0 0;
+    color: #5b5b5b;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .club-modal-form {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .club-modal-field {
+    width: 100%;
+  }
+
+  .club-modal-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid #d8d2c2;
+    background: #faf8f2;
+    color: #111111;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .club-modal-input::placeholder {
+    color: #a59f95;
+  }
+
+  .club-modal-input:focus {
+    border-color: #bba86b;
+    box-shadow: inset 0 0 0 1px #bba86b;
+  }
+
+  .club-modal-input[aria-invalid='true'] {
+    border-color: #c64545;
+    box-shadow: inset 0 0 0 1px #c64545;
+  }
+
+  .club-modal-error {
+    margin: 0;
+    padding: 8px 12px;
+    background: #fdf2f2;
+    border-left: 3px solid #c64545;
+    color: #c64545;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .club-modal-submit {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 4px;
+    border: 0;
+    background: #bba86b;
+    color: #faf8f2;
+    font-family: var(--font-button);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .club-modal-submit:hover {
+    background: #a89560;
+  }
+
+  .club-modal-submit:active {
+    transform: scale(0.98);
+  }
+
+  .club-modal-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .club-modal-join {
+    margin: 18px 0 0;
+    color: #7b7b6f;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+
+  .club-modal-join-link {
+    color: #bba86b;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .club-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #5b5b5b;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .club-modal-close:hover {
+    color: #111111;
+  }
+
+  @media (max-width: 480px) {
+    .club-modal-content {
+      padding: 28px 20px 24px;
+    }
+
+    #club-login-modal.flex {
+      padding: 16px;
+    }
+  }
+</style>

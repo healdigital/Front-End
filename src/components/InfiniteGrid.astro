@@ -1,0 +1,256 @@
+---
+interface Props {
+  initialCount?: number;
+  batchSize?: number;
+  gridClass?: string;
+  ariaLabel: string;
+  totalCount?: number;
+}
+
+const {
+  initialCount = 30,
+  batchSize = 24,
+  gridClass = '',
+  ariaLabel,
+  totalCount = 0,
+} = Astro.props;
+---
+
+<div
+  class="infinite-grid-root"
+  data-infinite-grid-root
+  data-initial-count={initialCount}
+  data-batch-size={batchSize}
+  data-total-count={totalCount}
+>
+  <p class="infinite-grid-counter" data-infinite-grid-counter aria-live="polite">
+    {Math.min(initialCount, totalCount)} / {totalCount} recettes affichées
+  </p>
+
+  <div class:list={['infinite-grid', gridClass]} data-infinite-grid aria-label={ariaLabel}>
+    <slot />
+  </div>
+
+  <div class="infinite-grid-sentinel" data-infinite-grid-sentinel aria-hidden="true"></div>
+
+  <div class="infinite-grid-loading hidden" data-infinite-grid-loading aria-live="polite">
+    <span class="infinite-grid-spinner" aria-hidden="true"></span>
+    <span>Chargement des recettes...</span>
+  </div>
+
+  <button
+    type="button"
+    class="infinite-grid-top hidden"
+    data-infinite-grid-top
+    aria-label="Haut de page"
+    title="Haut de page"
+  >
+    <span aria-hidden="true">↑</span>
+  </button>
+</div>
+
+<script>
+  const setupInfiniteGrids = () => {
+    const roots = Array.from(document.querySelectorAll('[data-infinite-grid-root]'));
+
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+      if (root.dataset.ready === 'true') return;
+      root.dataset.ready = 'true';
+
+      const grid = root.querySelector('[data-infinite-grid]');
+      const sentinel = root.querySelector('[data-infinite-grid-sentinel]');
+      const loading = root.querySelector('[data-infinite-grid-loading]');
+      const counter = root.querySelector('[data-infinite-grid-counter]');
+      const topButton = root.querySelector('[data-infinite-grid-top]');
+
+      if (!(grid instanceof HTMLElement) || !(sentinel instanceof HTMLElement)) return;
+
+      const cards = Array.from(grid.children).filter((item) => item instanceof HTMLElement);
+      const initialCount = Number(root.dataset.initialCount || '30');
+      const batchSize = Number(root.dataset.batchSize || '24');
+      const totalCount = Number(root.dataset.totalCount || String(cards.length)) || cards.length;
+      let visibleCount = Math.min(initialCount, cards.length);
+      let observer = null;
+
+      const updateCounter = () => {
+        if (!(counter instanceof HTMLElement)) return;
+        counter.textContent =
+          visibleCount >= totalCount
+            ? `${totalCount} recettes affichées`
+            : `${visibleCount} / ${totalCount} recettes affichées`;
+      };
+
+      const positionSentinel = () => {
+        const lastVisible = cards[Math.max(0, visibleCount - 1)];
+        if (!lastVisible) return;
+        lastVisible.insertAdjacentElement('afterend', sentinel);
+      };
+
+      const updateTopButton = () => {
+        if (!(topButton instanceof HTMLButtonElement)) return;
+        const shouldShow = window.scrollY > window.innerHeight * 2;
+        topButton.classList.toggle('hidden', !shouldShow);
+      };
+
+      const revealNextBatch = () => {
+        if (visibleCount >= cards.length) {
+          if (observer) observer.disconnect();
+          if (loading instanceof HTMLElement) loading.classList.add('hidden');
+          updateCounter();
+          return;
+        }
+
+        if (loading instanceof HTMLElement) loading.classList.remove('hidden');
+
+        const nextVisible = Math.min(visibleCount + batchSize, cards.length);
+        const nextCards = cards.slice(visibleCount, nextVisible);
+
+        nextCards.forEach((card, index) => {
+          card.removeAttribute('data-hidden');
+          card.classList.add('infinite-grid-card--revealed');
+          card.style.animationDelay = `${index * 40}ms`;
+        });
+
+        visibleCount = nextVisible;
+        positionSentinel();
+        updateCounter();
+
+        if (loading instanceof HTMLElement) {
+          loading.classList.toggle('hidden', visibleCount >= cards.length);
+        }
+
+        if (visibleCount >= cards.length && observer) {
+          observer.disconnect();
+        }
+      };
+
+      cards.forEach((card, index) => {
+        if (!(card instanceof HTMLElement)) return;
+        card.dataset.infiniteCard = 'true';
+        if (index >= visibleCount) {
+          card.setAttribute('data-hidden', 'true');
+        }
+      });
+
+      updateCounter();
+      positionSentinel();
+      updateTopButton();
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) revealNextBatch();
+          });
+        },
+        {
+          rootMargin: '0px 0px 300px 0px',
+          threshold: 0,
+        },
+      );
+
+      observer.observe(sentinel);
+
+      const shouldRevealFromViewport = () => {
+        const rect = sentinel.getBoundingClientRect();
+        return rect.top <= window.innerHeight + 320;
+      };
+
+      const onWindowScroll = () => {
+        updateTopButton();
+        if (shouldRevealFromViewport()) revealNextBatch();
+      };
+
+      topButton?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      window.addEventListener('scroll', onWindowScroll, { passive: true });
+      window.addEventListener('resize', onWindowScroll, { passive: true });
+      onWindowScroll();
+    });
+  };
+
+  setupInfiniteGrids();
+  document.addEventListener('astro:page-load', setupInfiniteGrids);
+</script>
+
+<style is:global>
+  [data-infinite-card][data-hidden='true'] {
+    display: none !important;
+  }
+
+  .infinite-grid-sentinel {
+    width: 100%;
+    height: 1px;
+    grid-column: 1 / -1;
+    pointer-events: none;
+  }
+
+  .infinite-grid-counter {
+    margin: 0 0 1rem;
+    color: #787161;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .infinite-grid-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+    color: #787161;
+    font-size: 0.82rem;
+  }
+
+  .infinite-grid-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(84, 182, 177, 0.25);
+    border-top-color: #54b6b1;
+    animation: lcdb-spin 0.8s linear infinite;
+  }
+
+  .infinite-grid-top {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 30;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: #54b6b1;
+    color: #faf8f2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55rem;
+    line-height: 1;
+    box-shadow: 0 14px 32px rgba(17, 25, 39, 0.18);
+  }
+
+  .infinite-grid-card--revealed {
+    animation: lcdb-fade-in 0.3s ease both;
+  }
+
+  @keyframes lcdb-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes lcdb-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

@@ -19,7 +19,7 @@ export const translations: Record<string, any> = {
  * @param lang Language code (en, fr, es, pt-br, ar)
  * @returns Translated string or original key if not found
  */
-export function t(key: string, lang: string = 'en'): string {
+export function t(key: string, lang: string = 'fr'): string {
   const parts = key.split('.');
   let current: any = translations[lang] || translations.en;
 
@@ -48,8 +48,8 @@ export function t(key: string, lang: string = 'en'): string {
  * @param lang Language code
  * @returns Translation object
  */
-export function getTranslations(lang: string = 'en'): any {
-  return translations[lang] || translations.en;
+export function getTranslations(lang: string = 'fr'): any {
+  return translations[lang] || translations.fr || translations.en;
 }
 
 /**

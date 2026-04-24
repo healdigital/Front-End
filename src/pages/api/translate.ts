@@ -1,6 +1,14 @@
 import type { APIRoute } from 'astro';
 
 const DEFAULT_DEEPL_URL = 'https://api.deepl.com/v2/translate';
+const DEFAULT_DEEPL_ALLOWED_HOSTS = ['api.deepl.com', 'api-free.deepl.com'];
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://lacuisinedebernard.com',
+  'https://www.lacuisinedebernard.com',
+  'https://staging.lacuisinedebernard.com',
+  'http://localhost:4321',
+  'http://127.0.0.1:4321',
+];
 const isDev = import.meta.env.DEV;
 // Dev-only API route. In production (pure SSG), this must be prerendered to avoid SSR.
 export const prerender = !isDev;
@@ -20,34 +28,146 @@ const normalizeTargetLang = (value?: string): string | null => {
   return value.toUpperCase();
 };
 
-const withCors = (response: Response): Response => {
+const normalizeOrigin = (value?: string | null): string | null => {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+};
+
+const parseAllowedOrigins = (request: Request): Set<string> => {
+  const configured = String(process.env.TRANSLATE_ALLOWED_ORIGINS || '')
+    .split(/[,\n;]+/)
+    .map((item) => normalizeOrigin(item.trim()))
+    .filter((item): item is string => Boolean(item));
+
+  const requestOrigin = normalizeOrigin(request.url);
+  return new Set([...DEFAULT_ALLOWED_ORIGINS, ...configured, requestOrigin].filter(Boolean) as string[]);
+};
+
+const getRequestOrigin = (request: Request): string | null => {
+  const fromOriginHeader = normalizeOrigin(request.headers.get('origin'));
+  if (fromOriginHeader) return fromOriginHeader;
+  return normalizeOrigin(request.headers.get('referer'));
+};
+
+const withCors = (response: Response, requestOrigin?: string | null): Response => {
   const headers = new Headers(response.headers);
-  headers.set('Access-Control-Allow-Origin', '*');
+  if (requestOrigin) {
+    headers.set('Access-Control-Allow-Origin', requestOrigin);
+  }
   headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   headers.set('Access-Control-Allow-Headers', 'Content-Type');
   headers.set('Access-Control-Max-Age', '86400');
+  headers.set('Vary', 'Origin');
   return new Response(response.body, { status: response.status, headers });
 };
 
-export const OPTIONS: APIRoute = async () => {
-  return withCors(new Response(null, { status: 204 }));
+const assertAllowedOrigin = (
+  request: Request,
+): { allowed: true; origin: string } | { allowed: false; origin: string | null } => {
+  const requestOrigin = getRequestOrigin(request);
+  if (!requestOrigin) return { allowed: false, origin: null };
+
+  const allowedOrigins = parseAllowedOrigins(request);
+  if (!allowedOrigins.has(requestOrigin)) return { allowed: false, origin: requestOrigin };
+
+  return { allowed: true, origin: requestOrigin };
 };
 
-export const GET: APIRoute = async () => {
+const parseAllowedDeepLHosts = (): Set<string> => {
+  const configuredHosts = String(process.env.DEEPL_ALLOWED_HOSTS || '')
+    .split(/[,\n;]+/)
+    .map((host) => host.trim().toLowerCase())
+    .filter(Boolean);
+
+  return new Set([...DEFAULT_DEEPL_ALLOWED_HOSTS, ...configuredHosts]);
+};
+
+const resolveDeepLApiUrl = (
+  value: string | undefined,
+): { ok: true; value: string } | { ok: false; error: string } => {
+  const target = value && value.trim().length > 0 ? value.trim() : DEFAULT_DEEPL_URL;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(target);
+  } catch {
+    return { ok: false, error: 'DEEPL_API_URL is invalid.' };
+  }
+
+  if (parsed.protocol !== 'https:') {
+    return { ok: false, error: 'DEEPL_API_URL must use HTTPS.' };
+  }
+
+  const allowedHosts = parseAllowedDeepLHosts();
+  const host = parsed.hostname.toLowerCase();
+  if (!allowedHosts.has(host)) {
+    return {
+      ok: false,
+      error: `DEEPL_API_URL host "${host}" is not allowed.`,
+    };
+  }
+
+  return { ok: true, value: parsed.toString() };
+};
+
+export const OPTIONS: APIRoute = async ({ request }) => {
+  if (!isDev) {
+    return withCors(new Response(null, { status: 204 }));
+  }
+
+  const originCheck = assertAllowedOrigin(request);
+  if (!originCheck.allowed) {
+    return withCors(
+      new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      originCheck.origin,
+    );
+  }
+
+  return withCors(new Response(null, { status: 204 }), originCheck.origin);
+};
+
+export const GET: APIRoute = async ({ request }) => {
+  if (!isDev) {
+    return withCors(
+      new Response(
+        JSON.stringify({ error: 'Translate API disabled in static production build.' }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+  }
+
+  const originCheck = assertAllowedOrigin(request);
+  if (!originCheck.allowed) {
+    return withCors(
+      new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      originCheck.origin,
+    );
+  }
+
   if (isDev) {
     return withCors(
       new Response(
         JSON.stringify({ error: 'Use POST for translation in dev.' }),
         { status: 405, headers: { 'Content-Type': 'application/json' } },
       ),
+      originCheck.origin,
     );
   }
-  return withCors(
-    new Response(
-      JSON.stringify({ error: 'Translate API disabled in static production build.' }),
-      { status: 404, headers: { 'Content-Type': 'application/json' } },
-    ),
-  );
+
+  return withCors(new Response(JSON.stringify({ error: 'Translate API disabled in static production build.' }), {
+    status: 404,
+    headers: { 'Content-Type': 'application/json' },
+  }));
 };
 
 export const POST: APIRoute = async ({ request }) => {
@@ -59,8 +179,20 @@ export const POST: APIRoute = async ({ request }) => {
       ),
     );
   }
+
+  const originCheck = assertAllowedOrigin(request);
+  if (!originCheck.allowed) {
+    return withCors(
+      new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      originCheck.origin,
+    );
+  }
+
   const apiKey = process.env.DEEPL_API_KEY;
-  const apiUrl = process.env.DEEPL_API_URL || DEFAULT_DEEPL_URL;
+  const apiUrlResult = resolveDeepLApiUrl(process.env.DEEPL_API_URL);
 
   if (!apiKey) {
     return withCors(
@@ -68,8 +200,21 @@ export const POST: APIRoute = async ({ request }) => {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       }),
+      originCheck.origin,
     );
   }
+
+  if (!apiUrlResult.ok) {
+    return withCors(
+      new Response(JSON.stringify({ error: apiUrlResult.error }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      originCheck.origin,
+    );
+  }
+
+  const apiUrl = apiUrlResult.value;
 
   const contentType = request.headers.get('content-type') || '';
   let targetLang: string | null = null;
@@ -91,6 +236,7 @@ export const POST: APIRoute = async ({ request }) => {
           headers: { 'Content-Type': 'application/json' },
         },
       ),
+      originCheck.origin,
     );
   }
 
@@ -123,6 +269,7 @@ export const POST: APIRoute = async ({ request }) => {
             headers: { 'Content-Type': 'application/json' },
           },
         ),
+        originCheck.origin,
       );
     }
   }
@@ -133,6 +280,7 @@ export const POST: APIRoute = async ({ request }) => {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       }),
+      originCheck.origin,
     );
   }
 
@@ -142,6 +290,7 @@ export const POST: APIRoute = async ({ request }) => {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       }),
+      originCheck.origin,
     );
   }
 
@@ -165,12 +314,23 @@ export const POST: APIRoute = async ({ request }) => {
         JSON.stringify({ error: 'DeepL request failed', details: errorText }),
         { status: 502, headers: { 'Content-Type': 'application/json' } },
       ),
+      originCheck.origin,
     );
   }
 
-  const data = await response.json();
-  const translations = Array.isArray(data?.translations)
-    ? data.translations.map((t: any) => t.text)
+  const data: unknown = await response.json();
+  const rawTranslations =
+    typeof data === 'object' && data !== null && 'translations' in data
+      ? (data as { translations?: unknown }).translations
+      : undefined;
+
+  const translations = Array.isArray(rawTranslations)
+    ? rawTranslations.map((item) => {
+        if (typeof item === 'object' && item !== null && 'text' in item) {
+          return String((item as { text?: unknown }).text ?? '');
+        }
+        return '';
+      })
     : [];
 
   return withCors(
@@ -178,5 +338,6 @@ export const POST: APIRoute = async ({ request }) => {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     }),
+    originCheck.origin,
   );
 };

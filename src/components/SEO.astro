@@ -5,40 +5,41 @@ const {
   canonical,
   slug,
   image,
+  lang = 'fr',
   author = 'La Cuisine De Bernard',
   publishDate,
   modifiedDate,
-  keywords
+  keywords,
 } = Astro.props;
 
 const siteUrl = 'https://lacuisinedebernard.com';
 const fullCanonical = canonical || `${siteUrl}`;
 const fullImage = image || `${siteUrl}/og-image.png`;
+const currentYear = new Date().getFullYear();
 ---
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- Basic SEO Tags -->
 <title>{title}</title>
 <meta name="description" content={description} />
 {keywords && <meta name="keywords" content={keywords} />}
 <link rel="canonical" href={fullCanonical} />
 
-<!-- Author & Copyright -->
 <meta name="author" content={author} />
-<meta name="copyright" content={`© 2024 ${author}. All rights reserved.`} />
+<meta name="copyright" content={`© ${currentYear} ${author}. All rights reserved.`} />
 
-<!-- Language Alternate Links -->
 {slug && (
   <>
     <link rel="alternate" hreflang="fr" href={`${siteUrl}/fr/recettes/${slug}`} />
     <link rel="alternate" hreflang="en" href={`${siteUrl}/en/recettes/${slug}`} />
+    <link rel="alternate" hreflang="es" href={`${siteUrl}/es/recettes/${slug}`} />
+    <link rel="alternate" hreflang="pt-br" href={`${siteUrl}/pt-br/recettes/${slug}`} />
+    <link rel="alternate" hreflang="ar" href={`${siteUrl}/ar/recettes/${slug}`} />
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}/fr/recettes/${slug}`} />
   </>
 )}
 
-<!-- Open Graph / Facebook -->
 <meta property="og:type" content="article" />
 <meta property="og:url" content={fullCanonical} />
 <meta property="og:title" content={title} />
@@ -48,39 +49,46 @@ const fullImage = image || `${siteUrl}/og-image.png`;
 <meta property="og:image:height" content="630" />
 <meta property="og:site_name" content="La Cuisine De Bernard" />
 
-<!-- Twitter Card -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={fullCanonical} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={fullImage} />
 
-<!-- Article SEO Tags -->
 {publishDate && <meta property="article:published_time" content={publishDate} />}
 {modifiedDate && <meta property="article:modified_time" content={modifiedDate} />}
 <meta property="article:author" content={author} />
 
-<!-- Additional SEO Tags -->
 <meta name="robots" content="index, follow" />
 <meta name="googlebot" content="index, follow" />
-<meta name="language" content="English" />
+<meta name="language" content={lang} />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-<!-- Favicon & Icons -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link rel="alternate icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="apple-touch-icon" href="/images/logo-v3.png" />
 
-<!-- DNS Prefetch & Preconnect -->
 <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//fonts.gstatic.com" />
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Jost:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap"
-  rel="stylesheet"
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;600&family=PT+Serif:wght@400&family=Roboto+Mono:wght@400;500;600&display=swap"
 />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;600&family=PT+Serif:wght@400&family=Roboto+Mono:wght@400;500;600&display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+<noscript>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;600&family=PT+Serif:wght@400&family=Roboto+Mono:wght@400;500;600&display=swap"
+  />
+</noscript>
 
-<!-- Mobile Web App -->
 <meta name="theme-color" content="#000000" />
 <meta name="msapplication-TileColor" content="#000000" />

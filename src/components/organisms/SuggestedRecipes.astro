@@ -1,11 +1,19 @@
 ---
 import RecipeCard from './RecipeCard.astro';
 import FilterDropdown from '../molecules/FilterDropdown.astro';
+const payloadAssetOrigin = (() => {
+  try {
+    return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
+  } catch {
+    return 'https://admin.lacuisinedebernard.com';
+  }
+})();
 
 interface Recipe {
   title: string;
   description: string;
   image: string;
+  imageFallback?: string;
   category?: string;
   prepTime: string;
   difficulty: string;
@@ -14,48 +22,730 @@ interface Recipe {
 
 interface Props {
   recipes: Recipe[];
+  embedded?: boolean;
+  source?: string;
+  offset?: number;
+  visibleCount?: number;
+  totalCount?: number;
 }
 
-const { recipes } = Astro.props;
+const {
+  recipes,
+  embedded = false,
+  source = '/home-recipes-index.json',
+  offset = 0,
+  visibleCount = 4,
+  totalCount = recipes.length,
+} = Astro.props as Props;
 
 const recipeFilters = [
   { label: 'Toutes les recettes', value: 'toutes' },
-  { label: 'Recettes sucr&eacute;es', value: 'sucrees' },
-  { label: 'Recettes sal&eacute;es', value: 'salees' },
+  { label: 'Recettes sucrées', value: 'sucrees' },
+  { label: 'Recettes salées', value: 'salees' },
 ];
+
+const normalizedRecipeFilters = [
+  { label: 'Toutes les recettes', value: 'toutes' },
+  { label: 'Recettes sucrees', value: 'sucrees' },
+  { label: 'Recettes salees', value: 'salees' },
+];
+
+const normalizeToken = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const getFilterValue = (recipe: Recipe): string => {
+  const normalized = normalizeToken(recipe.category || '');
+  if (normalized.includes('sucre')) return 'sucrees';
+  if (normalized.includes('sale')) return 'salees';
+  return 'toutes';
+};
+const totalRecipeCount = totalCount;
 ---
 
-<section class="py-16 md:py-24 bg-secondary-cream">
-  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
-    <div class="flex items-center gap-6 mb-10">
-      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black whitespace-nowrap typ-section">Ces recettes pourrez vous int&eacute;resser</h2>
+<section
+  class={`relative ${embedded ? '' : 'py-16 md:py-24 bg-secondary-cream overflow-hidden'}`}
+  data-suggested-recipes
+  data-suggested-source={source}
+  data-suggested-offset={offset}
+  data-suggested-total-count={totalRecipeCount}
+  data-suggested-cards-per-page={visibleCount}
+>
+  {!embedded && (
+    <div
+      class="absolute inset-0 pointer-events-none opacity-28"
+      aria-hidden="true"
+      style="background-image: url('/images/noise.webp'); background-size: 180px 180px;"
+    ></div>
+  )}
+  <div class={embedded ? 'relative pt-8 md:pt-10 pb-2' : 'max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10'}>
+    <div class="flex items-center gap-6 mb-10 recipe-suggested-heading-row">
+      <h2 class="font-heading text-3xl lg:text-5xl text-primary-black  typ-section">Besoin d&apos;inspiration ?</h2>
       <div class="flex-1 h-px bg-border-primary hidden md:block"></div>
     </div>
 
-    <div class="flex items-center justify-between gap-4 mb-8">
-      <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
-      <div class="flex items-center gap-3">
-        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue grille">
-          <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        </button>
-        <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue liste">
-          <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-      </div>
+    <div class="flex items-center justify-start gap-4 mb-8">
+      <FilterDropdown label="Toutes les recettes" options={normalizedRecipeFilters} />
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {recipes.map((recipe) => (
-        <RecipeCard
-          title={recipe.title}
-          description={recipe.description}
-          image={recipe.image}
-          category={recipe.category}
-          prepTime={recipe.prepTime}
-          difficulty={recipe.difficulty}
-          slug={recipe.slug}
-        />
+    <div class={`suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`} data-suggested-grid aria-busy="false">
+      {recipes.map((recipe, index) => (
+        <div
+          class:list={['suggested-card-shell h-full', index >= visibleCount && 'hidden']}
+          data-suggested-card
+          data-suggested-index={index}
+          data-category={getFilterValue(recipe)}
+          data-title={recipe.title.toLocaleLowerCase('fr')}
+          data-description={recipe.description.toLocaleLowerCase('fr')}
+          data-slug={recipe.slug}
+          aria-hidden={index >= visibleCount ? 'true' : 'false'}
+        >
+          <RecipeCard
+            title={recipe.title}
+            description={recipe.description}
+            image={recipe.image}
+            imageFallback={recipe.imageFallback}
+            category={recipe.category}
+            prepTime={recipe.prepTime}
+            difficulty={recipe.difficulty}
+            slug={recipe.slug}
+            showReadMore={false}
+            contentClass="pb-12"
+          />
+        </div>
       ))}
+    </div>
+
+    <div
+      class={`hidden suggested-grid grid items-stretch grid-cols-1 md:grid-cols-2 ${embedded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6 mt-6`}
+      data-suggested-skeleton
+      aria-hidden="true"
+    >
+      {Array.from({ length: visibleCount }).map(() => (
+        <div class="overflow-hidden rounded-[12px] border border-border-primary bg-[#F7F5EF] shadow-[0_16px_40px_rgba(6,18,40,0.08)] animate-pulse">
+          <div class="aspect-[0.88] bg-[#E6E0D2]"></div>
+          <div class="p-6">
+            <div class="h-4 w-20 rounded bg-[#E6E0D2]"></div>
+            <div class="mt-5 h-10 w-4/5 rounded bg-[#E6E0D2]"></div>
+            <div class="mt-6 flex gap-3">
+              <div class="h-4 w-16 rounded bg-[#E6E0D2]"></div>
+              <div class="h-4 w-14 rounded bg-[#E6E0D2]"></div>
+            </div>
+            <div class="mt-6 space-y-3">
+              <div class="h-4 rounded bg-[#E6E0D2]"></div>
+              <div class="h-4 rounded bg-[#E6E0D2]"></div>
+              <div class="h-4 w-2/3 rounded bg-[#E6E0D2]"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-10 pt-6 border-t border-[#D8D2C2] flex items-center flex-wrap justify-between gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-suggested-pagination>
+      <button type="button" class="suggested-arrow-btn" data-suggested-prev aria-label="Précédent">
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="suggested-arrow-btn-icon suggested-arrow-btn-icon--prev"
+          loading="lazy"
+          decoding="async"
+          width="48"
+          height="48"
+        />
+      </button>
+      <div class="flex items-center gap-4" data-suggested-pages>
+        <span class="text-text-primary">1</span>
+      </div>
+      <button type="button" class="suggested-arrow-btn" data-suggested-next aria-label="Suivant">
+        <img
+          src="/images/client-arrow-circle.svg"
+          alt=""
+          class="suggested-arrow-btn-icon suggested-arrow-btn-icon--next"
+          loading="lazy"
+          decoding="async"
+          width="48"
+          height="48"
+        />
+      </button>
     </div>
   </div>
 </section>
+
+<script define:vars={{ payloadAssetOrigin }}>
+  // @ts-nocheck
+  function setupSuggestedRecipes() {
+    const sections = Array.from(document.querySelectorAll('[data-suggested-recipes]'));
+    sections.forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
+      if (section.dataset.interactionsReady === 'true') return;
+      section.dataset.interactionsReady = 'true';
+
+      let cards = Array.from(section.querySelectorAll('[data-suggested-card]'));
+      if (cards.length === 0) return;
+
+      const filterItems = Array.from(section.querySelectorAll('[data-filter-item]'));
+      const paginationRoot = section.querySelector('[data-suggested-pagination]');
+      const paginationPages = paginationRoot?.querySelector('[data-suggested-pages]');
+      const paginationPrev = paginationRoot?.querySelector('[data-suggested-prev]');
+      const paginationNext = paginationRoot?.querySelector('[data-suggested-next]');
+      const grid = section.querySelector('[data-suggested-grid]');
+      const skeleton = section.querySelector('[data-suggested-skeleton]');
+      let activeFilter = 'toutes';
+      let activePage = 1;
+      const cardsPerPage = Math.max(
+        1,
+        Number(section.getAttribute('data-suggested-cards-per-page') || '12') || 12,
+      );
+      const totalAvailableCount = Number(section.getAttribute('data-suggested-total-count') || '') || cards.length;
+      const source = section.getAttribute('data-suggested-source') || '/home-recipes-index.json';
+      const offset = Number(section.getAttribute('data-suggested-offset') || '0') || 0;
+      const pageLang = String(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr')
+        .toLowerCase()
+        .trim();
+
+      const shuffleInPlace = (items) => {
+        for (let index = items.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+        }
+        return items;
+      };
+
+      if (grid instanceof HTMLElement && cards.length > 1) {
+        cards = shuffleInPlace([...cards]);
+        const fragment = document.createDocumentFragment();
+        cards.forEach((card) => fragment.appendChild(card));
+        grid.appendChild(fragment);
+      }
+
+      const normalizeToken = (value = '') =>
+        String(value)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+
+      const getFilterKey = (categoryLabel = '') => {
+        const normalized = normalizeToken(categoryLabel);
+        if (normalized.includes('sucre') || normalized.includes('sweet') || normalized.includes('dessert')) return 'sucrees';
+        if (normalized.includes('sale') || normalized.includes('savour') || normalized.includes('savory')) return 'salees';
+        return 'toutes';
+      };
+
+      const normalizeSlug = (value = '') => String(value).replace(/^\/+|\/+$/g, '');
+      const normalizeLegacyUploadsUrl = (value = '') =>
+        String(value || '')
+          .trim()
+          .replace(
+            /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+            'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/'
+          );
+      const toRecipeTagLabel = (value = '') => {
+        const clean = String(value || '').trim();
+        return clean ? clean.toUpperCase() : 'RECETTE';
+      };
+      const formatRecipeTime = (value = '') => {
+        const raw = String(value || '').trim();
+        if (!raw) return '--';
+        const parsed = new Date(raw);
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          });
+        }
+        if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
+        if (/[0-9].*(min|h)/i.test(raw)) return raw;
+        return '--';
+      };
+
+      const toOptimizedCardImage = (value = '') => {
+        const raw = normalizeLegacyUploadsUrl(value);
+        if (raw.startsWith('/api/') || raw.startsWith('/media/')) return `${payloadAssetOrigin}${raw}`;
+        if (!raw || !/\/wp-content\/uploads\//i.test(raw)) return raw;
+
+        const match = raw.match(/^(.+?)(\.(?:jpe?g|png|webp|avif))(?:\?([^#]+))?(?:#(.+))?$/i);
+        if (!match) return raw;
+
+        const base = match[1];
+        const ext = match[2];
+        const query = match[3] ? `?${match[3]}` : '';
+        const hash = match[4] ? `#${match[4]}` : '';
+
+        if (/-\d+x\d+$/i.test(base)) {
+          return `${base}${ext}${query}${hash}`;
+        }
+
+        const withoutScaled = base.replace(/-scaled$/i, '');
+        return `${withoutScaled}-797x1024${ext}${query}${hash}`;
+      };
+
+      const clipDescription = (value = '') => {
+        const cleaned = String(value || '').replace(/\s+/g, ' ').trim();
+        if (!cleaned) return 'Recette a decouvrir.';
+        return cleaned.length > 200 ? `${cleaned.slice(0, 200).trim()}...` : cleaned;
+      };
+
+      const buildCardElement = (templateCard, recipe, index) => {
+        const card = templateCard.cloneNode(true);
+        if (!(card instanceof HTMLElement)) return null;
+
+        const slug = `/${normalizeSlug(recipe.slug)}`;
+        const absoluteUrl = new URL(slug, window.location.origin).href;
+        const encodedUrl = encodeURIComponent(absoluteUrl);
+        const encodedTitle = encodeURIComponent(recipe.title || '');
+
+        card.dataset.suggestedIndex = String(index);
+        card.dataset.category = recipe.filterKey || 'toutes';
+        card.dataset.title = String(recipe.title || '').toLowerCase();
+        card.dataset.description = String(recipe.description || '').toLowerCase();
+        card.dataset.slug = slug;
+        card.classList.add('hidden');
+        card.setAttribute('aria-hidden', 'true');
+
+        const imageEl = card.querySelector('img');
+        if (imageEl instanceof HTMLImageElement) {
+          const imageSrc = recipe.image || imageEl.getAttribute('data-fallback-src') || '';
+          imageEl.src = imageSrc;
+          imageEl.alt = recipe.title || 'Recipe image';
+          imageEl.setAttribute('data-fallback-src', recipe.imageFallback || imageSrc);
+        }
+
+        const titleLink = card.querySelector('h3 a');
+        if (titleLink instanceof HTMLAnchorElement) {
+          titleLink.href = slug;
+          titleLink.textContent = recipe.title || 'Recette';
+        }
+
+        const readMoreLink = card.querySelector('a.typ-button');
+        if (readMoreLink instanceof HTMLAnchorElement) {
+          readMoreLink.href = slug;
+        }
+
+        const descriptionEl = card.querySelector('p.typ-body');
+        if (descriptionEl instanceof HTMLElement) {
+          descriptionEl.textContent = clipDescription(recipe.description);
+        }
+
+        const metaTagEl = card.querySelector('[data-recipe-meta-tag]');
+        if (metaTagEl instanceof HTMLElement) {
+          metaTagEl.textContent = toRecipeTagLabel(recipe.difficulty || recipe.category || '');
+        }
+
+        const metaTimeEl = card.querySelector('[data-recipe-meta-time]');
+        if (metaTimeEl instanceof HTMLElement) {
+          metaTimeEl.textContent = recipe.prepTime || '--';
+        }
+
+        card.querySelectorAll('a[href]').forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          const href = link.getAttribute('href') || '';
+          if (href.includes('facebook.com/sharer/sharer.php')) {
+            link.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+          } else if (href.includes('pinterest.com/pin/create/button')) {
+            link.href = `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}`;
+          } else if (href.startsWith('mailto:')) {
+            link.href = `mailto:?subject=${encodedTitle}&body=${encodeURIComponent(absoluteUrl)}`;
+          }
+        });
+
+        return card;
+      };
+
+      const createPageItems = (totalPages) => {
+        if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+        const items = [1];
+        const rangeStart = Math.max(2, activePage - 1);
+        const rangeEnd = Math.min(totalPages - 1, activePage + 1);
+        if (rangeStart > 2) items.push('start-ellipsis');
+        for (let page = rangeStart; page <= rangeEnd; page += 1) items.push(page);
+        if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
+        items.push(totalPages);
+        return items;
+      };
+
+      const renderPagination = (totalPages) => {
+        if (!paginationRoot || !paginationPages || !paginationPrev || !paginationNext) return;
+        paginationRoot.classList.toggle('hidden', totalPages <= 1);
+        paginationPages.innerHTML = '';
+        createPageItems(totalPages).forEach((item) => {
+          if (typeof item === 'string') {
+            const dot = document.createElement('span');
+            dot.className = 'text-text-secondary';
+            dot.textContent = '...';
+            paginationPages.appendChild(dot);
+            return;
+          }
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = `transition-colors ${item === activePage ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'}`;
+          button.textContent = String(item);
+          button.setAttribute('data-page', String(item));
+          paginationPages.appendChild(button);
+        });
+        paginationPrev.disabled = activePage <= 1;
+        paginationNext.disabled = activePage >= totalPages;
+      };
+
+      const loadCachedIndexRecords = async (sourceUrl) => {
+        const globalKey = '__lcdbIndexCachePromises';
+        const globalStore = window;
+        const cache = (globalStore[globalKey] ||= {});
+
+        if (!cache[sourceUrl]) {
+          cache[sourceUrl] = fetch(sourceUrl, { cache: 'force-cache' })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+              }
+              return response.json();
+            })
+            .then((records) => (Array.isArray(records) ? records : []))
+            .catch((error) => {
+              delete cache[sourceUrl];
+              throw error;
+            });
+        }
+
+        return cache[sourceUrl];
+      };
+
+      let hydrationPromise = null;
+
+      const setSuggestedLoading = (isLoading) => {
+        if (grid instanceof HTMLElement) {
+          grid.setAttribute('aria-busy', String(isLoading));
+        }
+        if (skeleton instanceof HTMLElement) {
+          skeleton.classList.toggle('hidden', !isLoading);
+        }
+      };
+
+      const hydrateSuggestedFromSearchIndex = async () => {
+        if (!(grid instanceof HTMLElement)) return;
+        if (grid.dataset.suggestedHydrated === 'true') return;
+        if (hydrationPromise) {
+          await hydrationPromise;
+          return;
+        }
+
+        const templateCard = cards[0];
+        if (!(templateCard instanceof HTMLElement)) return;
+
+        hydrationPromise = (async () => {
+          grid.dataset.suggestedHydrated = 'loading';
+          setSuggestedLoading(true);
+
+          try {
+            const records = await loadCachedIndexRecords(source);
+            if (!Array.isArray(records) || records.length === 0) {
+              grid.dataset.suggestedHydrated = 'true';
+              setSuggestedLoading(false);
+              return;
+            }
+
+            const existingSlugs = new Set(
+              cards
+                .map((card) => normalizeSlug(card.getAttribute('data-slug') || ''))
+                .filter(Boolean),
+            );
+
+            const recipes = [];
+            records.slice(Math.max(0, offset)).forEach((record) => {
+              const recordLang = String(record?.lang || '').toLowerCase().trim();
+              if (recordLang && pageLang && recordLang !== pageLang) return;
+
+              const slug = normalizeSlug(record?.slug || record?.url || '');
+              const title = String(record?.title || '').trim();
+              if (!slug || !title || existingSlugs.has(slug)) return;
+
+              existingSlugs.add(slug);
+              const categoryLabel = record?.category || record?.tags || '';
+              const filterKey = getFilterKey(categoryLabel);
+              if (filterKey === 'toutes') return;
+              const timeLabel =
+                record?.prepTime ||
+                (Number.isFinite(Number(record?.readingTimeMin)) && Number(record?.readingTimeMin) > 0
+                  ? `${Math.round(Number(record.readingTimeMin))} min`
+                  : '') ||
+                record?.publishedAt ||
+                record?.date ||
+                record?.modified ||
+                record?.updated ||
+                record?.updatedAt ||
+                record?.createdAt ||
+                '';
+
+              const originalImage = normalizeLegacyUploadsUrl(
+                record?.featured_image?.url ||
+                record?.featuredImage?.url ||
+                record?.image ||
+                ''
+              );
+
+              recipes.push({
+                slug,
+                title,
+                description: record?.excerpt || record?.content || '',
+                image: toOptimizedCardImage(originalImage),
+                imageFallback: originalImage,
+                filterKey,
+                difficulty: toRecipeTagLabel(categoryLabel),
+                prepTime: formatRecipeTime(timeLabel),
+              });
+            });
+
+            if (recipes.length === 0) {
+              grid.dataset.suggestedHydrated = 'true';
+              setSuggestedLoading(false);
+              return;
+            }
+
+            shuffleInPlace(recipes);
+
+            let pointer = 0;
+            const chunkSize = 24;
+
+            await new Promise((resolve) => {
+              const pump = () => {
+                const fragment = document.createDocumentFragment();
+                let appended = 0;
+
+                while (pointer < recipes.length && appended < chunkSize) {
+                  const card = buildCardElement(templateCard, recipes[pointer], cards.length);
+                  pointer += 1;
+                  if (!card) continue;
+                  cards.push(card);
+                  fragment.appendChild(card);
+                  appended += 1;
+                }
+
+                if (fragment.childNodes.length > 0) {
+                  grid.appendChild(fragment);
+                }
+
+                if (pointer < recipes.length) {
+                  if (typeof window.requestIdleCallback === 'function') {
+                    window.requestIdleCallback(pump, { timeout: 350 });
+                  } else {
+                    window.setTimeout(pump, 16);
+                  }
+                  return;
+                }
+
+                resolve(null);
+              };
+
+              pump();
+            });
+
+            grid.dataset.suggestedHydrated = 'true';
+            setSuggestedLoading(false);
+            applyFilters();
+          } catch (error) {
+            console.warn('[SUGGESTED] Failed to hydrate additional recipes:', error);
+            grid.dataset.suggestedHydrated = 'error';
+            setSuggestedLoading(false);
+          }
+        })();
+
+        await hydrationPromise;
+        hydrationPromise = null;
+      };
+
+      const getFilteredCards = () =>
+        cards.filter((card) => {
+          const category = String(card.getAttribute('data-category') || 'toutes').toLowerCase();
+          return activeFilter === 'toutes' || category === activeFilter;
+        });
+
+      const applyFilters = (resetPage = false) => {
+        const filteredCards = getFilteredCards();
+        const knownTotalCount =
+          activeFilter === 'toutes' && grid?.dataset.suggestedHydrated !== 'true'
+            ? Math.max(totalAvailableCount, filteredCards.length)
+            : filteredCards.length;
+        const totalPages = Math.max(1, Math.ceil(knownTotalCount / cardsPerPage));
+        if (resetPage) {
+          activePage = 1;
+        } else {
+          activePage = Math.min(activePage, totalPages);
+        }
+
+        const start = (activePage - 1) * cardsPerPage;
+        const end = start + cardsPerPage;
+        const visibleCards = new Set(filteredCards.slice(start, end));
+
+        cards.forEach((card) => {
+          const isVisible = visibleCards.has(card);
+          card.classList.toggle('hidden', !isVisible);
+          card.setAttribute('aria-hidden', String(!isVisible));
+        });
+
+        renderPagination(totalPages);
+
+        filterItems.forEach((item) => {
+          const value = String(item.getAttribute('data-filter-value') || '').toLowerCase();
+          const isActive = value === activeFilter;
+          item.setAttribute('aria-current', isActive ? 'true' : 'false');
+          const check = item.querySelector('[data-filter-check]');
+          const box = item.querySelector('[data-filter-checkbox]');
+          if (check && box) {
+            check.classList.toggle('opacity-0', !isActive);
+            box.classList.toggle('border-primary-turquoise', isActive);
+          }
+        });
+      };
+
+      filterItems.forEach((item) => {
+        item.addEventListener('click', async (event) => {
+          event.preventDefault();
+          const nextFilter = String(item.getAttribute('data-filter-value') || '').toLowerCase();
+          if (!['toutes', 'sucrees', 'salees'].includes(nextFilter)) return;
+          if (nextFilter !== 'toutes' && grid?.dataset.suggestedHydrated !== 'true') {
+            await hydrateSuggestedFromSearchIndex();
+          }
+          activeFilter = nextFilter;
+          applyFilters(true);
+        });
+      });
+
+      paginationPrev?.addEventListener('click', () => {
+        if (activePage <= 1) return;
+        activePage -= 1;
+        applyFilters();
+      });
+
+      paginationNext?.addEventListener('click', async () => {
+        const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+        if (activePage >= totalPagesBeforeHydration && grid?.dataset.suggestedHydrated !== 'true') {
+          await hydrateSuggestedFromSearchIndex();
+        }
+        const totalPages = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+        if (activePage >= totalPages) return;
+        activePage += 1;
+        applyFilters();
+      });
+
+      paginationPages?.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const page = Number(target.getAttribute('data-page') || '');
+        if (!Number.isFinite(page) || page <= 0) return;
+        const handlePageClick = async () => {
+          const totalPagesBeforeHydration = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+          if (page > totalPagesBeforeHydration && grid?.dataset.suggestedHydrated !== 'true') {
+            await hydrateSuggestedFromSearchIndex();
+          }
+          activePage = page;
+          applyFilters();
+        };
+        handlePageClick();
+      });
+
+      applyFilters(true);
+    });
+  }
+
+  function scheduleSuggestedRecipes() {
+    const sections = Array.from(document.querySelectorAll('[data-suggested-recipes]'));
+    sections.forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
+      if (section.dataset.suggestedObserverBound === 'true') return;
+      section.dataset.suggestedObserverBound = 'true';
+
+      const start = () => setupSuggestedRecipes();
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          start();
+        }, {
+          rootMargin: '240px 0px',
+          threshold: 0.01,
+        });
+
+        observer.observe(section);
+        return;
+      }
+
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => start(), { timeout: 1500 });
+      } else {
+        window.setTimeout(() => start(), 400);
+      }
+    });
+  }
+
+  scheduleSuggestedRecipes();
+  document.addEventListener('astro:page-load', scheduleSuggestedRecipes);
+</script>
+
+<style>
+  .recipe-suggested-heading-row {
+    padding-top: 6px;
+    padding-bottom: 4px;
+  }
+
+  .suggested-grid {
+    justify-content: center;
+  }
+
+  .suggested-card-shell {
+    display: flex;
+  }
+
+  @media (max-width: 1180px) {
+    [data-suggested-recipes] .relative.z-10 {
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+  }
+</style>
+
+<style>
+.suggested-arrow-btn {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.suggested-arrow-btn:hover {
+  transform: translateY(-1px);
+}
+
+.suggested-arrow-btn:disabled,
+.suggested-arrow-btn[aria-disabled='true'] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.suggested-arrow-btn-icon {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+.suggested-arrow-btn-icon--prev {
+  transform: rotate(-90deg);
+}
+
+.suggested-arrow-btn-icon--next {
+  transform: rotate(90deg);
+}
+
+.suggested-card-shell {
+  contain-intrinsic-size: auto 780px;
+}
+</style>
+

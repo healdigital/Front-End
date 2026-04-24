@@ -1,14 +1,405 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+
+const navLinks = [
+  {
+    label: "Mes livres",
+    description: "Tous les ouvrages, extraits et apercus.",
+    active: true,
+  },
+  {
+    label: "Chocolat maison",
+    description: "Le livre consacre au chocolat et ses videos.",
+    href: "/chocolat-maison/",
+  },
+];
+
+const books = [
+  {
+    id: "vege",
+    title: "Vege-Terrien",
+    cover: "/images/book-vege-terrien.jpeg",
+    alt: "Livre Vege-Terrien",
+    summary:
+      "Un tour du monde vegetal avec des recettes salees et sucrees, pour cuisiner au quotidien avec precision.",
+    buyUrl:
+      "https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d",
+  },
+  {
+    id: "bouchee",
+    title: "Je n'en ferai qu'une bouchee",
+    cover: "/images/book-bouchee.jpg",
+    alt: "Livre Je n en ferai qu une bouchee",
+    summary:
+      "Recettes du monde a picorer, idees rapides, saveurs franches et mises en scene gourmandes.",
+    buyUrl:
+      "https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21",
+  },
+  {
+    id: "desserts",
+    title: "Mes desserts",
+    cover: "/images/book-mes-desserts.jpg",
+    alt: "Livre Mes desserts",
+    summary:
+      "Un recueil dessert concentre sur la methode, les textures et des recettes fiables a refaire chez soi.",
+    buyUrl:
+      "https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F",
+  },
+  {
+    id: "grain",
+    title: "Mon grain de sel",
+    cover: "/images/book-mon-grain-de-sel.jpg",
+    alt: "Livre Mon grain de sel",
+    summary:
+      "Cuisine salee de transmission, recettes structurees et techniques applicables en cuisine quotidienne.",
+    buyUrl:
+      "https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88",
+  },
+  {
+    id: "chocolat",
+    title: "Je fais mon chocolat maison",
+    cover: "/images/book-je-fais-mon-chocolat-maison.png",
+    alt: "Livre Je fais mon chocolat maison",
+    summary:
+      "Pas-a-pas complet pour comprendre la fabrication du chocolat maison et maitriser les bases.",
+    buyUrl: "https://lacuisinedebernard.com/produit/je-fais-mon-chocolat-maison/",
+  },
+  {
+    id: "asie",
+    title: "Asie sucree",
+    cover: "/images/book-asie-sucree.jpg",
+    alt: "Livre Asie sucree",
+    summary:
+      "Patisseries et douceurs d'Asie, avec des methodes detaillees et des recettes testees plusieurs fois.",
+    buyUrl: "https://www.amazon.fr/Asie-Sucree-Bernard-Laurance/dp/2081413043",
+  },
+  {
+    id: "lcdb",
+    title: "La cuisine de Bernard",
+    cover: "/images/book-lacuisinedebernard.jpg",
+    alt: "Livre La cuisine de Bernard",
+    summary:
+      "Selection de recettes iconiques du blog, organisees pour un usage pratique a la maison.",
+    buyUrl:
+      "https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd",
+  },
+];
 ---
 
-<BaseLayout title="Mes Livres">
-  <StaticPage title="Mes Livres" subtitle="My Books">
-    <StaticPageContent
-      slug="mes-livres"
-      sourceUrl="https://lacuisinedebernard.com/mes-livres/"
-    />
+<BaseLayout title="Mes livres">
+  <StaticPage
+    title="Mes livres"
+    subtitle="Sommaires, apercus et extraits de mes ouvrages."
+    className="menu-page menu-page--books"
+    navLinks={navLinks}
+  >
+    <section class="books-library-cleanup">
+      <p class="books-library-kicker">Bibliotheque</p>
+      <h2 class="books-library-title">Les livres de Bernard</h2>
+      <p class="books-library-description">
+        Cliquez sur un livre pour afficher son apercu et son resume. La liste est
+        nettoyee avec des titres uniques, sans doublons.
+      </p>
+
+      <div class="books-library-grid" role="tablist" aria-label="Liste des livres">
+        {books.map((book, index) => (
+          <button
+            type="button"
+            class:list={["books-library-item", index === 0 && "is-active"]}
+            data-book-tab
+            data-book-id={book.id}
+            role="tab"
+            aria-selected={index === 0 ? "true" : "false"}
+            aria-controls={`book-panel-${book.id}`}
+            id={`book-tab-${book.id}`}
+          >
+            <figure class="books-library-cover-shell">
+              <img
+                src={book.cover}
+                alt={book.alt}
+                class="books-library-cover"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="920"
+              />
+            </figure>
+            <span class="books-library-item-title">{book.title}</span>
+          </button>
+        ))}
+      </div>
+
+      <div class="books-library-preview" data-book-preview-root>
+        {books.map((book, index) => (
+          <article
+            id={`book-panel-${book.id}`}
+            class:list={["books-library-preview-panel", index !== 0 && "hidden"]}
+            role="tabpanel"
+            aria-labelledby={`book-tab-${book.id}`}
+            tabindex={index === 0 ? "0" : "-1"}
+            data-book-panel
+            data-book-id={book.id}
+          >
+            <div class="books-library-preview-media">
+              <img
+                src={book.cover}
+                alt={book.alt}
+                class="books-library-preview-cover"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="920"
+              />
+            </div>
+            <div class="books-library-preview-content">
+              <p class="books-library-preview-kicker">Apercu du livre</p>
+              <h3 class="books-library-preview-title">{book.title}</h3>
+              <p class="books-library-preview-summary">{book.summary}</p>
+              <div class="books-library-preview-actions">
+                <a
+                  href={book.buyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="books-library-preview-cta"
+                >
+                  Voir le livre
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   </StaticPage>
 </BaseLayout>
+
+<script>
+  const setupBooksTabs = () => {
+    const tabs = Array.from(document.querySelectorAll("[data-book-tab]"));
+    const panels = Array.from(document.querySelectorAll("[data-book-panel]"));
+    if (!tabs.length || !panels.length) return;
+
+    const setActive = (id) => {
+      tabs.forEach((tab) => {
+        if (!(tab instanceof HTMLButtonElement)) return;
+        const isActive = tab.dataset.bookId === id;
+        tab.classList.toggle("is-active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      panels.forEach((panel) => {
+        if (!(panel instanceof HTMLElement)) return;
+        const isActive = panel.dataset.bookId === id;
+        panel.classList.toggle("hidden", !isActive);
+        panel.tabIndex = isActive ? 0 : -1;
+      });
+    };
+
+    tabs.forEach((tab) => {
+      if (!(tab instanceof HTMLButtonElement)) return;
+      tab.addEventListener("click", () => {
+        const id = tab.dataset.bookId;
+        if (!id) return;
+        setActive(id);
+      });
+    });
+  };
+
+  setupBooksTabs();
+  document.addEventListener("astro:page-load", setupBooksTabs);
+</script>
+
+<style is:global>
+  .static-page.menu-page--books .static-page-body {
+    padding: clamp(20px, 3vw, 36px);
+  }
+
+  .static-page.menu-page--books .books-library-cleanup {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .static-page.menu-page--books .books-library-kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #6d7278;
+  }
+
+  .static-page.menu-page--books .books-library-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(2.1rem, 5vw, 3.45rem);
+    line-height: 0.98;
+    color: #141d2a;
+  }
+
+  .static-page.menu-page--books .books-library-description {
+    margin: 0;
+    max-width: 62ch;
+    color: #4f5660;
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.62;
+  }
+
+  .static-page.menu-page--books .books-library-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.05rem;
+    margin-top: 0.8rem;
+    align-items: start;
+  }
+
+  .static-page.menu-page--books .books-library-item {
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .static-page.menu-page--books .books-library-cover-shell {
+    margin: 0;
+    border: 1px solid #d8d2c2;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #faf8f2;
+    box-shadow: 0 14px 36px rgba(16, 25, 37, 0.08);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .static-page.menu-page--books .books-library-item:hover .books-library-cover-shell,
+  .static-page.menu-page--books .books-library-item.is-active .books-library-cover-shell {
+    border-color: #54b6b1;
+    box-shadow: 0 16px 32px rgba(13, 37, 44, 0.18);
+    transform: translateY(-2px);
+  }
+
+  .static-page.menu-page--books .books-library-cover {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .static-page.menu-page--books .books-library-item-title {
+    margin: 0.7rem 0 0;
+    display: block;
+    font-family: var(--font-body);
+    font-size: 1.03rem;
+    line-height: 1.35;
+    color: #1a2335;
+  }
+
+  .static-page.menu-page--books .books-library-preview {
+    margin-top: 0.6rem;
+  }
+
+  .static-page.menu-page--books .books-library-preview-panel {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 1.4rem;
+    align-items: center;
+    border: 1px solid #d8d2c2;
+    border-radius: 16px;
+    background: #f7f5ef;
+    padding: 1rem;
+  }
+
+  .static-page.menu-page--books .books-library-preview-media {
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #faf8f2;
+  }
+
+  .static-page.menu-page--books .books-library-preview-cover {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  .static-page.menu-page--books .books-library-preview-kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5f6671;
+  }
+
+  .static-page.menu-page--books .books-library-preview-title {
+    margin: 0.45rem 0 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.3vw, 2.8rem);
+    line-height: 0.95;
+  }
+
+  .static-page.menu-page--books .books-library-preview-summary {
+    margin: 0.9rem 0 0;
+    color: #4f5765;
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .static-page.menu-page--books .books-library-preview-actions {
+    margin-top: 1rem;
+  }
+
+  .static-page.menu-page--books .books-library-preview-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 20px;
+    border-radius: 2px;
+    background: #54b6b1;
+    color: #faf8f2 !important;
+    text-decoration: none !important;
+    font-family: var(--font-button);
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .static-page.menu-page--books .books-library-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .static-page.menu-page--books .books-library-description {
+      font-size: 17px;
+    }
+
+    .static-page.menu-page--books .books-library-preview-panel {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .static-page.menu-page--books .books-library-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .static-page.menu-page--books .books-library-item-title {
+      font-size: 1rem;
+    }
+  }
+</style>

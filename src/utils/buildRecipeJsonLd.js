@@ -1,4 +1,5 @@
 import { stripHtml } from './stripHtml.js';
+import { replaceCdnUrl } from './cdnUrlReplacer';
 
 const getBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env.PUBLIC_SITE_URL) {
@@ -20,6 +21,30 @@ const asPositiveInt = (value) => {
   if (!Number.isFinite(parsed)) return null;
   if (parsed < 0) return null;
   return Math.round(parsed);
+};
+
+const asPositiveNumber = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  if (parsed < 0) return null;
+  return parsed;
+};
+
+const toPositiveServings = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.max(1, Math.round(parsed));
+};
+
+const extractServingsCount = (servingsCount, servingsLabel) => {
+  const direct = toPositiveServings(servingsCount);
+  if (direct !== null) return direct;
+
+  if (typeof servingsLabel !== 'string') return null;
+  const normalized = servingsLabel.replace(',', '.');
+  const match = normalized.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  return toPositiveServings(match[1]);
 };
 
 const asSlug = (value) => {
@@ -51,7 +76,7 @@ const extractImageUrls = (source) => {
       })
     : [];
 
-  return Array.from(new Set([...direct, ...gallery]));
+  return Array.from(new Set([...direct, ...gallery].map((url) => replaceCdnUrl(url))));
 };
 
 const extractKeywordString = (source) => {
@@ -92,9 +117,48 @@ const normalizeFromRecipeBlockArticle = (source) => {
     source.recipeBlocks.find((block) => block?.blockType === 'recipeCard') || source.recipeBlocks[0];
   if (!recipeBlock) return null;
 
+  const blockNutrition = recipeBlock?.nutrition && typeof recipeBlock.nutrition === 'object'
+    ? recipeBlock.nutrition
+    : null;
+  const servingsCount = extractServingsCount(recipeBlock.servingsCount, recipeBlock.servings);
+  const totalCalories = asPositiveNumber(blockNutrition?.totalCaloriesKcal);
+  const perServingCalories =
+    asPositiveNumber(blockNutrition?.caloriesKcal) !== null
+      ? asPositiveNumber(blockNutrition?.caloriesKcal)
+      : totalCalories !== null && servingsCount !== null
+        ? Math.round((totalCalories / servingsCount) * 10) / 10
+        : null;
+
+  const normalizedNutrition = blockNutrition
+    ? {
+        calories: perServingCalories !== null
+          ? `${perServingCalories} kcal`
+          : undefined,
+        protein: asPositiveNumber(blockNutrition.proteinGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.proteinGrams)} g`
+          : undefined,
+        carbohydrates: asPositiveNumber(blockNutrition.carbohydratesGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.carbohydratesGrams)} g`
+          : undefined,
+        fat: asPositiveNumber(blockNutrition.fatGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.fatGrams)} g`
+          : undefined,
+        fiber: asPositiveNumber(blockNutrition.fiberGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.fiberGrams)} g`
+          : undefined,
+        sugar: asPositiveNumber(blockNutrition.sugarGrams) !== null
+          ? `${asPositiveNumber(blockNutrition.sugarGrams)} g`
+          : undefined,
+        sodium: asPositiveNumber(blockNutrition.sodiumMg) !== null
+          ? `${asPositiveNumber(blockNutrition.sodiumMg)} mg`
+          : undefined,
+      }
+    : null;
+
   const ingredients = Array.isArray(recipeBlock.ingredients)
     ? recipeBlock.ingredients
         .map((ingredient) => {
+          if (ingredient?.isGroupHeading) return '';
           const quantity = asText(ingredient?.quantity);
           const item = asText(ingredient?.item);
           const notes = asText(ingredient?.notes);
@@ -124,14 +188,15 @@ const normalizeFromRecipeBlockArticle = (source) => {
     authorName: asText(source?.author?.name) || 'Bernard',
     datePublished: asText(source?.date),
     dateModified: asText(source?.modified || source?.updated || source?.date),
-    recipeYield: asText(recipeBlock.servings),
+    recipeYield: asText(recipeBlock.servings) || (servingsCount ? String(servingsCount) : ''),
     prepMinutes: asPositiveInt(recipeBlock.preparationTimeMinutes),
     cookMinutes: asPositiveInt(recipeBlock.cookingTimeMinutes),
-    recipeCategory: extractCategory(source),
-    recipeCuisine: asText(source?.cuisine),
+    recipeCategory: asText(recipeBlock.dishType) || asText(recipeBlock.recipeType) || extractCategory(source),
+    recipeCuisine: asText(recipeBlock.cuisine) || asText(source?.cuisine),
     keywords: extractKeywordString(source),
     ingredients,
     instructions,
+    nutrition: normalizedNutrition,
   };
 };
 

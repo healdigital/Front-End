@@ -46,12 +46,12 @@ try {
   }
 
   if (disableSearch) {
-    console.log('BUILD_DISABLE_SEARCH enabled: skipping search index generation.');
+    console.log('BUILD_DISABLE_SEARCH is enabled: skipping search index generation.');
   } else {
     run('npm run generate-search-index', env);
   }
 
-  run('npx astro build', env);
+  run('node ./node_modules/astro/astro.js build', env);
 
   if (autoAlgoliaIndex) {
     console.log('ALGOLIA_AUTO_INDEX enabled: indexing articles...');
@@ -65,12 +65,8 @@ try {
     rmSync('dist/author', { recursive: true, force: true });
     rmSync('dist/test-golden-recipe', { recursive: true, force: true });
     rmSync('dist/test-translation', { recursive: true, force: true });
-    if (disableSearch) {
-      rmSync('dist/search', { recursive: true, force: true });
-      console.log('Removed category/tag/author/search/test routes for article-only deploy.');
-    } else {
-      console.log('Removed category/tag/author/test routes for article-only deploy.');
-    }
+    // Keep /search route available in article-only deploys.
+    console.log('Removed category/tag/author/test routes for article-only deploy.');
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

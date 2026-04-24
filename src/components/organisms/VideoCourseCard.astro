@@ -1,0 +1,219 @@
+---
+import Button from '../atoms/Button.astro';
+import Icon from '../atoms/Icon.astro';
+import type { VideoCourse } from '../../lib/videoCourses';
+
+interface Props {
+  course: VideoCourse;
+  featured?: boolean;
+}
+
+const { course, featured = false } = Astro.props as Props;
+
+const metaItems = [
+  course.duration ? { icon: 'clock' as const, label: course.duration } : null,
+  typeof course.lessonCount === 'number' && course.lessonCount > 0
+    ? { icon: 'video' as const, label: `${course.lessonCount} leçons` }
+    : null,
+  { icon: 'download' as const, label: 'Accès immédiat' },
+].filter(Boolean) as Array<{ icon: 'clock' | 'video' | 'download'; label: string }>;
+---
+
+<article
+  class:list={[
+    'video-course-card rounded-[12px] border border-[#D8D2C2] bg-[#F7F5EF] overflow-hidden',
+    featured ? 'video-course-card--featured' : 'video-course-card--default',
+  ]}
+>
+  <div class:list={['video-course-card-media', featured && 'video-course-card-media--featured']}>
+    <img
+      src={course.image || '/images/masterclass-video.jpg'}
+      alt={course.title}
+      class="video-course-card-media-image"
+      loading="lazy"
+      decoding="async"
+      width={featured ? 960 : 640}
+      height={featured ? 720 : 480}
+      sizes={featured ? "(min-width: 1200px) 48vw, (min-width: 900px) 52vw, 100vw" : "(min-width: 1200px) 28vw, (min-width: 768px) 44vw, 92vw"}
+    />
+  </div>
+
+  <div class:list={['video-course-card-body', featured && 'video-course-card-body--featured']}>
+    <div class="video-course-card-copy">
+      <p class="video-course-card-kicker">Cours vid&eacute;o</p>
+      <h3 class:list={['video-course-card-title', featured && 'video-course-card-title--featured']}>
+        {course.title}
+      </h3>
+
+      {metaItems.length > 0 && (
+        <div class="video-course-card-meta">
+          {metaItems.map((item) => (
+            <span class="video-course-card-meta-item">
+              <Icon name={item.icon} size="sm" />
+              <span>{item.label}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <p class:list={['video-course-card-description', featured && 'video-course-card-description--featured']}>
+        {course.shortDescription}
+      </p>
+    </div>
+
+    <a
+      href={course.courseUrl}
+      class:list={[
+        'video-course-card-cta',
+        featured && 'video-course-card-cta--featured',
+      ]}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Voir le cours
+    </a>
+  </div>
+</article>
+
+<style>
+  .video-course-card {
+    display: grid;
+    min-width: 0;
+    box-shadow: 0 16px 34px rgba(17, 25, 39, 0.08);
+  }
+
+  .video-course-card--featured {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  }
+
+  .video-course-card--default {
+    grid-template-rows: auto 1fr;
+    height: 100%;
+  }
+
+  .video-course-card-media {
+    position: relative;
+    min-height: 0;
+    background: #ece7d9;
+  }
+
+  .video-course-card-media--featured {
+    min-height: 100%;
+  }
+
+  .video-course-card-media-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    object-fit: cover;
+  }
+
+  .video-course-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.1rem;
+    padding: 1.35rem;
+  }
+
+  .video-course-card-body--featured {
+    padding: 1.6rem;
+  }
+
+  .video-course-card-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.95rem;
+  }
+
+  .video-course-card-kicker {
+    margin: 0;
+    color: #5f6671;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .video-course-card-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 1.75vw, 1.75rem);
+    line-height: 1.04;
+  }
+
+  .video-course-card-title--featured {
+    font-size: clamp(1.7rem, 2.2vw, 2.25rem);
+  }
+
+  .video-course-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1rem;
+    padding-bottom: 0.95rem;
+    border-bottom: 1px solid #d8d2c2;
+    color: #2f3642;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .video-course-card-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
+  }
+
+  .video-course-card-description {
+    margin: 0;
+    color: #5f6671;
+    font-size: 1rem;
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .video-course-card-description--featured {
+    -webkit-line-clamp: 4;
+  }
+
+  .video-course-card-cta {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    color: #54b6b1;
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 15px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .video-course-card-cta--featured {
+    margin-top: 0.25rem;
+  }
+
+  .video-course-card-cta:visited,
+  .video-course-card-cta:hover,
+  .video-course-card-cta:focus-visible {
+    color: #2f9f99;
+    text-decoration: none;
+  }
+
+  @media (max-width: 899px) {
+    .video-course-card--featured {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .video-course-card-title--featured {
+      font-size: clamp(1.75rem, 7vw, 2.3rem);
+    }
+  }
+</style>

@@ -1,4 +1,19 @@
-import algoliasearch from 'algoliasearch';
+import * as algoliasearchModule from 'algoliasearch';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Handle different Algolia package export shapes
+let algoliasearch;
+if (typeof algoliasearchModule.algoliasearch === 'function') {
+  algoliasearch = algoliasearchModule.algoliasearch;
+} else if (typeof algoliasearchModule.default === 'function') {
+  algoliasearch = algoliasearchModule.default;
+} else if (typeof algoliasearchModule === 'function') {
+  algoliasearch = algoliasearchModule;
+} else {
+  console.error('[ALGOLIA] Could not resolve algoliasearch function from package.');
+  process.exit(1);
+}
 
 const appId = process.env.ALGOLIA_APP_ID || process.env.PUBLIC_ALGOLIA_APP_ID;
 const adminKey = process.env.ALGOLIA_ADMIN_KEY || process.env.ALGOLIA_WRITE_KEY;
@@ -10,6 +25,56 @@ if (!appId || !adminKey) {
 
 const indexPrefix = process.env.ALGOLIA_INDEX_PREFIX || 'lcdb_recipes';
 const batchSize = Number(process.env.ALGOLIA_BATCH_SIZE || 500);
+const preparedJsonPath = path.join(process.cwd(), 'prepared-articles.json');
+
+const maybeRepairMojibake = (value) => {
+  const text = String(value || '');
+  if (!/(Ã.|Â.|â€|â€™|â€œ|â€|â€“|â€”|â€¦)/.test(text)) return text;
+
+  try {
+    const repaired = Buffer.from(text, 'latin1').toString('utf8');
+    return repaired.includes('\uFFFD') ? text : repaired;
+  } catch {
+    return text;
+  }
+};
+
+const decodeHtmlEntities = (value) =>
+  String(value || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&rsquo;/g, '’')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&rdquo;/g, '”')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&hellip;/g, '…')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)));
+
+const getAlgoliaSource = () => String(process.env.ALGOLIA_SOURCE || '').trim().toLowerCase();
+
+const shouldUsePreparedFirst = () => {
+  const source = getAlgoliaSource();
+  return source !== 'mongo' && source !== 'api';
+};
+
+const readPreparedArticles = () => {
+  if (!fs.existsSync(preparedJsonPath)) return null;
+
+  try {
+    const raw = fs.readFileSync(preparedJsonPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (error) {
+    console.warn('[ALGOLIA] Failed to parse prepared-articles.json:', error?.message || error);
+    return null;
+  }
+};
 
 const normalizeLang = (value) =>
   String(value || 'en')
@@ -19,7 +84,8 @@ const normalizeLang = (value) =>
 
 const buildIndexName = (lang) => `${indexPrefix}_${normalizeLang(lang)}`;
 
-const stripHtml = (value) => String(value || '').replace(/<[^>]*>/g, ' ');
+const stripHtml = (value) =>
+  maybeRepairMojibake(decodeHtmlEntities(String(value || '').replace(/<[^>]*>/g, ' ')));
 
 const richTextToPlain = (value) => {
   if (!value) return '';
@@ -30,10 +96,10 @@ const richTextToPlain = (value) => {
         if (!item) return '';
         if (typeof item === 'string') return stripHtml(item);
         if (typeof item === 'object') {
-          if (typeof item.text === 'string') return item.text;
+          if (typeof item.text === 'string') return stripHtml(item.text);
           if (Array.isArray(item.children)) {
             return item.children
-              .map((child) => (typeof child?.text === 'string' ? child.text : ''))
+              .map((child) => (typeof child?.text === 'string' ? stripHtml(child.text) : ''))
               .join(' ');
           }
         }
@@ -42,10 +108,10 @@ const richTextToPlain = (value) => {
       .join(' ');
   }
   if (typeof value === 'object') {
-    if (typeof value.text === 'string') return value.text;
+    if (typeof value.text === 'string') return stripHtml(value.text);
     if (Array.isArray(value.children)) {
       return value.children
-        .map((child) => (typeof child?.text === 'string' ? child.text : ''))
+        .map((child) => (typeof child?.text === 'string' ? stripHtml(child.text) : ''))
         .join(' ');
     }
   }
@@ -54,9 +120,9 @@ const richTextToPlain = (value) => {
 
 const entityName = (value) => {
   if (!value) return '';
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') return stripHtml(value);
   if (typeof value === 'object') {
-    return value.name || value.title || value.label || '';
+    return stripHtml(value.name || value.title || value.label || '');
   }
   return '';
 };
@@ -101,9 +167,23 @@ const processArticleImageUrl = (article) => {
 };
 
 async function fetchArticles() {
-  // Dynamic import keeps this script compatible with tsx in CJS/ESM contexts.
-  const { getAllArticlesFromMongo: getArticles } = await import('../src/lib/mongo.server.ts');
-  let articles = await getArticles();
+  if (shouldUsePreparedFirst()) {
+    const prepared = readPreparedArticles();
+    if (Array.isArray(prepared) && prepared.length > 0) {
+      console.log(`[ALGOLIA] Using prepared-articles.json (${prepared.length} articles).`);
+      return prepared;
+    }
+    console.warn('[ALGOLIA] prepared-articles.json not found/empty. Falling back to Mongo/API.');
+  }
+
+  // Try to load Mongo helper; gracefully fallback to Payload API if TS import fails.
+  let articles = [];
+  try {
+    const { getAllArticlesFromMongo: getArticles } = await import('../src/lib/mongo.server.ts');
+    articles = await getArticles();
+  } catch (err) {
+    console.warn('[ALGOLIA] Could not import Mongo helper, falling back to Payload API. Error:', err?.message || err);
+  }
 
   if (!Array.isArray(articles) || articles.length === 0) {
     const payloadApiUrl = process.env.PUBLIC_PAYLOAD_API_URL || process.env.PAYLOAD_API_URL;
@@ -164,7 +244,7 @@ function buildRecord(article) {
   return {
     objectID,
     id,
-    title: article.title || '',
+    title: stripHtml(article.title || ''),
     slug,
     url: `/${slug}`,
     language,
@@ -176,7 +256,7 @@ function buildRecord(article) {
     publishedAt: article.publishedAt || article.date || article.modified || '',
     featured_image: {
       url: processArticleImageUrl(article),
-      alt: article.featured_image?.alt || article.title || '',
+      alt: stripHtml(article.featured_image?.alt || article.title || ''),
     },
   };
 }
@@ -203,14 +283,16 @@ async function indexAlgolia() {
   }
 
   const client = algoliasearch(appId, adminKey);
+  const supportsTopLevelIndexing =
+    typeof client.setSettings === 'function' &&
+    typeof client.saveObjects === 'function';
 
   for (const [langKey, records] of recordsByLang.entries()) {
     const indexName = buildIndexName(langKey);
-    const index = client.initIndex(indexName);
 
     console.log(`[ALGOLIA] Indexing ${records.length} records -> ${indexName}`);
 
-    await index.setSettings({
+    const indexSettings = {
       searchableAttributes: [
         'title',
         'excerpt',
@@ -220,7 +302,38 @@ async function indexAlgolia() {
         'author',
       ],
       attributesForFaceting: ['filterOnly(language)'],
-    });
+    };
+
+    if (supportsTopLevelIndexing) {
+      await client.setSettings({
+        indexName,
+        indexSettings,
+      });
+
+      for (let i = 0; i < records.length; i += batchSize) {
+        const batch = records.slice(i, i + batchSize);
+        await client.saveObjects({
+          indexName,
+          objects: batch,
+        });
+        console.log(`[ALGOLIA] ${indexName}: ${Math.min(i + batch.length, records.length)}/${records.length}`);
+      }
+
+      continue;
+    }
+
+    // Backward compatibility for older clients.
+    let index;
+    if (typeof client.initIndex === 'function') {
+      index = client.initIndex(indexName);
+    } else if (typeof client.index === 'function') {
+      index = client.index(indexName);
+    } else {
+      console.warn(`[ALGOLIA] Client does not support index operations. Skipping index: ${indexName}`);
+      continue;
+    }
+
+    await index.setSettings(indexSettings);
 
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);

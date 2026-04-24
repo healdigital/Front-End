@@ -3,46 +3,316 @@ interface Props {
   identifier: string;
   url: string;
   title?: string;
+  showTitle?: boolean;
+  showComposerPreview?: boolean;
 }
 
-const { identifier, url, title } = Astro.props;
-const shortname = import.meta.env.PUBLIC_DISQUS_SHORTNAME || '';
-const isConfigured = Boolean(shortname && identifier && url);
+const { identifier, url, title, showTitle = true, showComposerPreview = false } = Astro.props;
+const shortname = String(
+  import.meta.env.PUBLIC_DISQUS_SHORTNAME ||
+    import.meta.env.DISQUS_SHORTNAME ||
+    "lcdb",
+).trim();
+
+const normalizedUrl = (() => {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw);
+    parsed.hash = "";
+    parsed.search = "";
+    parsed.pathname = `${parsed.pathname.replace(/\/+$/, "")}/`;
+    return parsed.toString();
+  } catch {
+    return raw.replace(/[?#].*$/, "").replace(/\/+$/, "") + "/";
+  }
+})();
+
+const normalizedIdentifier = (() => {
+  const raw = String(identifier || "").trim();
+  if (raw) return raw;
+
+  try {
+    const parsed = new URL(normalizedUrl);
+    return parsed.pathname.replace(/^\/+|\/+$/g, "") || "article";
+  } catch {
+    return "article";
+  }
+})();
+
+const isConfigured = Boolean(shortname && normalizedIdentifier && normalizedUrl);
 ---
 
-<div id="comments-section" class="mt-8" data-no-translate="true">
-  <h3 class="text-2xl font-bold mb-4">Comments</h3>
+<section id="comments-section" class="comments-shell" data-no-translate="true">
+  {showTitle && <h3 class="comments-title">Commentaires</h3>}
+
+  {showComposerPreview && (
+    <div class="comments-compose">
+      <div class="comments-compose-author">
+        <span class="comments-compose-avatar" aria-hidden="true">V</span>
+        <span class="comments-compose-name">Votre avis</span>
+      </div>
+      <button type="button" class="comments-compose-trigger" data-disqus-compose-trigger>
+        Écrivez votre message
+      </button>
+    </div>
+  )}
 
   {isConfigured ? (
     <>
+      <div
+        class="comments-loading"
+        data-disqus-loading
+        role="status"
+        aria-live="polite"
+      >
+        Chargement des commentaires...
+      </div>
       <div id="disqus_thread"></div>
       <script
         is:inline
-        define:vars={{ disqusUrl: url, disqusIdentifier: identifier, disqusTitle: title ?? identifier, disqusShortname: shortname }}
+        define:vars={{
+          disqusUrl: normalizedUrl,
+          disqusIdentifier: normalizedIdentifier,
+          disqusTitle: title ?? normalizedIdentifier,
+          disqusShortname: shortname,
+        }}
       >
         var disqus_config = function () {
           this.page.url = disqusUrl;
           this.page.identifier = disqusIdentifier;
           this.page.title = disqusTitle;
         };
-        (function () {
+
+        var disqusLoaded = false;
+        function loadDisqusEmbed() {
+          if (disqusLoaded) return;
+          disqusLoaded = true;
           var d = document, s = d.createElement('script');
           s.src = 'https://' + disqusShortname + '.disqus.com/embed.js';
           s.setAttribute('data-timestamp', Date.now().toString());
           (d.head || d.body).appendChild(s);
-        })();
+        }
+
+        var commentsSection = document.getElementById('comments-section');
+        var composeTrigger = commentsSection ? commentsSection.querySelector('[data-disqus-compose-trigger]') : null;
+        var loadingState = commentsSection ? commentsSection.querySelector('[data-disqus-loading]') : null;
+        var hideLoading = function () {
+          if (loadingState) loadingState.setAttribute('hidden', 'hidden');
+        };
+
+        if (composeTrigger) {
+          composeTrigger.addEventListener('click', function () {
+            loadDisqusEmbed();
+            window.setTimeout(function () {
+              var composeTarget = commentsSection.querySelector('textarea, iframe, [contenteditable="true"]');
+              if (composeTarget && typeof composeTarget.focus === 'function') {
+                composeTarget.focus();
+              } else {
+                var thread = document.getElementById('disqus_thread');
+                if (thread) thread.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+              hideLoading();
+            }, 650);
+          });
+        }
+
+        var hash = window.location.hash || '';
+        if (hash.indexOf('comment') !== -1 || hash === '#comments') {
+          loadDisqusEmbed();
+        } else if (commentsSection && 'IntersectionObserver' in window) {
+          var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) return;
+              observer.disconnect();
+              loadDisqusEmbed();
+            });
+          }, { rootMargin: '300px 0px' });
+          observer.observe(commentsSection);
+        } else {
+          loadDisqusEmbed();
+        }
+
+        window.setTimeout(hideLoading, 2200);
       </script>
       <noscript>
-        Please enable JavaScript to view the comments powered by Disqus.
+        Activez JavaScript pour afficher les commentaires propulsés par Disqus.
       </noscript>
     </>
   ) : (
-    <p class="text-gray-500 italic">Disqus is not configured.</p>
+    <p class="comments-unavailable">Disqus n’est pas configuré.</p>
   )}
-</div>
+</section>
 
 <style>
+  .comments-shell {
+    color: #1b1f22;
+  }
+
+  .comments-title {
+    margin: 0 0 1rem;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 2.6rem);
+    line-height: 1.02;
+    color: var(--lcdb-heading);
+  }
+
+  .comments-compose {
+    margin-bottom: 2rem;
+  }
+
+  .comments-compose-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: #161718;
+  }
+
+  .comments-compose-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: #eadfce;
+    color: #1a1b1e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .comments-compose-name {
+    font-size: 1rem;
+    line-height: 1.25;
+    font-weight: 500;
+  }
+
+  .comments-compose-trigger {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #ded8ca;
+    background: #f2efe5;
+    color: #66665f;
+    text-align: left;
+    padding: 0 16px;
+    font-size: 0.97rem;
+    line-height: 1.4;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .comments-compose-trigger:hover,
+  .comments-compose-trigger:focus-visible {
+    background: #f6f2e9;
+    border-color: #cfc7b6;
+    outline: none;
+  }
+
+  .comments-loading {
+    margin: 0 0 1rem;
+    color: var(--lcdb-muted);
+    font-size: 0.92rem;
+  }
+
   #disqus_thread {
-    margin-top: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .comments-unavailable {
+    color: var(--lcdb-muted);
+    font-style: italic;
+  }
+
+  #comments-section :global(#disqus_thread iframe) {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    border: 0;
+    background: transparent;
+  }
+
+  #comments-section :global(#disqus_thread textarea),
+  #comments-section :global(#disqus_thread input[type="text"]),
+  #comments-section :global(#disqus_thread input[type="email"]),
+  #comments-section :global(#disqus_thread [contenteditable="true"]) {
+    background: #f2efe5 !important;
+    border: 1px solid #ded8ca !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #1a1b1e !important;
+  }
+
+  #comments-section :global(#disqus_thread .post),
+  #comments-section :global(#disqus_thread li.post),
+  #comments-section :global(#disqus_thread .post-wrapper) {
+    margin: 0 !important;
+    padding: 2rem 0 !important;
+    border-top: 1px solid #d9d3c3 !important;
+    background: transparent !important;
+  }
+
+  #comments-section :global(#disqus_thread .post:first-child),
+  #comments-section :global(#disqus_thread li.post:first-child),
+  #comments-section :global(#disqus_thread .post-wrapper:first-child) {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-message),
+  #comments-section :global(#disqus_thread .post-body p),
+  #comments-section :global(#disqus_thread .post-content p) {
+    color: #2f3134 !important;
+    font-size: 0.98rem !important;
+    line-height: 1.78 !important;
+  }
+
+  #comments-section :global(#disqus_thread .author),
+  #comments-section :global(#disqus_thread .author-name) {
+    color: #161718 !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+  }
+
+  #comments-section :global(#disqus_thread .post-meta),
+  #comments-section :global(#disqus_thread .time-ago),
+  #comments-section :global(#disqus_thread .post-meta time) {
+    font-size: 0.92rem !important;
+    line-height: 1.3 !important;
+    color: #8c8a82 !important;
+  }
+
+  #comments-section :global(#disqus_thread .reply),
+  #comments-section :global(#disqus_thread .reply a),
+  #comments-section :global(#disqus_thread .post-actions a),
+  #comments-section :global(#disqus_thread .action-link) {
+    font-size: 0.96rem !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+  }
+
+  #comments-section :global(#disqus_thread .load-more),
+  #comments-section :global(#disqus_thread .pagination .btn),
+  #comments-section :global(#disqus_thread a.load-more),
+  #comments-section :global(#disqus_thread button.load-more) {
+    min-height: 46px !important;
+    padding: 0 28px !important;
+    border: 0 !important;
+    background: #58b9b3 !important;
+    color: #faf8f2 !important;
+    font-family: var(--font-button) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    text-decoration: none !important;
+  }
+
+  #comments-section :global(#disqus_thread .load-more:hover),
+  #comments-section :global(#disqus_thread .pagination .btn:hover),
+  #comments-section :global(#disqus_thread a.load-more:hover),
+  #comments-section :global(#disqus_thread button.load-more:hover) {
+    background: #4ea8a2 !important;
   }
 </style>

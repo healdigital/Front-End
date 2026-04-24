@@ -1,4 +1,5 @@
 ---
+import SocialShare from './molecules/SocialShare.astro';
 import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
 
 interface Props {
@@ -20,78 +21,74 @@ interface Props {
 
 const { article } = Astro.props;
 
-// Extract plain text from HTML excerpt
-const plainExcerpt = article.excerpt.rendered
-  .replace(/<[^>]*>/g, '')
-  .trim()
-  .substring(0, 150) + '...';
-
 const articleTitle = article.title.rendered.replace(/<[^>]*>/g, '');
+const rawExcerpt = article.excerpt.rendered.replace(/<[^>]*>/g, '').trim();
+const plainExcerpt = rawExcerpt.length > 150 ? `${rawExcerpt.substring(0, 150)}...` : rawExcerpt;
 const articleUrl = `/${article.slug}/`;
-const imageSrc = processArticleImageUrl(article) || 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(articleTitle);
+const imageSrc =
+  processArticleImageUrl(article) ||
+  `https://via.placeholder.com/400x300?text=${encodeURIComponent(articleTitle)}`;
 
-// Get author name
-const getAuthorName = () => {
-  if (!article.author) return 'La Cuisine De Bernard';
-  const author = authorsData.find((a: any) => a.user_id === article.author);
-  return author ? author.display_name : 'La Cuisine De Bernard';
-};
-
-const authorName = getAuthorName();
-
-// Format date
-const formattedDate = article.date 
-  ? new Date(article.date).toLocaleDateString('en-US', {
+const authorName = 'La Cuisine de Bernard';
+const formattedDate = article.date
+  ? new Date(article.date).toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     })
   : '';
 ---
 
-<article class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition duration-300">
-  <!-- Featured Image -->
-  <div class="relative h-48 bg-gray-200 overflow-hidden">
+<article class="overflow-hidden rounded-[10px] border border-border-primary bg-primary-white shadow-[0_6px_18px_rgba(17,17,17,0.04)] transition duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(17,17,17,0.08)] focus-within:-translate-y-[2px] focus-within:shadow-[0_10px_24px_rgba(17,17,17,0.08)] focus-within:ring-2 focus-within:ring-primary-turquoise/40">
+  <div class="relative h-48 overflow-hidden bg-primary-cream">
     <img
       src={imageSrc}
       alt={articleTitle}
-      class="w-full h-full object-cover transition duration-300 hover:scale-105"
+      class="h-full w-full object-cover transition duration-300 hover:scale-[1.04]"
       loading="lazy"
+      decoding="async"
+      width="640"
+      height="384"
+      sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
     />
   </div>
 
-  <!-- Content -->
-  <div class="p-6 flex flex-col h-full">
-    <!-- Title -->
-    <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2">
-      <a href={articleUrl} class="hover:text-blue-600 transition duration-200">
+  <div class="flex h-full flex-col p-6">
+    <h3 class="mb-3 text-lg font-semibold text-text-primary line-clamp-2">
+      <a
+        href={articleUrl}
+        class="rounded-sm transition duration-200 hover:text-primary-turquoise focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-turquoise/60"
+      >
         {articleTitle}
       </a>
     </h3>
 
-    <!-- Meta info (Date | Author) -->
-    <div class="text-xs text-gray-600 mb-3 flex items-center gap-2">
-      {formattedDate && (
-        <>
-          <span>{formattedDate}</span>
-          <span class="text-gray-400 author-meta">|</span>
-        </>
-      )}
-      <span class="author-meta">{authorName}</span>
+    <div class="mb-4 border-b border-border-primary/80 pb-4">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-xs text-text-secondary">
+          {formattedDate && (
+            <>
+              <span>{formattedDate}</span>
+              <span class="author-meta text-text-tertiary">|</span>
+            </>
+          )}
+          <span class="author-meta">{authorName}</span>
+        </div>
+
+        <SocialShare url={articleUrl} title={articleTitle} class="text-[18px]" />
+      </div>
     </div>
 
-    <!-- Excerpt -->
-    <p class="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
+    <p class="mb-4 flex-grow text-sm text-text-secondary line-clamp-3">
       {plainExcerpt}
     </p>
 
-    <!-- Read More Button -->
     <a
       href={articleUrl}
-      class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200 text-sm font-medium"
+      class="inline-flex items-center text-[13px] font-medium text-primary-turquoise underline underline-offset-4 transition-colors duration-200 hover:text-[#137f74]"
+      aria-label={`Lire l’article : ${articleTitle}`}
     >
-      Read More →
+      Lire la suite
     </a>
   </div>
 </article>
-

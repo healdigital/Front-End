@@ -1,5 +1,6 @@
 ---
 import SocialShare from '../molecules/SocialShare.astro';
+import { buildWordPressImageFallbackCandidates } from '../../utils/cdnUrlReplacer';
 
 /**
  * Props for the `RecipeCard` organism.
@@ -11,8 +12,14 @@ interface Props {
   slug: string;
   /** Hero image URL or asset reference. */
   image: string;
+  /** Optional original image fallback if optimized variant fails. */
+  imageFallback?: string;
   /** Short summary rendered in the description area. */
-  description: string;
+  description?: string;
+  /** Controls whether the description paragraph is rendered. */
+  showDescription?: boolean;
+  /** Controls whether the bottom "Lire la recette" CTA is rendered. */
+  showReadMore?: boolean;
   /** Preparation time label (for example, `25 min`). */
   prepTime: string;
   /** Difficulty label shown as a status badge. */
@@ -21,72 +28,134 @@ interface Props {
   category?: string;
   /** Controls the visual state of the favorite icon. */
   isFavorite?: boolean;
+  /** Optional extra classes for the card content wrapper. */
+  contentClass?: string;
+  /** Controls thumbnail shape rendering. */
+  imageAspect?: 'portrait' | 'square';
 }
 
 const {
   title,
   slug,
   image,
+  imageFallback = image,
   description,
+  showDescription = true,
+  showReadMore = false,
   prepTime,
   difficulty,
   category = 'RECETTE',
   isFavorite = false,
+  contentClass = '',
+  imageAspect = 'portrait',
 } = Astro.props;
 
 const MAX_LENGTH = 200;
-const truncatedDescription = description.length > MAX_LENGTH
-  ? description.slice(0, MAX_LENGTH).trim() + '...'
-  : description;
+const safeDescription = String(description || '').trim();
+const truncatedDescription = safeDescription.length > MAX_LENGTH
+  ? safeDescription.slice(0, MAX_LENGTH).trim() + '...'
+  : safeDescription;
+const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
+const shareUrl = slug;
 ---
 
-<article class="group w-full rounded-[12px] bg-white overflow-hidden shadow-sm border border-[#E6E2D8] transition-all duration-300 hover:shadow-lg">
+<article class="group lcdb-archive-recipe-card flex h-full w-full flex-col rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg">
   <!-- Image Container -->
-  <div class="relative w-full overflow-hidden">
+  <div class:list={[
+    'lcdb-archive-recipe-card__media relative w-full overflow-hidden',
+    imageAspect === 'square' ? 'lcdb-archive-recipe-card__media--square' : 'lcdb-archive-recipe-card__media--portrait',
+    imageAspect === 'square' ? 'aspect-square' : 'aspect-[14/18]',
+  ]}>
     <img
       src={image}
       alt={title}
-      class="w-full h-[250px] md:h-[280px] object-cover transition-transform duration-500 group-hover:scale-105"
+      class:list={[
+        'lcdb-archive-recipe-card__image w-full h-full object-center bg-[#FAF8F2] transition-transform duration-500 group-hover:scale-105',
+        imageAspect === 'square' ? 'lcdb-archive-recipe-card__image--square' : 'lcdb-archive-recipe-card__image--portrait',
+        imageAspect === 'square' ? 'object-cover' : 'object-contain',
+      ]}
       loading="lazy"
+      fetchpriority="low"
+      decoding="async"
+      width="500"
+      height="643"
+      sizes="(min-width: 1280px) 28vw, (min-width: 1024px) 34vw, (min-width: 768px) 44vw, 92vw"
+      data-fallback-src={imageFallback}
+      data-fallback-candidates={imageFallbackCandidates.join('|')}
+      onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
     />
 
     <!-- Bookmark Button -->
     <button
-      class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-text-primary hover:text-primary-turquoise transition-colors"
+      class="absolute top-3 right-3 w-[36px] h-[36px] rounded-full bg-[#FAF8F2]/95 backdrop-blur-sm flex items-center justify-center text-text-primary hover:text-primary-turquoise transition-colors"
       aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
     >
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
       </svg>
     </button>
   </div>
 
   <!-- Content -->
-  <div class="px-5 pb-6 pt-4 flex flex-col gap-3">
-    <h3 class="font-heading text-[26px] leading-[1.1] text-text-primary typ-card-title">
-      <a href={slug} class="hover:text-primary-turquoise transition-colors">
+  <div class:list={['flex flex-1 flex-col gap-3 px-5 pb-5 pt-4', contentClass]}>
+    <h3 class="font-heading text-[22px] leading-[1.08] text-[#111111] line-clamp-3">
+      <a href={slug} class="no-underline hover:text-primary-turquoise transition-colors">
         {title}
       </a>
     </h3>
 
-    <div class="flex items-center justify-between text-[12px] text-text-secondary uppercase tracking-wide typ-meta">
+    <div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-t border-[#D8D2C2] border-b-0 pt-3 pb-0 mb-0">
       <div class="flex items-center gap-2">
-        <span>{difficulty}</span>
-        <span aria-hidden="true">&bull;</span>
-        <span>{prepTime}</span>
+        <span data-recipe-meta-time>{prepTime}</span>
       </div>
-      <SocialShare url={`${Astro.url.origin}${slug}`} title={title} class="gap-2 text-[12px]" />
+      <SocialShare url={shareUrl} title={title} class="gap-2 text-[13px]" />
     </div>
 
-    <p class="text-text-secondary font-body text-[14px] leading-relaxed typ-body">
-      {truncatedDescription}
-    </p>
+    {showDescription && truncatedDescription && (
+      <p class="flex-1 text-text-secondary font-body text-[16px] leading-[1.7] typ-body line-clamp-4">
+        {truncatedDescription}
+      </p>
+    )}
 
-    <a
-      href={slug}
-      class="inline-flex items-center gap-2 text-primary-turquoise font-body text-[12px] uppercase tracking-wider hover:underline typ-button"
-    >
-      Lire la suite
-    </a>
+    {showReadMore && (
+      <a
+        href={slug}
+        class="inline-flex items-center gap-2 mt-1 py-[10px] text-primary-turquoise font-button text-[13px] uppercase tracking-[0.08em] typ-button no-underline"
+      >
+        Lire la recette
+      </a>
+    )}
   </div>
 </article>
+
+<style is:global>
+  .static-page .static-page-content .lcdb-archive-recipe-card__media--square {
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0;
+    flex: 0 0 auto;
+  }
+
+  .static-page .static-page-content .lcdb-archive-recipe-card__media--square > .lcdb-archive-recipe-card__image--square {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .lcdb-archive-recipe-card h3 a,
+  .lcdb-archive-recipe-card h3 a:hover {
+    color: #111111 !important;
+    text-decoration: none !important;
+  }
+
+  .lcdb-archive-recipe-card .social-share-link,
+  .lcdb-archive-recipe-card .social-share-link:hover {
+    text-decoration: none !important;
+  }
+</style>

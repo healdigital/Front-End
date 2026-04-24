@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
+        white: '#faf8f2',
         primary: {
-          white: '#ffffff',
+          white: '#faf8f2',
           cream: '#f5f1e8',
           'black-deep': '#0f172a',
           black: '#1a2335',
-          turquoise: '#2ec4b6',
+          turquoise: '#1a9e8f',
         },
         secondary: {
           'beige-light': '#f8f5ee',
@@ -29,7 +30,7 @@ export default {
         text: {
           primary: '#1a2335',
           secondary: '#4b5563',
-          tertiary: '#9ca3af',
+          tertiary: '#6b7280',
           'on-dark': '#f8fafc',
         },
         border: {
@@ -41,10 +42,10 @@ export default {
       },
       fontFamily: {
         heading: ['Instrument Serif', 'serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
+        body: ['PT Serif', 'serif'],
         mono: ['Roboto Mono', 'ui-monospace', 'monospace'],
-        button: ['Jost', 'Inter', 'sans-serif'],
-        legal: ['Jost', 'Inter', 'sans-serif'],
+        button: ['Montserrat', 'sans-serif'],
+        legal: ['Montserrat', 'sans-serif'],
       },
       boxShadow: {
         light: '0 24px 60px rgba(15, 23, 42, 0.08)',

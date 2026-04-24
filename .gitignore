@@ -30,6 +30,13 @@ prepared-articles*.json
 Front
 Front.pub
 
+# Local backup exports and temporary dumps
+tmp/
+
+# Local generated exports (keep markdown local, not committed)
+chat-exports/
+save/
+
 # local build caches
 .vite-cache-build/
 .vite-cache/
@@ -45,6 +52,8 @@ dev_error.txt
 *.log
 
 # Import and migration files
+*.md
+_*.md
 IMPORT_*.md
 *_IMPORT.md
 SETUP_*.md
@@ -58,6 +67,11 @@ TEST_*.md
 UPDATED_*.md
 COMPLETE_*.md
 wp_pages/
+
+# Local tracker / handoff markdown files
+PENDING-POINTS.md
+CLIENT-EXECUTION-TRACKER-2026-03-19.md
+IMAGE-IMPORT-STATUS-2026-04-02.md
 
 # Generated files
 *.output.txt
@@ -81,3 +95,10 @@ test-results/
 
 .vercel
 .env*.local
+
+
+scripts/audit-articles-images.mjs
+scripts/audit-articles-images.js
+scripts/audit-articles-images.txt
+scripts/import-all-wp-images-to-spaces.mjs
+scripts/remediate-spaces-images.mjs

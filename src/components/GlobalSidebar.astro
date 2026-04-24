@@ -1,155 +1,139 @@
 ---
-// Global Sidebar Component - Reusable across all pages
-// Includes: Search Bar, Facebook Section, My Books
+const socialCards = [
+  {
+    label: 'Facebook',
+    count: '145.8K',
+    meta: 'Fans',
+    url: 'https://www.facebook.com/lacuisinedebernard/',
+    classes: 'bg-[#1877F2] hover:bg-[#0f6ae5]',
+    icon: 'fab fa-facebook-f',
+  },
+  {
+    label: 'Instagram',
+    count: '66,3 k',
+    meta: 'Abonnés',
+    url: 'https://www.instagram.com/lacuisinedebernard',
+    classes: 'bg-[#E4405F] hover:bg-[#cf3654]',
+    icon: 'fab fa-instagram',
+  },
+  {
+    label: 'YouTube',
+    count: '1K',
+    meta: 'Abonnés',
+    url: 'https://www.youtube.com/c/lacuisinedebernard',
+    classes: 'bg-[#FF0000] hover:bg-[#e00000]',
+    icon: 'fab fa-youtube',
+  },
+  {
+    label: 'Pinterest',
+    count: '0.5K',
+    meta: 'Abonnés',
+    url: 'https://www.pinterest.com/lacuisinedebernard',
+    classes: 'bg-[#E60023] hover:bg-[#cf001f]',
+    icon: 'fab fa-pinterest',
+  },
+];
+
+const books = [
+  { image: '/images/book-vege-terrien.jpeg', url: 'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d' },
+  { image: '/images/book-asie-sucree.jpg', url: 'https://www.amazon.fr/Asie-Sucree-Bernard-Laurance/dp/2081413043' },
+  { image: '/images/book-3.png', url: 'https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21' },
+  { image: '/images/book-4.jpg', url: 'https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F' },
+  { image: '/images/book-5.jpg', url: 'https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88' },
+  { image: '/images/book-1.png', url: 'https://lacuisinedebernard.com/produit/je-fais-mon-chocolat-maison/' },
+  { image: '/images/book-6.jpg', url: 'https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd' },
+];
 ---
 
-<aside class="lg:col-span-1 space-y-8">
-  <!-- Search Bar -->
-  <div>
-    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Research</h3>
-    <div class="relative">
+<aside class="space-y-8 lg:col-span-1">
+  <section class="rounded-[10px] border border-border-primary bg-primary-white p-5 shadow-[0_6px_18px_rgba(17,17,17,0.04)]">
+    <h3 class="mb-4 font-heading text-[30px] leading-none text-text-primary">Recherche</h3>
+    <form class="relative" data-global-sidebar-search-form>
+      <label class="sr-only" for="global-search-input">Rechercher une recette</label>
       <input
         id="global-search-input"
-        type="text"
-        placeholder="Search..."
-        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+        type="search"
+        placeholder="Rechercher..."
+        class="w-full rounded-full border border-border-primary bg-white px-4 py-3 pr-12 text-[15px] text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-turquoise"
       />
-      <button 
+      <button
         id="global-search-btn"
-        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
+        type="submit"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-primary-turquoise"
+        aria-label="Lancer la recherche"
       >
         <i class="fas fa-search w-5 h-5"></i>
       </button>
+    </form>
+  </section>
+
+  <section class="rounded-[10px] border border-border-primary bg-primary-white p-5 shadow-[0_6px_18px_rgba(17,17,17,0.04)]">
+    <h3 class="mb-2 font-heading text-[30px] leading-none text-text-primary">Suivez le blog</h3>
+    <p class="mb-5 text-[15px] leading-relaxed text-text-secondary">
+      Retrouvez les dernières nouvelles, recettes et coulisses sur les réseaux.
+    </p>
+
+    <div class="grid grid-cols-2 gap-3">
+      {socialCards.map((card) => (
+        <a
+          href={card.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${card.label} : ${card.count} ${card.meta}`}
+          class:list={[
+            'aspect-square rounded-[10px] p-4 text-center text-white transition-colors',
+            'flex flex-col items-center justify-center',
+            card.classes,
+          ]}
+        >
+          <i class:list={[card.icon, 'mb-2 text-4xl']} aria-hidden="true"></i>
+          <span class="text-lg font-bold">{card.count}</span>
+          <span class="text-xs uppercase tracking-wide">{card.meta}</span>
+        </a>
+      ))}
     </div>
-  </div>
+  </section>
 
-  <!-- Facebook Page with Social Stats -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Join the Facebook page</h3>
-    
-    <h3 class="text-lg text-gray-800 dark:text-gray-200 mb-4">And follow all the latest news from the blog!</h3>
-
-    <!-- Facebook Like Button -->
-    <div class="mb-6">
-      <iframe 
-        src="https://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2FLa-Cuisine-de-Bernard-135839186471793%2F&width=200&layout=button_count&action=like&size=large&share=false&height=46&appId=" 
-        width="200" 
-        height="46" 
-        style="border:none;overflow:hidden" 
-        scrolling="no" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
-      </iframe>
-    </div>
-
-    <!-- Social Stats Grid -->
+  <section class="rounded-[10px] border border-border-primary bg-primary-white p-5 shadow-[0_6px_18px_rgba(17,17,17,0.04)]">
+    <h3 class="mb-4 font-heading text-[30px] leading-none text-text-primary">Mes livres</h3>
     <div class="grid grid-cols-3 gap-3">
-      <!-- Facebook -->
-      <a
-        href="https://www.facebook.com/lacuisinedebernard/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg p-4 text-center text-white aspect-square flex flex-col items-center justify-center"
-      >
-        <i class="fab fa-facebook-f text-4xl mb-2"></i>
-        <span class="text-lg font-bold">145.8K</span>
-        <span class="text-xs uppercase tracking-wide">Fans</span>
-      </a>
-
-      <!-- Instagram -->
-      <a
-        href="https://www.instagram.com/lacuisinedebernard"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-colors rounded-lg p-4 text-center text-white aspect-square flex flex-col items-center justify-center"
-      >
-        <i class="fab fa-instagram text-4xl mb-2"></i>
-        <span class="text-lg font-bold">62K</span>
-        <span class="text-xs uppercase tracking-wide">Followers</span>
-      </a>
-
-      <!-- YouTube -->
-      <a
-        href="https://www.youtube.com/c/lacuisinedebernard"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="bg-red-600 hover:bg-red-700 transition-colors rounded-lg p-4 text-center text-white aspect-square flex flex-col items-center justify-center"
-      >
-        <i class="fab fa-youtube text-4xl mb-2"></i>
-        <span class="text-lg font-bold">1K</span>
-        <span class="text-xs uppercase tracking-wide">Subscribers</span>
-      </a>
-    </div>
-
-    <!-- Pinterest (Second Row) -->
-    <div class="grid grid-cols-3 gap-3 mt-3">
-      <a
-        href="https://www.pinterest.com/lacuisinedebernard"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="bg-red-700 hover:bg-red-800 transition-colors rounded-lg p-4 text-center text-white aspect-square flex flex-col items-center justify-center"
-      >
-        <i class="fab fa-pinterest text-4xl mb-2"></i>
-        <span class="text-lg font-bold">0.5K</span>
-        <span class="text-xs uppercase tracking-wide">Followers</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- My Books -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">My books</h3>
-    <div class="grid grid-cols-3 gap-3">
-      {[
-        { image: '/images/book-2.jpg', url: 'https://www.amazon.fr/gp/product/2081414988/ref=as_li_tl?ie=UTF8&camp=1642&creative=6746&creativeASIN=2081414988&linkCode=as2&tag=lacuisidebern-21&linkId=719ca79e49e810d99cb31199bb21405d' },
-        { image: '/images/book-3.png', url: 'https://www.amazon.fr/Je-nen-ferai-quune-bouch%C3%A9e/dp/2081386011?ie=UTF8&camp=1642&creativeASIN=2081386011&linkCode=xm2&redirect=true&tag=lacuisidebern-21' },
-        { image: '/images/book-4.jpg', url: 'https://www.amazon.fr/dp/2081314290?tag=lacuisidebern-21&camp=2910&creative=19482&linkCode=as4&creativeASIN=2081314290&adid=1HMR2DYG7WSG2NANSAQG&&ref-refURL=http%3A%2F%2Fbernardl11.sg-host.com%2F' },
-        { image: '/images/book-5.jpg', url: 'https://www.amazon.fr/gp/product/2081416352/ref=as_li_tl?ie=UTF8&tag=lacuisidebern-21&camp=1642&creative=6746&linkCode=as2&creativeASIN=2081416352&linkId=f6c32b99905d32e830a53930d6340f88' },
-        { image: '/images/book-1.png', url: 'https://lacuisinedebernard.com/produit/je-fais-mon-chocolat-maison/' },
-        { image: '/images/book-6.jpg', url: 'https://www.amazon.fr/gp/product/2080231510/ref=as_li_qf_asin_il_tl?ie=UTF8&tag=lacuisidebern-21&creative=6746&linkCode=as2&creativeASIN=2080231510&linkId=4306a903ba047e2436550805f2f42efd' },
-        { image: '/images/book-7.jpg', url: 'https://amzn.to/3iWsQAw' },
-      ].map((book) => (
+      {books.map((book, index) => (
         <a
           href={book.url}
           target="_blank"
           rel="noopener noreferrer"
-          class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
+          aria-label={`Voir le livre ${index + 1}`}
+          class="group relative overflow-hidden rounded-lg shadow-md transition-all duration-200 hover:-translate-y-[2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-turquoise"
         >
           <img
             src={book.image}
-            alt="Book"
-            class="w-full h-48 object-cover group-hover:opacity-80 transition-opacity"
+            alt={`Livre ${index + 1}`}
+            class="h-40 w-full object-cover transition-opacity duration-200 group-hover:opacity-80"
+            loading="lazy"
+            decoding="async"
+            width="240"
+            height="320"
+            sizes="(min-width: 1024px) 96px, 30vw"
           />
-          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-end justify-center pb-2">
-            <span class="text-white font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View Book</span>
+          <div class="absolute inset-0 flex items-end justify-center bg-black/0 pb-2 transition-colors duration-200 group-hover:bg-black/25">
+            <span class="text-[11px] font-medium uppercase tracking-[0.08em] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              Voir
+            </span>
           </div>
         </a>
       ))}
     </div>
-  </div>
+  </section>
 </aside>
 
 <script>
-  // Global search functionality
+  const globalSidebarSearchForm = document.querySelector('[data-global-sidebar-search-form]');
   const globalSearchInput = document.getElementById('global-search-input');
-  const globalSearchBtn = document.getElementById('global-search-btn');
 
-  const handleSearch = () => {
-    const query = globalSearchInput?.value.trim();
-    if (query) {
-      window.location.href = `/search?q=${encodeURIComponent(query)}`;
-    }
-  };
-
-  // Search button click
-  globalSearchBtn?.addEventListener('click', handleSearch);
-
-  // Enter key press
-  globalSearchInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSearch();
-    }
+  globalSidebarSearchForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const query = globalSearchInput instanceof HTMLInputElement ? globalSearchInput.value.trim() : '';
+    if (!query) return;
+    window.location.href = `/search/?q=${encodeURIComponent(query)}`;
   });
 </script>

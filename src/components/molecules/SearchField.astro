@@ -2,49 +2,184 @@
 import Icon from '../atoms/Icon.astro';
 import Input from '../atoms/Input.astro';
 
-/**
- * Props for the `SearchField` molecule.
- */
 interface Props {
-  /** Input id used for accessibility and validation feedback. */
   id?: string;
-  /** Optional utility classes applied to the wrapper. */
   class?: string;
-  /** Placeholder text displayed when the field is empty. */
   placeholder?: string;
 }
 
-const { 
-  id = 'site-search', 
+const {
+  id = 'site-search',
   class: className,
   placeholder = 'Rechercher...'
 } = Astro.props;
 ---
 
-<div class={`relative w-full max-w-xs group ${className || ''}`}>
-
-  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-    <Icon name="search" class="text-text-secondary group-focus-within:text-primary-turquoise transition-colors" />
+<form class={`relative flex w-full max-w-full items-center gap-2 group ${className || ''}`} data-search-form>
+  <div class="relative min-w-0 flex-1">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+      <Icon name="search" class="text-text-secondary group-focus-within:text-primary-turquoise transition-colors" />
+    </div>
+    <Input
+      type="search"
+      class="pl-10 pr-4 py-2 w-full bg-white/18 border-none rounded-full text-sm focus:ring-2 focus:ring-primary-turquoise placeholder:text-text-secondary/70 transition-all font-body"
+      placeholder={placeholder}
+      data-search-input
+      id={id}
+      name="q"
+      autocomplete="off"
+      role="combobox"
+      aria-autocomplete="list"
+      aria-expanded="false"
+      aria-controls={`${id}-suggestions`}
+      />
+    <div
+      id={`${id}-suggestions`}
+      class="hidden absolute left-0 right-0 top-[calc(100%+8px)] z-30 rounded-2xl border border-[#D8D2C2] bg-[#FAF8F2] p-2 shadow-[0_18px_40px_rgba(17,17,17,0.08)]"
+      data-search-suggestions
+      role="listbox"
+      aria-label="Suggestions de recherche"
+    ></div>
+    <div
+      class="hidden absolute right-3 top-1/2 -translate-y-1/2 items-center gap-2 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-text-secondary shadow-sm"
+      data-search-loading
+      role="status"
+      aria-live="polite"
+    >
+      <span class="h-2 w-2 animate-pulse rounded-full bg-primary-turquoise" aria-hidden="true"></span>
+      <span>Recherche...</span>
+    </div>
   </div>
-  <Input 
-    type="search" 
-    class="pl-10 pr-4 py-2 w-full bg-white/18 border-none rounded-full text-sm focus:ring-2 focus:ring-primary-turquoise placeholder:text-text-secondary/70 transition-all font-body"
-    placeholder={placeholder}
-    data-search-input
-    id={id}
-    name="q"
-  />
-</div>
+  <button
+    type="submit"
+    class="shrink-0 rounded-full bg-primary-turquoise px-4 py-2 text-sm font-medium text-primary-black transition-colors hover:bg-[#3aa8a2]"
+    aria-label="Lancer la recherche"
+  >
+    Rechercher
+  </button>
+</form>
 
 <script>
   import { searchSchema } from '../../lib/validation/schemas';
   import { validateForm } from '../../lib/validation/client';
 
   const searchInputs = document.querySelectorAll<HTMLInputElement>('[data-search-input]');
+  let cachedSuggestions: Array<{ title?: string; slug?: string }> | null = null;
+
+  const loadSuggestions = async () => {
+    if (cachedSuggestions) return cachedSuggestions;
+
+    try {
+      const response = await fetch('/home-recipes-index.json', { cache: 'force-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      cachedSuggestions = Array.isArray(data) ? data : [];
+      return cachedSuggestions;
+    } catch (error) {
+      console.error('Failed to load search suggestions:', error);
+      cachedSuggestions = [];
+      return cachedSuggestions;
+    }
+  };
 
   searchInputs.forEach((input) => {
+    const form = input.closest('[data-search-form]');
+    const suggestionsPanel = form?.querySelector<HTMLElement>('[data-search-suggestions]');
+    const loadingIndicator = form?.querySelector<HTMLElement>('[data-search-loading]');
     const errorClasses = ['ring-status-error', 'focus:ring-status-error', 'border', 'border-status-error'];
     const successClasses = ['ring-status-success', 'focus:ring-status-success', 'border', 'border-status-success'];
+    let activeSuggestionIndex = -1;
+    let suggestionTimeout: number | null = null;
+
+    const setLoading = (isLoading: boolean) => {
+      if (!loadingIndicator) return;
+      loadingIndicator.classList.toggle('hidden', !isLoading);
+      loadingIndicator.classList.toggle('inline-flex', isLoading);
+    };
+
+    const clearSuggestions = () => {
+      if (!suggestionsPanel) return;
+      suggestionsPanel.replaceChildren();
+    };
+
+    const closeSuggestions = () => {
+      activeSuggestionIndex = -1;
+      setLoading(false);
+      input.setAttribute('aria-expanded', 'false');
+      suggestionsPanel?.classList.add('hidden');
+      clearSuggestions();
+    };
+
+    const setActiveSuggestion = (index: number) => {
+      if (!suggestionsPanel) return;
+      const items = Array.from(suggestionsPanel.querySelectorAll<HTMLButtonElement>('[data-search-suggestion-item]'));
+      items.forEach((item, itemIndex) => {
+        const isActive = itemIndex === index;
+        item.classList.toggle('bg-[#F0ECE1]', isActive);
+        item.setAttribute('aria-selected', String(isActive));
+      });
+      activeSuggestionIndex = index;
+    };
+
+    const renderSuggestions = async (query: string) => {
+      if (!suggestionsPanel) return;
+      const normalizedQuery = query.trim().toLowerCase();
+      if (normalizedQuery.length < 2) {
+        closeSuggestions();
+        return;
+      }
+
+      setLoading(true);
+      const suggestionSource = await loadSuggestions();
+      const matches = suggestionSource
+        .filter((item) => typeof item?.title === 'string' && typeof item?.slug === 'string')
+        .filter((item) => item.title!.toLowerCase().includes(normalizedQuery))
+        .slice(0, 6);
+      setLoading(false);
+
+      if (matches.length === 0) {
+        closeSuggestions();
+        return;
+      }
+
+      clearSuggestions();
+
+      const fragment = document.createDocumentFragment();
+      matches.forEach((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className =
+          'flex w-full items-start rounded-xl px-3 py-2 text-left text-[14px] text-[#111111] transition-colors hover:bg-[#F0ECE1]';
+        button.dataset.searchSuggestionItem = 'true';
+        button.dataset.searchSuggestionSlug = item.slug || '';
+        button.dataset.searchSuggestionTitle = item.title || '';
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-selected', 'false');
+
+        const title = document.createElement('span');
+        title.textContent = item.title || '';
+        button.appendChild(title);
+
+        fragment.appendChild(button);
+      });
+
+      suggestionsPanel.appendChild(fragment);
+
+      suggestionsPanel.classList.remove('hidden');
+      input.setAttribute('aria-expanded', 'true');
+      setActiveSuggestion(0);
+
+      const suggestionButtons = suggestionsPanel.querySelectorAll<HTMLButtonElement>('[data-search-suggestion-item]');
+      suggestionButtons.forEach((button, index) => {
+        button.addEventListener('mouseenter', () => setActiveSuggestion(index));
+        button.addEventListener('click', () => {
+          const slug = button.dataset.searchSuggestionSlug;
+          if (slug) {
+            window.location.href = `/${slug.replace(/^\/+|\/+$/g, '')}/`;
+          }
+        });
+      });
+    };
 
     const clearVisualState = () => {
       input.classList.remove(...errorClasses, ...successClasses);
@@ -83,22 +218,59 @@ const {
       input.classList.add(...successClasses);
     };
 
-    input.addEventListener('keydown', (e) => {
-      if ((e as KeyboardEvent).key === 'Enter') {
-        const query = (e.target as HTMLInputElement).value;
-        const result = validateForm(searchSchema, { query });
+    const submitSearch = () => {
+      const result = validateForm(searchSchema, { query: input.value });
 
-        if (!result.success && result.errors?.query) {
-          showError(result.errors.query);
-          e.preventDefault();
-          return;
-        }
-
-        if (result.success && result.data.query) {
-          setSuccess();
-          window.location.href = `/search?q=${encodeURIComponent(result.data.query)}`;
-        }
+      if (!result.success && result.errors?.query) {
+        showError(result.errors.query);
+        return;
       }
+
+      if (result.success && result.data.query) {
+        setSuccess();
+        window.location.href = `/search/?q=${encodeURIComponent(result.data.query)}`;
+      }
+    };
+
+    input.addEventListener('keydown', (e) => {
+      const event = e as KeyboardEvent;
+      const suggestionItems = suggestionsPanel
+        ? Array.from(suggestionsPanel.querySelectorAll<HTMLButtonElement>('[data-search-suggestion-item]'))
+        : [];
+
+      if (event.key === 'ArrowDown' && suggestionItems.length > 0) {
+        event.preventDefault();
+        const nextIndex = Math.min(suggestionItems.length - 1, activeSuggestionIndex + 1);
+        setActiveSuggestion(nextIndex);
+        return;
+      }
+
+      if (event.key === 'ArrowUp' && suggestionItems.length > 0) {
+        event.preventDefault();
+        const nextIndex = Math.max(0, activeSuggestionIndex - 1);
+        setActiveSuggestion(nextIndex);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        closeSuggestions();
+        return;
+      }
+
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+
+      if (activeSuggestionIndex >= 0 && suggestionItems[activeSuggestionIndex]) {
+        suggestionItems[activeSuggestionIndex].click();
+        return;
+      }
+
+      submitSearch();
+    });
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitSearch();
     });
 
     input.addEventListener('input', () => {
@@ -114,9 +286,25 @@ const {
 
       if (result.data.query.length > 0) {
         setSuccess();
+        if (suggestionTimeout) {
+          window.clearTimeout(suggestionTimeout);
+        }
+        setLoading(true);
+        suggestionTimeout = window.setTimeout(() => {
+          renderSuggestions(result.data.query);
+        }, 140);
       } else {
         clearError();
+        closeSuggestions();
       }
+    });
+
+    input.addEventListener('blur', () => {
+      if (suggestionTimeout) {
+        window.clearTimeout(suggestionTimeout);
+        suggestionTimeout = null;
+      }
+      window.setTimeout(() => closeSuggestions(), 120);
     });
   });
 </script>

@@ -12,13 +12,18 @@ export const SUPPORTED_LANGUAGES = {
 
 export type LanguageCode = keyof typeof SUPPORTED_LANGUAGES;
 
+const DEFAULT_LANGUAGE: LanguageCode = 'fr';
+
+const isSupportedLanguage = (value: string | null | undefined): value is LanguageCode =>
+  typeof value === 'string' && value in SUPPORTED_LANGUAGES;
+
 /**
  * Get stored language preference from localStorage
  */
 export function getStoredLanguage(): LanguageCode {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
   const stored = localStorage.getItem('preferred-language');
-  return (stored as LanguageCode) || 'en';
+  return isSupportedLanguage(stored) ? stored : DEFAULT_LANGUAGE;
 }
 
 /**
@@ -26,6 +31,7 @@ export function getStoredLanguage(): LanguageCode {
  */
 export function setStoredLanguage(lang: LanguageCode): void {
   if (typeof window === 'undefined') return;
+  if (!isSupportedLanguage(lang)) return;
   localStorage.setItem('preferred-language', lang);
 }
 

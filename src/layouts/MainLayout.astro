@@ -2,6 +2,9 @@
 import SEO from '../components/SEO.astro';
 import Header from '../components/Header.astro';
 import GlobalFooter from '../components/GlobalFooter.astro';
+import ClubLoginModal from '../components/ClubLoginModal.astro';
+import AdAnalyticsHead from '../components/AdAnalyticsHead.astro';
+import NewsletterModal from '../components/organisms/NewsletterModal.astro';
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -10,9 +13,10 @@ interface Props {
   description?: string;
   image?: string;
   lang?: string;
+  loadAds?: boolean;
 }
 
-const { title, description, image, lang = 'en' } = Astro.props;
+const { title, description, image, lang = 'fr', loadAds = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,30 +24,37 @@ const { title, description, image, lang = 'en' } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <SEO title={title} description={description} image={image} />
+    <link rel="icon" type="image/png" href="/images/logo-v3.png" />
+    <SEO title={title} description={description} image={image} lang={lang} />
+    <link rel="preconnect" href="https://lcdb.fra1.digitaloceanspaces.com" crossorigin />
+    <link rel="dns-prefetch" href="//lcdb.fra1.digitaloceanspaces.com" />
+    <AdAnalyticsHead loadAds={loadAds} />
   </head>
   <body class="bg-primary-white text-text-primary antialiased min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-primary-white text-primary-black border border-primary-black rounded-md shadow-lg">
       Skip to main content
     </a>
     <Header lang={lang} />
+    <div class="lcdb-translation-status" data-translation-status hidden role="status" aria-live="polite" aria-atomic="true">
+      <div class="lcdb-translation-status__inner">
+        <span class="lcdb-translation-status__dot" aria-hidden="true"></span>
+        <p class="lcdb-translation-status__text" data-translation-status-text></p>
+      </div>
+    </div>
     <main id="main-content" class="flex-1">
       <slot />
     </main>
+    <NewsletterModal triggerId="open-newsletter-footer" id="newsletter-modal-footer" />
+    <NewsletterModal id="newsletter-modal-exit" autoOpenMode="exit-intent" />
+    <ClubLoginModal />
     <GlobalFooter currentLang={lang} />
   </body>
 </html>
 
 <script>
-  import { initializeTranslations, setupLanguageSwitcher, watchLanguageChanges, changeLanguage, getCurrentLanguage } from '../utils/dynamicTranslate';
+  import '../scripts/translationBoot';
+</script>
 
-  async function init() {
-    await initializeTranslations();
-    setupLanguageSwitcher();
-    watchLanguageChanges();
-    await changeLanguage(getCurrentLanguage());
-  }
-
-  init().catch(error => console.error('Failed to initialize translations:', error));
+<script>
+  import '../scripts/clubAuth';
 </script>

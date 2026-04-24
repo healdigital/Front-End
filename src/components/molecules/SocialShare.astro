@@ -1,47 +1,110 @@
 ---
-/**
- * Props for the `SocialShare` molecule.
- */
 interface Props {
-  /** Canonical URL shared on social platforms. */
   url?: string;
-  /** Message used in social post text and email subject. */
   title?: string;
-  /** Optional utility classes applied to the wrapper. */
   class?: string;
 }
 
-const { url = Astro.url.href, title = 'Check this out!', class: className } = Astro.props;
+const {
+  url = Astro.url.href,
+  title = 'Decouvrez cet article',
+  class: className,
+} = Astro.props;
 
 const shareLinks = [
-  {
-    icon: 'fab fa-facebook-f',
-    label: 'Facebook',
-    href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-  },
-  {
-    icon: 'fab fa-pinterest-p',
-    label: 'Pinterest',
-    href: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title)}`,
-  },
-  {
-    icon: 'far fa-envelope',
-    label: 'Email',
-    href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`,
-  },
+  { icon: 'fab fa-facebook-f', label: 'Facebook', platform: 'facebook' },
+  { icon: 'fab fa-pinterest-p', label: 'Pinterest', platform: 'pinterest' },
+  { icon: 'far fa-envelope', label: 'Email', platform: 'email' },
 ];
 ---
 
-<div class:list={["flex items-center gap-3 text-text-secondary", className]}>
+<div
+  class:list={['social-share', className]}
+  aria-label="Partager cet article"
+  data-social-share
+  data-share-url={url}
+  data-share-title={title}
+>
   {shareLinks.map((link) => (
     <a
-      href={link.href}
+      href="#"
       target="_blank"
       rel="noopener noreferrer"
-      class="hover:text-primary-turquoise transition-colors"
+      class="social-share-link"
       aria-label={`Partager sur ${link.label}`}
+      title={`Partager sur ${link.label}`}
+      data-share-platform={link.platform}
     >
-      <i class={link.icon}></i>
+      <i class={link.icon} aria-hidden="true"></i>
     </a>
   ))}
 </div>
+
+<style>
+  .social-share {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .social-share-link {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #7b7365;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    font-size: 0.78rem;
+    line-height: 1;
+    box-shadow: none;
+    appearance: none;
+  }
+
+  .social-share-link:hover,
+  .social-share-link:focus-visible {
+    color: var(--lcdb-accent);
+    outline: none;
+    transform: translateY(-1px);
+  }
+</style>
+
+<script>
+  const buildShareHref = (platform, currentUrl, currentTitle) => {
+    switch (platform) {
+      case 'facebook':
+        return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+      case 'pinterest':
+        return `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(currentUrl)}&description=${encodeURIComponent(currentTitle)}`;
+      case 'email':
+        return `mailto:?subject=${encodeURIComponent(currentTitle)}&body=${encodeURIComponent(currentUrl)}`;
+      default:
+        return currentUrl;
+    }
+  };
+
+  const setupSocialShare = () => {
+    document.querySelectorAll('[data-social-share]').forEach((root) => {
+      const rawShareUrl = root.getAttribute('data-share-url') || '';
+      const currentUrl = rawShareUrl
+        ? new URL(rawShareUrl, window.location.origin).toString()
+        : window.location.href;
+      const currentTitle =
+        root.getAttribute('data-share-title') ||
+        document.title ||
+        'Decouvrez cet article';
+
+      root.querySelectorAll('[data-share-platform]').forEach((link) => {
+        if (!(link instanceof HTMLAnchorElement)) return;
+        const platform = link.getAttribute('data-share-platform') || '';
+        link.href = buildShareHref(platform, currentUrl, currentTitle);
+      });
+    });
+  };
+
+  setupSocialShare();
+  document.addEventListener('astro:page-load', setupSocialShare);
+</script>

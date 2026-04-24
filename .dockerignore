@@ -1,0 +1,37 @@
+# VCS / editor
+.git
+.github
+.vscode
+
+# Dependencies / build outputs
+node_modules
+dist
+.astro
+.vite-cache
+.vite-cache-build
+.vercel
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Logs / temp / reports
+*.log
+logs.ini
+build.log
+build-test.log
+dev*.log
+payload.log
+*.tmp
+*.bak
+
+# Local large/generated data not required for Docker build context
+prepared-articles.json
+All Articles
+chat-exports
+Webdesign
+Webdesign Data
+wp_pages
+payload-admin

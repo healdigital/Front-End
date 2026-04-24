@@ -3,25 +3,198 @@
  * Replaces old CDN with new DigitalOcean Spaces CDN
  */
 
+const DEFAULT_PAYLOAD_API_URL =
+  (typeof process !== 'undefined' &&
+    (process.env.PUBLIC_PAYLOAD_API_URL || process.env.PUBLIC_TRANSLATE_API_URL)) ||
+  'https://admin.lacuisinedebernard.com/api';
+
+const WP_UPLOAD_PATH_PATTERN = /\/wp-content\/uploads\//i;
+const WP_IMAGE_URL_PATTERN =
+  /^(.+?)(\.(?:jpe?g|png|webp|avif|gif))(?:\?([^#]+))?(?:#(.+))?$/i;
+const COMMON_WP_VARIANTS = [
+  '1920x2468',
+  '1593x2048',
+  '1536x2048',
+  '797x1024',
+  '768x1024',
+  '585x585',
+  '587x587',
+  '500x500',
+];
+const WP_SIZE_SUFFIX_PATTERN = /-(?:\d+)(?:x|X|\*|×)(?:\d+)(?:-scaled)?$/i;
+
+const getPayloadOrigin = (): string => {
+  try {
+    return new URL(DEFAULT_PAYLOAD_API_URL).origin;
+  } catch {
+    return 'https://admin.lacuisinedebernard.com';
+  }
+};
+
 export function replaceCdnUrl(url: string): string {
   if (!url) return url;
 
-  // Replace the old CDN URL with the new DigitalOcean Spaces URL
-  return url.replace(
-    'https://cdn.lacuisinedebernard.com/',
-    'https://lcdb.fra1.digitaloceanspaces.com/'
+  if (typeof url === 'string') {
+    if (url.startsWith('/api/') || url.startsWith('/media/')) {
+      return `${getPayloadOrigin()}${url}`;
+    }
+
+    if (url.startsWith('api/')) {
+      return `${getPayloadOrigin()}/${url}`;
+    }
+
+    if (url.startsWith('media/')) {
+      return `${getPayloadOrigin()}/${url}`;
+    }
+  }
+
+  return url
+    .replace(
+      /^https?:\/\/cdn\.lacuisinedebernard\.com\//i,
+      'https://lcdb.fra1.digitaloceanspaces.com/',
+    )
+    .replace(
+      /^https?:\/\/(?:www\.)?lacuisinedebernard\.com\/wp-content\/uploads\//i,
+      'https://lcdb.fra1.digitaloceanspaces.com/wp-content/uploads/',
+    );
+}
+
+function splitWpUploadUrl(url: string) {
+  const normalized = replaceCdnUrl(url);
+  if (!WP_UPLOAD_PATH_PATTERN.test(normalized)) return null;
+
+  const match = normalized.match(WP_IMAGE_URL_PATTERN);
+  if (!match) return null;
+
+  return {
+    normalized,
+    base: match[1],
+    ext: match[2],
+    query: match[3] ? `?${match[3]}` : '',
+    hash: match[4] ? `#${match[4]}` : '',
+  };
+}
+
+function normalizeWpUploadBase(base: string): string {
+  return base
+    .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)-scaled$/i, '')
+    .replace(/-(?:\d+)(?:x|X|\*|×)(?:\d+)$/i, '')
+    .replace(/-scaled$/i, '');
+}
+
+function buildFromParts(base: string, ext: string, query = '', hash = '') {
+  return `${base}${ext}${query}${hash}`;
+}
+
+export function normalizeWordPressUploadUrl(url: string): string {
+  if (!url || typeof url !== 'string') return '';
+  return replaceCdnUrl(url);
+}
+
+export function stripWordPressImageSizeSuffix(url: string): string {
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return replaceCdnUrl(url);
+
+  return buildFromParts(
+    normalizeWpUploadBase(parts.base),
+    parts.ext,
+    parts.query,
+    parts.hash,
+  );
+}
+
+export function buildWordPressImageFallbackCandidates(url: string): string[] {
+  if (!url || typeof url !== 'string') return [];
+
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return [replaceCdnUrl(url)];
+
+  const strippedBase = normalizeWpUploadBase(parts.base);
+  const candidates = new Set<string>();
+
+  candidates.add(parts.normalized);
+  candidates.add(buildFromParts(strippedBase, parts.ext, parts.query, parts.hash));
+  COMMON_WP_VARIANTS.forEach((variant) => {
+    candidates.add(buildFromParts(`${strippedBase}-${variant}`, parts.ext, parts.query, parts.hash));
+  });
+
+  return Array.from(candidates).filter(Boolean);
+}
+
+/**
+ * Build a smaller square variant URL for WordPress uploads.
+ * Many imported assets include generated square derivatives (e.g. -500x500).
+ */
+export function buildWpSquareVariantUrl(url: string, size = 500): string {
+  if (!url || typeof url !== 'string') return '';
+
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return replaceCdnUrl(url);
+
+  return buildFromParts(
+    `${normalizeWpUploadBase(parts.base)}-${size}x${size}`,
+    parts.ext,
+    parts.query,
+    parts.hash,
   );
 }
 
 /**
+ * Build a portrait-friendly WordPress derivative URL (non-cropped).
+ * For "-scaled" originals this prefers the common 797x1024 variant.
+ */
+export function buildWpPortraitVariantUrl(url: string, variant = '797x1024'): string {
+  if (!url || typeof url !== 'string') return '';
+
+  const parts = splitWpUploadUrl(url);
+  if (!parts) return replaceCdnUrl(url);
+
+  return buildFromParts(
+    `${normalizeWpUploadBase(parts.base)}-${variant}`,
+    parts.ext,
+    parts.query,
+    parts.hash,
+  );
+}
+
+type ArticleImageRecord = Record<string, unknown> & {
+  content?: string;
+  contentV2?: string;
+  featureImage?: string;
+  featuredImage?: Record<string, unknown> & {
+    sizes?: {
+      articleHero?: { url?: string };
+      gallery?: { url?: string };
+    };
+    url?: string;
+  };
+  featuredImageUrl?: string;
+  featuredMedia?: Record<string, unknown> & {
+    sizes?: {
+      articleHero?: { url?: string };
+      gallery?: { url?: string };
+    };
+    url?: string;
+    value?: {
+      url?: string;
+    };
+  };
+  featured_image?: Record<string, unknown> & {
+    asset?: { url?: string };
+    url?: string;
+  };
+  featured_image_url?: string;
+  featured_img_url?: string;
+};
+
+/**
  * Process article image URLs to use the new CDN
  */
-export function processArticleImageUrl(article: any): string {
+export function processArticleImageUrl(article: ArticleImageRecord | null | undefined): string {
   if (!article) return '';
 
   const extractFromHtml = (html?: string): string => {
     if (!html || typeof html !== 'string') return '';
-    // Try src or data-src first
     const match =
       html.match(/<img[^>]+src=["']([^"']+)["']/i) ||
       html.match(/<img[^>]+data-src=["']([^"']+)["']/i);
@@ -29,10 +202,13 @@ export function processArticleImageUrl(article: any): string {
     return match[1] || '';
   };
 
-  // Check various possible image URL fields
   const possibleUrls = [
+    article.featuredMedia?.sizes?.articleHero?.url,
+    article.featuredMedia?.sizes?.gallery?.url,
     article.featuredMedia?.url,
     article.featuredMedia?.value?.url,
+    article.featuredImage?.sizes?.articleHero?.url,
+    article.featuredImage?.sizes?.gallery?.url,
     article.featured_image?.asset?.url,
     article.featured_image?.url,
     article.featured_image_url,
@@ -41,14 +217,11 @@ export function processArticleImageUrl(article: any): string {
     article.featuredImage?.url,
     article.featuredImageUrl,
     extractFromHtml(article.content),
-    extractFromHtml(article.contentV2)
+    extractFromHtml(article.contentV2),
   ];
 
-  // Find the first valid URL
-  const imageUrl = possibleUrls.find(url => url && typeof url === 'string');
-
+  const imageUrl = possibleUrls.find((url) => url && typeof url === 'string');
   if (!imageUrl) return '';
 
-  // Replace CDN URL if needed
   return replaceCdnUrl(imageUrl);
 }

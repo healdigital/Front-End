@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
 
 /**
  * Props for the `Badge` atom.
@@ -8,21 +9,30 @@ interface Props extends HTMLAttributes<'span'> {
   /** Visual variant used for contextual styling. */
   variant?: 'category' | 'status' | 'premium';
   /** Optional icon token rendered before the label. */
-  icon?: string;
+  icon?: 'clock' | 'star' | 'lock' | 'book' | 'video' | 'users';
+  statusTone?: 'success' | 'warning' | 'error' | 'info';
 }
 
 const { 
   variant = 'category', 
   icon,
+  statusTone = 'success',
   class: className, 
   ...rest 
 } = Astro.props;
 
 const baseStyles = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-xs font-medium uppercase tracking-wide backdrop-blur-md border";
 
+const statusVariants = {
+  success: "bg-status-success/10 border-status-success/25 text-status-success",
+  warning: "bg-[#c2872c]/10 border-[#c2872c]/25 text-[#8a5d14]",
+  error: "bg-status-error/10 border-status-error/25 text-status-error",
+  info: "bg-primary-turquoise/10 border-primary-turquoise/20 text-primary-turquoise",
+};
+
 const variants = {
   category: "bg-primary-white/10 border-white/20 text-text-primary",
-  status: "bg-status-success/10 border-status-success/20 text-status-success", // Default status style, could be dynamic
+  status: statusVariants[statusTone],
   premium: "bg-status-premium/10 border-status-premium/20 text-status-premium shadow-sm"
 };
 
@@ -38,6 +48,6 @@ const classes = [
 ---
 
 <span class={classes} {...rest}>
-  {icon && <span class={`icon-${icon}`} aria-hidden="true"></span>}
+  {icon && <Icon name={icon} size="sm" class="w-3.5 h-3.5" aria-hidden="true" />}
   <slot />
 </span>

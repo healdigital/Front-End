@@ -1,16 +1,16 @@
 // Client-side i18n utility for dynamic translation switching
 
 export interface Translations {
-  [key: string]: any;
+  [key: string]: string | Translations;
 }
 
-let currentLanguage = 'en';
+let currentLanguage = 'fr';
 let translations: Record<string, Translations> = {};
 
 /**
  * Initialize client-side i18n with translations
  */
-export async function initI18n(lang: string = 'en'): Promise<void> {
+export async function initI18n(lang: string = 'fr'): Promise<void> {
   // Load translations
   const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
   
@@ -25,7 +25,7 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
 
   // Set current language from localStorage or parameter
   const savedLang = localStorage.getItem('preferred-language');
-  currentLanguage = savedLang || lang || 'en';
+  currentLanguage = savedLang || lang || 'fr';
 }
 
 /**
@@ -34,7 +34,7 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
 export function t(key: string, lang?: string): string {
   const targetLang = lang || currentLanguage;
   const parts = key.split('.');
-  let current: any = translations[targetLang] || translations['en'];
+  let current: string | Translations | undefined = translations[targetLang] || translations['en'];
 
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {

@@ -1,298 +1,173 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../components/MediavineSlot.astro';
+import Pagination from '../../components/organisms/Pagination.astro';
 import { getAllTagsFromMongo, getArticlesByTagFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 import { BUILD_ONLY_ARTICLE_PAGES } from '../../utils/buildFlags';
 
-// Pure SSG - generate ALL tags at build time
 export const prerender = true;
+
+const PAGE_SIZE = 12;
+
+const stripHtml = (value: string) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+  }
+  return '';
+};
+
+function normalizeSlug(value: any) {
+  return String(value || '').replace(/^\/+|\/+$/g, '');
+}
+const articleSlug = (article: any) =>
+  normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+
+const getExcerpt = (article: any) => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return 'Recette à découvrir.';
+  return raw.length > 180 ? `${raw.slice(0, 180).trim()}...` : raw;
+};
+
+const getDate = (article: any) => {
+  const candidate = article?.publishedAt || article?.date || article?.modified;
+  if (!candidate) return '';
+  const parsed = new Date(candidate);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const mapArticles = (fetchedArticles: any[]) =>
+  (Array.isArray(fetchedArticles) ? fetchedArticles : [])
+    .map((article: any) => {
+      const slug = articleSlug(article);
+      const title = toText(article?.title);
+      if (!slug || !title) return null;
+
+      return {
+        slug,
+        title,
+        excerpt: getExcerpt(article),
+        date: getDate(article),
+        image: processArticleImageUrl(article),
+      };
+    })
+    .filter(Boolean);
 
 export async function getStaticPaths() {
   if (BUILD_ONLY_ARTICLE_PAGES) {
     return [];
   }
 
+  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
   const tags = await getAllTagsFromMongo();
-
-  // For SSG: Generate ALL tags at build time
-  return tags.map((tag: any) => ({
-    params: { slug: tag.slug },
-    props: { tag }
-  }));
+  return tags
+    .map((tag: any) => {
+      const slug = normalizeRouteSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
+      if (!slug) return null;
+      return { params: { slug }, props: { tag } };
+    })
+    .filter(Boolean);
 }
 
 interface Props {
-  tag: any; // Required for SSG
+  tag: any;
 }
 
-const { tag } = Astro.props;
-const { slug } = Astro.params;
-
+const { tag } = Astro.props as Props;
 if (!tag) {
   return new Response('Tag not found', { status: 404 });
 }
 
-// Fetch all articles with this tag at build time
-const articlesData = await getArticlesByTagFromMongo(tag.name || tag.slug);
-
-// Helper functions
-function decodeHtmlEntities(text: string): string {
-  const entities: { [key: string]: string } = {
-    '&nbsp;': ' ',
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&hellip;': '…',
-    '&mdash;': '—',
-    '&ndash;': '–',
-    '&lsquo;': "'",
-    '&rsquo;': "'",
-    '&ldquo;': '"',
-    '&rdquo;': '"',
-    '&bull;': '•',
-    '&deg;': '°',
-    '&frac12;': '½',
-    '&frac14;': '¼',
-    '&frac34;': '¾',
-  };
-
-  return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => {
-    return entities[entity] || entity;
-  });
-}
-
-function stripHtml(html: string): string {
-  if (!html) return '';
-  const text = html.replace(/<[^>]*>/g, '');
-  const decodedText = decodeHtmlEntities(text);
-  return decodedText.substring(0, 150) + (decodedText.length > 150 ? '...' : '');
-}
-
-function getExcerpt(article: any): string {
-  // Try excerpt first
-  if (article.excerpt && Array.isArray(article.excerpt)) {
-    const excerptText = article.excerpt
-      .map((block: any) => block.children?.map((child: any) => child.text).join('') || '')
-      .join('')
-      .trim();
-    if (excerptText) return excerptText.substring(0, 150) + '...';
-  }
-  
-  // Fallback to content
-  if (article.content && Array.isArray(article.content)) {
-    const contentText = article.content
-      .map((block: any) => {
-        if (block._type === 'block') {
-          return block.children?.map((child: any) => child.text).join('') || '';
-        }
-        return '';
-      })
-      .join('')
-      .trim();
-    if (contentText) return contentText.substring(0, 150) + '...';
-  }
-  
-  return '';
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-// Normalize articles and helpers
-const allArticlesWithTag = Array.isArray(articlesData) ? articlesData : [];
-
-function articleSlug(a: any) {
-  if (!a) return '';
-  if (a.slug && typeof a.slug === 'object' && a.slug.current) return a.slug.current;
-  if (typeof a.slug === 'string') return a.slug;
-  if (a._id) return a._id;
-  return '';
-}
-
-function categorySlug(c: any) {
-  if (!c) return '';
-  if (c.slug && typeof c.slug === 'object' && c.slug.current) return c.slug.current;
-  if (typeof c.slug === 'string') return c.slug;
-  if (c._id) return c._id;
-  return '';
-}
-
-// Pagination
-const articlesPerPage = 12;
-const currentPage = 1;
-const totalPages = Math.ceil(allArticlesWithTag.length / articlesPerPage);
-const startIdx = (currentPage - 1) * articlesPerPage;
-const endIdx = startIdx + articlesPerPage;
-const paginatedArticles = allArticlesWithTag.slice(startIdx, endIdx);
+const tagTitle = toText(tag?.title || tag?.name || tag?.label || Astro.params.slug);
+const tagName = toText(tag?.name || tag?.title || tag?.slug || Astro.params.slug);
+const allArticles = mapArticles(await getArticlesByTagFromMongo(tagName, 1000));
+const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
+const articles = allArticles.slice(0, PAGE_SIZE);
 ---
 
-<BaseLayout title={`#${tag.title}`} description={`Articles tagged with ${tag.title}`}>
-  <main class="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
-    {/* Hero Section */}
-    <div class="relative overflow-hidden bg-gradient-to-br from-red-600 via-orange-500 to-amber-600 pt-24 pb-32">
-      {/* Animated Background */}
-      <div class="absolute inset-0 opacity-10">
-        <div class="absolute -top-40 -left-40 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-32 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-      </div>
-
-      <div class="relative z-10 container mx-auto px-4">
-        <div class="mb-6">
-          <div class="inline-block mb-4 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-bold">
-            Tag
-          </div>
-          <h1 class="text-5xl md:text-7xl font-black text-white leading-tight">
-            #{tag.title}
-          </h1>
-        </div>
-        
-        <div class="flex flex-wrap items-center gap-6 mt-8">
-          <div class="bg-white/10 backdrop-blur-md rounded-xl px-6 py-4 border border-white/20">
-            <div class="text-3xl font-black text-white">{allArticlesWithTag.length}</div>
-            <div class="text-sm text-white/80">article{allArticlesWithTag.length !== 1 ? 's' : ''}</div>
-          </div>
-        </div>
-      </div>
+<BaseLayout title={`#${tagTitle}`} description={`Articles associés au mot-clé ${tagTitle}`} loadAds={true}>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <nav class="article-breadcrumb typ-caption mb-4" aria-label="Breadcrumb">
+        <a href="/" class="article-breadcrumb-link">Accueil</a>
+        <span aria-hidden="true">/</span>
+        <a href="/tags/" class="article-breadcrumb-link">Tags</a>
+        <span aria-hidden="true">/</span>
+        <span class="article-breadcrumb-current">#{tagTitle}</span>
+      </nav>
+      <p class="lcdb-page-eyebrow typ-caption">Mot-clé</p>
+      <h1 class="lcdb-page-title typ-h2">#{tagTitle}</h1>
+      <p class="lcdb-page-description typ-body">{allArticles.length} article{allArticles.length !== 1 ? 's' : ''} trouvés.</p>
     </div>
+  </section>
 
-    <div class="relative container mx-auto px-4 -mt-16 pb-20 z-20">
-      {allArticlesWithTag.length > 0 ? (
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      {articles.length > 0 ? (
         <>
-          {/* Info Bar */}
-          <div class="mb-8 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border border-gray-700">
-            <div class="text-white">
-              <span class="font-bold text-lg">{allArticlesWithTag.length}</span>
-              <span class="text-gray-400 ml-2">results for <span class="font-bold text-white">#{tag.title}</span></span>
-            </div>
-            <div class="text-sm text-gray-400">
-              Sorted by newest first
-            </div>
-          </div>
-
-          {/* Articles Grid */}
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {paginatedArticles.map((article: any) => (
-              <a href={`/${articleSlug(article)}`} class="group h-full">
-                <div class="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3 h-full flex flex-col border border-gray-700 hover:border-gray-600">
-                  {/* Image Container */}
-                  {(() => {
-                    const imageUrl = processArticleImageUrl(article);
-                    const imageAlt = article.featured_image?.alt || article.title;
-                    return imageUrl && (
-                      <div class="relative w-full h-64 overflow-hidden bg-gradient-to-br from-gray-700 to-gray-800">
-                        <img
-                          src={imageUrl}
-                          alt={imageAlt}
-                          class="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                          loading="lazy"
-                        />
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
-                        <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent"></div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Content */}
-                  <div class="p-6 flex-grow flex flex-col">
-                    {/* Categories */}
-                    {article.categories && article.categories.length > 0 && (
-                      <div class="flex flex-wrap gap-2 mb-4">
-                        {article.categories.slice(0, 1).map((cat: any) => (
-                          <a 
-                            href={`/categories/${categorySlug(cat)}`}
-                            class="text-xs font-bold text-purple-300 bg-purple-900/50 px-3 py-1 rounded-full hover:bg-purple-900/70 transition border border-purple-700/50"
-                          >
-                            {cat.title}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Date */}
-                    {article.date && (
-                      <time class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-                        {formatDate(article.date)}
-                      </time>
-                    )}
-
-                    {/* Title */}
-                    <h3 class="font-black text-xl mb-3 group-hover:text-orange-400 transition line-clamp-2 text-white">
-                      {article.title}
-                    </h3>
-
-                    {/* Excerpt */}
-                    <p class="text-gray-400 text-sm mb-4 line-clamp-3 flex-grow">
-                      {getExcerpt(article) || 'No description available'}
-                    </p>
-
-                    {/* Additional Tags */}
-                    {article.tags && article.tags.length > 1 && (
-                      <div class="flex flex-wrap gap-2 mb-6 pt-4 border-t border-gray-700">
-                        {article.tags.slice(1, 4).map((t: any) => (
-                          <span class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded-full transition">
-                            #{t.title}
-                          </span>
-                        ))}
-                        {article.tags.length > 4 && (
-                          <span class="text-xs text-gray-500 px-3 py-1">
-                            +{article.tags.length - 4}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Read More Button */}
-                    <div class="mt-auto">
-                      <div class="inline-flex items-center gap-2 text-orange-400 font-bold text-sm group-hover:text-orange-300 transition">
-                        Read Article 
-                        <span class="group-hover:translate-x-2 transition transform">→</span>
-                      </div>
+          <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+            {articles.map((article: any) => (
+              <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
+                <div class="lcdb-article-card-media">
+                  {article.image ? (
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      loading="lazy"
+                      decoding="async"
+                      width="640"
+                      height="800"
+                      sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
+                      class="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center">
+                  <span class="text-[var(--lcdb-muted)] typ-caption">Aucune image</span>
                     </div>
-                  </div>
+                  )}
+                </div>
+                <div class="lcdb-article-card-content">
+              {article.date && <p class="mb-2 text-text-secondary typ-caption">{article.date}</p>}
+                  <h2 class="lcdb-article-card-title">{article.title}</h2>
+                  <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
+                  <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
                 </div>
               </a>
             ))}
           </div>
-
-          {/* Info */}
-          <div class="text-center py-8 border-t border-gray-700">
-            <p class="text-gray-400 text-sm">
-              Showing all {allArticlesWithTag.length} articles tagged with <span class="font-bold text-white">#{tag.title}</span>
-            </p>
+          <div class="mt-10" data-mediavine>
+            <MediavineSlot slot="tag-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
           </div>
+          {totalPages > 1 && (
+            <div class="mt-10">
+              <Pagination currentPage={1} totalPages={totalPages} baseUrl={`/tags/${Astro.params.slug}`} />
+            </div>
+          )}
         </>
       ) : (
-        <div class="text-center py-32">
-          <div class="text-8xl mb-6">🏷️</div>
-          <h3 class="text-3xl font-bold text-white mb-3">No articles yet</h3>
-          <p class="text-gray-400 text-lg max-w-md mx-auto">
-            There are no articles with the tag #{tag.title} yet. Check back soon for new content!
-          </p>
+        <div class="lcdb-empty-state space-y-4">
+          <p class="typ-body">Aucun article trouvé pour ce tag.</p>
+          <a href="/articles/" class="inline-flex text-primary-turquoise typ-button">Parcourir tous les articles</a>
         </div>
       )}
-
-      {/* Related Categories */}
-      {/* Removed - not needed for tag pages */}
-
-      {/* Back Link */}
-      <section class="mt-16">
-        <a href="/tags" class="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 font-bold transition">
-          ← Back to all tags
-        </a>
-      </section>
     </div>
-  </main>
-
-  <style>
-    :global(body) {
-      overflow-x: hidden;
-    }
-  </style>
+  </section>
 </BaseLayout>

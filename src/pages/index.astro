@@ -8,15 +8,20 @@ import RecipeCard from '../components/organisms/RecipeCard.astro';
 import WorkshopCard from '../components/organisms/WorkshopCard.astro';
 import HeroCarousel from '../components/organisms/HeroCarousel.astro';
 import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
-import BioSection from '../components/organisms/BioSection.astro';
-import FeaturedMasterclass from '../components/organisms/FeaturedMasterclass.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
-import { getAllArticlesFromMongo } from '../lib/mongo.server';
-import { processArticleImageUrl } from '../utils/cdnUrlReplacer';
+import MediavineSlot from '../components/MediavineSlot.astro';
+import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
+import { loadFeaturedCourses, loadVideoCourses } from '../lib/videoCourses';
+import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
 
 export const prerender = true;
+const SHOP_VIDEO_URL = '/cours-video';
+const SHOP_WORKSHOP_URL = 'https://atelier-lacuisinedebernard.com/latelier/';
+const featuredVideoCourses = await loadFeaturedCourses();
+const videoCourses = featuredVideoCourses.length ? featuredVideoCourses : await loadVideoCourses();
+const homepageVideoCourses = videoCourses.slice(0, 3);
 
 const fallbackImages = [
   '/images/recipe-chocolate-cake.jpg',
@@ -29,16 +34,16 @@ const fallbackImages = [
 
 const fallbackHeroCards = [
   { title: 'Entremet praline dubai, chantilly et ganache lactee', image: '/images/recipe-chocolate-cake.jpg', category: 'SUCRE', slug: '/entremet-praline-dubai' },
-  { title: 'Ateliers cuisine fevrier - mars 2026 ouverts', image: '/images/workshop-macarons.jpg', category: 'ATELIERS', slug: '/ateliers' },
-  { title: 'Omelette du cure (crepes, pommes de terre, foie gras poele)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
-  { title: 'Brioche tressee aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
-  { title: 'Tarte figue sechee, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
+  { title: 'Ateliers cuisine février - mars 2026 ouverts', image: '/images/ateliers-physiques.jpg', category: 'ATELIERS', slug: SHOP_WORKSHOP_URL },
+  { title: 'Omelette du curé (crêpes, pommes de terre, foie gras poêlé)', image: '/images/recipe-roast-chicken.jpg', category: 'SALE', slug: '/omelette-cure' },
+  { title: 'Brioche tressée aux noix', image: '/images/recipe-lemon-pie.jpg', category: 'SUCRE', slug: '/brioche-tressee-noix' },
+  { title: 'Tarte figue séchée, orange et noix', image: '/images/recipe-salmon.jpg', category: 'SUCRE', slug: '/tarte-figue-orange-noix' },
 ];
 
 const recipeFilters = [
   { label: 'Toutes les recettes', value: 'toutes' },
-  { label: 'Recettes sucr&eacute;es', value: 'sucrees' },
-  { label: 'Recettes sal&eacute;es', value: 'salees' },
+  { label: 'Recettes sucr�es', value: 'sucrees' },
+  { label: 'Recettes sal�es', value: 'salees' },
 ];
 
 const fallbackRecipes = [
@@ -78,7 +83,7 @@ const fallbackRecipes = [
   {
     id: '4',
     title: 'Lasagnes gratinees maison',
-    description: 'Des lasagnes genereuses a la sauce tomate mijotee et parmesan gratine.',
+    description: 'Des lasagnes généreuses à la sauce tomate mijotée et parmesan gratiné.',
     image: '/images/recipe-lasagnes.jpg',
     category: 'SALE',
     filterKey: 'salees',
@@ -111,7 +116,7 @@ const fallbackRecipes = [
   {
     id: '7',
     title: 'Sable mega pistache',
-    description: 'Une recette simple et rapide, genereusement garnie de pistaches hachees.',
+    description: 'Une recette simple et rapide, généreusement garnie de pistaches hachées.',
     image: '/images/recipe-chocolate-cake.jpg',
     category: 'SUCRE',
     filterKey: 'sucrees',
@@ -154,45 +159,222 @@ const fallbackRecipes = [
   },
 ];
 
-const workshops = [
-  {
-    id: '1',
-    title: 'Atelier cuisine chinoise',
-    date: new Date('2026-03-09'),
-    image: '/images/recipe-roast-chicken.jpg',
-    price: 85,
-    duration: '4 heures',
-    maxParticipants: 8,
-    currentParticipants: 7,
-    slug: '/atelier-cuisine-chinoise',
-  },
-  {
-    id: '2',
-    title: 'Atelier cuisine bresilienne',
-    date: new Date('2026-03-18'),
-    image: '/images/recipe-lasagnes.jpg',
-    price: 90,
-    duration: '6 heures',
-    maxParticipants: 8,
-    currentParticipants: 4,
-    slug: '/atelier-cuisine-bresilienne',
-  },
-  {
-    id: '3',
-    title: 'Atelier macarons',
-    date: new Date('2026-03-23'),
-    image: '/images/workshop-macarons.jpg',
-    price: 95,
-    duration: '3 heures',
-    maxParticipants: 8,
-    currentParticipants: 8,
-    slug: '/atelier-macarons',
-  },
-];
+const WORKSHOPS_SOURCE_URL =
+  process.env.WORKSHOPS_CACHE_URL ||
+  'https://lacuisinedebernard.com/api/workshops-cache';
+const WORKSHOPS_FETCH_TIMEOUT_MS = 5000;
+const WORKSHOP_FALLBACK_IMAGE = '/images/ateliers-physiques.jpg';
+
+const decodeEntities = (value: string): string =>
+  String(value || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, '"')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&ndash;/g, '-')
+    .replace(/&mdash;/g, '-')
+    .replace(/&hellip;/g, '...')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toPositiveNumber = (value: any, fallback = 0): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
+};
+
+const toWorkshopDate = (value: any): Date | null => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatWorkshopDuration = (value: any): string => {
+  const minutes = toPositiveNumber(value, 0);
+  if (!minutes) return '--';
+  const hours = Math.floor(minutes / 60);
+  const restMinutes = minutes % 60;
+  if (hours && restMinutes) return `${hours}h ${restMinutes}m`;
+  if (hours) return `${hours}h`;
+  return `${restMinutes}m`;
+};
+
+const normalizeWorkshopStatus = (value: any): 'OPEN' | 'LIMITED' | 'SOLD_OUT' => {
+  const raw = String(value || '').toUpperCase().trim();
+  if (raw === 'SOLD_OUT') return 'SOLD_OUT';
+  if (raw === 'LIMITED') return 'LIMITED';
+  return 'OPEN';
+};
+
+const normalizeWorkshopHref = (value: any): string => {
+  const raw = String(value || '').trim();
+  if (!raw) return SHOP_WORKSHOP_URL;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return raw.startsWith('/') ? raw : `/${raw.replace(/^\/+/, '')}`;
+};
+
+const mapWorkshopItem = (item: any, index: number) => {
+  if (!item || typeof item !== 'object') return null;
+
+  const parsedDate = toWorkshopDate(item.startAt || item.date);
+  if (!parsedDate) return null;
+
+  const title = decodeEntities(item.title || '');
+  if (!title) return null;
+
+  const maxParticipants = toPositiveNumber(item.capacity || item.maxParticipants, 0);
+  const rawSpotsLeft = toPositiveNumber(item.spotsLeft, Number.NaN);
+  const spotsLeft = Number.isFinite(rawSpotsLeft)
+    ? rawSpotsLeft
+    : maxParticipants > 0
+    ? Math.max(maxParticipants - toPositiveNumber(item.currentParticipants, 0), 0)
+    : 0;
+  const currentParticipants = maxParticipants > 0 ? Math.max(maxParticipants - spotsLeft, 0) : 0;
+
+  return {
+    id: String(item.id || item.slug || index + 1),
+    title,
+    date: parsedDate,
+    image: item?.image?.src || WORKSHOP_FALLBACK_IMAGE,
+    price: toPositiveNumber(item.price, 0),
+    duration: formatWorkshopDuration(item.durationMin || item.duration || 0),
+    maxParticipants,
+    currentParticipants,
+    spotsLeft,
+    description: decodeEntities(
+      item.shortDescription || item.description || item.excerpt || item.summary || item.content || ''
+    ),
+    location: decodeEntities(item.location || ''),
+    slug: SHOP_WORKSHOP_URL,
+    status: normalizeWorkshopStatus(item.status),
+  };
+};
+
+const loadUpcomingWorkshops = async () => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), WORKSHOPS_FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(WORKSHOPS_SOURCE_URL, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`workshops_fetch_http_${response.status}`);
+    }
+
+    const payload = await response.json();
+    const items = Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload)
+      ? payload
+      : [];
+
+    const normalized = items
+      .map((item: any, index: number) => mapWorkshopItem(item, index))
+      .filter(Boolean)
+      .sort((a: any, b: any) => a.date.getTime() - b.date.getTime());
+
+    return normalized;
+  } catch (error) {
+    console.warn('[HOME] Workshops cache fetch failed:', error);
+    return [];
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const workshops = await loadUpcomingWorkshops();
+const featuredWorkshop = workshops[0] || null;
+
+const getWorkshopAvailability = (workshop: any) => {
+  if (!workshop || typeof workshop !== 'object') {
+    return {
+      label: 'Places disponibles',
+      className: 'text-status-success',
+    };
+  }
+
+  const maxParticipants = toPositiveNumber(workshop.maxParticipants, 0);
+  const currentParticipants = toPositiveNumber(workshop.currentParticipants, 0);
+  const directSpotsLeft = toPositiveNumber(workshop.spotsLeft, Number.NaN);
+  const spotsLeft = Number.isFinite(directSpotsLeft)
+    ? directSpotsLeft
+    : maxParticipants > 0
+    ? Math.max(maxParticipants - currentParticipants, 0)
+    : Number.NaN;
+  const hasSpotsInfo = Number.isFinite(spotsLeft);
+
+  const isFull =
+    String(workshop.status || '').toUpperCase() === 'SOLD_OUT' ||
+    ((maxParticipants > 0 || hasSpotsInfo) && (spotsLeft || 0) <= 0);
+
+  if (isFull) {
+    return {
+      label: 'Complet',
+      className: 'text-status-error',
+    };
+  }
+
+  if (hasSpotsInfo) {
+    const plural = spotsLeft === 1 ? '' : 's';
+    return {
+      label: `${spotsLeft} place${plural} disponible${plural}`,
+      className:
+        String(workshop.status || '').toUpperCase() === 'LIMITED'
+          ? 'text-status-error'
+          : 'text-status-success',
+    };
+  }
+
+  if (String(workshop.status || '').toUpperCase() === 'LIMITED') {
+    return {
+      label: 'Dernières places',
+      className: 'text-status-error',
+    };
+  }
+
+  return {
+    label: 'Places disponibles',
+    className: 'text-status-success',
+  };
+};
+
+const getWorkshopSpotsLabel = (workshop: any): string => {
+  if (!workshop || typeof workshop !== 'object') return '--';
+
+  const maxParticipants = toPositiveNumber(workshop.maxParticipants, 0);
+  const currentParticipants = toPositiveNumber(workshop.currentParticipants, 0);
+  const directSpotsLeft = toPositiveNumber(workshop.spotsLeft, Number.NaN);
+  const spotsLeft = Number.isFinite(directSpotsLeft)
+    ? directSpotsLeft
+    : maxParticipants > 0
+    ? Math.max(maxParticipants - currentParticipants, 0)
+    : Number.NaN;
+
+  if (Number.isFinite(spotsLeft)) {
+    const plural = spotsLeft === 1 ? '' : 's';
+    return `${spotsLeft} place${plural} disponible${plural}`;
+  }
+
+  const soldOut = String(workshop.status || '').toUpperCase() === 'SOLD_OUT';
+  return soldOut ? 'Complet' : '--';
+};
+
+const featuredWorkshopAvailability = getWorkshopAvailability(featuredWorkshop);
 
 const fallbackSuggestedRecipes = [
   {
-    title: 'Creme brulees salees au potimarron et chorizo',
+    title: 'Crèmes brûlées salées au potimarron et chorizo',
     description: 'Une version salee et originale de la creme brulee, avec la douceur du potimarron.',
     image: '/images/recipe-chocolate-cake.jpg',
     category: 'SALE',
@@ -236,7 +418,7 @@ const toText = (value: any): string => {
   if (typeof value === 'object') {
     if (typeof value.rendered === 'string') return value.rendered;
     if (typeof value.text === 'string') return value.text;
-    if (Array.isArray(value.children)) return value.children.map((child) => toText(child)).join(' ');
+    if (Array.isArray(value.children)) return value.children.map((child: any) => toText(child)).join(' ');
     if (value.content) return toText(value.content);
   }
   return '';
@@ -279,8 +461,17 @@ const extractLabels = (value: any): string[] => {
   return [];
 };
 
+const getPrimaryRecipeBlock = (article: any) => {
+  const blocks = Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : [];
+  if (blocks.length === 0) return null;
+  return blocks.find((block: any) => block?.blockType === 'recipeCard') || blocks[0];
+};
+
 const getCategoryLabel = (article: any): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
   const labels = [
+    ...extractLabels(recipeBlock?.recipeType),
+    ...extractLabels(recipeBlock?.dishType),
     ...extractLabels(article?.categories),
     ...extractLabels(article?.category),
     ...extractLabels(article?.tags),
@@ -290,11 +481,79 @@ const getCategoryLabel = (article: any): string => {
   return candidate || '';
 };
 
-const getFilterKey = (categoryLabel: string): string => {
-  const normalized = normalizeToken(categoryLabel);
+const getFilterKey = (sourceLabel: string): string => {
+  const normalized = normalizeToken(sourceLabel);
   if (normalized.includes('sucre') || normalized.includes('sweet') || normalized.includes('dessert')) return 'sucrees';
   if (normalized.includes('sale') || normalized.includes('savour') || normalized.includes('savory')) return 'salees';
+
+  const sweetKeywords = ['gateau', 'cake', 'cookie', 'brioche', 'chocolat', 'galette', 'tarte', 'creme', 'entremet', 'sable'];
+  if (sweetKeywords.some((keyword) => normalized.includes(keyword))) return 'sucrees';
+
+  const savoryKeywords = ['omelette', 'quiche', 'gratin', 'soupe', 'salade', 'foie gras', 'poulet', 'poisson', 'courge', 'legume'];
+  if (savoryKeywords.some((keyword) => normalized.includes(keyword))) return 'salees';
+
   return 'toutes';
+};
+
+const getRecipeTagLabel = (categoryLabel: string, filterKeyHint = ''): string => {
+  const filterKey = filterKeyHint || getFilterKey(categoryLabel);
+  if (filterKey === 'sucrees') return 'SUCR�';
+  if (filterKey === 'salees') return 'SAL�';
+
+  const fallback = normalizeToken(categoryLabel);
+  if (!fallback) return 'ARTICLE';
+  if (fallback.includes('atelier')) return 'ATELIERS';
+  if (fallback.includes('voyage')) return 'VOYAGES';
+  if (fallback.includes('reportage')) return 'REPORTAGES';
+  if (fallback.includes('selection')) return 'S�LECTIONS';
+  if (fallback.includes('video')) return 'VID�OS';
+
+  return String(categoryLabel).trim().toUpperCase() || 'ARTICLE';
+};
+
+const getRecipeTimeLabel = (article: any): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const prepTimeRaw =
+    recipeBlock?.preparationTimeMinutes ??
+    article?.recipe?.prepTime ??
+    article?.prepTime ??
+    article?.preparationTimeMinutes ??
+    article?.preparationTime;
+  const prepTimeFormat = String(article?.recipe?.prepTimeFormat || '').trim();
+  const prepTimeLabel = String(prepTimeRaw ?? '').trim();
+  if (prepTimeLabel) {
+    if (/[0-9].*(min|h)/i.test(prepTimeLabel)) return prepTimeLabel;
+    if (prepTimeFormat) return `${prepTimeLabel} ${prepTimeFormat}`.trim();
+    if (/^\d+([.,]\d+)?$/.test(prepTimeLabel)) return `${prepTimeLabel} min`;
+  }
+
+  const candidate =
+    article?.date ||
+    article?.publishedAt ||
+    article?.modified ||
+    article?.updated ||
+    article?.updatedAt ||
+    article?.createdAt;
+  if (!candidate) return '--';
+
+  const parsed = new Date(candidate);
+  if (Number.isNaN(parsed.getTime())) {
+    const contentText = stripHtml(toText(article?.content) || toText(article?.excerpt) || '');
+    const wordCount = contentText
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean).length;
+    if (wordCount > 0) {
+      return `${Math.max(1, Math.round(wordCount / 200))} min`;
+    }
+    return '--';
+  }
+
+  return parsed.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 };
 
 const buildRecipeFromArticle = (article: any, index: number) => {
@@ -303,72 +562,152 @@ const buildRecipeFromArticle = (article: any, index: number) => {
   if (!title || !slug) return null;
 
   const categoryLabel = getCategoryLabel(article);
-  const filterKey = getFilterKey(categoryLabel);
-  const image = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
+  const description = getDescription(article);
+  const filterKey = getFilterKey([categoryLabel, title, description].join(' '));
+  if (filterKey === 'toutes') return null;
+  const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
+  const image = buildWpPortraitVariantUrl(fallbackImage) || fallbackImage;
+  const tagLabel = getRecipeTagLabel(categoryLabel, filterKey);
+  const timeLabel = getRecipeTimeLabel(article);
 
   return {
     id: article?._id?.toString?.() || article?.id?.toString?.() || `${index + 1}`,
     title,
-    description: getDescription(article),
+    description,
     image,
-    category: categoryLabel ? categoryLabel.toUpperCase() : 'RECETTE',
+    imageFallback: fallbackImage,
+    category: tagLabel,
     filterKey,
-    prepTime: '--',
-    difficulty: 'A VENIR',
+    prepTime: timeLabel,
+    difficulty: tagLabel,
     slug: `/${slug}`,
   };
 };
 
-const allArticles = await getAllArticlesFromMongo();
-const normalizedArticles = Array.isArray(allArticles)
-  ? allArticles.map(buildRecipeFromArticle).filter(Boolean)
+const getHomeRecipeLimit = () => {
+  const homeLimit = Number(process.env.HOME_RECIPE_LIMIT);
+  if (Number.isFinite(homeLimit) && homeLimit > 0) return homeLimit;
+
+  const globalLimit = Number(process.env.MAX_SSG_ARTICLES);
+  if (Number.isFinite(globalLimit) && globalLimit > 0) return globalLimit;
+
+  return 6000;
+};
+
+const payloadAssetOrigin = (() => {
+  try {
+    return new URL(import.meta.env.PUBLIC_PAYLOAD_API_URL || 'https://admin.lacuisinedebernard.com/api').origin;
+  } catch {
+    return 'https://admin.lacuisinedebernard.com';
+  }
+})();
+
+let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
+if (!Array.isArray(allArticles) || allArticles.length === 0) {
+  allArticles = await getAllArticlesFromMongo();
+}
+const frArticles = Array.isArray(allArticles)
+  ? allArticles.filter((article: any) => String(article?.lang || 'fr').toLowerCase() === 'fr')
+  : [];
+const homepageArticles = frArticles.length > 0 ? frArticles : allArticles;
+const normalizedArticles = Array.isArray(homepageArticles)
+  ? homepageArticles
+      .map(buildRecipeFromArticle)
+      .filter((recipe): recipe is NonNullable<ReturnType<typeof buildRecipeFromArticle>> => Boolean(recipe))
+      .sort((a: any, b: any) => {
+        const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
+        const dateB = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime();
+        return dateB - dateA;
+      })
   : [];
 
 const heroCards = normalizedArticles.length
-  ? normalizedArticles.slice(0, 5).map((recipe) => ({
+  ? normalizedArticles.slice(0, 10).map((recipe) => ({
       title: recipe.title,
       image: recipe.image,
+      imageFallback: recipe.imageFallback,
+      filterKey: recipe.filterKey,
       category: recipe.category,
       slug: recipe.slug,
     }))
   : fallbackHeroCards;
 
-const recipes = normalizedArticles.length ? normalizedArticles.slice(0, 10) : fallbackRecipes;
-const suggestedRecipes = normalizedArticles.length > 10
-  ? normalizedArticles.slice(10, 14)
+const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
+const featuredRecipe = recipePool[0] || fallbackRecipes[0];
+const HOME_VISIBLE_PAGE_SIZE = 15;
+const getHomeInitialRenderCount = () => {
+  const envCount = Number(process.env.HOME_INITIAL_RENDER_COUNT);
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
+};
+const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
+const totalBrowseRecipeCount = Math.max(recipePool.length - 1, browseRecipes.length);
+const SUGGESTED_VISIBLE_PAGE_SIZE = 12;
+const getSuggestedInitialRenderCount = () => {
+  const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
+  return Number.isFinite(envCount) && envCount > 0 ? envCount : 12;
+};
+const suggestedRecipesPool = normalizedArticles.length > 10
+  ? normalizedArticles.slice(10)
   : fallbackSuggestedRecipes;
-
-const featuredRecipe = recipes[0] || fallbackRecipes[0];
+const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRenderCount());
 ---
 
 <MainLayout
   title="La Cuisine de Bernard - Accueil"
-  description="Decouvrez des recettes authentiques et savoureuses par Bernard Laurance."
+  description="Découvrez des recettes authentiques et savoureuses par Bernard Laurance."
+  loadAds={true}
 >
   <HeroCarousel cards={heroCards} />
+  <h1 class="sr-only">La Cuisine de Bernard</h1>
 
-  <section class="py-16 md:py-24 bg-secondary-cream">
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
-      <div class="flex flex-col lg:flex-row gap-7">
-        <div class="flex-1 min-w-0">
+
+  <section
+    class="relative bg-[#F1EFE6] overflow-hidden home-page-section home-page-section--light section_2"
+    style="background-color:#F1EFE6;"
+  >
+    <div
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-30"
+      aria-hidden="true"
+    ></div>
+    <div class="home-shell-width relative z-10">
+      <div class="home-two-column">
+        <div class="home-main-column home-main-column-stack zero_padding_value">
           <!-- Recette du moment -->
-          <div class="mb-12">
+          <div class="home-main-block ">
             <div class="flex items-center gap-4 mb-8">
               <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section">Recette du moment</h2>
               <div class="flex-1 h-px bg-border-primary"></div>
             </div>
 
-            <article class="bg-white rounded-lg border border-border-light overflow-hidden flex flex-col md:flex-row">
-              <div class="relative md:w-[55%]">
-                <img src={featuredRecipe.image} alt={featuredRecipe.title} class="w-full h-[300px] md:h-full object-cover" />
+            <article class="group rounded-lg overflow-hidden flex flex-col md:flex-row bg-[#FAF8F2]">
+              <div class="relative overflow-hidden">
+                <a href={featuredRecipe.slug} class="block h-full" aria-label={featuredRecipe.title}>
+                  <img
+                    src={featuredRecipe.image}
+                    alt={featuredRecipe.title}
+                    class="w-full md:h-full object-cover bg-[#f7f5ef] transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
+                    width="1024"
+                    height="1365"
+                    sizes="(min-width: 1024px) 36vw, 92vw"
+                    data-fallback-src={featuredRecipe.imageFallback || featuredRecipe.image}
+                    onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
+                  />
+                </a>
                 <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
                   </svg>
                 </button>
               </div>
-              <div class="p-6 flex-1">
-                <h3 class="font-heading text-3xl lg:text-4xl text-text-primary typ-feature-title">{featuredRecipe.title}</h3>
+              <div class="p-6 flex-1 pb-12">
+                <h3 class="font-heading text-3xl lg:text-4xl text-text-primary typ-feature-title">
+                  <a href={featuredRecipe.slug} class="transition-colors duration-200 hover:text-primary-turquoise">
+                    {featuredRecipe.title}
+                  </a>
+                </h3>
                 <div class="flex items-center justify-between text-[12px] uppercase tracking-wider text-text-secondary mt-3 typ-meta">
                   <div class="flex items-center gap-2">
                     <span>{featuredRecipe.difficulty}</span>
@@ -383,166 +722,330 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
                 </div>
                 <p class="text-[15px] text-text-secondary leading-relaxed mt-4 typ-body">{featuredRecipe.description}</p>
                 <a href={featuredRecipe.slug} class="inline-flex items-center gap-2 text-primary-turquoise text-[12px] uppercase tracking-wider mt-4 typ-button">
-                  Lire la suite
+                  Lire la recette
                 </a>
               </div>
             </article>
+
           </div>
 
           <!-- Decouvrez mes recettes -->
-          <div>
-            <div class="flex items-center gap-4 mb-8">
-              <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section">D&eacute;couvrez mes recettes</h2>
+          <div class="home-main-block home-main-block--browse">
+            <div class="home-section-heading-row flex items-center gap-4 mb-8 remove_padding">
+              <h2 class="font-heading text-4xl lg:text-5xl text-primary-black typ-section section_2_text">Explorer les recettes</h2>
               <div class="flex-1 h-px bg-border-primary"></div>
             </div>
 
             <div class="flex items-center justify-between gap-4 mb-8" data-homepage-filters>
               <FilterDropdown label="Toutes les recettes" options={recipeFilters} />
-              <div class="flex items-center gap-3">
-                <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue grille" data-view-toggle="grid">
-                  <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                </button>
-                <button class="w-9 h-9 rounded-md border border-border-light bg-white text-text-primary" aria-label="Vue liste" data-view-toggle="list">
-                  <svg class="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                </button>
-              </div>
             </div>
 
-            <div class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 gap-6 mb-10" data-recipe-grid>
-              {recipes.slice(1).map((recipe) => (
-                <div
-                  data-recipe-card
-                  data-category={recipe.filterKey}
-                  data-title={recipe.title.toLocaleLowerCase('fr')}
-                  data-description={recipe.description.toLocaleLowerCase('fr')}
-                >
+            <div
+              class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10"
+              data-recipe-grid
+              data-recipes-source="/home-recipes-index.json"
+              data-recipes-total-count={totalBrowseRecipeCount}
+              aria-busy="false"
+              >
+                {browseRecipes.map((recipe, index) => (
+                  <div
+                    class:list={['home-recipe-card-shell', index >= HOME_VISIBLE_PAGE_SIZE && 'hidden']}
+                    data-recipe-card
+                    data-recipe-index={index}
+                    data-category={recipe.filterKey}
+                    data-title={recipe.title.toLocaleLowerCase('fr')}
+                    data-description={recipe.description.toLocaleLowerCase('fr')}
+                    data-slug={recipe.slug}
+                    aria-hidden={index >= HOME_VISIBLE_PAGE_SIZE ? 'true' : 'false'}
+                  >
                   <RecipeCard
                     title={recipe.title}
                     description={recipe.description}
                     image={recipe.image}
+                    imageFallback={recipe.imageFallback}
                     category={recipe.category}
                     prepTime={recipe.prepTime}
                     difficulty={recipe.difficulty}
                     slug={recipe.slug}
+                    contentClass="pb-12"
                   />
                 </div>
               ))}
             </div>
-
-            <div class="flex items-center justify-center gap-6 text-[13px] text-text-secondary uppercase tracking-wider typ-meta">
-              <span>Pr&eacute;c&eacute;dent</span>
-              <div class="flex items-center gap-4">
+            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
+              <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-prev>
+                Pr&eacute;c&eacute;dent
+              </button>
+              <div class="flex items-center gap-4" data-pagination-pages>
                 <span class="text-text-primary">1</span>
-                <span>2</span>
-                <span>3</span>
-                <span>4</span>
-                <span>5</span>
-                <span>...</span>
-                <span>52</span>
               </div>
-              <span>Suivant</span>
+              <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-next>
+                Suivant
+              </button>
             </div>
+
+          </div>
+
+          <div class="home-deferred-block">
+          </div>
+          <div class="home-deferred-block">
+            <section class="home-newsletter-card overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-[#1C2639] shadow-[0_20px_52px_rgba(8,18,34,0.18)]">
+              <div class="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div class="hidden lg:block">
+                  <img
+                    src="/images/bernard-blog.png"
+                    alt=""
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    width="840"
+                    height="720"
+                  />
+                </div>
+                <div class="px-6 py-8 md:px-10 md:py-10">
+                  <p class="font-mono text-[12px] uppercase tracking-[0.18em] text-[#8BE3DE]">Newsletter</p>
+                  <h2 class="mt-4 font-heading text-[40px] leading-[0.96] text-white md:text-[52px]">
+                    Recevez les nouvelles recettes
+                  </h2>
+                  <p class="home-newsletter-copy mt-5 max-w-[58ch] text-[16px] leading-[1.8] text-[#F2F7FF]">
+                    Abonnez-vous &agrave; la newsletter mensuelle pour recevoir les nouvelles recettes, les dates d&apos;ateliers, les nouveaut&eacute;s du site, les sorties de livres et bien plus encore.
+                  </p>
+                  <form class="mt-8 flex flex-col gap-3 sm:flex-row" onsubmit="event.preventDefault(); document.getElementById('open-newsletter-home')?.click();">
+                    <input
+                      type="email"
+                      placeholder="Votre adresse email"
+                      class="h-[56px] min-w-0 flex-1 rounded-[2px] border border-white/15 bg-white/10 px-5 text-white placeholder:text-white/55 focus:outline-none focus:ring-2 focus:ring-[#8BE3DE]/70"
+                    />
+                    <button
+                      id="open-newsletter-home"
+                      type="submit"
+                      class="article-newsletter-btn inline-flex h-[56px] items-center justify-center rounded-[2px] px-8 text-[13px] tracking-[0.2em] text-white font-button"
+                    >
+                      S&apos;inscrire
+                    </button>
+                  </form>
+                  <p class="home-newsletter-note mt-4 text-[12px] leading-[1.7] text-[#F2F7FF]">
+                    Pas de spam, seulement une newsletter par mois&nbsp;!
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
-        <RecipeSidebar />
+        <div class="home-sidebar-mobile">
+          <RecipeSidebar mobileVisible={true} />
+        </div>
+
+        <div class="home-sidebar-column">
+          <div class="home-sidebar-sticky">
+            <RecipeSidebar />
+          </div>
+        </div>
       </div>
+    </div>
+
+  <section class="bg-secondary-cream">
+    <div class="home-shell py-6 md:py-8" data-mediavine>
+      <MediavineSlot slot="homepage-main-transition" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
     </div>
   </section>
 
-  <BioSection />
-
-  <FeaturedMasterclass />
-
   <!-- Dark Section -->
-  <section class="relative py-16 md:py-24 bg-[#1C2639] overflow-hidden">
-    <div class="absolute inset-0 pointer-events-none opacity-20">
-      <svg class="absolute top-0 right-0 w-[600px] h-[600px] text-[#1F494C]" viewBox="0 0 600 600" fill="none">
-        <circle cx="400" cy="200" r="300" stroke="currentColor" stroke-width="1" opacity="0.3" />
-        <circle cx="350" cy="250" r="200" stroke="currentColor" stroke-width="1" opacity="0.2" />
-      </svg>
-    </div>
+  <section class="relative overflow-hidden home-page-section home-page-section--dark home-render-deferred home-workshops-section Ateliers_css">
+    <div class="absolute inset-0 bg-[#0F2039]" aria-hidden="true"></div>
+    <img
+      src="/images/dark-section-base.png"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 w-full h-full object-cover"
+      loading="lazy"
+      decoding="async"
+    />
+    <picture class="absolute inset-0 w-full h-full">
+      <source srcset="/images/dark-section-grain.avif" type="image/avif" />
+      <img
+        src="/images/dark-section-grain.webp"
+        alt=""
+        aria-hidden="true"
+        class="w-full h-full object-cover opacity-45 mix-blend-screen"
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+    <img
+      src="/images/vector-left.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute left-0 top-[34px] w-[120px] opacity-65 hidden lg:block"
+      loading="lazy"
+      decoding="async"
+    />
+    <img
+      src="/images/vector-grapes.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute left-0 bottom-[32px] w-[150px] opacity-60 hidden lg:block"
+      loading="lazy"
+      decoding="async"
+    />
+    <img
+      src="/images/vector-whisk-top.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute right-0 top-[360px] w-[120px] opacity-62 hidden lg:block"
+      loading="lazy"
+      decoding="async"
+    />
 
-    <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px] relative z-10">
+    <div class="home-shell relative z-10">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-12">
         <div>
-          <h2 class="font-heading text-4xl lg:text-5xl text-primary-white typ-section">Passez au niveau sup&eacute;rieur</h2>
-          <p class="text-[15px] text-[#B5BBBD] mt-3 max-w-2xl typ-body">
-            Rejoignez notre communaut&eacute; de passionn&eacute;s et ma&icirc;trisez les techniques professionnelles.
+          <div class="flex items-center gap-6">
+            <h2 class="font-heading typ-section leading-[1.04]">
+              <span class="text-[#EEF4FF]">Ateliers de </span><span class="text-[#5EC7C5]">cuisine</span>
+            </h2>
+            <div class="hidden lg:block h-px flex-1 min-w-[260px] bg-[#375776]"></div>
+          </div>
+          <p class="text-[15px] text-[#D6DEEC] mt-3 max-w-2xl typ-body">
+            Je vous accueille dans des ateliers de cuisine et de p&acirc;tisserie dans une ambiance conviviale, avec une approche pr&eacute;cise, g&eacute;n&eacute;reuse et accessible.
           </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-16">
-        <div class="max-w-[603px] mx-auto w-full rounded-lg bg-secondary-beige-warm overflow-hidden">
-          <div class="relative h-[350px] lg:h-[460px]">
-            <img src="/images/workshop-macarons.jpg" alt="Ateliers physiques" class="w-full h-full object-cover" />
+      <div class="home-workshops-feature-grid grid grid-cols-1 gap-7 mb-16">
+        <div class="home-workshops-feature-card hidden max-w-[603px] mx-auto w-full rounded-[12px] bg-[#F7F5EF] border border-[#D9D4C6] shadow-[0_16px_44px_rgba(6,18,40,0.26)] overflow-hidden">
+          <div class="relative h-[350px] lg:h-[420px]">
+            <img
+              src={featuredWorkshop?.image || WORKSHOP_FALLBACK_IMAGE}
+              alt={featuredWorkshop?.title || 'Atelier'}
+              class="w-full h-full"
+              loading="lazy"
+              decoding="async"
+              width="960"
+              height="960"
+              sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
+              data-workshops-feature-image
+              onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/ateliers-physiques.jpg';}"
+            />
             <div class="absolute bottom-4 left-4">
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
-                <Icon name="map-pin" size="sm" /> Paris &amp; Lyon
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
+                <Icon name="map-pin" size="sm" /> <span data-workshops-feature-location>{featuredWorkshop?.location || 'Paris'}</span>
               </span>
             </div>
           </div>
-          <div class="p-6">
-            <h3 class="font-heading text-[30px] text-text-primary mb-3 typ-feature-title">Ateliers Physiques</h3>
-            <p class="text-[14px] text-text-secondary mb-5 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
-            <div class="flex items-center gap-4 text-text-secondary text-[12px] mb-5">
-              <span class="flex items-center gap-1"><Icon name="users" size="sm" /> 8 personnes maximum</span>
-              <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> 4 heures</span>
+          <div class="p-6 lg:p-7">
+            <h3 class="font-heading text-[42px] md:text-[50px] lg:text-[56px] leading-[0.98] text-[#151F2B] mb-3" data-workshops-feature-title>{featuredWorkshop?.title || 'Ateliers Physiques'}</h3>
+            <p class={`text-[13px] uppercase tracking-[0.14em] font-mono mb-4 ${featuredWorkshopAvailability.className}`} data-workshops-feature-availability>
+              {featuredWorkshopAvailability.label}
+            </p>
+            <div class="flex items-center gap-4 text-[#2D3440] text-[12px] uppercase tracking-[0.12em] mb-4 border-b border-[#D6D0C2] pb-4">
+              <span class="flex items-center gap-1"><Icon name="users" size="sm" /> <span data-workshops-feature-capacity>{getWorkshopSpotsLabel(featuredWorkshop)}</span></span>
+              <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> <span data-workshops-feature-duration>{featuredWorkshop?.duration || '--'}</span></span>
             </div>
-            <div class="flex items-center justify-between pt-5 border-t border-border-light">
+            <p
+              class="text-[15px] leading-[1.65] text-[#5B6270] mb-5 typ-body"
+              style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.65em * 3);"
+              data-workshops-feature-description
+            >{featuredWorkshop?.description || 'Je vous accueille dans des ateliers de cuisine et de pâtisserie dans une ambiance conviviale, avec une approche précise, généreuse et accessible.'}</p>
+            <div class="flex items-center justify-between pt-5 border-t border-[#D6D0C2]">
               <div>
-                <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
-                <div class="font-heading text-[34px] text-text-primary typ-price">145&euro;</div>
+                <div class="font-heading text-[44px] md:text-[50px] lg:text-[56px] leading-none text-[#162231]" data-workshops-feature-price>{featuredWorkshop?.price ? `${Math.round(featuredWorkshop.price)}€` : '--'}</div>
               </div>
-              <Button href="/ateliers" variant="primary" size="sm">R&eacute;server</Button>
+              <Button
+                href={SHOP_WORKSHOP_URL}
+                variant="primary"
+                size="sm"
+                class="py-[7px] text-[11px] md:text-[12px]"
+                data-workshops-feature-cta
+              >
+                Voir les ateliers
+              </Button>
             </div>
           </div>
         </div>
 
-        <div class="max-w-[603px] mx-auto w-full rounded-lg bg-secondary-beige-warm overflow-hidden">
-          <div class="relative h-[350px] lg:h-[460px]">
-            <img src="/images/masterclass-patisserie.jpg" alt="Masterclass" class="w-full h-full object-cover" />
-            <div class="absolute bottom-4 left-4 flex items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
-                <Icon name="lock" size="sm" /> Acc&egrave;s illimit&eacute;
-              </span>
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-[#BBA86B] px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-white">
-                R&eacute;serv&eacute; Premium
-              </span>
-            </div>
-          </div>
-          <div class="p-6">
-            <h3 class="font-heading text-[30px] text-text-primary mb-3 typ-feature-title">Masterclass Vid&eacute;o</h3>
-            <p class="text-[14px] text-text-secondary mb-5 typ-body">Plus de 50h de contenu vid&eacute;o HD, accessible &agrave; vie depuis chez vous.</p>
-            <div class="flex items-center gap-4 text-text-secondary text-[12px] mb-5">
-              <span class="flex items-center gap-1"><Icon name="video" size="sm" /> 50h</span>
-              <span class="flex items-center gap-1"><Icon name="download" size="sm" /> Vid&eacute;o 4K</span>
-            </div>
-            <div class="flex items-center justify-between pt-5 border-t border-border-light">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+          {homepageVideoCourses.map((course) => (
+            <article class="overflow-hidden rounded-[16px] border border-[#D9D4C6] bg-[#F7F5EF] shadow-[0_16px_44px_rgba(6,18,40,0.22)]">
               <div>
-                <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
-                <div class="font-heading text-[34px] text-text-primary typ-price">145&euro;</div>
+                <div class="relative">
+                  <img
+                    src={course.image || '/images/masterclass-video.jpg'}
+                    alt={course.title}
+                    class="aspect-[2.05] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    width="960"
+                    height="468"
+                    sizes="(min-width: 1280px) 28vw, (min-width: 768px) 42vw, 92vw"
+                    onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='/images/masterclass-video.jpg';}"
+                  />
+                </div>
+                <div class="flex min-h-[188px] flex-col justify-between gap-5 p-5">
+                  <div>
+                    <div class="flex flex-wrap gap-2">
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-mono uppercase tracking-[0.12em] text-[#1E2B3A]">
+                        <Icon name="video" size="sm" /> Cours videos
+                      </span>
+                      <span class:list={[
+                        'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-mono uppercase tracking-[0.12em]',
+                        course.priceType === 'paid' || course.price > 0
+                          ? 'bg-[#BBA86B] text-white'
+                          : 'bg-[#ECEBE4] text-[#1E2B3A]',
+                      ]}>
+                        {course.priceType === 'paid' || course.price > 0 ? 'Premium' : 'Vid&eacute;o gratuite'}
+                      </span>
+                    </div>
+                    <h3 class="mt-4 font-heading text-[27px] leading-[1.02] text-[#151F2B] md:text-[31px]">{course.title}</h3>
+                    <p
+                      class="mt-3 text-[14px] leading-[1.58] text-[#5B6270] typ-body"
+                      style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.58em * 3);"
+                    >
+                      {course.shortDescription || 'D&eacute;couvrez mes cours videos pour apprendre les bases de la p&acirc;tisserie &agrave; votre rythme.'}
+                    </p>
+                  </div>
+                  <div class="border-t border-[#D6D0C2] pt-4">
+                    <p class="hidden font-mono text-[12px] uppercase tracking-[0.16em] text-[#5B6270]">
+                      {course.priceType === 'paid' || course.price > 0 ? `${Math.round(course.price)}€` : 'Acc&egrave;s gratuit'}
+                    </p>
+                    <Button
+                      href={course.courseUrl || SHOP_VIDEO_URL}
+                      variant="primary"
+                      class="w-full py-[10px] text-[12px] uppercase tracking-[0.14em]"
+                      size="sm"
+                    >
+                      Voir le cours
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <Button href="/masterclass" class="bg-[#BBA86B] hover:bg-[#A89558] !text-black border-none" size="sm">
-                Devenir Premium
-              </Button>
-            </div>
-          </div>
+            </article>
+          ))}
         </div>
       </div>
 
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-10">
         <div>
-          <h3 class="font-heading text-4xl text-primary-white typ-section">Prochains Ateliers</h3>
-          <p class="text-[15px] text-[#B5BBBD] mt-3 typ-body">Rejoignez-moi en pr&eacute;sentiel pour une exp&eacute;rience immersive.</p>
+          <div class="flex items-center gap-6">
+            <h3 class="font-heading typ-section leading-[1.04]">
+              <span class="text-[#EEF4FF]">Ateliers de </span><span class="text-[#5EC7C5]">cuisine</span>
+            </h3>
+            <div class="hidden lg:block h-px flex-1 min-w-[260px] bg-[#375776]"></div>
+          </div>
+          <p class="text-[15px] text-[#D6DEEC] mt-3 typ-body">Chaque atelier est pens&eacute; pour apprendre, pratiquer, comprendre les gestes et repartir avec de vraies bases solides.</p>
         </div>
-        <a href="/ateliers" class="inline-flex items-center gap-2 bg-primary-turquoise text-primary-black px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm">
-          <Icon name="clock" size="sm" /> Voir le calendrier complet
+        <a href={SHOP_WORKSHOP_URL} class="inline-flex items-center gap-2 bg-primary-turquoise text-[#EBFAFF] px-6 py-3 text-[12px] uppercase tracking-wider rounded-sm typ-button">
+          <Icon name="clock" size="sm" /> Voir les ateliers
         </a>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center">
+      <div
+        class="home-workshops-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center"
+        data-workshops-grid
+        data-workshops-api={WORKSHOPS_SOURCE_URL}
+        aria-busy="false"
+      >
         {workshops.map((workshop) => (
           <WorkshopCard
             title={workshop.title}
@@ -550,104 +1053,283 @@ const featuredRecipe = recipes[0] || fallbackRecipes[0];
             image={workshop.image}
             price={workshop.price}
             duration={workshop.duration}
+            description={workshop.description}
             maxParticipants={workshop.maxParticipants}
             currentParticipants={workshop.currentParticipants}
+            spotsLeft={workshop.spotsLeft}
             slug={workshop.slug}
+            status={workshop.status as 'OPEN' | 'LIMITED' | 'SOLD_OUT'}
           />
         ))}
+      </div>
+      <div
+        class="hidden home-workshops-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 justify-items-center mt-8"
+        data-workshops-grid-skeleton
+        aria-hidden="true"
+      >
+        {Array.from({ length: 3 }).map(() => (
+          <div class="w-full max-w-[388px] overflow-hidden rounded-[10px] border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_16px_44px_rgba(6,18,40,0.18)] animate-pulse">
+            <div class="aspect-[0.98] bg-[#D6DEEC]/30"></div>
+            <div class="p-6">
+              <div class="h-4 w-28 rounded bg-[#D6DEEC]/30"></div>
+              <div class="mt-4 h-12 w-4/5 rounded bg-[#D6DEEC]/30"></div>
+              <div class="mt-5 flex gap-3">
+                <div class="h-4 w-20 rounded bg-[#D6DEEC]/30"></div>
+                <div class="h-4 w-16 rounded bg-[#D6DEEC]/30"></div>
+              </div>
+              <div class="mt-6 space-y-3">
+                <div class="h-4 rounded bg-[#D6DEEC]/30"></div>
+                <div class="h-4 rounded bg-[#D6DEEC]/30"></div>
+                <div class="h-4 w-2/3 rounded bg-[#D6DEEC]/30"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p
+        class="hidden mt-6 text-[13px] uppercase tracking-[0.14em] text-[#D6DEEC] typ-meta"
+        data-workshops-status
+        role="status"
+        aria-live="polite"
+      ></p>
+    </div>
+  </section>
+
+  <section class="bg-secondary-cream">
+    <div class="home-shell py-6 md:py-8" data-mediavine>
+      <MediavineSlot slot="homepage-workshops-transition" minHeight={280} className="rounded-[10px] bg-[#F7F5EF]" />
+    </div>
+  </section>
+
+  <section class="relative bg-secondary-cream overflow-hidden p-4 home-page-section home-page-section--light home-render-deferred">
+    <div
+      class="section-noise-overlay absolute inset-0 pointer-events-none opacity-28"
+      aria-hidden="true"
+    ></div>
+    <div class="home-shell-width relative z-10">
+      <div class="books-section-mobile-only">
+        <BooksSection embedded />
+      </div>
+      <div class="home-two-column">
+        <div class="home-main-column home-main-column-stack mes-livres zero_padding_books">
+          <div class="mb-8" data-mediavine>
+            <MediavineSlot slot="homepage-books-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
+          </div>
+          <div class="books-section-desktop-only">
+            <BooksSection embedded />
+          </div>
+          <SuggestedRecipes
+            recipes={suggestedRecipes}
+            embedded
+            source="/home-recipes-index.json"
+            offset={10}
+            visibleCount={SUGGESTED_VISIBLE_PAGE_SIZE}
+            totalCount={suggestedRecipesPool.length}
+          />
+        </div>
+        <div class="home-sidebar-mobile">
+          <RecipeSidebar variant="popular" mobileVisible={true} />
+        </div>
+        <div class="home-sidebar-column">
+          <div class="home-sidebar-sticky">
+            <RecipeSidebar variant="popular" />
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <BooksSection />
-
-  <SuggestedRecipes recipes={suggestedRecipes} />
-
-  <NewsletterModal triggerId="open-newsletter-footer" />
+  <NewsletterModal triggerId="open-newsletter-home" id="newsletter-modal-home" />
 </MainLayout>
 
 <script>
+  // @ts-nocheck
   function setupHomepageFilters() {
     const filterRoot = document.querySelector('[data-homepage-filters]');
-    if (!filterRoot || filterRoot.dataset.interactionsReady === 'true') return;
+    const grid = document.querySelector('[data-recipe-grid]');
+    const paginationRoot = document.querySelector('[data-home-pagination]');
+    if (!(filterRoot instanceof HTMLElement) || !(grid instanceof HTMLElement) || !(paginationRoot instanceof HTMLElement)) return;
+    if (filterRoot.dataset.interactionsReady === 'true') return;
     filterRoot.dataset.interactionsReady = 'true';
 
-    const filterLabels = {
-      toutes: 'Toutes les recettes',
-      sucrees: 'Recettes sucr&eacute;es',
-      salees: 'Recettes sal&eacute;es',
+    const filterItems = Array.from(filterRoot.querySelectorAll('[data-filter-item]'));
+    const paginationPages = paginationRoot.querySelector('[data-pagination-pages]');
+    const paginationPrev = paginationRoot.querySelector('[data-pagination-prev]');
+    const paginationNext = paginationRoot.querySelector('[data-pagination-next]');
+    let cards = Array.from(grid.querySelectorAll('[data-recipe-card]'));
+    let activeFilter = 'toutes';
+    let activePage = 1;
+    const cardsPerPage = 15;
+
+    const createPageItems = (totalPages) => {
+      if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+      const items = [1];
+      const rangeStart = Math.max(2, activePage - 1);
+      const rangeEnd = Math.min(totalPages - 1, activePage + 1);
+      if (rangeStart > 2) items.push('start-ellipsis');
+      for (let page = rangeStart; page <= rangeEnd; page += 1) items.push(page);
+      if (rangeEnd < totalPages - 1) items.push('end-ellipsis');
+      items.push(totalPages);
+      return items;
     };
 
-    const cards = Array.from(document.querySelectorAll('[data-recipe-card]'));
-    const filterItems = Array.from(filterRoot.querySelectorAll('[data-filter-item]'));
+    const getFilteredCards = () =>
+      cards.filter((card) => {
+        const category = String(card.getAttribute('data-category') || 'toutes').toLowerCase();
+        return activeFilter === 'toutes' || category === activeFilter;
+      });
 
-    let activeFilter = 'toutes';
+    const renderPagination = (totalPages) => {
+      if (!(paginationPages instanceof HTMLElement) || !(paginationPrev instanceof HTMLButtonElement) || !(paginationNext instanceof HTMLButtonElement)) return;
+      paginationRoot.classList.toggle('hidden', totalPages <= 1);
+      paginationPages.innerHTML = '';
 
-    const applyFilters = () => {
+      createPageItems(totalPages).forEach((item) => {
+        if (typeof item === 'string') {
+          const dot = document.createElement('span');
+          dot.className = 'text-text-secondary';
+          dot.textContent = '...';
+          paginationPages.appendChild(dot);
+          return;
+        }
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'transition-colors ' + (item === activePage ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary');
+        button.textContent = String(item);
+        button.setAttribute('data-page', String(item));
+        paginationPages.appendChild(button);
+      });
+
+      paginationPrev.disabled = activePage <= 1;
+      paginationNext.disabled = activePage >= totalPages;
+    };
+
+    const applyFilters = (resetPage = false) => {
+      cards = Array.from(grid.querySelectorAll('[data-recipe-card]'));
+      const filteredCards = getFilteredCards();
+      const totalPages = Math.max(1, Math.ceil(filteredCards.length / cardsPerPage));
+      activePage = resetPage ? 1 : Math.min(activePage, totalPages);
+
+      const startIndex = (activePage - 1) * cardsPerPage;
+      const endIndex = startIndex + cardsPerPage;
+      const visibleCards = new Set(filteredCards.slice(startIndex, endIndex));
+
       cards.forEach((card) => {
-        const category = (card.dataset.category || 'toutes').toLowerCase();
-        const matchesFilter = activeFilter === 'toutes' || category === activeFilter;
-        card.classList.toggle('hidden', !matchesFilter);
-        card.setAttribute('aria-hidden', String(!matchesFilter));
+        const shell = card instanceof HTMLElement ? card : null;
+        if (!shell) return;
+        const isVisible = visibleCards.has(shell);
+        shell.classList.toggle('hidden', !isVisible);
+        shell.setAttribute('aria-hidden', String(!isVisible));
       });
 
       filterItems.forEach((item) => {
-        const value = (item.getAttribute('data-filter-value') || '').toLowerCase();
+        const value = String(item.getAttribute('data-filter-value') || '').toLowerCase();
         const isActive = value === activeFilter;
         item.setAttribute('aria-current', isActive ? 'true' : 'false');
         const check = item.querySelector('[data-filter-check]');
         const box = item.querySelector('[data-filter-checkbox]');
-        if (check && box) {
-          if (isActive) {
-            check.classList.remove('opacity-0');
-            box.classList.add('border-primary-turquoise');
-          } else {
-            check.classList.add('opacity-0');
-            box.classList.remove('border-primary-turquoise');
-          }
-        }
+        if (check instanceof HTMLElement) check.classList.toggle('opacity-0', !isActive);
+        if (box instanceof HTMLElement) box.classList.toggle('border-primary-turquoise', isActive);
       });
+
+      renderPagination(totalPages);
     };
 
     filterItems.forEach((item) => {
       item.addEventListener('click', (event) => {
         event.preventDefault();
-        const nextFilter = (item.getAttribute('data-filter-value') || '').toLowerCase();
-        if (!filterLabels[nextFilter]) return;
+        const nextFilter = String(item.getAttribute('data-filter-value') || '').toLowerCase();
+        if (!nextFilter) return;
         activeFilter = nextFilter;
-        applyFilters();
+        applyFilters(true);
       });
     });
 
-    applyFilters();
-  }
-
-  function setupViewToggle() {
-    const grid = document.querySelector('[data-recipe-grid]');
-    const buttons = Array.from(document.querySelectorAll('[data-view-toggle]'));
-    if (!grid || buttons.length === 0) return;
-
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const view = btn.getAttribute('data-view-toggle');
-        if (!view) return;
-        grid.setAttribute('data-view', view);
-      });
+    paginationPrev?.addEventListener('click', () => {
+      if (activePage <= 1) return;
+      activePage -= 1;
+      applyFilters();
     });
+
+    paginationNext?.addEventListener('click', () => {
+      const totalPages = Math.max(1, Math.ceil(getFilteredCards().length / cardsPerPage));
+      if (activePage >= totalPages) return;
+      activePage += 1;
+      applyFilters();
+    });
+
+    paginationPages?.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const page = Number(target.getAttribute('data-page') || '');
+      if (!Number.isFinite(page) || page <= 0) return;
+      activePage = page;
+      applyFilters();
+    });
+
+    applyFilters(true);
   }
 
   setupHomepageFilters();
-  setupViewToggle();
-  document.addEventListener('astro:page-load', () => {
-    setupHomepageFilters();
-    setupViewToggle();
-  });
+  document.addEventListener('astro:page-load', setupHomepageFilters);
 </script>
 
 <style>
-  .recipe-grid-home[data-view='list'] {
-    grid-template-columns: 1fr;
+  .home-sidebar-mobile {
+    display: block;
+    width: 100%;
+    margin-top: 24px;
   }
+
+  .home-recipe-card-shell {
+    contain-intrinsic-size: auto 780px;
+  }
+
+  .home-render-deferred {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 980px;
+  }
+
+  .home-deferred-block {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 760px;
+  }
+
+  .home-newsletter-card .home-newsletter-copy,
+  .home-newsletter-card .home-newsletter-note {
+    color: #f2f7ff !important;
+  }
+
+  .home-workshops-feature-grid {
+    align-items: start;
+  }
+
+  .books-section-mobile-only {
+    display: block;
+    margin-bottom: 32px;
+  }
+
+  .books-section-desktop-only {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .home-sidebar-mobile {
+      display: none;
+    }
+
+    .books-section-mobile-only {
+      display: none;
+    }
+
+    .books-section-desktop-only {
+      display: block;
+    }
+  }
+
 </style>
+
+
 
 

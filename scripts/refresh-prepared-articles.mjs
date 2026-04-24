@@ -86,6 +86,74 @@ const fetchWithTimeout = async (url, options = {}) => {
   }
 };
 
+const normalizeBase = (value) =>
+  typeof value === 'string' ? value.trim().replace(/\/+$/g, '') : '';
+
+const buildApiBaseCandidates = (value) => {
+  const normalized = normalizeBase(value);
+  if (!normalized) return [];
+
+  const candidates = [];
+  const seen = new Set();
+  const add = (candidate) => {
+    const clean = normalizeBase(candidate);
+    if (!clean || seen.has(clean)) return;
+    seen.add(clean);
+    candidates.push(clean);
+  };
+
+  add(normalized);
+
+  try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/g, '');
+    const lowerPath = path.toLowerCase();
+
+    if (!path || path === '/') {
+      parsed.pathname = '/api';
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (lowerPath.endsWith('/api')) {
+      const withoutApiPath = path.slice(0, -4) || '/';
+      parsed.pathname = withoutApiPath;
+      add(parsed.toString());
+      return candidates;
+    }
+
+    if (!lowerPath.endsWith('/api')) {
+      if (lowerPath.includes('/api/')) {
+        parsed.pathname = path.slice(0, lowerPath.indexOf('/api/') + 4);
+        add(parsed.toString());
+      }
+
+      parsed.pathname = `${path}/api`;
+      add(parsed.toString());
+    }
+  } catch {
+    // keep raw candidate for non-standard URL inputs
+  }
+
+  return candidates;
+};
+
+const apiBases = buildApiBaseCandidates(rawApiBase);
+
+const fetchWithTimeout = async (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 const buildHeaders = () => {
   const headers = { 'Content-Type': 'application/json' };
   if (apiToken) {
@@ -148,31 +216,125 @@ const fetchPage = async (page) => {
   return fetchPayloadJSON('/articles', qs);
 };
 
-const normalizeSlug = (value) =>
-  typeof value === 'string' ? value.trim().replace(/^\/+|\/+$/g, '') : '';
+const normalizeDate = (doc) =>
+  doc?.date || doc?.modified || doc?.publishedAt || doc?.createdAt || null;
 
-const normalizeId = (value) => (value ? String(value).trim() : '');
+const normalizeAuthor = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string' || typeof value === 'number') {
+    return { id: value };
+  }
 
-const ensureIds = (doc) => {
-  const existingId = doc?.id ?? doc?._id ?? doc?.doc?.id ?? doc?.doc?._id ?? '';
-  const normalizedId = normalizeId(existingId);
-  if (!normalizedId) return doc;
-  return {
-    ...doc,
-    id: doc?.id || normalizedId,
-    _id: doc?._id || normalizedId,
-  };
+  if (typeof value === 'object') {
+    const id = value?.id || value?._id || null;
+    const name = value?.name || value?.fullName || value?.displayName || null;
+    const slug = value?.slug || null;
+    const email = value?.email || null;
+    return { id, name, slug, email };
+  }
+
+  return null;
 };
 
-const dedupeBySlug = (items) => {
+const normalizeTaxonomyItems = (items) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((entry) => {
+      if (!entry) return null;
+
+      if (typeof entry === 'string' || typeof entry === 'number') {
+        return { id: entry, name: null, slug: null };
+      }
+
+      if (typeof entry === 'object') {
+        return {
+          id: entry?.id || entry?._id || null,
+          name: entry?.name || null,
+          slug: entry?.slug || null,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const toAbsoluteUrl = (value, apiBase) => {
+  const input = toPlainString(value).trim();
+  if (!input) return '';
+  if (/^https?:\/\//i.test(input)) return input;
+
+  try {
+    return new URL(input, `${apiBase}/`).toString();
+  } catch {
+    return input;
+  }
+};
+
+const normalizeFeaturedImage = (doc, apiBase) => {
+  const featuredImage = doc?.featured_image || doc?.featuredImage || null;
+  const featuredMedia = doc?.featuredMedia || null;
+
+  if (featuredImage && typeof featuredImage === 'object') {
+    const url = toAbsoluteUrl(featuredImage?.url || featuredImage?.src || '', apiBase);
+    if (url || featuredImage?.id || featuredImage?.width || featuredImage?.height) {
+      return {
+        id: featuredImage?.id || featuredImage?._id || null,
+        url,
+        width: featuredImage?.width || null,
+        height: featuredImage?.height || null,
+        alt: featuredImage?.alt || '',
+      };
+    }
+  }
+
+  if (featuredMedia && typeof featuredMedia === 'object') {
+    return {
+      id: featuredMedia?.id || featuredMedia?._id || null,
+      url: toAbsoluteUrl(featuredMedia?.url || featuredMedia?.thumbnailURL || '', apiBase),
+      width: featuredMedia?.width || null,
+      height: featuredMedia?.height || null,
+      alt: featuredMedia?.alt || '',
+    };
+  }
+
+  if (typeof doc?.featured_img_url === 'string' && doc.featured_img_url.trim()) {
+    return {
+      id: null,
+      url: toAbsoluteUrl(doc.featured_img_url, apiBase),
+      width: null,
+      height: null,
+      alt: '',
+    };
+  }
+
+  return null;
+};
+
+const toLegacyPreparedArticle = (doc, apiBase) => ({
+  _id: doc?._id || doc?.id || null,
+  slug: normalizeSlug(typeof doc?.slug === 'string' ? doc.slug : doc?.slug?.current),
+  lang: normalizeLang(doc?.lang || doc?.language || doc?.locale),
+  title: toPlainString(doc?.title),
+  content: toPlainString(doc?.content ?? doc?.contentV2 ?? doc?.body ?? ''),
+  excerpt: toPlainString(doc?.excerpt ?? ''),
+  date: normalizeDate(doc),
+  author: normalizeAuthor(doc?.author),
+  categories: normalizeTaxonomyItems(doc?.categories),
+  tags: normalizeTaxonomyItems(doc?.tags),
+  featured_image: normalizeFeaturedImage(doc, apiBase),
+});
+
+const dedupeByLangAndSlug = (items) => {
   const seen = new Set();
   const deduped = [];
   for (const item of items) {
-    const slug = normalizeSlug(
-      typeof item.slug === 'string' ? item.slug : item.slug?.current,
-    );
-    if (!slug || seen.has(slug)) continue;
-    seen.add(slug);
+    const slug = normalizeSlug(item?.slug);
+    const lang = normalizeLang(item?.lang || item?.language || item?.locale);
+    const key = `${lang}::${slug}`;
+    if (!slug || seen.has(key)) continue;
+    seen.add(key);
     deduped.push(item);
   }
   return deduped;
@@ -213,7 +375,8 @@ const main = async () => {
   }
 
   const output = limit ? allDocs.slice(0, limit) : allDocs;
-  const deduped = dedupeBySlug(output);
+  const legacyPrepared = output.map((doc) => toLegacyPreparedArticle(doc, apiBases[0]));
+  const deduped = dedupeByLangAndSlug(legacyPrepared);
 
   fs.writeFileSync(preparedPath, JSON.stringify(deduped, null, 2));
   console.log(`Wrote ${deduped.length} articles to prepared-articles.json`);

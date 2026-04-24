@@ -1,10 +1,15 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
 
 interface Props extends HTMLAttributes<'button'> {
   variant?: 'primary' | 'secondary' | 'disabled';
   size?: 'sm' | 'md' | 'lg';
   isDisabled?: boolean;
+  isLoading?: boolean;
+  loadingLabel?: string;
+  icon?: 'arrow-right' | 'download' | 'mail' | 'search' | 'refresh';
+  iconPosition?: 'left' | 'right';
   href?: string;
 }
 
@@ -12,47 +17,77 @@ const {
   variant = 'primary',
   size = 'md',
   isDisabled = false,
+  isLoading = false,
+  loadingLabel = 'Chargement...',
+  icon,
+  iconPosition = 'left',
   href,
   class: className,
   type = 'button',
   ...rest
 } = Astro.props;
 
-const baseStyles = "inline-flex items-center justify-center font-button rounded border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2";
+const baseStyles = "inline-flex items-center justify-center font-button uppercase tracking-[0.2em] rounded-[2px] border border-transparent btn-hover-transition btn-state-transition focus:outline-none focus:ring-2 focus:ring-offset-2";
 
 const variants: Record<string, string> = {
-  primary: "bg-primary-turquoise text-primary-white hover:bg-opacity-90 active:scale-95 focus:ring-primary-turquoise",
+  primary: "bg-[#57BBB8] text-primary-white hover:opacity-90 active:scale-95 focus:ring-primary-turquoise",
   secondary: "bg-primary-white border-primary-black text-primary-black hover:bg-gray-50 active:scale-95 focus:ring-primary-black",
   disabled: "bg-status-disabled text-primary-white cursor-not-allowed opacity-70"
 };
 
 const sizes: Record<string, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-base",
-  lg: "px-6 py-3 text-lg"
+  sm: "min-h-[56px] px-6 py-4 text-[13px]",
+  md: "min-h-[56px] px-8 py-4 text-[13px]",
+  lg: "min-h-[56px] px-10 py-4 text-[13px]"
 };
 
 const classes = [
   baseStyles,
   variants[variant],
   sizes[size],
+  (isDisabled || isLoading || variant === 'disabled') ? 'pointer-events-none opacity-70' : '',
   className
 ].join(" ");
+
+const isActuallyDisabled = isDisabled || isLoading || variant === 'disabled';
 ---
 
-{href && variant !== 'disabled' ? (
+{href && !isActuallyDisabled ? (
   <a href={href} class={classes} {...rest}>
-    <slot />
+    {isLoading ? (
+      <>
+        <Icon name="loading" size="sm" class="w-4 h-4 animate-spin" aria-hidden="true" />
+        <span>{loadingLabel}</span>
+      </>
+    ) : (
+      <>
+        {icon && iconPosition === 'left' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+        <slot />
+        {icon && iconPosition === 'right' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+      </>
+    )}
   </a>
 ) : (
   <button
     type={type}
     class={classes}
-    disabled={isDisabled || variant === 'disabled'}
-    aria-disabled={isDisabled || variant === 'disabled'}
+    disabled={isActuallyDisabled}
+    aria-disabled={isActuallyDisabled}
+    aria-busy={isLoading || undefined}
     {...rest}
   >
-    <slot />
+    {isLoading ? (
+      <>
+        <Icon name="loading" size="sm" class="w-4 h-4 animate-spin" aria-hidden="true" />
+        <span>{loadingLabel}</span>
+      </>
+    ) : (
+      <>
+        {icon && iconPosition === 'left' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+        <slot />
+        {icon && iconPosition === 'right' && <Icon name={icon} size="sm" class="w-4 h-4" aria-hidden="true" />}
+      </>
+    )}
   </button>
 )}
 

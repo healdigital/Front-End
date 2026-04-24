@@ -1,0 +1,182 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../../components/MediavineSlot.astro';
+import Pagination from '../../../components/organisms/Pagination.astro';
+import { getAllTagsFromMongo, getArticlesByTagFromMongo } from '../../../lib/mongo.server';
+import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
+import { BUILD_ONLY_ARTICLE_PAGES } from '../../../utils/buildFlags';
+
+export const prerender = true;
+const PAGE_SIZE = 12;
+
+const stripHtml = (value: string) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+  }
+  return '';
+};
+
+function normalizeSlug(value: any) {
+  return String(value || '').replace(/^\/+|\/+$/g, '');
+}
+const articleSlug = (article: any) =>
+  normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+
+const getExcerpt = (article: any) => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return 'Recette à découvrir.';
+  return raw.length > 180 ? `${raw.slice(0, 180).trim()}...` : raw;
+};
+
+const getDate = (article: any) => {
+  const candidate = article?.publishedAt || article?.date || article?.modified;
+  if (!candidate) return '';
+  const parsed = new Date(candidate);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+const mapArticles = (fetchedArticles: any[]) =>
+  (Array.isArray(fetchedArticles) ? fetchedArticles : [])
+    .map((article: any) => {
+      const slug = articleSlug(article);
+      const title = toText(article?.title);
+      if (!slug || !title) return null;
+      return {
+        slug,
+        title,
+        excerpt: getExcerpt(article),
+        date: getDate(article),
+        image: processArticleImageUrl(article),
+      };
+    })
+    .filter(Boolean);
+
+export async function getStaticPaths() {
+  if (BUILD_ONLY_ARTICLE_PAGES) return [];
+  const pageSize = 12;
+  const tags = await getAllTagsFromMongo();
+  const paths: any[] = [];
+  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
+  const stripRouteHtml = (value: unknown) =>
+    String(value || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const toRouteText = (value: unknown): string => {
+    if (!value) return '';
+    if (typeof value === 'string') return stripRouteHtml(value);
+    if (Array.isArray(value)) return value.map((item) => toRouteText(item)).filter(Boolean).join(' ');
+    if (typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
+      for (const candidate of directCandidates) {
+        const text = toRouteText(candidate);
+        if (text) return text;
+      }
+    }
+    return '';
+  };
+
+  for (const tag of tags) {
+    const slug = normalizeRouteSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
+    if (!slug) continue;
+    const tagName = toRouteText(tag?.name || tag?.title || slug);
+    const count = (await getArticlesByTagFromMongo(tagName, 1000)).filter((article: any) => {
+      const articleSlugValue = normalizeRouteSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+      const articleTitle = toRouteText(article?.title);
+      return Boolean(articleSlugValue && articleTitle);
+    }).length;
+    const totalPages = Math.ceil(count / pageSize);
+
+    for (let page = 2; page <= totalPages; page++) {
+      paths.push({ params: { slug, page: String(page) }, props: { tag, page } });
+    }
+  }
+
+  return paths;
+}
+
+const { tag, page } = Astro.props as { tag: any; page: number };
+const currentPage = Number(page) || 2;
+const tagTitle = toText(tag?.title || tag?.name || tag?.label || Astro.params.slug);
+const tagName = toText(tag?.name || tag?.title || tag?.slug || Astro.params.slug);
+const allArticles = mapArticles(await getArticlesByTagFromMongo(tagName, 1000));
+const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
+const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+---
+
+<BaseLayout title={`#${tagTitle} - page ${currentPage}`} description={`Articles associés au mot-clé ${tagTitle}`} loadAds={true}>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <nav class="article-breadcrumb typ-caption mb-4" aria-label="Breadcrumb">
+        <a href="/" class="article-breadcrumb-link">Accueil</a>
+        <span aria-hidden="true">/</span>
+        <a href="/tags/" class="article-breadcrumb-link">Tags</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/tags/${Astro.params.slug}`} class="article-breadcrumb-link">#{tagTitle}</a>
+        <span aria-hidden="true">/</span>
+        <span class="article-breadcrumb-current">Page {currentPage}</span>
+      </nav>
+      <p class="lcdb-page-eyebrow typ-caption">Mot-clé</p>
+      <h1 class="lcdb-page-title typ-h2">#{tagTitle}</h1>
+      <p class="lcdb-page-description typ-body">Page {currentPage} sur {totalPages}</p>
+    </div>
+  </section>
+
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <div class="lcdb-grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        {articles.map((article: any) => (
+          <a href={`/${article.slug}`} class="lcdb-article-card" aria-label={`Lire l’article : ${article.title}`}>
+            <div class="lcdb-article-card-media">
+              {article.image ? (
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  loading="lazy"
+                  decoding="async"
+                  width="640"
+                  height="800"
+                  sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
+                  class="w-full h-full object-cover"
+                />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center">
+                  <span class="text-[var(--lcdb-muted)] typ-caption">Aucune image</span>
+                </div>
+              )}
+            </div>
+            <div class="lcdb-article-card-content">
+              {article.date && <p class="mb-2 text-text-secondary typ-caption">{article.date}</p>}
+              <h2 class="lcdb-article-card-title">{article.title}</h2>
+              <p class="lcdb-article-card-excerpt typ-body">{article.excerpt}</p>
+              <span class="inline-flex text-primary-turquoise typ-button">Lire la suite</span>
+            </div>
+          </a>
+        ))}
+      </div>
+      <div class="mt-10" data-mediavine>
+        <MediavineSlot slot="tag-page-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
+      </div>
+      {totalPages > 1 && (
+        <div class="mt-10">
+          <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={`/tags/${Astro.params.slug}`} />
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

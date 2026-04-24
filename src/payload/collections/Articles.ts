@@ -52,6 +52,12 @@ export const Articles: CollectionConfig = {
       required: true,
       label: 'Full Content',
       maxLength: 1000000, // Allow up to 1 million characters
+      admin: {
+        readOnly: true,
+        components: {
+          Field: './components/admin/HtmlPreview.tsx#HtmlPreview',
+        },
+      },
     },
     {
       name: 'date',

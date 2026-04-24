@@ -13,9 +13,18 @@ const { date, class: className } = Astro.props;
 
 const month = date.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase();
 const day = date.getDate().toString().padStart(2, '0');
+const fullDateLabel = date.toLocaleDateString('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 ---
 
-<div class:list={["flex flex-col items-center justify-center bg-primary-white rounded-lg w-[77px] h-[80px] shadow-sm", className]}>
-  <span class="text-xs font-heading font-medium text-text-secondary uppercase tracking-wider">{month}</span>
-  <span class="text-3xl font-heading font-bold text-primary-black leading-none mt-1">{day}</span>
-</div>
+<time
+  datetime={date.toISOString()}
+  aria-label={fullDateLabel}
+  class:list={["flex flex-col items-center justify-center bg-primary-white rounded-lg w-[77px] h-[80px] shadow-sm", className]}
+>
+  <span aria-hidden="true" class="text-xs font-heading font-medium text-text-secondary uppercase tracking-wider">{month}</span>
+  <span aria-hidden="true" class="text-3xl font-heading font-bold text-primary-black leading-none mt-1">{day}</span>
+</time>

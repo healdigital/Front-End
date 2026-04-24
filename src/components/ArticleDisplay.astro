@@ -1,5 +1,6 @@
 ---
 import { t as translate } from '../i18n';
+import { sanitizeTrustedHtml } from '../utils/trustedHtml';
 
 interface Props {
   article: {
@@ -93,6 +94,11 @@ interface Props {
 
 const { article } = Astro.props;
 const lang = article.language || 'en';
+const articleContentHtml = sanitizeTrustedHtml(article.content);
+const recipeIngredientsHtml = sanitizeTrustedHtml(article.recipe?.ingredients);
+const recipeInstructionsHtml = sanitizeTrustedHtml(article.recipe?.instructions);
+const recipeNoteHtml = sanitizeTrustedHtml(article.recipe?.note);
+const reviewDescriptionHtml = sanitizeTrustedHtml(article.review?.description);
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -107,7 +113,7 @@ const getAuthorName = () => {
   if (article.author.firstName || article.author.lastName) {
     return `${article.author.firstName} ${article.author.lastName}`.trim();
   }
-  return article.author.username || 'Unknown Author';
+  return article.author.username || 'Auteur inconnu';
 };
 ---
 
@@ -146,6 +152,9 @@ const getAuthorName = () => {
           alt={article.image.altText || article.image.title || article.title}
           title={article.image.title}
           loading="lazy"
+          decoding="async"
+          width="1200"
+          height="675"
         />
         {article.image.caption && (
           <figcaption class="image-caption">{article.image.caption}</figcaption>
@@ -165,7 +174,7 @@ const getAuthorName = () => {
       </div>
     )}
     
-    <div class="article-body" set:html={article.content} />
+    <div class="article-body" set:html={articleContentHtml} />
   </section>
 
   <!-- Taxonomy/Tags Section -->
@@ -214,7 +223,7 @@ const getAuthorName = () => {
 
       {article.taxonomy.difficulties?.length > 0 && (
         <div class="taxonomy-group">
-          <h3>Difficulties</h3>
+          <h3>Difficultés</h3>
           <ul class="tags-list">
             {article.taxonomy.difficulties.map(diff => (
               <li><span class="badge difficulty">{diff}</span></li>
@@ -225,7 +234,7 @@ const getAuthorName = () => {
 
       {article.taxonomy.diets?.length > 0 && (
         <div class="taxonomy-group">
-          <h3>Diets</h3>
+          <h3>Régimes</h3>
           <ul class="tags-list">
             {article.taxonomy.diets.map(diet => (
               <li><span class="badge diet">{diet}</span></li>
@@ -247,7 +256,7 @@ const getAuthorName = () => {
 
       {article.taxonomy.themes?.length > 0 && (
         <div class="taxonomy-group">
-          <h3>Themes</h3>
+          <h3>Thèmes</h3>
           <ul class="tags-list">
             {article.taxonomy.themes.map(theme => (
               <li><span class="badge theme">{theme}</span></li>
@@ -270,56 +279,56 @@ const getAuthorName = () => {
       <div class="recipe-meta">
         {article.recipe.servings && (
           <div class="recipe-meta-item">
-            <span class="label">Servings:</span>
+            <span class="label">Portions :</span>
             <span class="value">{article.recipe.servings}</span>
           </div>
         )}
 
         {article.recipe.prepTime && (
           <div class="recipe-meta-item">
-            <span class="label">Prep Time:</span>
+            <span class="label">Temps de préparation :</span>
             <span class="value">{article.recipe.prepTime} {article.recipe.prepTimeFormat}</span>
           </div>
         )}
 
         {article.recipe.cookTime && (
           <div class="recipe-meta-item">
-            <span class="label">Cook Time:</span>
+            <span class="label">Temps de cuisson :</span>
             <span class="value">{article.recipe.cookTime} {article.recipe.cookTimeFormat}</span>
           </div>
         )}
 
         {article.recipe.totalTimeFormat && (
           <div class="recipe-meta-item">
-            <span class="label">Total Time:</span>
+            <span class="label">Temps total :</span>
             <span class="value">{article.recipe.totalTimeFormat}</span>
           </div>
         )}
 
         {article.recipe.cuisine && (
           <div class="recipe-meta-item">
-            <span class="label">Cuisine:</span>
+            <span class="label">Cuisine :</span>
             <span class="value">{article.recipe.cuisine}</span>
           </div>
         )}
 
         {article.recipe.calories && (
           <div class="recipe-meta-item">
-            <span class="label">Calories:</span>
+            <span class="label">Calories :</span>
             <span class="value">{article.recipe.calories}</span>
           </div>
         )}
 
         {article.recipe.fat && (
           <div class="recipe-meta-item">
-            <span class="label">Fat:</span>
+            <span class="label">Matières grasses :</span>
             <span class="value">{article.recipe.fat}</span>
           </div>
         )}
 
         {article.recipe.keywords && (
           <div class="recipe-meta-item">
-            <span class="label">Keywords:</span>
+            <span class="label">Mots-clés :</span>
             <span class="value">{article.recipe.keywords}</span>
           </div>
         )}
@@ -328,21 +337,21 @@ const getAuthorName = () => {
       {article.recipe.ingredients && (
         <div class="recipe-section">
           <h4>{translate('recipe.ingredients', lang)}</h4>
-          <div set:html={article.recipe.ingredients} />
+          <div set:html={recipeIngredientsHtml} />
         </div>
       )}
 
       {article.recipe.instructions && (
         <div class="recipe-section">
           <h4>{translate('recipe.instructions', lang)}</h4>
-          <div set:html={article.recipe.instructions} />
+          <div set:html={recipeInstructionsHtml} />
         </div>
       )}
 
       {article.recipe.note && (
         <div class="recipe-section">
           <h4>Notes</h4>
-          <div set:html={article.recipe.note} />
+          <div set:html={recipeNoteHtml} />
         </div>
       )}
 
@@ -381,12 +390,12 @@ const getAuthorName = () => {
       )}
 
       {article.review.description && (
-        <div class="review-description" set:html={article.review.description} />
+        <div class="review-description" set:html={reviewDescriptionHtml} />
       )}
 
       {article.review.items?.length > 0 && (
         <div class="review-items">
-          <h4>Ratings</h4>
+          <h4>Évaluations</h4>
           <ul class="review-list">
             {article.review.items.map(item => (
               <li class="review-item">
@@ -401,42 +410,42 @@ const getAuthorName = () => {
       <div class="review-summary">
         {article.review.rating && (
           <div class="summary-item">
-            <span class="label">Overall Rating:</span>
+            <span class="label">Note globale :</span>
             <span class="value">{article.review.rating}</span>
           </div>
         )}
 
         {article.review.ratingAverage && (
           <div class="summary-item">
-            <span class="label">Average Rating:</span>
+            <span class="label">Note moyenne :</span>
             <span class="value">{article.review.ratingAverage}</span>
           </div>
         )}
 
         {article.review.ratingCount && (
           <div class="summary-item">
-            <span class="label">Number of Ratings:</span>
+            <span class="label">Nombre d'évaluations :</span>
             <span class="value">{article.review.ratingCount}</span>
           </div>
         )}
 
         {article.review.good && (
           <div class="summary-item">
-            <span class="label">Pros:</span>
+            <span class="label">Points forts :</span>
             <span class="value">{article.review.good}</span>
           </div>
         )}
 
         {article.review.bad && (
           <div class="summary-item">
-            <span class="label">Cons:</span>
+            <span class="label">Points faibles :</span>
             <span class="value">{article.review.bad}</span>
           </div>
         )}
 
         {article.review.meta && (
           <div class="summary-item">
-            <span class="label">Details:</span>
+            <span class="label">Détails :</span>
             <span class="value">{article.review.meta}</span>
           </div>
         )}
@@ -447,7 +456,7 @@ const getAuthorName = () => {
   <!-- Attachment Section -->
   {article.attachment?.url && (
     <section class="article-attachment">
-      <h2>Attachment</h2>
+      <h2>Pièce jointe</h2>
       <div class="attachment-container">
         <a href={article.attachment.url} class="attachment-link" download>
           <span class="attachment-icon">📎</span>
@@ -504,7 +513,7 @@ const getAuthorName = () => {
     flex-wrap: wrap;
     gap: 1.5rem;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--lcdb-copy);
   }
 
   .meta-item {
@@ -537,7 +546,7 @@ const getAuthorName = () => {
   .image-description {
     margin-top: 0.5rem;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--lcdb-copy);
     font-style: italic;
   }
 
@@ -547,16 +556,16 @@ const getAuthorName = () => {
   }
 
   .article-excerpt {
-    background: #f9f9f9;
+    background: var(--lcdb-surface);
     padding: 1rem;
-    border-left: 4px solid #ff6b6b;
+    border-left: 4px solid var(--lcdb-accent);
     margin-bottom: 1rem;
     border-radius: 4px;
   }
 
   .article-body {
     font-size: 1.1rem;
-    color: #333;
+    color: var(--lcdb-heading);
   }
 
   .article-body :global(img) {
@@ -567,7 +576,7 @@ const getAuthorName = () => {
   }
 
   .article-taxonomy {
-    background: #f9f9f9;
+    background: var(--lcdb-surface);
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 2rem;
@@ -584,7 +593,7 @@ const getAuthorName = () => {
   .taxonomy-group h3 {
     font-size: 1rem;
     margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--lcdb-heading);
   }
 
   .tags-list {
@@ -601,11 +610,11 @@ const getAuthorName = () => {
 
   .tag {
     display: inline-block;
-    background: #e8e8e8;
+    background: #ece7db;
     padding: 0.4rem 0.8rem;
     border-radius: 4px;
     text-decoration: none;
-    color: #333;
+    color: var(--lcdb-heading);
     font-size: 0.9rem;
     transition: background 0.3s;
   }
@@ -620,7 +629,7 @@ const getAuthorName = () => {
     border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #fff;
+    color: #faf8f2;
   }
 
   .badge.cost {
@@ -645,16 +654,16 @@ const getAuthorName = () => {
 
   .article-recipe,
   .article-review {
-    background: #f0f7ff;
+    background: #f5fbfa;
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 2rem;
-    border-left: 4px solid #ff6b6b;
+    border-left: 4px solid var(--lcdb-accent);
   }
 
   .article-review {
-    border-left-color: #4ecdc4;
-    background: #f0fff7;
+    border-left-color: var(--lcdb-accent);
+    background: #f6fcfb;
   }
 
   .recipe-meta,
@@ -678,20 +687,20 @@ const getAuthorName = () => {
     font-weight: 600;
     display: block;
     font-size: 0.9rem;
-    color: #333;
+    color: var(--lcdb-heading);
   }
 
   .recipe-meta-item .value,
   .summary-item .value {
     display: block;
-    color: #666;
+    color: var(--lcdb-copy);
     margin-top: 0.25rem;
   }
 
   .recipe-section {
     margin: 1.5rem 0;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(250, 248, 242, 0.5);
     border-radius: 4px;
   }
 
@@ -723,7 +732,7 @@ const getAuthorName = () => {
   }
 
   .video-description {
-    color: #666;
+    color: var(--lcdb-copy);
     font-size: 0.9rem;
   }
 
@@ -756,16 +765,16 @@ const getAuthorName = () => {
   }
 
   .article-attachment {
-    background: #fff3cd;
+    background: #fcf6df;
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 2rem;
-    border-left: 4px solid #ffc107;
+    border-left: 4px solid #d6aa35;
   }
 
   .attachment-container {
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(250, 248, 242, 0.7);
     border-radius: 4px;
   }
 
@@ -791,19 +800,19 @@ const getAuthorName = () => {
 
   .attachment-description {
     margin-top: 0.5rem;
-    color: #666;
+    color: var(--lcdb-copy);
     font-size: 0.9rem;
   }
 
   .article-author {
-    background: #f0f0f0;
+    background: var(--lcdb-surface);
     padding: 1.5rem;
     border-radius: 8px;
     margin-top: 2rem;
   }
 
   .author-card {
-    background: white;
+    background: #faf8f2;
     padding: 1rem;
     border-radius: 4px;
     display: flex;
@@ -819,11 +828,11 @@ const getAuthorName = () => {
   .author-username {
     margin: 0.25rem 0;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--lcdb-copy);
   }
 
   .author-email a {
-    color: #0066cc;
+    color: var(--lcdb-accent);
     text-decoration: none;
   }
 

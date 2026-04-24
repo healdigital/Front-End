@@ -1,4 +1,4 @@
----
+﻿---
 import Button from '../atoms/Button.astro';
 import Icon from '../atoms/Icon.astro';
 
@@ -8,9 +8,12 @@ interface Props {
   date: Date;
   price: number;
   duration: string;
+  description?: string;
   maxParticipants: number;
   currentParticipants?: number;
+  spotsLeft?: number;
   slug: string;
+  status?: 'OPEN' | 'LIMITED' | 'SOLD_OUT';
 }
 
 const {
@@ -19,24 +22,51 @@ const {
   date,
   price,
   duration,
+  description = '',
   maxParticipants,
   currentParticipants = 0,
+  spotsLeft: spotsLeftProp,
   slug,
+  status = 'OPEN',
 } = Astro.props;
 
-const isFull = currentParticipants >= maxParticipants;
-const spotsLeft = maxParticipants - currentParticipants;
+const safeMaxParticipants = Number.isFinite(maxParticipants) && maxParticipants > 0 ? maxParticipants : 0;
+const safeCurrentParticipants = Number.isFinite(currentParticipants) && currentParticipants >= 0 ? currentParticipants : 0;
+const normalizedStatus = String(status || 'OPEN').toUpperCase();
+const derivedSpotsLeft = safeMaxParticipants > 0 ? Math.max(safeMaxParticipants - safeCurrentParticipants, 0) : null;
+const safeSpotsLeftValue = Number(spotsLeftProp);
+const safeSpotsLeft =
+  Number.isFinite(safeSpotsLeftValue) && safeSpotsLeftValue >= 0 ? safeSpotsLeftValue : derivedSpotsLeft;
+const hasSpotsInfo = Number.isFinite(safeSpotsLeft);
+const isFull = normalizedStatus === 'SOLD_OUT' || ((safeMaxParticipants > 0 || hasSpotsInfo) && (safeSpotsLeft ?? 0) <= 0);
 
 let statusLabel = 'Places disponibles';
 let statusClass = 'text-status-success';
 
-if (isFull) {
+if (normalizedStatus === 'SOLD_OUT' || isFull) {
   statusLabel = 'Complet';
   statusClass = 'text-status-error';
-} else if (spotsLeft <= 2) {
-  statusLabel = 'Derni&egrave;res places';
-  statusClass = 'text-status-error';
+} else {
+  if (hasSpotsInfo) {
+    const plural = safeSpotsLeft === 1 ? '' : 's';
+    statusLabel = `${safeSpotsLeft} place${plural} disponible${plural}`;
+  } else if (normalizedStatus === 'LIMITED') {
+    statusLabel = 'Dernières places';
+  }
+
+  if (normalizedStatus === 'LIMITED') {
+    statusClass = 'text-status-error';
+  }
 }
+
+const spotsLabel = (() => {
+  if (hasSpotsInfo) {
+    const plural = safeSpotsLeft === 1 ? '' : 's';
+    return `${safeSpotsLeft} place${plural} disponible${plural}`;
+  }
+  if (isFull) return 'Complet';
+  return '--';
+})();
 
 const formatter = new Intl.DateTimeFormat('fr-FR', {
   day: 'numeric',
@@ -47,34 +77,46 @@ const day = parts.find((p) => p.type === 'day')?.value || '';
 const month = parts.find((p) => p.type === 'month')?.value || '';
 ---
 
-<article class="w-full max-w-[388px] rounded-[12px] bg-white overflow-hidden shadow-md border border-border-light">
-  <div class="relative h-[220px]">
-    <img src={image} alt={title} class="w-full h-full object-cover" loading="lazy" />
-    <div class="absolute bottom-4 left-4 bg-white rounded-lg p-2 text-center min-w-[54px] shadow-sm">
-      <span class="block text-[10px] uppercase text-text-secondary">{month}</span>
-      <span class="block text-[18px] font-heading text-text-primary">{day}</span>
+<article class="w-full max-w-[388px] rounded-[10px] bg-[#F7F5EF] overflow-hidden border border-[#D8D2C2] shadow-[0_16px_44px_rgba(6,18,40,0.26)]">
+  <div class="relative aspect-[0.98]">
+    <img
+      src={image}
+      alt={title}
+      class="w-full h-full object-cover"
+      loading="lazy"
+      decoding="async"
+      width="960"
+      height="960"
+      sizes="(min-width: 1280px) 28vw, (min-width: 768px) 44vw, 92vw"
+    />
+    <div class="absolute bottom-4 left-4 bg-white rounded-[14px] p-2 text-center min-w-[63px] shadow-sm">
+      <span class="block text-[14px] uppercase text-[#8D8C86] font-mono leading-none">{month}</span>
+      <span class="block text-[50px] leading-none font-heading text-[#111111]">{day}</span>
     </div>
   </div>
 
-  <div class="p-5">
-    <p class={`text-[11px] uppercase tracking-widest font-mono ${statusClass} typ-meta`} set:html={statusLabel}></p>
-    <h3 class="font-heading text-[22px] leading-[1.1] text-text-primary mt-2 typ-feature-title">{title}</h3>
+  <div class="p-6">
+    <p class={`text-[13px] uppercase tracking-[0.14em] font-mono ${statusClass} typ-meta`}>{statusLabel}</p>
+    <h3 class="font-heading text-[43px] leading-[1] text-text-primary mt-2">{title}</h3>
 
-    <div class="flex items-center gap-4 text-text-secondary text-[12px] mt-3">
-      <span class="flex items-center gap-1"><Icon name="users" size="sm" /> {maxParticipants} personnes maximum</span>
-      <span class="flex items-center gap-1"><Icon name="clock" size="sm" /> {duration}</span>
+    <div class="flex items-center gap-6 text-[#2F3642] text-[13px] uppercase tracking-[0.08em] mt-4 border-b border-[#D8D2C2] pb-4">
+      <span class="flex items-center gap-2"><Icon name="users" size="sm" /> {spotsLabel}</span>
+      <span class="flex items-center gap-2"><Icon name="clock" size="sm" /> {duration}</span>
     </div>
 
-    <p class="text-[13px] text-text-secondary mt-4 typ-body">Apprenez directement &agrave; mes c&ocirc;t&eacute;s dans un atelier intimiste.</p>
+    <p
+      class="text-[16px] text-text-secondary mt-5 leading-[1.7] typ-body"
+      style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+    >
+      {description || 'Je vous accueille dans des ateliers de cuisine et de patisserie dans une ambiance conviviale, avec une approche precise, genereuse et accessible.'}
+    </p>
 
-    <div class="flex items-center justify-between mt-5">
-      <div>
-        <span class="text-[11px] uppercase tracking-wider text-text-secondary typ-meta">&Agrave; partir de</span>
-        <div class="font-heading text-[26px] text-text-primary typ-price">{price}&euro;</div>
-      </div>
+    <div class="flex items-center justify-between mt-8">
+      <div class="font-heading text-[60px] leading-none text-text-primary">{price}&euro;</div>
       <Button href={isFull ? undefined : slug} variant={isFull ? 'disabled' : 'primary'} size="sm">
-        {isFull ? 'Complet' : 'R&eacute;server'}
+        {isFull ? 'Complet' : 'Réserver'}
       </Button>
     </div>
   </div>
 </article>
+

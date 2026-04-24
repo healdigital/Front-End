@@ -1,75 +1,313 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { payloadFetch } from '../../lib/payload.client';
-import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from '../../lib/mongo.server';
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo, shouldUseLocalJson } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 import { renderArticleContent } from '../../utils/renderArticleContent';
+import { sanitizeTrustedHtml } from '../../utils/trustedHtml';
 import DisqusComments from '../../components/DisqusComments.astro';
 import MediavineSlot from '../../components/MediavineSlot.astro';
+import SocialShare from '../../components/molecules/SocialShare.astro';
+import NewsletterModal from '../../components/organisms/NewsletterModal.astro';
+import RecipeSidebar from '../../components/organisms/RecipeSidebar.astro';
+import { getPopularSlugViewMap } from '../../lib/googleAnalytics';
 
 export const prerender = !import.meta.env.DEV;
 
+type ContentValue = string | number | boolean | null | undefined | ContentRecord | ContentValue[];
+type ContentRecord = Record<string, ContentValue>;
+
+interface TaxonomyItem {
+  label?: string;
+  name?: string;
+  slug?: string | { current?: string };
+  title?: string;
+}
+
+interface ArticleEntry extends ContentRecord {
+  categories?: TaxonomyItem[];
+  content?: ContentValue;
+  date?: string;
+  excerpt?: ContentValue;
+  featuredImage?: ContentRecord;
+  featuredMedia?: ContentRecord;
+  featured_image?: ContentRecord;
+  lang?: string;
+  language?: string;
+  locale?: string;
+  modified?: string;
+  post_id?: number | string;
+  publishedAt?: string;
+  slug?: string | { current?: string };
+  tags?: TaxonomyItem[];
+  title?: ContentValue;
+}
+
+interface RelatedArticleCard {
+  date: string;
+  excerpt: string;
+  gaScore?: number;
+  image: string;
+  score: number;
+  slug: string;
+  title: string;
+}
+
+interface PageTaxonomyItem {
+  slug: string;
+  title: string;
+}
+
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 50;
+  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
 
+const stripHtml = (value: string) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toText = (value: ContentValue): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return stripHtml(value);
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const directCandidates = [value.rendered, value.value, value.text, value.title, value.name, value.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(value.children)) {
+      return value.children.map((child) => toText(child)).filter(Boolean).join(' ');
+    }
+    if (value.content) return toText(value.content);
+  }
+  return '';
+};
+
+const normalizeSlug = (value: ContentValue) => String(value || '').replace(/^\/+|\/+$/g, '');
 export async function getStaticPaths() {
   if (import.meta.env.DEV) {
     return [];
   }
 
-  // Try to get articles from MongoDB first (with featured_img_url)
-  let articles = await getAllArticlesFromMongo();
-  
-  // Fallback to Payload if MongoDB fails
-  if (!articles || articles.length === 0) {
-    articles = await payloadFetch({
-      collection: 'articles',
-      query: { depth: 2, limit: getBuildLimit() }
-    });
-  }
-
-  if (!articles || !Array.isArray(articles)) {
-    return [];
-  }
-
-  const decodeSafe = (value: string) => {
+  const normalizeSlugLocal = (value: ContentValue) =>
+    String(value || '').replace(/^\/+|\/+$/g, '');
+  const decodeSafeSlugLocal = (value: string) => {
     try {
       return decodeURIComponent(value);
     } catch {
       return value;
     }
   };
+  const normalizeLanguageCodeLocal = (value: ContentValue) => {
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+    if (!raw) return 'fr';
+    return raw;
+  };
+
+  const staticBuildLimit = (() => {
+    const envLimit = Number(process.env.MAX_SSG_ARTICLES);
+    return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+  })();
+
+  const toRouteSlug = (value: ContentValue) => {
+    const normalized = String(value || '').replace(/^\/+|\/+$/g, '');
+    if (!normalized || normalized.includes('/')) return '';
+    return normalized;
+  };
+  const toPath = (value: string) => {
+    const normalized = normalizeSlugLocal(value);
+    return normalized ? `/${normalized}/` : '/';
+  };
+  const getArticleSlugValue = (item: ArticleEntry) => {
+    const raw = typeof item?.slug === 'string' ? item.slug : item?.slug?.current || '';
+    return normalizeSlugLocal(decodeSafeSlugLocal(raw));
+  };
+  const getCoreSlug = (slugValue: string): string => {
+    const normalized = normalizeSlugLocal(slugValue);
+    const recipePrefixed = normalized.match(
+      /^(en|es|ar|pt-br|pt|zh-hans)\/recipe\/(.+)$/i,
+    );
+    if (recipePrefixed) return normalizeSlugLocal(recipePrefixed[2]);
+    const langPrefixed = normalized.match(/^(en|es|ar|pt-br|pt|zh-hans)\/(.+)$/i);
+    if (langPrefixed) return normalizeSlugLocal(langPrefixed[2]);
+    return normalized;
+  };
+  const extractRecipeIdFromContent = (value: ContentValue): string => {
+    const text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+    if (!text) return '';
+    const patterns = [
+      /wprm[_-]recipe[_-]?(?:id)?\D*(\d{2,})/i,
+      /data-recipe-id=["']?(\d{2,})/i,
+      /wprm-recipe-container\D*(\d{2,})/i,
+      /wprm_print=?(\d{2,})/i,
+    ];
+    for (const pattern of patterns) {
+      const match = pattern.exec(text);
+      if (match?.[1]) return String(match[1]).trim().toLowerCase();
+    }
+    return '';
+  };
+  const getArticleImageKey = (item: ArticleEntry): string =>
+    String(
+      (item as Record<string, unknown>)?.featured_img_url ||
+        (item?.featuredImage as Record<string, unknown>)?.url ||
+        (item?.featuredMedia as Record<string, unknown>)?.url ||
+        (item?.featured_image as Record<string, unknown>)?.url ||
+        '',
+    )
+      .trim()
+      .toLowerCase();
+  const getArticleRecipeKey = (item: ArticleEntry): string =>
+    (() => {
+      const directKey = String(
+      (item as Record<string, unknown>)?.wprmId ||
+        (item as Record<string, unknown>)?.wprm_id ||
+        (item as Record<string, unknown>)?.wprmRecipeId ||
+        (item as Record<string, unknown>)?.wprm_recipe_id ||
+        (item as Record<string, unknown>)?.recipeId ||
+        (item as Record<string, unknown>)?.recipe_id ||
+        '',
+    )
+      .trim()
+      .toLowerCase();
+      if (directKey) return directKey;
+      return extractRecipeIdFromContent(item?.content);
+    })();
+  const buildLanguageSlugMapByRouteSlug = (items: ArticleEntry[]) => {
+    type Descriptor = {
+      slug: string;
+      coreSlug: string;
+      routeSlug: string;
+      lang: string;
+      path: string;
+      recipeKey: string;
+      imageKey: string;
+    };
+
+    const descriptors: Descriptor[] = (Array.isArray(items) ? items : [])
+      .map((item) => {
+        const slugValue = getArticleSlugValue(item);
+        if (!slugValue) return null;
+        return {
+          slug: slugValue,
+          coreSlug: getCoreSlug(slugValue),
+          routeSlug: toRouteSlug(slugValue),
+          lang: normalizeLanguageCodeLocal(item?.lang || item?.language || item?.locale),
+          path: toPath(slugValue),
+          recipeKey: getArticleRecipeKey(item),
+          imageKey: getArticleImageKey(item),
+        };
+      })
+      .filter((item): item is Descriptor => Boolean(item));
+
+    const bySlug = new Map<string, Descriptor[]>();
+    const byCoreSlug = new Map<string, Descriptor[]>();
+    const byRecipe = new Map<string, Descriptor[]>();
+    const byImage = new Map<string, Descriptor[]>();
+
+    for (const descriptor of descriptors) {
+      const slugGroup = bySlug.get(descriptor.slug) || [];
+      slugGroup.push(descriptor);
+      bySlug.set(descriptor.slug, slugGroup);
+
+      if (descriptor.coreSlug) {
+        const coreGroup = byCoreSlug.get(descriptor.coreSlug) || [];
+        coreGroup.push(descriptor);
+        byCoreSlug.set(descriptor.coreSlug, coreGroup);
+      }
+
+      if (descriptor.recipeKey) {
+        const recipeGroup = byRecipe.get(descriptor.recipeKey) || [];
+        recipeGroup.push(descriptor);
+        byRecipe.set(descriptor.recipeKey, recipeGroup);
+      }
+
+      if (descriptor.imageKey) {
+        const imageGroup = byImage.get(descriptor.imageKey) || [];
+        imageGroup.push(descriptor);
+        byImage.set(descriptor.imageKey, imageGroup);
+      }
+    }
+
+    const mapByRouteSlug = new Map<string, Record<string, string>>();
+    for (const descriptor of descriptors) {
+      if (!descriptor.routeSlug) continue;
+      const mapping: Record<string, string> = {};
+      const addTarget = (candidate: Descriptor) => {
+        if (!candidate?.lang || !candidate?.path) return;
+        mapping[candidate.lang] = candidate.path;
+      };
+
+      (bySlug.get(descriptor.slug) || []).forEach(addTarget);
+      if (descriptor.coreSlug) {
+        (byCoreSlug.get(descriptor.coreSlug) || []).forEach(addTarget);
+      }
+      if (descriptor.recipeKey) {
+        (byRecipe.get(descriptor.recipeKey) || []).forEach(addTarget);
+      }
+      if (descriptor.imageKey) {
+        (byImage.get(descriptor.imageKey) || []).forEach(addTarget);
+      }
+      addTarget(descriptor);
+
+      mapByRouteSlug.set(descriptor.routeSlug, mapping);
+    }
+
+    return mapByRouteSlug;
+  };
+
+  let articles: ArticleEntry[] = await getAllArticlesFromMongo();
+  if (!articles || articles.length === 0) {
+    const response = await payloadFetch<ArticleEntry>({
+      collection: 'articles',
+      query: { depth: 2, limit: staticBuildLimit },
+    });
+    articles = response;
+  }
+
+  if (!Array.isArray(articles)) {
+    return [];
+  }
+  const languageSlugMapByRouteSlug = buildLanguageSlugMapByRouteSlug(articles);
 
   return articles
-    .filter((article: any) => article?.slug)
-    .map((article: any) => {
-      const rawSlug = typeof article.slug === 'string' ? article.slug : article.slug?.current || '';
-      const slugValue = decodeSafe(rawSlug);
+    .map((article) => {
+      const slugValue = getArticleSlugValue(article);
+      const slug = toRouteSlug(slugValue);
+      if (!slug) return null;
       return {
-        params: { slug: slugValue },
-        props: { article: { ...article, slug: slugValue } }
+        params: { slug },
+        props: {
+          article: { ...article },
+          languageSlugMap: languageSlugMapByRouteSlug.get(slug) || {},
+        },
       };
-    });
+    })
+    .filter(Boolean);
 }
 
 interface Props {
-  article: any;
+  article: ArticleEntry;
+  languageSlugMap?: Record<string, string>;
 }
 
-let { article } = Astro.props;
+let { article, languageSlugMap = {} } = Astro.props as Props;
 
 if (!article) {
-  const slugParam = Astro.params?.slug;
-  if (slugParam) {
+  const slugParam = Astro.params.slug;
+  if (slugParam && !shouldUseLocalJson()) {
     article = await getArticleBySlugFromMongo(slugParam);
     if (!article) {
-      const fallback = await payloadFetch({
+      const fallback = await payloadFetch<ArticleEntry>({
         collection: 'articles',
         query: { slug: slugParam, depth: 2, limit: 1 },
       });
-      article = Array.isArray(fallback) ? fallback[0] : null;
+      article = fallback[0];
     }
   }
 }
@@ -78,125 +316,557 @@ if (!article) {
   return new Response('Article not found', { status: 404 });
 }
 
+const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
+if (slug && !processArticleImageUrl(article) && !shouldUseLocalJson()) {
+  
+  const hydratedArticle = await getArticleBySlugFromMongo(slug);
+  if (hydratedArticle) {
+    article = {
+      ...article,
+      ...hydratedArticle,
+    };
+  }
+}
+const title = toText(article?.title) || 'Article sans titre';
+const excerptRaw = toText(article?.excerpt) || toText(article?.content);
+const excerpt = excerptRaw.length > 180 ? `${excerptRaw.slice(0, 180).trim()}...` : excerptRaw;
 const imageUrl = processArticleImageUrl(article);
+const imageAlt =
+  toText(article?.featuredMedia?.alt || article?.featuredImage?.alt || article?.featured_image?.alt) ||
+  title;
 const content = renderArticleContent(article);
+const sanitizedContent = sanitizeTrustedHtml(content);
 
+const formatDate = (value: ContentValue) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
+  .map((item): PageTaxonomyItem | null => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter((item): item is PageTaxonomyItem => Boolean(item));
+
+const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
+  .map((item): PageTaxonomyItem | null => {
+    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
+    return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
+  })
+  .filter((item): item is PageTaxonomyItem => Boolean(item));
+
+const publishedDate = formatDate(article?.publishedAt || article?.date || article?.modified);
+const articleUrl = `https://lacuisinedebernard.com/${slug}/`;
+const shareUrl = `/articles/${slug}/`;
+const numericPostId = Number(article?.post_id);
+const disqusIdentifier = Number.isFinite(numericPostId) && numericPostId > 0
+  ? `${numericPostId} https://lacuisinedebernard.com/?p=${numericPostId}`
+  : slug;
+const normalizePageLanguage = (value: ContentValue) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+  if (['en', 'fr', 'es', 'pt-br', 'ar'].includes(raw)) return raw;
+  return 'fr';
+};
+const pageLang = normalizePageLanguage(
+  article?.lang || article?.language || article?.locale,
+);
+
+const normalizeValue = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const relatedArticlesSource = (() => {
+  try {
+    return getAllArticlesFromMongo();
+  } catch (error) {
+    console.error('related:getAllArticlesFromMongo failed:', error);
+    return Promise.resolve([]);
+  }
+})();
+
+let relatedArticlesRaw: ArticleEntry[] = await relatedArticlesSource;
+if (!relatedArticlesRaw || relatedArticlesRaw.length === 0) {
+  const fallback = await payloadFetch<ArticleEntry>({
+    collection: 'articles',
+    query: { depth: 2, limit: getBuildLimit() },
+  });
+  relatedArticlesRaw = fallback;
+}
+const relatedArticleViewMap = await getPopularSlugViewMap(250);
+
+const currentCategoryKeys = new Set(
+  categoryItems.map((item) => normalizeValue(item.slug || item.title)).filter(Boolean),
+);
+const currentTagKeys = new Set(
+  tagItems.map((item) => normalizeValue(item.slug || item.title)).filter(Boolean),
+);
+
+const relatedArticles = (Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : [])
+  .map((entry): RelatedArticleCard | null => {
+    const entrySlug = normalizeSlug(typeof entry?.slug === 'string' ? entry.slug : entry?.slug?.current);
+    const entryTitle = toText(entry?.title);
+    if (!entrySlug || !entryTitle || entrySlug === slug) return null;
+
+    const entryCategoryKeys = new Set(
+      (Array.isArray(entry?.categories) ? entry.categories : [])
+        .map((item) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
+        .filter(Boolean),
+    );
+    const entryTagKeys = new Set(
+      (Array.isArray(entry?.tags) ? entry.tags : [])
+        .map((item) => normalizeValue(toText(item?.slug || item?.title || item?.name || item)))
+        .filter(Boolean),
+    );
+
+    let score = 0;
+    currentCategoryKeys.forEach((value) => {
+      if (entryCategoryKeys.has(value)) score += 3;
+    });
+    currentTagKeys.forEach((value) => {
+      if (entryTagKeys.has(value)) score += 2;
+    });
+    if (score === 0) return null;
+
+    return {
+      slug: entrySlug,
+      title: entryTitle,
+      excerpt: (toText(entry?.excerpt) || toText(entry?.content)).slice(0, 150).trim(),
+      image: processArticleImageUrl(entry),
+      date: formatDate(entry?.publishedAt || entry?.date || entry?.modified),
+      gaScore: relatedArticleViewMap.get(entrySlug) || 0,
+      score,
+    };
+  })
+  .filter((entry): entry is RelatedArticleCard => Boolean(entry))
+  .sort((a, b) => {
+    if ((a.gaScore || 0) !== (b.gaScore || 0)) return (b.gaScore || 0) - (a.gaScore || 0);
+    return b.score - a.score;
+  })
+  .slice(0, 3);
 ---
 
-<BaseLayout title={article.title} description={article.excerpt}>
-  <main class="min-h-screen bg-[#fdf6e9]">
-    <div class="container mx-auto px-4 py-20">
-      <nav class="mb-8 flex items-center gap-2 text-gray-700 text-sm">
-        <a href="/">Home</a>
+<BaseLayout title={title} description={excerpt} canonical={articleUrl} slug={slug} image={imageUrl} lang={pageLang} loadAds={true}>
+  <section class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <nav class="flex items-center gap-2 text-[var(--lcdb-muted)] mb-5 typ-caption">
+        <a href="/" class="hover:text-text-primary">Accueil</a>
         <span>/</span>
-        <span>{article.title}</span>
+        <a href="/articles" class="hover:text-text-primary">Articles</a>
       </nav>
+      <h1 class="lcdb-page-title typ-h2">{title}</h1>
+      {publishedDate && <p class="lcdb-page-description typ-body">{publishedDate}</p>}
+      <div class="article-actions">
+        <a href={`/print/${slug}?auto=0`} class="article-action-link" target="_blank" rel="noopener noreferrer">
+          Imprimer l’article
+        </a>
+        <button type="button" class="article-action-link" id="open-newsletter-article-content">
+          Recevoir les nouvelles recettes
+        </button>
+      </div>
+      <SocialShare url={shareUrl} title={title} class="article-share-row" />
+    </div>
+  </section>
 
-      <article class="bg-[#fffaf0] border border-[#eadfcb] rounded-lg p-8 max-w-3xl mx-auto">
-        <h1 class="text-4xl font-bold text-gray-900 mb-6">{article.title}</h1>
-
-        {imageUrl ? (
-          <div class="mb-8 overflow-hidden rounded-lg">
-            <img 
-              src={imageUrl} 
-              alt={article.title}
-              class="w-full h-auto object-cover"
-              onerror="this.style.display='none'"
-            />
-          </div>
-        ) : null}
-
-        <div class="flex gap-6 text-sm text-gray-700 mb-8 pb-8 border-b border-[#e2d6c0]">
-          {article.date && <time>📅 {new Date(article.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}</time>}
-          {article.author && <span class="author-meta">👨‍🍳 {article.author.name}</span>}
+  <section class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      <section class="recipe-redesign lcdb-surface-card article-mobile-author-card">
+        <img
+          src="/images/image.png"
+          alt="Bernard Laurance"
+          class="article-mobile-author-avatar"
+          loading="lazy"
+          decoding="async"
+          width="88"
+          height="88"
+        />
+        <div class="article-mobile-author-copy">
+          <p class="article-mobile-author-label">Bernard Laurance</p>
+          <p class="article-mobile-author-text">
+            Cuisine r&eacute;elle, recettes test&eacute;es depuis 2010.
+          </p>
         </div>
-
-        <div class="my-8">
-          <MediavineSlot slot="article-top" minHeight={280} />
-        </div>
-
-        {article.categories && article.categories.length > 0 && (
-          <div class="mb-6 flex gap-2 flex-wrap">
-            {article.categories.map((cat: any) => (
-              <a href={`/categories/${cat.slug}`} class="text-sm bg-[#f2e5cc] text-gray-900 px-3 py-1 rounded hover:bg-[#ead8b8]">
-                {cat.title || cat.name}
-              </a>
-            ))}
-          </div>
+      </section>
+      <article class="lcdb-surface-card overflow-hidden">
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt={imageAlt}
+            class="w-full h-auto max-h-[560px] object-contain bg-primary-cream"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            width="1280"
+            height="960"
+            sizes="(min-width: 1280px) 980px, (min-width: 768px) 88vw, 100vw"
+          />
         )}
 
-        {article.tags && article.tags.length > 0 && (
-          <div class="mb-8 flex gap-2 flex-wrap">
-            {article.tags.map((tag: any) => (
-              <a href={`/tags/${tag.slug}`} class="text-xs bg-[#eee1c9] text-gray-900 px-2 py-1 rounded hover:bg-[#e5d3b2]">
-                #{tag.title || tag.name}
-              </a>
-            ))}
+        <div class="p-6 md:p-8">
+          <div class="my-6">
+            <MediavineSlot slot="article-top" minHeight={280} />
           </div>
-        )}
 
-        <div class="prose max-w-none mb-8">
-          <div set:html={content} class="text-gray-800 leading-relaxed"></div>
-        </div>
+          {categoryItems.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-5">
+              {categoryItems.map((category) => (
+                <a href={category.slug ? `/categories/${category.slug}` : '/categories'} class="lcdb-chip">
+                  {category.title}
+                </a>
+              ))}
+            </div>
+          )}
 
+          {tagItems.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-8">
+              {tagItems.map((tag) => (
+                <a href={tag.slug ? `/tags/${tag.slug}` : '/tags'} class="lcdb-chip">
+                  #{tag.title}
+                </a>
+              ))}
+            </div>
+          )}
 
-        <div class="pt-6 border-t border-[#e2d6c0]">
-          <a href="/" class="text-orange-400 hover:text-orange-300">← Back to articles</a>
-        </div>
+          <div class="article-content text-text-primary typ-body" set:html={sanitizedContent}></div>
 
-        <div class="my-8">
-          <MediavineSlot slot="article-bottom" minHeight={280} />
-        </div>
+          <div class="my-8">
+            <MediavineSlot slot="article-bottom" minHeight={280} />
+          </div>
 
-        {/* Comments Section - Disqus */}
-        <div class="mt-12 bg-[#fffaf0] border border-[#eadfcb] rounded-lg shadow p-6">
-          <DisqusComments url={`https://lacuisinedebernard.com/articles/${article.slug}`} identifier={article.slug} title={article.title} />
+          <section class="article-newsletter-cta">
+            <div>
+              <p class="article-newsletter-kicker typ-caption">Newsletter</p>
+              <h2 class="article-newsletter-title">Ne manquez pas les prochaines publications</h2>
+              <p class="article-newsletter-copy typ-body">
+                Recevez les nouvelles recettes, les dates d’ateliers et les actualités du site directement dans votre boîte mail.
+              </p>
+            </div>
+            <button type="button" class="article-action-button" id="open-newsletter-article-inline">
+              S’inscrire
+            </button>
+          </section>
+
+          {relatedArticles.length > 0 && (
+            <section class="article-related-section">
+              <div class="article-related-header">
+                <p class="typ-caption">À lire aussi</p>
+                <h2 class="typ-h2">Articles liés</h2>
+              </div>
+              <div class="article-related-grid">
+                {relatedArticles.map((related) => (
+                  <a href={`/${related.slug}/`} class="article-related-card" aria-label={`Lire l’article : ${related.title}`}>
+                    <div class="article-related-media">
+                      {related.image ? (
+                        <img
+                          src={related.image}
+                          alt={related.title}
+                          loading="lazy"
+                          decoding="async"
+                          width="320"
+                          height="240"
+                          sizes="96px"
+                        />
+                      ) : (
+                        <div class="article-related-placeholder">Aucune image</div>
+                      )}
+                    </div>
+                    <div class="article-related-content">
+                      {related.date && <p class="typ-caption article-related-date">{related.date}</p>}
+                      <h3>{related.title}</h3>
+                      {related.excerpt && <p class="typ-body">{related.excerpt}...</p>}
+                      <span class="article-action-link">Lire la suite</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div class="pt-8 border-t border-[#D8D2C2]">
+            <DisqusComments url={articleUrl} identifier={disqusIdentifier} title={title} />
+          </div>
         </div>
       </article>
     </div>
-  </main>
-
-  <style>
-    .prose :global(h2) {
-      color: #111827;
-      font-size: 1.8rem;
-      margin-top: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .prose :global(h3) {
-      color: #111827;
-      font-size: 1.3rem;
-      margin-top: 1.2rem;
-      margin-bottom: 0.8rem;
-    }
-    .prose :global(p) {
-      color: #1f2937;
-      margin-bottom: 1rem;
-    }
-    .prose :global(a) {
-      color: #fb923c;
-      text-decoration: underline;
-    }
-    .prose :global(a:hover) {
-      color: #fdba74;
-    }
-    .prose :global(img) {
-      border-radius: 0.5rem;
-      margin: 1.5rem 0;
-      max-width: 100%;
-    }
-
-    /* Comments styles */
-    h2 {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 1.5rem;
-      margin-top: 3rem;
-    }
-  </style>
+  </section>
+  <div class="article-sidebar-mobile">
+    <div class="lcdb-page-shell">
+      <RecipeSidebar variant="full" mobileVisible={true} />
+    </div>
+  </div>
+  <NewsletterModal triggerId="open-newsletter-article-content" id="newsletter-modal-article-content" />
+  <NewsletterModal triggerId="open-newsletter-article-inline" id="newsletter-modal-article-inline" />
 </BaseLayout>
+
+<script define:vars={{ languageSlugMap }}>
+  window.__lcdbIsArticlePage = true;
+  window.__lcdbArticleLanguageMap = languageSlugMap;
+</script>
+
+<style>
+  .article-mobile-author-card,
+  .article-sidebar-mobile {
+    display: none;
+    margin: 1.5rem 0 0;
+  }
+
+  .article-mobile-author-card {
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    border: 1px solid #d8d2c2;
+    border-radius: 18px;
+    background: #f7f5ef;
+  }
+
+  .article-mobile-author-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    object-fit: cover;
+    object-position: top;
+    flex-shrink: 0;
+  }
+
+  .article-mobile-author-copy {
+    min-width: 0;
+  }
+
+  .article-mobile-author-label {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .article-mobile-author-text {
+    margin: 8px 0 0;
+    color: #5b5b5b;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .article-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+
+  .article-action-link {
+    border: 0;
+    background: transparent;
+    color: #54b6b1;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    margin: 0;
+  }
+
+  .article-share-row {
+    margin-top: 1rem;
+  }
+
+  .article-content :global(h2),
+  .article-content :global(h3),
+  .article-content :global(h4) {
+    color: #1a2335;
+    font-family: var(--font-heading);
+    line-height: 1.1;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-content :global(h2) {
+    font-size: 2rem;
+  }
+
+  .article-content :global(h3) {
+    font-size: 1.65rem;
+  }
+
+  .article-content :global(p) {
+    margin-bottom: 1rem;
+  }
+
+  .article-content :global(img) {
+    display: block;
+    margin: 1.5rem auto;
+    width: min(512px, 100%);
+    height: auto;
+    border-radius: 10px;
+  }
+
+  .article-content :global(a) {
+    color: var(--lcdb-accent);
+    text-decoration: underline;
+  }
+
+  .article-newsletter-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    margin: 2.5rem 0;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    background: #f8f5ee;
+  }
+
+  .article-newsletter-kicker {
+    margin-bottom: 0.5rem;
+  }
+
+  .article-newsletter-title {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1.02;
+  }
+
+  .article-newsletter-copy {
+    margin-top: 0.8rem;
+    max-width: 42rem;
+  }
+
+  .article-action-button {
+    min-height: 46px;
+    padding: 0 28px;
+    border: 0;
+    background: #54b6b1;
+    color: #faf8f2;
+    font-family: var(--font-button);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .article-action-button:hover {
+    background: #49aaa5;
+  }
+
+  .article-related-section {
+    margin: 2.75rem 0;
+  }
+
+  .article-related-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .article-related-header p {
+    margin-bottom: 0.5rem;
+  }
+
+  .article-related-header h2 {
+    margin: 0;
+  }
+
+  .article-related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .article-related-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    background: #faf8f2;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .article-related-card:hover,
+  .article-related-card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(17, 17, 17, 0.08);
+    outline: none;
+  }
+
+  .article-related-media {
+    aspect-ratio: 4 / 3;
+    background: #ece9dd;
+    overflow: hidden;
+  }
+
+  .article-related-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .article-related-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a8578;
+    font-size: 0.8rem;
+  }
+
+  .article-related-content {
+    padding: 1.1rem 1.1rem 1.25rem;
+  }
+
+  .article-related-date {
+    margin-bottom: 0.45rem;
+    color: var(--lcdb-muted);
+  }
+
+  .article-related-content h3 {
+    margin: 0;
+    color: #111111;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 0.98;
+  }
+
+  .article-related-content p {
+    margin-top: 0.75rem;
+  }
+
+  .article-related-content .article-action-link {
+    display: inline-flex;
+    margin-top: 0.85rem;
+  }
+
+  @media (max-width: 900px) {
+    .article-sidebar-mobile {
+      display: block;
+    }
+
+    .article-mobile-author-card {
+      display: flex;
+      margin: 1.5rem 10px 0;
+    }
+
+    .article-related-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .article-newsletter-cta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

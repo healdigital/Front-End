@@ -2,54 +2,178 @@
 interface Props {
   title: string;
   subtitle?: string;
+  className?: string;
+  navLinks?: Array<{
+    label: string;
+    href?: string;
+    description?: string;
+    active?: boolean;
+  }>;
 }
 
-const { title, subtitle } = Astro.props;
+const { title, subtitle, className = '', navLinks = [] } = Astro.props;
 ---
 
-<section class="static-page min-h-[60vh] bg-gray-50 dark:bg-gray-900">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <header class="mb-8">
-      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
-        {title}
-      </h1>
-      {subtitle && (
-        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
-          {subtitle}
-        </p>
-      )}
-    </header>
+<section class:list={['static-page', className]}>
+  <div class="lcdb-page-hero">
+    <div class="lcdb-page-shell lcdb-page-hero-inner">
+      <p class="lcdb-page-eyebrow typ-caption">Page</p>
+      <h1 class="lcdb-page-title typ-h2">{title}</h1>
+      {subtitle && <p class="lcdb-page-description typ-body">{subtitle}</p>}
+    </div>
+  </div>
 
-    <div class="prose max-w-none dark:prose-invert">
-      <slot />
+  <div class="lcdb-page-section">
+    <div class="lcdb-page-shell lcdb-page-section-inner">
+      {navLinks.length > 0 && (
+        <nav class="static-page-nav" aria-label="Page navigation">
+          {navLinks.map((link) =>
+            link.active ? (
+              <div class="static-page-nav-card is-active" aria-current="page">
+                <p class="static-page-nav-label">{link.label}</p>
+                {link.description && <p class="static-page-nav-description">{link.description}</p>}
+              </div>
+            ) : (
+              <a href={link.href} class="static-page-nav-card">
+                <p class="static-page-nav-label">{link.label}</p>
+                {link.description && <p class="static-page-nav-description">{link.description}</p>}
+              </a>
+            )
+          )}
+        </nav>
+      )}
+
+      <article class="lcdb-surface-card static-page-body">
+        <div class="static-page-content">
+          <slot />
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
 <style is:global>
-  .static-page .wp-content,
-  .static-page .prose {
-    font-size: 1.05rem;
-    line-height: 1.8;
+  .static-page .static-page-body {
+    padding: 26px;
   }
 
-  .static-page .wp-content h2,
-  .static-page .wp-content h3,
-  .static-page .wp-content h4 {
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
+  .static-page .lcdb-page-section-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
-  .static-page .wp-content p {
-    margin: 1.25rem 0;
+  .static-page .static-page-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
   }
 
-  .static-page .wp-content .wpb-content-wrapper {
+  .static-page .static-page-nav-card {
+    display: block;
+    min-width: 0;
+    border: 1px solid var(--lcdb-border);
+    border-radius: 16px;
+    background-color: #faf8f2;
+    box-shadow: 0 16px 36px rgba(17, 25, 39, 0.07);
+    padding: 1rem 1.05rem;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .static-page .static-page-nav-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--lcdb-accent);
+    box-shadow: 0 18px 40px rgba(17, 25, 39, 0.11);
+  }
+
+  .static-page .static-page-nav-card.is-active {
+    border-color: var(--lcdb-accent);
+    background-color: #faf8f2;
+    box-shadow: 0 18px 40px rgba(26, 158, 143, 0.12);
+  }
+
+  .static-page .static-page-nav-label {
+    margin: 0;
+    color: #1a2335;
+    font-family: var(--font-heading);
+    font-size: 1.08rem;
+    line-height: 1.18;
+  }
+
+  .static-page .static-page-nav-description {
+    margin: 0.42rem 0 0;
+    color: var(--lcdb-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .static-page .static-page-content {
+    color: var(--lcdb-copy);
+    font-family: var(--font-prose);
+    font-size: 16px;
+    line-height: 1.72;
+  }
+
+  .static-page .static-page-content h2,
+  .static-page .static-page-content h3,
+  .static-page .static-page-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.8rem;
+    color: #111111;
+    font-family: var(--font-heading);
+    line-height: 1.15;
+  }
+
+  .static-page .static-page-content h2 {
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+  }
+
+  .static-page .static-page-content h3 {
+    font-size: clamp(1.45rem, 2.3vw, 1.95rem);
+  }
+
+  .static-page .static-page-content p {
+    margin: 1rem 0;
+  }
+
+  .static-page .static-page-content .wpb-content-wrapper {
     max-width: 100%;
   }
 
-  .static-page .wp-content .penci-grid {
+  .static-page.menu-page .static-page-body {
+    padding: clamp(18px, 3vw, 34px);
+  }
+
+  .static-page.menu-page .static-page-content,
+  .static-page.menu-page .static-page-content > *,
+  .static-page.menu-page .static-page-content .wp-content,
+  .static-page.menu-page .static-page-content .wpb-content-wrapper,
+  .static-page.menu-page .static-page-content .home-featured-cat-wrapper,
+  .static-page.menu-page .static-page-content .home-featured-cat-content {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .static-page.menu-page .static-page-content .wpb-content-wrapper,
+  .static-page.menu-page .static-page-content .wp-content {
+    overflow-x: clip;
+  }
+
+  .static-page.menu-page .static-page-content p:empty,
+  .static-page.menu-page .static-page-content div:empty,
+  .static-page.menu-page .static-page-content ul:empty {
+    display: none;
+  }
+
+  .static-page.menu-page .static-page-content .penci-homepage-title {
+    display: none;
+  }
+
+  .static-page .static-page-content .penci-grid {
     list-style: none;
     padding: 0;
     margin: 1.5rem 0;
@@ -58,77 +182,399 @@ const { title, subtitle } = Astro.props;
     gap: 1.5rem;
   }
 
-  .static-page .wp-content .penci-grid .grid-style,
-  .static-page .wp-content .mag-post-box {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  .static-page .static-page-content .penci-grid .grid-style,
+  .static-page .static-page-content .mag-post-box {
+    background: #faf8f2;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(14, 24, 39, 0.06);
     padding: 1rem;
   }
 
-  .static-page .wp-content .mag-post-box {
-    margin-bottom: 1.25rem;
+  .static-page .static-page-content .mag-post-box {
+    margin-bottom: 1.2rem;
   }
 
-  .static-page .wp-content .penci-image-holder {
+  .static-page .static-page-content .penci-image-holder {
     display: block;
     width: 100%;
     aspect-ratio: 1 / 1;
     background-size: cover;
     background-position: center;
-    border-radius: 14px;
+    border-radius: 10px;
     margin-bottom: 0.85rem;
   }
 
-  .static-page .wp-content .grid-title,
-  .static-page .wp-content .magcat-title-small,
-  .static-page .wp-content .magcat-titlte {
-    font-weight: 700;
+  .static-page .static-page-content .grid-title,
+  .static-page .static-page-content .magcat-title-small,
+  .static-page .static-page-content .magcat-titlte {
+    font-family: var(--font-prose);
     font-size: 1rem;
-    line-height: 1.4;
+    line-height: 1.45;
+    color: #111111;
   }
 
-  .static-page .wp-content .grid-header-box,
-  .static-page .wp-content .magcat-detail {
+  .static-page .static-page-content .grid-header-box,
+  .static-page .static-page-content .magcat-detail {
     margin-top: 0.5rem;
   }
 
-  .static-page .wp-content img,
-  .static-page .wp-content iframe {
-    max-width: 100%;
-    height: auto;
-    border-radius: 18px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
-    margin: 1.5rem auto;
+  .static-page.menu-page .static-page-content .penci-hide-tagupdated,
+  .static-page.menu-page .static-page-content .grid-post-box-meta {
+    display: none;
   }
 
-  .static-page .wp-content iframe {
+  .static-page .static-page-content img,
+  .static-page .static-page-content iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid #d8d2c2;
+    box-shadow: 0 16px 38px rgba(14, 24, 39, 0.08);
+    /* margin: 1.5rem auto; */
+  }
+
+  .static-page .static-page-content iframe {
     width: 100%;
     min-height: 360px;
   }
 
-  .static-page .wp-content figure,
-  .static-page .wp-content .separator {
+  .static-page .static-page-content figure,
+  .static-page .static-page-content .separator {
     margin: 1.75rem 0;
   }
 
-  .static-page .wp-content a {
-    color: #0f766e;
-    font-weight: 600;
+  .static-page .static-page-content a {
+    color: var(--lcdb-accent);
+    font-weight: 500;
     text-decoration: underline;
     text-underline-offset: 4px;
+    margin-bottom: 15px;
   }
 
-  .static-page .wp-content ul,
-  .static-page .wp-content ol {
+  .static-page .static-page-content ul,
+  .static-page .static-page-content ol {
     margin: 1.5rem 0 1.5rem 1.5rem;
   }
 
-  .static-page .wp-content blockquote {
-    border-left: 4px solid #14b8a6;
+  .static-page .static-page-content blockquote {
+    border-left: 4px solid var(--lcdb-accent);
     padding-left: 1rem;
-    color: #475569;
+    color: var(--lcdb-copy);
     margin: 1.5rem 0;
     font-style: italic;
   }
+
+  .static-page.menu-page--recipe-grid .static-page-content .penci-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    max-width: 1160px;
+    margin-inline: auto;
+  }
+
+  /* 3-column layout for the salées recipe index */
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    max-width: 1160px;
+    margin-inline: auto;
+  }
+
+  .static-page.menu-page--recipe-grid-3 .static-page-content .thumbnail,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-image-holder,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .grid-post-box-meta,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-hide-tagupdated,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .item-content p,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .grid-excerpt {
+    display: none !important;
+  }
+
+  .static-page.menu-page--recipe-grid-3 .static-page-content .grid-style,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .mag-post-box {
+    padding: 1rem 1.1rem;
+  }
+
+  .static-page.menu-page--recipe-grid-3 .static-page-content .grid-header-box,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .item-content {
+    margin: 0;
+    padding: 0;
+  }
+
+  .static-page.menu-page--recipe-grid-3 .static-page-content .grid-title,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .magcat-title-small,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .magcat-titlte {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .grid-style {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .thumbnail {
+    padding: 0.85rem 0.85rem 0;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .penci-image-holder {
+    margin-bottom: 0;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .grid-header-box {
+    margin-top: 0;
+    padding: 0.95rem 1rem 1rem;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .grid-title {
+    font-size: 1.08rem;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .home-featured-cat-content.style-14 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.1rem;
+    border: 1px solid #d8d2c2;
+    border-radius: 12px;
+    background: #faf8f2;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    transition: background 160ms ease;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box:first-of-type {
+    margin-top: 0;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box .magcat-thumb,
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box .penci-image-holder {
+    display: none;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box .magcat-detail {
+    margin: 0;
+    padding: 0;
+    flex: 1;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box .magcat-padding {
+    padding: 0;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .penci-hide-tagupdated {
+    display: none;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .magcat-title-small,
+  .static-page.menu-page--recipe-list .static-page-content .magcat-titlte {
+    font-size: 1.05rem;
+    line-height: 1.3;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box::after {
+    content: "›";
+    font-size: 1.4rem;
+    color: var(--lcdb-muted);
+    flex-shrink: 0;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box:hover {
+    background: rgba(26, 158, 143, 0.08);
+  }
+
+  .static-page.menu-page--le-sale .static-page-content .mag-post-box::before {
+    content: "Salé";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(26, 158, 143, 0.18);
+    color: #1a2335;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-right: 0.8rem;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .penci-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    max-width: 1220px;
+    margin-inline: auto;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .grid-style {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #d8d2c2;
+    background: #faf8f2;
+    box-shadow: 0 14px 32px rgba(14, 24, 39, 0.06);
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .thumbnail {
+    padding: 0;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .penci-image-holder {
+    margin-bottom: 0;
+    aspect-ratio: 14 / 18;
+    border-radius: 0;
+    position: relative;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .grid-header-box {
+    margin-top: 0;
+    padding: 1.25rem 1.5rem 1.75rem;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .grid-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.1vw, 2.7rem);
+    line-height: 1;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .grid-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .static-page.menu-page--savory-grid .static-page-content .lcdb-archive-recipe-card h3 a,
+  .static-page.menu-page--sweet-grid .static-page-content .lcdb-archive-recipe-card h3 a,
+  .static-page.menu-page--travel-grid .static-page-content .lcdb-archive-recipe-card h3 a {
+    color: #111111 !important;
+    text-decoration: none !important;
+  }
+
+  .static-page.menu-page--savory-grid .static-page-content .lcdb-archive-recipe-card .typ-meta,
+  .static-page.menu-page--sweet-grid .static-page-content .lcdb-archive-recipe-card .typ-meta,
+  .static-page.menu-page--travel-grid .static-page-content .lcdb-archive-recipe-card .typ-meta {
+    border-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .lcdb-archive-recipe-card .typ-meta {
+    border-top: 0 !important;
+    border-bottom: 1px solid #d8d2c2;
+    padding-bottom: 16px;
+  }
+
+  .static-page.menu-page--travel-grid .static-page-content .penci-hide-tagupdated,
+  .static-page.menu-page--travel-grid .static-page-content .grid-post-box-meta {
+    display: none;
+  }
+
+  .static-page.menu-page--recipe-list .static-page-content .mag-post-box::after {
+    content: "›";
+  }
+
+  .static-page.menu-page--le-sale .static-page-content .mag-post-box::before {
+    content: "Salé";
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .penci-image-holder,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-image-holder,
+  .static-page.menu-page--travel-grid .static-page-content .penci-image-holder {
+    position: relative;
+  }
+
+  .static-page.menu-page--recipe-grid .static-page-content .penci-image-holder::after,
+  .static-page.menu-page--recipe-grid-3 .static-page-content .penci-image-holder::after,
+  .static-page.menu-page--travel-grid .static-page-content .penci-image-holder::after {
+    content: "\f02e";
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(250, 248, 242, 0.95);
+    color: #171f2c;
+    font-family: "Font Awesome 5 Free";
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: 0 12px 24px rgba(8, 18, 34, 0.12);
+    z-index: 2;
+  }
+
+  .static-page .travel-page-intro {
+    margin: 0 0 1.25rem;
+    max-width: 62ch;
+    color: var(--lcdb-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .static-page.menu-page--books .static-page-content p,
+  .static-page.menu-page--book-detail .static-page-content p {
+    max-width: 72ch;
+  }
+
+  .static-page.menu-page--books .static-page-content .separator,
+  .static-page.menu-page--book-detail .static-page-content .separator {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .static-page.menu-page--books .static-page-content .separator a,
+  .static-page.menu-page--book-detail .static-page-content .separator a {
+    display: block;
+  }
+
+  .static-page.menu-page--books .static-page-content figure,
+  .static-page.menu-page--book-detail .static-page-content figure {
+    max-width: 100%;
+  }
+
+  .static-page.menu-page--book-detail .static-page-content iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+
+  @media (max-width: 767px) {
+    .static-page .static-page-body {
+      padding: 18px;
+    }
+
+    .static-page.menu-page--recipe-grid .static-page-content .penci-grid,
+    .static-page.menu-page--recipe-list .static-page-content .home-featured-cat-content.style-14,
+    .static-page.menu-page--travel-grid .static-page-content .penci-grid {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 380px;
+      margin-inline: auto;
+    }
+
+    .static-page.menu-page--recipe-list .static-page-content .mag-post-box.first-post .magcat-thumb {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1100px) {
+    .static-page.menu-page--recipe-grid .static-page-content .penci-grid,
+    .static-page.menu-page--recipe-grid-3 .static-page-content .penci-grid {
+      max-width: 760px;
+      margin-inline: auto;
+    }
+  }
 </style>
+

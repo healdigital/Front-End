@@ -31,12 +31,12 @@ function decodeHtmlEntities(text = '') {
 
   decoded = decoded.replace(/&#(\d+);/g, (_, code) => {
     const intCode = Number(code);
-    return Number.isFinite(intCode) ? String.fromCharCode(intCode) : _;
+    return Number.isFinite(intCode) ? String.fromCodePoint(intCode) : _;
   });
 
   decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
     const intCode = Number.parseInt(hex, 16);
-    return Number.isFinite(intCode) ? String.fromCharCode(intCode) : _;
+    return Number.isFinite(intCode) ? String.fromCodePoint(intCode) : _;
   });
 
   return decodeNamedEntities(decoded);
@@ -47,4 +47,3 @@ export function stripHtml(html = '') {
   const withoutTags = input.replace(/<[^>]*>?/gm, ' ');
   return decodeHtmlEntities(withoutTags).replace(/\s+/g, ' ').trim();
 }
-

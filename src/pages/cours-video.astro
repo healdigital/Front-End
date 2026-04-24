@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/atoms/Button.astro';
+import { loadVideoCourses } from '../lib/videoCourses';
+
+const videoCourses = await loadVideoCourses();
+
+const normalizeToken = (value: string) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const VIDEO_PRIORITY = ['pate feuilletee inversee', 'cremes de base', 'millefeuille'];
+
+const getVideoPriorityIndex = (title: string) => {
+  const normalized = normalizeToken(title);
+  const index = VIDEO_PRIORITY.findIndex((token) => normalized.includes(token));
+  return index === -1 ? Number.POSITIVE_INFINITY : index;
+};
+
+const sortedVideoCourses = [...videoCourses].sort((a, b) => {
+  const aPriority = getVideoPriorityIndex(a.title);
+  const bPriority = getVideoPriorityIndex(b.title);
+  if (aPriority !== bPriority) return aPriority - bPriority;
+  const aPaid = a.priceType === 'paid' || a.price > 0 ? 1 : 0;
+  const bPaid = b.priceType === 'paid' || b.price > 0 ? 1 : 0;
+  if (aPaid !== bPaid) return bPaid - aPaid;
+  return a.title.localeCompare(b.title, 'fr');
+});
+
+const paidCourses = sortedVideoCourses.filter((course) => course.priceType === 'paid' || course.price > 0);
+const freeCourses = sortedVideoCourses.filter((course) => !(course.priceType === 'paid' || course.price > 0));
+---
+
+<BaseLayout title="Cours video" loadAds={true}>
+  <section class="bg-secondary-cream px-4 pb-8 pt-10">
+    <div class="home-shell-width">
+      <div class="rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] px-6 py-8 shadow-[0_18px_42px_rgba(8,18,34,0.08)] md:px-8 md:py-10">
+        <p class="font-mono text-[12px] uppercase tracking-[0.18em] text-[#5F6671]">Cours vid&eacute;o</p>
+        <h1 class="mt-4 font-heading text-[42px] leading-[0.96] text-[#151F2B] md:text-[58px]">
+          Mes cours vid&eacute;o
+        </h1>
+        <p class="mt-5 max-w-[62ch] text-[16px] leading-[1.8] text-[#5B6270] typ-body">
+          Retrouvez d'abord les cours payants, puis les vid&eacute;os gratuites, avec une pr&eacute;sentation plus claire et plus r&eacute;guli&egrave;re.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {paidCourses.length > 0 && (
+    <section class="bg-secondary-cream px-4 pb-6 pt-2">
+      <div class="home-shell-width">
+        <div class="flex items-center gap-5">
+          <h2 class="font-heading text-[34px] leading-[1.02] text-[#151F2B] md:text-[46px]">Cours payants</h2>
+          <div class="hidden h-px flex-1 bg-[#D8D2C2] md:block"></div>
+        </div>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {paidCourses.map((course) => (
+            <article class="flex h-full min-h-[430px] flex-col overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-[#F7F5EF] shadow-[0_16px_34px_rgba(8,18,34,0.08)]">
+              <img
+                src={course.image || '/images/masterclass-video.jpg'}
+                alt={course.title}
+                class="aspect-[1.72] w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                width="720"
+                height="420"
+                sizes="(min-width: 1280px) 27vw, (min-width: 768px) 42vw, 92vw"
+              />
+              <div class="flex flex-1 flex-col justify-between gap-6 p-5">
+                <div>
+                  <div class="flex items-center justify-between gap-3">
+                    <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5F6671]">Premium</p>
+                    <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#B28E39]">
+                      {course.price > 0 ? `${Math.round(course.price)}€` : 'Premium'}
+                    </p>
+                  </div>
+                  <h3 class="mt-4 font-heading text-[24px] leading-[1.08] text-[#111111]">{course.title}</h3>
+                </div>
+                <Button href={course.courseUrl} variant="primary" size="sm" class="books-section-button w-full">
+                  Voir le cours
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {freeCourses.length > 0 && (
+    <section class="bg-secondary-cream px-4 pb-12 pt-2">
+      <div class="home-shell-width">
+        <div class="flex items-center gap-5">
+          <h2 class="font-heading text-[34px] leading-[1.02] text-[#151F2B] md:text-[46px]">Vid&eacute;os gratuites</h2>
+          <div class="hidden h-px flex-1 bg-[#D8D2C2] md:block"></div>
+        </div>
+        <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {freeCourses.map((course) => (
+            <article class="flex h-full min-h-[430px] flex-col overflow-hidden rounded-[18px] border border-[#D8D2C2] bg-white shadow-[0_14px_32px_rgba(8,18,34,0.06)]">
+              <img
+                src={course.image || '/images/masterclass-video.jpg'}
+                alt={course.title}
+                class="aspect-[1.72] w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                width="720"
+                height="420"
+                sizes="(min-width: 1280px) 27vw, (min-width: 768px) 42vw, 92vw"
+              />
+              <div class="flex flex-1 flex-col justify-between gap-6 p-5">
+                <div>
+                  <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5F6671]">Vid&eacute;o gratuite</p>
+                  <h3 class="mt-4 font-heading text-[24px] leading-[1.08] text-[#111111]">{course.title}</h3>
+                </div>
+                <Button href={course.courseUrl} variant="primary" size="sm" class="books-section-button w-full">
+                  Voir la vid&eacute;o
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</BaseLayout>

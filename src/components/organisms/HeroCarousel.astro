@@ -1,7 +1,9 @@
----
+﻿---
 interface HeroCard {
   title: string;
   image: string;
+  imageFallback?: string;
+  filterKey?: string;
   category: string;
   slug: string;
 }
@@ -11,117 +13,434 @@ interface Props {
 }
 
 const { cards } = Astro.props;
+
+const normalizeToken = (value: string): string =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const toHeroCategoryTag = (card: HeroCard): string => {
+  const filter = normalizeToken(card.filterKey || '');
+  if (filter === 'sucrees') return 'SUCRÉ';
+  if (filter === 'salees') return 'SALÉ';
+
+  const source = normalizeToken(`${card.category} ${card.title} ${card.slug}`);
+
+  const sweetKeywords = [
+    'sucre',
+    'sweet',
+    'dessert',
+    'gateau',
+    'cake',
+    'cookie',
+    'brioche',
+    'chocolat',
+    'chocolate',
+    'sable',
+    'entremet',
+    'galette',
+    'tarte',
+  ];
+
+  if (sweetKeywords.some((keyword) => source.includes(keyword))) {
+    return 'SUCRÉ';
+  }
+
+  const savoryKeywords = [
+    'sale',
+    'savory',
+    'savoury',
+    'omelette',
+    'quiche',
+    'gratin',
+    'soupe',
+    'salade',
+    'foie gras',
+    'poulet',
+    'poisson',
+  ];
+
+  if (savoryKeywords.some((keyword) => source.includes(keyword))) {
+    return 'SALÉ';
+  }
+
+  if (source.includes('voyage')) return 'VOYAGES';
+  if (source.includes('reportage')) return 'REPORTAGES';
+  if (source.includes('atelier')) return 'ATELIERS';
+  if (source.includes('selection')) return 'SÉLECTIONS';
+  if (source.includes('video')) return 'VIDÉOS';
+
+  const fallbackCategory = String(card.category || '').trim().toUpperCase();
+  if (fallbackCategory && !['RECETTE', 'ARTICLE'].includes(fallbackCategory)) {
+    return fallbackCategory;
+  }
+
+  return source.includes('article') ? 'ARTICLE' : 'RECETTE';
+};
 ---
 
-<section class="bg-[#E9E9E0] py-12 md:py-16 lg:py-20 overflow-hidden">
-  <div class="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-[90px]">
-
-    <!-- Section Header -->
-    <div class="mb-8 md:mb-12">
-      <h1 class="font-heading text-5xl md:text-6xl lg:text-[86px] text-primary-black leading-[0.95] mb-5 typ-hero">
-        &Agrave; la une
-      </h1>
-      <p class="font-mono text-[13px] uppercase tracking-widest text-text-secondary typ-subtitle">
-        Cette semaine dans la cuisine de Bernard
-      </p>
-    </div>
-
-    <!-- Carousel -->
+<section class="relative bg-[#FAF8F2] pt-10 pb-8 md:pt-14 md:pb-10 lg:pt-12 lg:pb-9 overflow-hidden p-4 section_1">
+  <div class="section-noise-overlay absolute inset-0 pointer-events-none opacity-45" aria-hidden="true"></div>
+  <div class="home-shell-width zero-padding relative z-10">
     <div class="relative" data-hero-carousel>
-      <!-- Cards Container -->
-      <div
-        class="flex gap-5 overflow-x-auto scroll-smooth pb-4 -mx-5 px-5 md:-mx-0 md:px-0 hero-scroll-container"
-        data-carousel-track
-      >
-        {cards.map((card) => (
-          <a
-            href={card.slug}
-            class="flex-shrink-0 w-[260px] md:w-[311px] h-[420px] md:h-[500px] rounded-lg overflow-hidden relative group block"
+      <div class="mb-8 md:mb-10 lg:mb-9 flex items-end justify-between gap-6">
+        <div>
+          <h1 class="font-heading text-primary-black mb-3 typ-title">La Cuisine de Bernard</h1>
+          <p class="font-mono text-[13px] uppercase tracking-[0.3em] text-text-secondary typ-subtitle">
+            Depuis 2010
+          </p>
+        </div>
+
+        <div class="hidden md:flex items-center gap-3 self-start pt-2">
+          <button
+            class="hero-arrow-btn"
+            aria-label="Pr&eacute;c&eacute;dent"
+            data-carousel-prev
           >
             <img
-              src={card.image}
-              alt={card.title}
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="eager"
+              src="/images/client-arrow-circle.svg"
+              alt=""
+              class="hero-arrow-btn-icon hero-arrow-btn-icon--prev"
+              loading="lazy"
+              decoding="async"
             />
-            <!-- Gradient overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <!-- Category badge -->
-            <div class="absolute top-4 left-4">
-              <span class="inline-block rounded-full bg-white/80 backdrop-blur-md px-4 py-1.5 text-[12px] font-mono uppercase tracking-wider text-text-primary">
-                {card.category}
-              </span>
-            </div>
-            <!-- Title -->
-            <div class="absolute bottom-0 left-0 right-0 p-5">
-              <h3 class="font-body text-[17px] text-white font-medium leading-snug line-clamp-3">
-                {card.title}
-              </h3>
-            </div>
-          </a>
-        ))}
+          </button>
+          <button
+            class="hero-arrow-btn"
+            aria-label="Suivant"
+            data-carousel-next
+          >
+            <img
+              src="/images/client-arrow-circle.svg"
+              alt=""
+              class="hero-arrow-btn-icon hero-arrow-btn-icon--next"
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+        </div>
       </div>
 
-      <!-- Navigation Arrows -->
-      <div class="hidden md:flex items-center gap-3 mt-4 justify-end">
+      <!-- Slider Image and data -->
+      <div class="hero-scroll-shell">
+        <div class="flex gap-5 overflow-x-auto scroll-smooth pb-4 hero-scroll-container" data-carousel-track>
+          {cards.map((card, index) => (
+            <a href={card.slug} class="hero-slide flex-shrink-0 rounded-[10px] overflow-hidden relative group block">
+              <img
+                src={card.image}
+                alt={card.title}
+                class="w-full h-full object-fill bg-[#131924] transition-transform duration-500 group-hover:scale-105"
+                loading={index === 0 ? 'eager' : 'lazy'}
+                fetchpriority={index === 0 ? 'high' : 'low'}
+                decoding="async"
+                width="300"
+                height="386"
+                sizes="(min-width: 768px) 300px, 262px"
+                data-fallback-src={card.imageFallback || card.image}
+                onerror="if (this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/72 via-black/30 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-6">
+                <div class="mb-3">
+                  <span class="hero-card-tag inline-flex rounded-full bg-[#F0EFE8]/95 px-[12px] py-[4px] text-[10px] font-mono uppercase tracking-[0.07em] text-[#48505D]">
+                    {toHeroCategoryTag(card)}
+                  </span>
+                </div>
+                <h3 class="font-body text-[34px] md:text-[35px] text-white leading-[1.08] line-clamp-2">
+                  {card.title}
+                </h3>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="mt-4 md:hidden flex items-center justify-start gap-3">
         <button
-          class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+          class="hero-arrow-btn hero-arrow-btn--mobile"
           aria-label="Pr&eacute;c&eacute;dent"
           data-carousel-prev
         >
-          <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <img
+            src="/images/client-arrow-circle.svg"
+            alt=""
+            class="hero-arrow-btn-icon hero-arrow-btn-icon--prev"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
         <button
-          class="w-[63px] h-[63px] rounded-full border border-primary-black flex items-center justify-center hover:bg-primary-black hover:text-white transition-colors"
+          class="hero-arrow-btn hero-arrow-btn--mobile"
           aria-label="Suivant"
           data-carousel-next
         >
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <img
+            src="/images/client-arrow-circle.svg"
+            alt=""
+            class="hero-arrow-btn-icon hero-arrow-btn-icon--next"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
       </div>
-    </div>
 
-    <!-- Dots -->
-    <div class="mt-6 flex items-center gap-3">
-      {cards.map((_, index) => (
-        <span
-          class={`w-2 h-2 rounded-full ${index === 0 ? 'bg-text-primary' : 'bg-text-tertiary/60'}`}
-          aria-hidden="true"
-        ></span>
-      ))}
+      <div class="mt-1 md:mt-4 flex items-center gap-3 douted_pagination">
+        {cards.map((_, index) => (
+          <span
+            class={`hero-dot ${index === 0 ? 'is-active' : ''}`}
+            data-carousel-dot={index}
+            aria-hidden="true"
+          ></span>
+        ))}
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  .hero-scroll-shell {
+    width: 100%;
+    overflow: hidden;
+  }
+
   .hero-scroll-container {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    /* Allow vertical page scrolling even when gesture starts on carousel image. */
+    touch-action: pan-y pinch-zoom;
+    scroll-padding-inline: 16px;
     scrollbar-width: none;
   }
+
   .hero-scroll-container::-webkit-scrollbar {
     display: none;
   }
-  .hero-scroll-container > a {
+
+  .hero-slide {
+    width: 262px;
+    height: 337px;
     scroll-snap-align: start;
+  }
+
+  .hero-arrow-btn {
+    width: 62px;
+    height: 62px;
+    border: 0;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .hero-arrow-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .hero-arrow-btn:disabled,
+  .hero-arrow-btn[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .hero-arrow-btn--mobile {
+    width: 56px;
+    height: 56px;
+  }
+
+  .hero-arrow-btn-icon {
+    width: 48px;
+    height: 48px;
+    display: block;
+  }
+
+  .hero-arrow-btn-icon--prev {
+    transform: rotate(-90deg);
+  }
+
+  .hero-arrow-btn-icon--next {
+    transform: rotate(90deg);
+  }
+
+  .hero-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(49, 56, 68, 0.22);
+    transition: background-color 0.2s ease;
+  }
+
+  .hero-dot.is-active {
+    background: #1a2335;
+  }
+
+  .hero-card-tag {
+    font-size: 10px;
+    letter-spacing: 0.07em;
+  }
+
+  @media (min-width: 768px) {
+    .hero-slide {
+      width: 300px;
+      height: 386px;
+    }
   }
 </style>
 
 <script>
-  const carousel = document.querySelector('[data-hero-carousel]');
-  if (carousel) {
+  const setupHeroCarousel = (carousel) => {
+    if (!(carousel instanceof HTMLElement)) return;
+    if (carousel.dataset.carouselReady === 'true') return;
+
     const track = carousel.querySelector('[data-carousel-track]');
-    const prevBtn = carousel.querySelector('[data-carousel-prev]');
-    const nextBtn = carousel.querySelector('[data-carousel-next]');
+    if (!(track instanceof HTMLElement)) return;
 
-    const scrollAmount = 330;
+    carousel.dataset.carouselReady = 'true';
 
-    prevBtn?.addEventListener('click', () => {
-      track?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    const slides = Array.from(track.children).filter((slide) => slide instanceof HTMLElement);
+    const dots = Array.from(carousel.querySelectorAll('[data-carousel-dot]'));
+    const prevButtons = Array.from(carousel.querySelectorAll('[data-carousel-prev]'));
+    const nextButtons = Array.from(carousel.querySelectorAll('[data-carousel-next]'));
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const getStep = () => {
+      const firstCard = slides[0];
+      if (!(firstCard instanceof HTMLElement)) return 320;
+      const styles = window.getComputedStyle(track);
+      const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+      return firstCard.getBoundingClientRect().width + gap;
+    };
+
+    const getMaxScroll = () => Math.max(track.scrollWidth - track.clientWidth, 0);
+
+    const getActiveIndex = () => {
+      const step = getStep();
+      if (!step) return 0;
+      return Math.max(0, Math.min(slides.length - 1, Math.round(track.scrollLeft / step)));
+    };
+
+    const scrollTrackTo = (left) => {
+      track.scrollTo({ left: Math.max(0, Math.min(getMaxScroll(), left)), behavior: 'smooth' });
+    };
+
+    const scrollTrackBy = (left) => {
+      scrollTrackTo(track.scrollLeft + left);
+    };
+
+    const scrollToIndex = (index) => {
+      scrollTrackTo(getStep() * Math.max(0, Math.min(slides.length - 1, index)));
+    };
+
+    const updateDots = () => {
+      if (dots.length === 0) return;
+      const activeIndex = getActiveIndex();
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('is-active', index === activeIndex);
+      });
+    };
+
+    prevButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        scrollToIndex(getActiveIndex() - 1);
+      });
     });
 
-    nextBtn?.addEventListener('click', () => {
-      track?.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    nextButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const nearEnd = track.scrollLeft + 5 >= getMaxScroll();
+        scrollToIndex(nearEnd ? 0 : getActiveIndex() + 1);
+      });
     });
-  }
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const index = Number(dot.getAttribute('data-carousel-dot') || '0');
+        if (!Number.isFinite(index)) return;
+        scrollToIndex(index);
+      });
+    });
+
+    track.addEventListener(
+      'touchstart',
+      (event) => {
+        touchStartX = event.changedTouches[0]?.clientX || 0;
+        touchStartY = event.changedTouches[0]?.clientY || 0;
+      },
+      { passive: true },
+    );
+
+    track.addEventListener(
+      'touchend',
+      (event) => {
+        const touchEndX = event.changedTouches[0]?.clientX || 0;
+        const touchEndY = event.changedTouches[0]?.clientY || 0;
+        const deltaX = touchStartX - touchEndX;
+        const deltaY = touchStartY - touchEndY;
+
+        // Ignore mostly vertical gestures so page can scroll naturally.
+        if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+          return;
+        }
+
+        if (Math.abs(deltaX) < 40) {
+          scrollToIndex(getActiveIndex());
+          return;
+        }
+        scrollToIndex(getActiveIndex() + (deltaX > 0 ? 1 : -1));
+      },
+      { passive: true },
+    );
+
+    track.addEventListener('scroll', updateDots, { passive: true });
+    window.addEventListener('resize', updateDots);
+    updateDots();
+
+    if (slides.length <= 1) {
+      updateDots();
+      return;
+    }
+
+    // Auto-slide every few seconds, looping back to start when reaching the end.
+    const AUTO_SLIDE_INTERVAL_MS = 5000;
+    let autoSlideTimer = window.setInterval(() => {
+      const nearEnd = track.scrollLeft + 5 >= getMaxScroll();
+      scrollToIndex(nearEnd ? 0 : getActiveIndex() + 1);
+    }, AUTO_SLIDE_INTERVAL_MS);
+
+    const clearAutoSlide = () => {
+      if (autoSlideTimer) {
+        window.clearInterval(autoSlideTimer);
+        autoSlideTimer = 0;
+      }
+    };
+
+    const restartAutoSlide = () => {
+      clearAutoSlide();
+      autoSlideTimer = window.setInterval(() => {
+        const nearEnd = track.scrollLeft + 5 >= getMaxScroll();
+        scrollToIndex(nearEnd ? 0 : getActiveIndex() + 1);
+      }, AUTO_SLIDE_INTERVAL_MS);
+    };
+
+    carousel.addEventListener('touchstart', clearAutoSlide, { passive: true });
+    carousel.addEventListener('touchend', restartAutoSlide, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearAutoSlide();
+      else restartAutoSlide();
+    });
+  };
+
+  const initHeroCarousels = () => {
+    const carousels = Array.from(document.querySelectorAll('[data-hero-carousel]'));
+    carousels.forEach(setupHeroCarousel);
+  };
+
+  initHeroCarousels();
+  document.addEventListener('astro:page-load', initHeroCarousels);
 </script>
+

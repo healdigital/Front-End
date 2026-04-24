@@ -1,24 +1,271 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import StaticPageContent from "../components/StaticPageContent.astro";
+import InfiniteGrid from "../components/InfiniteGrid.astro";
+import RecipeCard from "../components/organisms/RecipeCard.astro";
+import {
+  getPreparedArchiveArticles,
+  type PreparedArchiveArticle,
+} from "../lib/staticArchiveData";
+import {
+  buildWordPressImageFallbackCandidates,
+  processArticleImageUrl,
+} from "../utils/cdnUrlReplacer";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
+
+const navLinks = [
+  {
+    label: "Index des recettes salées avec photo",
+    description: "Version illustrée, plus visuelle pour parcourir les recettes.",
+    active: true,
+  },
+  {
+    label: "Index des recettes salées sans photo",
+    description: "Version compacte, plus rapide à scanner par titre.",
+    href: "/le-sale/",
+  },
+];
+
+const stripHtml = (value: string) =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toText = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value === "string") return decodeHtmlEntities(stripHtml(value));
+  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
+    for (const candidate of directCandidates) {
+      const text = toText(candidate);
+      if (text) return text;
+    }
+    if (Array.isArray(record.children)) {
+      return record.children.map((child) => toText(child)).filter(Boolean).join(" ");
+    }
+  }
+  return "";
+};
+
+const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
+  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
+  if (!raw) return `Découvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
+  return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
+};
+
+const formatRecipeTime = (article: PreparedArchiveArticle | undefined): string => {
+  if (!article) return "25 min";
+  const recipeBlock = Array.isArray(article.recipeBlocks) ? article.recipeBlocks.find(Boolean) : null;
+  const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
+  const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
+  const total = (Number.isFinite(prep) ? prep : 0) + (Number.isFinite(cook) ? cook : 0);
+  if (total > 0) return total >= 60 ? `${Math.floor(total / 60)}h${String(total % 60).padStart(2, '0')}` : `${Math.round(total)} min`;
+  return "25 min";
+};
+
+const formatDifficulty = (article: PreparedArchiveArticle | undefined): string => {
+  const recipeBlock = Array.isArray(article?.recipeBlocks) ? article.recipeBlocks.find(Boolean) : null;
+  const raw = String(recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || '').trim().toLowerCase();
+  if (raw === 'easy' || raw === 'facile') return 'Facile';
+  if (raw === 'medium' || raw === 'moyen' || raw === 'moyenne') return 'Moyen';
+  if (raw === 'hard' || raw === 'difficile' || raw === 'difficult') return 'Difficile';
+  return 'Salé';
+};
+
+const normalizeToken = (value: string): string =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const extractLabels = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap((item) => extractLabels(item));
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return [record.name, record.title, record.slug, record.label]
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  }
+  return [];
+};
+
+const getPrimaryRecipeBlock = (article: PreparedArchiveArticle) =>
+  Array.isArray(article?.recipeBlocks) ? article.recipeBlocks.find(Boolean) : null;
+
+const getArchiveFilterKey = (article: PreparedArchiveArticle): "salees" | "sucrees" | "toutes" => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const recipeBlockRecord = (recipeBlock || {}) as Record<string, unknown>;
+  const articleRecord = article as Record<string, unknown>;
+  const candidateText = [
+    ...extractLabels(recipeBlockRecord.recipeType),
+    ...extractLabels(recipeBlockRecord.dishType),
+    ...extractLabels(article?.categories),
+    ...extractLabels(articleRecord.category),
+    ...extractLabels(articleRecord.tags),
+    toText(article?.title),
+    toText(article?.excerpt),
+  ].join(" ");
+
+  const normalized = normalizeToken(candidateText);
+
+  const sweetKeywords = [
+    "sucre",
+    "dessert",
+    "sweet",
+    "gateau",
+    "cake",
+    "cookie",
+    "brioche",
+    "chocolat",
+    "galette",
+    "tarte",
+    "creme",
+    "entremet",
+    "sable",
+  ];
+  const savoryKeywords = [
+    "sale",
+    "savory",
+    "savour",
+    "omelette",
+    "quiche",
+    "gratin",
+    "soupe",
+    "salade",
+    "foie gras",
+    "poulet",
+    "poisson",
+    "courge",
+    "legume",
+  ];
+
+  const sweetScore = sweetKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+  const savoryScore = savoryKeywords.reduce(
+    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
+    0,
+  );
+
+  if (savoryScore > sweetScore) return "salees";
+  if (sweetScore > savoryScore) return "sucrees";
+  return "toutes";
+};
+
+const preparedArticles = getPreparedArchiveArticles().filter(
+  (article) =>
+    typeof article?.slug === "string" &&
+    article.slug?.trim() &&
+    String((article as Record<string, unknown>)?.lang || "fr").toLowerCase() === "fr",
+);
+
+const uniqueArticlesBySlug = new Map<string, PreparedArchiveArticle>();
+preparedArticles.forEach((article) => {
+  const slug = String(article.slug || "").trim();
+  if (!slug || uniqueArticlesBySlug.has(slug)) return;
+  uniqueArticlesBySlug.set(slug, article);
+});
+
+const cards = Array.from(uniqueArticlesBySlug.values())
+  .filter((article) => getArchiveFilterKey(article) === "salees")
+  .sort((a, b) => {
+    const aTime = Date.parse(String((a as Record<string, unknown>)?.publishedAt || ""));
+    const bTime = Date.parse(String((b as Record<string, unknown>)?.publishedAt || ""));
+    if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) return bTime - aTime;
+    return String(a.slug || "").localeCompare(String(b.slug || ""), "fr");
+  })
+  .map((article) => {
+    const slug = String(article.slug || "").trim();
+    const fallbackImage = processArticleImageUrl(article) || "";
+    const resolvedImage = processArticleImageUrl(article) || fallbackImage;
+    const imageFallbackCandidates = Array.from(
+      new Set(
+        [
+          ...buildWordPressImageFallbackCandidates(resolvedImage),
+          fallbackImage,
+        ].filter(Boolean),
+      ),
+    );
+
+    return {
+      href: `/${slug}`,
+      title: decodeHtmlEntities(String(article?.title || slug)),
+      excerpt: getExcerpt(article, slug),
+      prepTime: formatRecipeTime(article),
+      difficulty: formatDifficulty(article),
+      image: resolvedImage,
+      imageFallback: fallbackImage || resolvedImage,
+      imageFallbackCandidates,
+    };
+  });
 ---
 
-<BaseLayout title="Savory Recipes (with photos)">
-  <StaticPage title="Savory Recipes (with photos)" subtitle="Index of savory recipes">
-    <StaticPageContent
-      slug="recettes-salees"
-      sourceUrl="https://lacuisinedebernard.com/recettes-salees/"
-    >
-      <p>We are rebuilding this savory index with the new content system.</p>
-      <p>
-        In the meantime, you can explore the latest recipes or use search to find
-        specific dishes.
-      </p>
-      <ul>
-        <li><a href="/articles">Browse latest recipes</a></li>
-        <li><a href="/search">Search the site</a></li>
-      </ul>
-    </StaticPageContent>
+<BaseLayout title="Recettes salées">
+  <StaticPage
+    title="Recettes salées"
+    subtitle="Index des recettes salées avec photo."
+    className="menu-page menu-page--savory-grid"
+    navLinks={navLinks}
+  >
+    <InfiniteGrid gridClass="savory-grid" ariaLabel="Recettes salées" totalCount={cards.length}>
+      {cards.map((card) => (
+        <RecipeCard
+          title={card.title}
+          slug={card.href}
+          image={card.image}
+          imageFallback={card.imageFallback}
+          imageAspect="square"
+          description={card.excerpt}
+          prepTime={card.prepTime}
+          difficulty={card.difficulty}
+          category="SALÉ"
+          showDescription={false}
+          showReadMore={false}
+          contentClass="archive-card-content"
+        />
+      ))}
+    </InfiniteGrid>
   </StaticPage>
 </BaseLayout>
+
+<style is:global>
+  .menu-page--savory-grid .static-page-body {
+    padding: clamp(14px, 2.2vw, 24px);
+  }
+
+  .menu-page--savory-grid .savory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    max-width: 1220px;
+    margin-inline: auto;
+  }
+
+  @media (max-width: 1100px) {
+    .menu-page--savory-grid .savory-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 760px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .menu-page--savory-grid .savory-grid {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 380px;
+    }
+
+    .menu-page--savory-grid .savory-card-title {
+      font-size: 1.28rem;
+    }
+
+    .menu-page--savory-grid .savory-card-excerpt {
+      font-size: 0.92rem;
+    }
+  }
+</style>
