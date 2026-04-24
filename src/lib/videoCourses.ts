@@ -6,7 +6,14 @@ const VIDEO_COURSES_FEATURED_API_URL =
   process.env.VIDEO_COURSES_FEATURED_API_URL ||
   `${VIDEO_COURSES_API_URL}${VIDEO_COURSES_API_URL.includes('?') ? '&' : '?'}scope=featured`;
 
-const VIDEO_COURSES_FETCH_TIMEOUT_MS = 5000;
+const parsedVideoFetchTimeout = Number.parseInt(
+  process.env.VIDEO_COURSES_FETCH_TIMEOUT_MS || '',
+  10,
+);
+/** Default 15s: parallel Astro workers each fetch independently; 5s was too tight under load. */
+const VIDEO_COURSES_FETCH_TIMEOUT_MS = Number.isFinite(parsedVideoFetchTimeout)
+  ? Math.min(Math.max(parsedVideoFetchTimeout, 1000), 120_000)
+  : 15_000;
 const VIDEO_COURSES_CACHE_TTL_MS = 5 * 60 * 1000;
 const VIDEO_COURSES_USER_AGENT =
   'Mozilla/5.0 (compatible; LCDBAstro/1.0; +https://lacuisinedebernard.com)';
