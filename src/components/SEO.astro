@@ -16,6 +16,9 @@ const siteUrl = 'https://lacuisinedebernard.com';
 const fullCanonical = canonical || `${siteUrl}`;
 const fullImage = image || `${siteUrl}/og-image.png`;
 const currentYear = new Date().getFullYear();
+const currentSiteOrigin = Astro.site?.origin || import.meta.env.PUBLIC_SITE_URL || '';
+const isCanonicalProduction = currentSiteOrigin === siteUrl;
+const robotsDirective = isCanonicalProduction ? 'index, follow' : 'noindex, nofollow';
 ---
 
 <meta charset="UTF-8" />
@@ -59,8 +62,8 @@ const currentYear = new Date().getFullYear();
 {modifiedDate && <meta property="article:modified_time" content={modifiedDate} />}
 <meta property="article:author" content={author} />
 
-<meta name="robots" content="index, follow" />
-<meta name="googlebot" content="index, follow" />
+<meta name="robots" content={robotsDirective} />
+<meta name="googlebot" content={robotsDirective} />
 <meta name="language" content={lang} />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
