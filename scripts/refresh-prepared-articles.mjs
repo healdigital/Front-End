@@ -148,6 +148,30 @@ const fetchPage = async (page) => {
   return fetchPayloadJSON('/articles', qs);
 };
 
+const toPlainString = (value) => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return '';
+};
+
+const normalizeSlug = (value) => toPlainString(value).trim().toLowerCase();
+
+const normalizeLang = (value) => {
+  const normalized = toPlainString(value).trim().toLowerCase();
+  return normalized || 'fr';
+};
+
+const ensureIds = (doc) => {
+  if (!doc || typeof doc !== 'object') return doc;
+
+  const resolvedId = doc.id ?? doc._id ?? null;
+  return {
+    ...doc,
+    id: resolvedId,
+    _id: doc._id ?? resolvedId,
+  };
+};
+
 const normalizeDate = (doc) =>
   doc?.date || doc?.modified || doc?.publishedAt || doc?.createdAt || null;
 
