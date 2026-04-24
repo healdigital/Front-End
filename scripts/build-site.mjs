@@ -51,6 +51,7 @@ try {
     run('npm run generate-search-index', env);
   }
 
+  run('npm run check:i18n-coverage', env);
   run('node ./node_modules/astro/astro.js build', env);
 
   if (autoAlgoliaIndex) {
