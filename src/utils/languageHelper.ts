@@ -3,11 +3,11 @@
  */
 
 export const SUPPORTED_LANGUAGES = {
-  en: { name: '🇺🇸 English', flag: '🇺🇸', code: 'en' },
-  fr: { name: '🇫🇷 Français', flag: '🇫🇷', code: 'fr' },
-  es: { name: '🇪🇸 Español', flag: '🇪🇸', code: 'es' },
-  'pt-br': { name: '🇧🇷 Português', flag: '🇧🇷', code: 'pt-br' },
-  ar: { name: '🇸🇦 العربية', flag: '🇸🇦', code: 'ar' },
+  en: { name: '🇬🇧 English (UK)', flag: '🇬🇧', code: 'en' },
+  fr: { name: '🇫🇷 Français (France)', flag: '🇫🇷', code: 'fr' },
+  es: { name: '🇪🇸 Español (España)', flag: '🇪🇸', code: 'es' },
+  'pt-br': { name: '🇵🇹 Português (Portugal)', flag: '🇵🇹', code: 'pt-br' },
+  ar: { name: '🇸🇦 العربية الفصحى', flag: '🇸🇦', code: 'ar' },
 };
 
 export type LanguageCode = keyof typeof SUPPORTED_LANGUAGES;
@@ -42,11 +42,11 @@ export function formatDate(date: Date | string, lang: LanguageCode): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
   const localeMap: Record<LanguageCode, string> = {
-    en: 'en-US',
+    en: 'en-GB',
     fr: 'fr-FR',
     es: 'es-ES',
-    'pt-br': 'pt-BR',
-    ar: 'ar-SA',
+    'pt-br': 'pt-PT',
+    ar: 'ar',
   };
 
   return dateObj.toLocaleDateString(localeMap[lang], {

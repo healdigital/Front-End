@@ -14,10 +14,15 @@ const isDev = import.meta.env.DEV;
 export const prerender = !isDev;
 
 const languageMap: Record<string, string> = {
-  en: 'EN',
+  en: 'EN-GB',
+  'en-gb': 'EN-GB',
   fr: 'FR',
+  'fr-fr': 'FR',
   es: 'ES',
-  'pt-br': 'PT-BR',
+  'es-es': 'ES',
+  pt: 'PT-PT',
+  'pt-br': 'PT-PT',
+  'pt-pt': 'PT-PT',
   ar: 'AR',
 };
 

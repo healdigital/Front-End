@@ -31,7 +31,7 @@ const loadedTranslationLangs = new Set<string>();
 const unavailableDeeplEndpoints = new Set<string>();
 const deeplTranslationCache = new Map<string, Map<string, string>>();
 const ENABLE_RUNTIME_AUTO_TRANSLATION =
-  String(import.meta.env.PUBLIC_ENABLE_RUNTIME_AUTO_TRANSLATION || '0') === '1';
+  String(import.meta.env.PUBLIC_ENABLE_RUNTIME_AUTO_TRANSLATION || '1') === '1';
 
 const DEEPL_FAILURE_THRESHOLD = 3;
 const TRANSLATE_API_CHUNK_SIZE = Math.max(20, Number(import.meta.env.PUBLIC_TRANSLATE_CHUNK_SIZE) || 180);
@@ -145,10 +145,11 @@ const buildTranslationChunks = (uniqueTexts: string[]): TranslationChunk[] => {
 };
 
 const deeplLanguageMap: Record<string, string> = {
-  en: 'EN',
+  en: 'EN-GB',
   fr: 'FR',
   es: 'ES',
-  'pt-br': 'PT-BR',
+  'pt-br': 'PT-PT',
+  'pt-pt': 'PT-PT',
   ar: 'AR',
 };
 
@@ -175,7 +176,7 @@ const emitTranslationStatus = (
 
 const normalizeLanguageCode = (lang: string): string => {
   const raw = String(lang || '').trim().toLowerCase();
-  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr') return 'pt-br';
+  if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr' || raw === 'pt-pt') return 'pt-br';
   return raw;
 };
 
