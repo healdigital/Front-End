@@ -4,9 +4,7 @@ import MediavineSlot from '../../../components/MediavineSlot.astro';
 import Pagination from '../../../components/organisms/Pagination.astro';
 import { getAllCategoriesFromMongo, getArticlesFromMongo } from '../../../lib/mongo.server';
 import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
-import { BUILD_ONLY_ARTICLE_PAGES } from '../../../utils/buildFlags';
-
-export const prerender = true;
+export const prerender = false;
 const PAGE_SIZE = 12;
 
 const stripHtml = (value: string) =>
@@ -65,57 +63,38 @@ const mapArticles = (fetchedArticles: any[]) =>
     })
     .filter(Boolean);
 
-export async function getStaticPaths() {
-  if (BUILD_ONLY_ARTICLE_PAGES) return [];
-  const pageSize = 12;
+const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
+
+let { category } = Astro.props as { category: any };
+if (!category && Astro.params.slug) {
+  const routeSlug = normalizeRouteSlug(Astro.params.slug);
   const categories = await getAllCategoriesFromMongo();
-  const paths: any[] = [];
-  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
-  const stripRouteHtml = (value: unknown) =>
-    String(value || '')
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  const toRouteText = (value: unknown): string => {
-    if (!value) return '';
-    if (typeof value === 'string') return stripRouteHtml(value);
-    if (Array.isArray(value)) return value.map((item) => toRouteText(item)).filter(Boolean).join(' ');
-    if (typeof value === 'object') {
-      const record = value as Record<string, unknown>;
-      const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
-      for (const candidate of directCandidates) {
-        const text = toRouteText(candidate);
-        if (text) return text;
-      }
-    }
-    return '';
-  };
-
-  for (const category of categories) {
-    const slug = normalizeRouteSlug(typeof category?.slug === 'string' ? category.slug : category?.slug?.current);
-    if (!slug) continue;
-    const categoryName = toRouteText(category?.name || category?.title || slug);
-    const count = (await getArticlesFromMongo(1, 1000, categoryName)).filter((article: any) => {
-      const articleSlugValue = normalizeRouteSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
-      const articleTitle = toRouteText(article?.title);
-      return Boolean(articleSlugValue && articleTitle);
-    }).length;
-    const totalPages = Math.ceil(count / pageSize);
-
-    for (let page = 2; page <= totalPages; page++) {
-      paths.push({ params: { slug, page: String(page) }, props: { category, page } });
-    }
-  }
-
-  return paths;
+  category =
+    categories.find((candidate: any) => {
+      const slug = normalizeRouteSlug(typeof candidate?.slug === 'string' ? candidate.slug : candidate?.slug?.current);
+      return slug === routeSlug;
+    }) || null;
 }
 
-const { category, page } = Astro.props as { category: any; page: number };
-const currentPage = Number(page) || 2;
+if (!category) {
+  return new Response('Category not found', { status: 404 });
+}
+
+const currentPage = Math.max(1, Number(Astro.params.page) || 1);
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+);
 const categoryTitle = toText(category?.title || category?.name || category?.label || Astro.params.slug);
 const categoryName = toText(category?.name || category?.title || category?.slug || Astro.params.slug);
 const allArticles = mapArticles(await getArticlesFromMongo(1, 1000, categoryName));
 const totalPages = Math.max(1, Math.ceil(allArticles.length / PAGE_SIZE));
+
+if (currentPage < 2 || currentPage > totalPages) {
+  return new Response(null, { status: 404 });
+}
+
 const articles = allArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 ---
 

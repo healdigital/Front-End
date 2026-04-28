@@ -9,32 +9,11 @@ import MediavineSlot from "../../components/MediavineSlot.astro";
 import { payloadFetch } from "../../lib/payload.client";
 import { getAllArticlesFromMongo } from "../../lib/mongo.server";
 
-export const prerender = true;
+export const prerender = false;
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
   return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
 };
-
-export async function getStaticPaths() {
-  let allArticles = await getAllArticlesFromMongo();
-
-  if (!allArticles || allArticles.length === 0) {
-    const result: any = await payloadFetch({
-      collection: 'articles',
-      query: { depth: 1, limit: getBuildLimit() }
-    });
-    allArticles = result?.docs || result || [];
-  }
-
-  const articlesPerPage = 10;
-  const totalPages = Math.ceil(allArticles.length / articlesPerPage);
-
-  const paths = Array.from({ length: totalPages - 1 }, (_, i) => ({
-    params: { page: String(i + 2) },
-  }));
-
-  return paths;
-}
 
 const { page } = Astro.params;
 const currentPage = parseInt(page as string);
@@ -50,6 +29,16 @@ if (!allArticles || allArticles.length === 0) {
 
 const articles = (Array.isArray(allArticles) ? allArticles : []).filter((a: any) => a && a.title);
 const totalPages = Math.max(1, Math.ceil(articles.length / articlesPerPage));
+
+if (!Number.isFinite(currentPage) || currentPage < 2 || currentPage > totalPages) {
+  return new Response(null, { status: 404 });
+}
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+);
+
 const startIdx = (currentPage - 1) * articlesPerPage;
 const endIdx = startIdx + articlesPerPage;
 const paginatedArticles = articles.slice(startIdx, endIdx);

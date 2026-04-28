@@ -46,17 +46,28 @@ const showTranslationStatus = (
   void message;
 };
 
+const clearTranslationLoader = (): void => {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.removeAttribute('data-lcdb-translate-loading');
+  root.removeAttribute('aria-busy');
+};
+
 async function initTranslations(): Promise<void> {
-  await initializeTranslations();
-  setupLanguageSwitcher();
-  watchLanguageChanges();
+  try {
+    await initializeTranslations();
+    setupLanguageSwitcher();
+    watchLanguageChanges();
 
-  const currentLang = String(getCurrentLanguage() || '').toLowerCase();
-  const htmlLang = getHtmlLanguage();
-  const pendingLang = getPendingLanguage();
+    const currentLang = String(getCurrentLanguage() || '').toLowerCase();
+    const htmlLang = getHtmlLanguage();
+    const pendingLang = getPendingLanguage();
 
-  if (pendingLang || (currentLang && currentLang !== htmlLang)) {
-    await changeLanguage(currentLang);
+    if (pendingLang || (currentLang && currentLang !== htmlLang)) {
+      await changeLanguage(currentLang);
+    }
+  } finally {
+    clearTranslationLoader();
   }
 }
 

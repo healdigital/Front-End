@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import node from '@astrojs/node';
 
 const isDev = process.env.NODE_ENV === 'development';
 const siteUrl = isDev
@@ -9,8 +10,11 @@ const siteUrl = isDev
 export default defineConfig({
   site: siteUrl,
 
-  // Astro 5 removed `hybrid`; static now supports the same dev workflow.
+  // Adapter enables on-demand routes (`export const prerender = false`) while other pages stay static.
   output: 'static',
+  adapter: node({
+    mode: 'standalone',
+  }),
 
   vite: {
     cacheDir: './.vite-cache-build',

@@ -605,7 +605,13 @@ export async function getAllArticlesFromMongo() {
   const limit = getBuildLimit();
   const now = Date.now();
   const cacheAge = now - cachedAllArticlesAt;
-  const cacheTtlMs = 30_000;
+  const envTtl = Number(process.env.ARTICLE_INDEX_CACHE_MS);
+  const cacheTtlMs =
+    Number.isFinite(envTtl) && envTtl >= 0
+      ? envTtl
+      : isDevMode()
+        ? 30_000
+        : 120_000;
 
   if (cachedAllArticles && (!isDevMode() || cacheAge < cacheTtlMs)) {
     return cachedAllArticles;

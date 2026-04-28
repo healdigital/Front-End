@@ -4,9 +4,7 @@ import MediavineSlot from '../../components/MediavineSlot.astro';
 import Pagination from '../../components/organisms/Pagination.astro';
 import { getAllTagsFromMongo, getArticlesByTagFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
-import { BUILD_ONLY_ARTICLE_PAGES } from '../../utils/buildFlags';
-
-export const prerender = true;
+export const prerender = false;
 
 const PAGE_SIZE = 12;
 
@@ -71,30 +69,31 @@ const mapArticles = (fetchedArticles: any[]) =>
     })
     .filter(Boolean);
 
-export async function getStaticPaths() {
-  if (BUILD_ONLY_ARTICLE_PAGES) {
-    return [];
-  }
-
-  const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
-  const tags = await getAllTagsFromMongo();
-  return tags
-    .map((tag: any) => {
-      const slug = normalizeRouteSlug(typeof tag?.slug === 'string' ? tag.slug : tag?.slug?.current);
-      if (!slug) return null;
-      return { params: { slug }, props: { tag } };
-    })
-    .filter(Boolean);
-}
-
 interface Props {
   tag: any;
 }
 
-const { tag } = Astro.props as Props;
+const normalizeRouteSlug = (value: unknown) => String(value || '').replace(/^\/+|\/+$/g, '');
+
+let { tag } = Astro.props as Props;
+if (!tag && Astro.params.slug) {
+  const routeSlug = normalizeRouteSlug(Astro.params.slug);
+  const tags = await getAllTagsFromMongo();
+  tag =
+    tags.find((candidate: any) => {
+      const slug = normalizeRouteSlug(typeof candidate?.slug === 'string' ? candidate.slug : candidate?.slug?.current);
+      return slug === routeSlug;
+    }) || null;
+}
+
 if (!tag) {
   return new Response('Tag not found', { status: 404 });
 }
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+);
 
 const tagTitle = toText(tag?.title || tag?.name || tag?.label || Astro.params.slug);
 const tagName = toText(tag?.name || tag?.title || tag?.slug || Astro.params.slug);
