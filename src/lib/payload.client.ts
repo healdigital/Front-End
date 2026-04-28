@@ -3,10 +3,53 @@
  * Temporary placeholder - will be configured with real Payload API
  */
 
-export const payloadApiUrl = process.env.PUBLIC_PAYLOAD_API_URL ||
-  (process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000/api'
-    : '/api');
+const normalizeEnvValue = (value: string | undefined): string => String(value || '').trim();
+
+const firstCoolifyUrl = (): string => {
+  const raw = normalizeEnvValue(process.env.COOLIFY_URL);
+  if (!raw) return '';
+  const first = raw.split(',')[0]?.trim() || '';
+  if (!first) return '';
+  // Coolify can occasionally inject malformed values like "http//example.com".
+  if (/^https?:\/\//i.test(first)) return first;
+  if (/^https?:\/[^/]/i.test(first)) return first.replace(/^http:\/(?!\/)/i, 'http://').replace(/^https:\/(?!\/)/i, 'https://');
+  return '';
+};
+
+const getSiteBaseUrl = (): string => {
+  const publicSiteUrl = normalizeEnvValue(process.env.PUBLIC_SITE_URL);
+  if (publicSiteUrl) return publicSiteUrl.replace(/\/+$/g, '');
+  const coolify = firstCoolifyUrl();
+  if (coolify) return coolify.replace(/\/+$/g, '');
+  return process.env.NODE_ENV === 'development' ? 'http://localhost:4321' : '';
+};
+
+const resolvePayloadApiUrl = (): string => {
+  const explicit =
+    normalizeEnvValue(process.env.PAYLOAD_API_URL) ||
+    normalizeEnvValue(process.env.PUBLIC_PAYLOAD_API_URL);
+
+  if (explicit) {
+    if (/^https?:\/\//i.test(explicit)) return explicit.replace(/\/+$/g, '');
+    if (explicit.startsWith('/')) {
+      // During server-side build/runtime in Node, fetch needs an absolute URL.
+      if (typeof window === 'undefined') {
+        const siteBase = getSiteBaseUrl();
+        if (siteBase) return `${siteBase}${explicit}`.replace(/\/+$/g, '');
+      }
+      return explicit.replace(/\/+$/g, '');
+    }
+  }
+
+  if (process.env.NODE_ENV === 'development') return 'http://localhost:3000/api';
+  if (typeof window === 'undefined') {
+    const siteBase = getSiteBaseUrl();
+    if (siteBase) return `${siteBase}/api`;
+  }
+  return '/api';
+};
+
+export const payloadApiUrl = resolvePayloadApiUrl();
 
 type PayloadQueryValue = string | number | boolean;
 type PayloadQuery = Record<string, PayloadQueryValue | null | undefined>;
