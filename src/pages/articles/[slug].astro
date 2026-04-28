@@ -151,9 +151,28 @@ const formatDate = (value: ContentValue) => {
   });
 };
 
+const isRelationshipId = (value: string): boolean =>
+  /^[0-9a-f]{24}$/i.test(String(value).trim()) || /^\d+$/.test(String(value).trim());
+
+const allCategories = await getAllCategoriesFromMongo();
+const allTags = await getAllTagsFromMongo();
+const categoryLookup = new Map(
+  (Array.isArray(allCategories) ? allCategories : [])
+    .map((item: any) => [String(item?._id || item?.id || item?.slug || '').trim(), toText(item?.title || item?.name || item?.label)])
+    .filter((entry) => entry[0] && entry[1]),
+);
+const tagLookup = new Map(
+  (Array.isArray(allTags) ? allTags : [])
+    .map((item: any) => [String(item?._id || item?.id || item?.slug || '').trim(), toText(item?.title || item?.name || item?.label)])
+    .filter((entry) => entry[0] && entry[1]),
+);
+
 const categoryItems = (Array.isArray(article?.categories) ? article.categories : [])
   .map((item): PageTaxonomyItem | null => {
-    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const rawTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemTitle = isRelationshipId(rawTitle)
+      ? toText(categoryLookup.get(rawTitle) || tagLookup.get(rawTitle))
+      : rawTitle;
     const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
@@ -161,7 +180,10 @@ const categoryItems = (Array.isArray(article?.categories) ? article.categories :
 
 const tagItems = (Array.isArray(article?.tags) ? article.tags : [])
   .map((item): PageTaxonomyItem | null => {
-    const itemTitle = toText(item?.title || item?.name || item?.label || item);
+    const rawTitle = toText(item?.title || item?.name || item?.label || item);
+    const itemTitle = isRelationshipId(rawTitle)
+      ? toText(tagLookup.get(rawTitle) || categoryLookup.get(rawTitle))
+      : rawTitle;
     const itemSlug = normalizeSlug(typeof item?.slug === 'string' ? item.slug : item?.slug?.current);
     return itemTitle ? { title: itemTitle, slug: itemSlug } : null;
   })
