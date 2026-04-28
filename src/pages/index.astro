@@ -625,8 +625,8 @@ const getRecipeTimeLabelFixed = (article: any): string => {
 const buildRecipeFromArticle = (
   article: any,
   index: number,
-  categoryLookup: Map<string, string>,
-  tagLookup: Map<string, string>,
+  categoryLookup: Map<string, string> = new Map<string, string>(),
+  tagLookup: Map<string, string> = new Map<string, string>(),
 ) => {
   const title = getTitle(article);
   const slug = getSlug(article);
@@ -674,9 +674,11 @@ const frArticles = Array.isArray(allArticles)
   ? allArticles.filter((article: any) => String(article?.lang || 'fr').toLowerCase() === 'fr')
   : [];
 const homepageArticles = frArticles.length > 0 ? frArticles : allArticles;
+const categoryLookup = new Map<string, string>();
+const tagLookup = new Map<string, string>();
 const normalizedArticles = Array.isArray(homepageArticles)
   ? homepageArticles
-      .map(buildRecipeFromArticle)
+      .map((article: any, index: number) => buildRecipeFromArticle(article, index, categoryLookup, tagLookup))
       .filter((recipe): recipe is NonNullable<ReturnType<typeof buildRecipeFromArticle>> => Boolean(recipe))
       .sort((a: any, b: any) => {
         const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
