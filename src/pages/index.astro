@@ -10,6 +10,7 @@ import HeroCarousel from '../components/organisms/HeroCarousel.astro';
 import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
+import GoogleReviews from '../components/organisms/GoogleReviews.astro';
 import MediavineSlot from '../components/MediavineSlot.astro';
 import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
 import { loadFeaturedCourses, loadVideoCourses } from '../lib/videoCourses';
@@ -1126,6 +1127,12 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
             visibleCount={SUGGESTED_VISIBLE_PAGE_SIZE}
             totalCount={suggestedRecipesPool.length}
           />
+          <div class="home-main-block">
+            <GoogleReviews
+              title="Avis Google"
+              subtitle="Quelques retours recents sur les cours de l'atelier."
+            />
+          </div>
         </div>
         <div class="home-sidebar-mobile">
           <RecipeSidebar variant="popular" mobileVisible={true} />

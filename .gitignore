@@ -32,6 +32,7 @@ Front.pub
 
 # Local backup exports and temporary dumps
 tmp/
+.tmp/
 
 # Local generated exports (keep markdown local, not committed)
 chat-exports/
@@ -102,3 +103,17 @@ scripts/audit-articles-images.js
 scripts/audit-articles-images.txt
 scripts/import-all-wp-images-to-spaces.mjs
 scripts/remediate-spaces-images.mjs
+
+
+node_modules
+package.json
+package-lock.json
+pnpm-lock.yaml
+bun.lock
+yarn.lock
+.gitignore
+.tmp
+tmp
+.kilo
+.kilo/*
+!.kilo/.gitignore
