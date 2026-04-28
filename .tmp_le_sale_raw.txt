@@ -1,0 +1,293 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StaticPage from "../components/StaticPage.astro";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
+import { repairDeepStrings } from "../utils/repairMojibake";
+
+type RecipeBlock = {
+  preparationTimeMinutes?: number | string;
+  difficulty?: string;
+};
+
+type PreparedArticle = {
+  slug?: string;
+  title?: string;
+  recipeBlocks?: RecipeBlock[];
+  recipe?: {
+    prepTime?: string | number;
+    prepTimeFormat?: string;
+    difficulty?: string;
+  };
+  prep_time?: string | number;
+  prepTime?: string | number;
+  preparationTimeMinutes?: string | number;
+  difficulty?: string;
+};
+
+const navLinks = [
+  {
+    label: "Index des recettes salées avec photo",
+    description: "Version illustrée, plus visuelle pour parcourir les recettes.",
+    href: "/recettes-salees/",
+  },
+  {
+    label: "Index des recettes salées sans photo",
+    description: "Version compacte, plus rapide à scanner par titre.",
+    active: true,
+  },
+];
+
+const sourcePath = path.resolve(process.cwd(), "src", "content", "static-pages", "le-sale.html");
+const preparedPath = path.resolve(process.cwd(), "prepared-articles.json");
+
+const sourceHtml = fs.existsSync(sourcePath) ? fs.readFileSync(sourcePath, "utf8") : "";
+const preparedRaw = fs.existsSync(preparedPath) ? fs.readFileSync(preparedPath, "utf8") : "[]";
+const preparedArticles = repairDeepStrings(JSON.parse(preparedRaw)) as PreparedArticle[];
+
+const normalizeHrefToSlug = (href: string): string => {
+  const clean = String(href || "").trim();
+  if (!clean) return "";
+
+  try {
+    const url = clean.startsWith("http")
+      ? new URL(clean)
+      : new URL(clean, "https://lacuisinedebernard.com");
+    return decodeURIComponent(url.pathname).replace(/^\/+|\/+$/g, "");
+  } catch {
+    return decodeURIComponent(clean).replace(/^\/+|\/+$/g, "");
+  }
+};
+
+const stripTags = (value: string): string =>
+  decodeHtmlEntities(
+    String(value || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
+
+const sourceEntries = Array.from(
+  sourceHtml.matchAll(
+    /<div class="mag-post-box hentry(?: first-post)?">[\s\S]*?<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
+  ),
+).map((match) => ({
+  slug: normalizeHrefToSlug(match[1] || ""),
+  fallbackTitle: stripTags(match[2] || ""),
+}));
+
+const articleMap = new Map(
+  preparedArticles
+    .filter((article) => typeof article?.slug === "string" && article.slug.trim())
+    .map((article) => [String(article.slug).trim(), article]),
+);
+
+const getPrimaryRecipeBlock = (article: PreparedArticle | undefined): RecipeBlock | null => {
+  if (!article || !Array.isArray(article.recipeBlocks)) return null;
+  return (article.recipeBlocks.find((block) => block && typeof block === "object") as RecipeBlock) || null;
+};
+
+const formatPreparation = (article: PreparedArticle | undefined): string => {
+  if (!article) return "—";
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const raw =
+    recipeBlock?.preparationTimeMinutes ??
+    article.recipe?.prepTime ??
+    article.prep_time ??
+    article.prepTime ??
+    article.preparationTimeMinutes;
+
+  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
+    return `${Math.round(raw)} min`;
+  }
+
+  const value = String(raw ?? "").trim();
+  if (!value) return "—";
+  if (/[0-9].*(min|h)/i.test(value)) return value;
+
+  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
+  if (suffix) return `${value} ${suffix}`.trim();
+  if (/^\d+([.,]\d+)?$/.test(value)) return `${value} min`;
+  return value;
+};
+
+const formatDifficulty = (article: PreparedArticle | undefined): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const raw = String(
+    recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "",
+  )
+    .trim()
+    .toLowerCase();
+
+  switch (raw) {
+    case "easy":
+    case "facile":
+      return "Facile";
+    case "medium":
+    case "moyen":
+    case "moyenne":
+      return "Moyen";
+    case "hard":
+    case "difficult":
+    case "difficile":
+      return "Difficile";
+    default:
+      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "—";
+  }
+};
+
+const seenSlugs = new Set<string>();
+const rows = sourceEntries
+  .filter((entry) => entry.slug && !seenSlugs.has(entry.slug))
+  .map((entry) => {
+    seenSlugs.add(entry.slug);
+    const article = articleMap.get(entry.slug);
+    return {
+      slug: entry.slug,
+      href: `/${entry.slug}`,
+      title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
+      preparation: formatPreparation(article),
+      difficulty: formatDifficulty(article),
+    };
+  });
+---
+
+<BaseLayout title="Le salé">
+  <StaticPage
+    title="Le salé"
+    subtitle="Index des recettes salées sans photo."
+    className="menu-page menu-page--recipe-table menu-page--le-sale"
+    navLinks={navLinks}
+  >
+    <div class="menu-table" role="table" aria-label="Index des recettes salées">
+      <div class="menu-table-head" role="rowgroup">
+        <div class="menu-table-row menu-table-row--head" role="row">
+          <span class="menu-table-cell menu-table-cell--recipe" role="columnheader">Recette</span>
+          <span class="menu-table-cell menu-table-cell--prep" role="columnheader">Préparation</span>
+          <span class="menu-table-cell menu-table-cell--difficulty" role="columnheader">Difficulté</span>
+        </div>
+      </div>
+
+      <div class="menu-table-body" role="rowgroup">
+        {rows.map((row) => (
+          <a class="menu-table-row menu-table-row--item" role="row" href={row.href}>
+            <span class="menu-table-cell menu-table-cell--recipe" role="cell">{row.title}</span>
+            <span class="menu-table-cell menu-table-cell--prep" role="cell">{row.preparation}</span>
+            <span class="menu-table-cell menu-table-cell--difficulty" role="cell">{row.difficulty}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </StaticPage>
+</BaseLayout>
+
+<style is:global>
+  .menu-page--recipe-table .static-page-body {
+    padding: clamp(18px, 2.6vw, 30px);
+  }
+
+  .menu-page--recipe-table .menu-table {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .menu-page--recipe-table .menu-table-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2.5fr) minmax(120px, 0.9fr) minmax(120px, 0.9fr);
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .menu-page--recipe-table .menu-table-row--head {
+    padding: 0 1rem 0.45rem;
+    border-bottom: 1px solid rgba(26, 35, 53, 0.12);
+    color: #6b7280;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menu-page--recipe-table .menu-table-row--item {
+    padding: 0.95rem 1rem;
+    border: 1px solid #d8d2c2;
+    border-radius: 14px;
+    background: #faf8f2;
+    color: #1a2335;
+    text-decoration: none;
+    box-shadow: 0 10px 24px rgba(14, 24, 39, 0.05);
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .menu-page--recipe-table .menu-table-row--item:hover {
+    transform: translateY(-1px);
+    border-color: #2ec4b6;
+    background: rgba(46, 196, 182, 0.04);
+    box-shadow: 0 16px 30px rgba(14, 24, 39, 0.08);
+  }
+
+  .menu-page--recipe-table .menu-table-cell {
+    min-width: 0;
+  }
+
+  .menu-page--recipe-table .menu-table-cell--recipe {
+    font-family: var(--font-maison);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .menu-page--recipe-table .menu-table-cell--prep,
+  .menu-page--recipe-table .menu-table-cell--difficulty {
+    color: #4b5563;
+    font-size: 0.94rem;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 900px) {
+    .menu-page--recipe-table .menu-table-row {
+      grid-template-columns: minmax(0, 1.8fr) minmax(100px, 0.9fr) minmax(100px, 0.9fr);
+      gap: 0.75rem;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .menu-page--recipe-table .menu-table-row--head {
+      display: none;
+    }
+
+    .menu-page--recipe-table .menu-table-row--item {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.55rem;
+      padding: 1rem;
+    }
+
+    .menu-page--recipe-table .menu-table-cell {
+      display: grid;
+      gap: 0.18rem;
+    }
+
+    .menu-page--recipe-table .menu-table-cell--prep::before,
+    .menu-page--recipe-table .menu-table-cell--difficulty::before {
+      color: #6b7280;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .menu-page--recipe-table .menu-table-cell--prep::before {
+      content: "Préparation";
+    }
+
+    .menu-page--recipe-table .menu-table-cell--difficulty::before {
+      content: "Difficulté";
+    }
+  }
+</style>
+

@@ -12,7 +12,7 @@ import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import GoogleReviews from '../components/organisms/GoogleReviews.astro';
 import MediavineSlot from '../components/MediavineSlot.astro';
-import { getAllArticlesFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
+import { getAllArticlesFromMongo, getAllCategoriesFromMongo, getAllTagsFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
 import { loadFeaturedCourses, loadVideoCourses } from '../lib/videoCourses';
 import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
@@ -43,8 +43,8 @@ const fallbackHeroCards = [
 
 const recipeFilters = [
   { label: 'Toutes les recettes', value: 'toutes' },
-  { label: 'Recettes sucr�es', value: 'sucrees' },
-  { label: 'Recettes sal�es', value: 'salees' },
+  { label: 'Recettes sucrées', value: 'sucrees' },
+  { label: 'Recettes salées', value: 'salees' },
 ];
 
 const fallbackRecipes = [
@@ -462,13 +462,22 @@ const extractLabels = (value: any): string[] => {
   return [];
 };
 
+const isRelationshipId = (value: string): boolean =>
+  /^[0-9a-f]{24}$/i.test(String(value).trim()) || /^\d+$/.test(String(value).trim());
+
+const normalizeTaxonomyLookupKey = (value: any): string => String(value ?? '').trim();
+
 const getPrimaryRecipeBlock = (article: any) => {
   const blocks = Array.isArray(article?.recipeBlocks) ? article.recipeBlocks : [];
   if (blocks.length === 0) return null;
   return blocks.find((block: any) => block?.blockType === 'recipeCard') || blocks[0];
 };
 
-const getCategoryLabel = (article: any): string => {
+const getCategoryLabel = (
+  article: any,
+  categoryLookup: Map<string, string>,
+  tagLookup: Map<string, string>,
+): string => {
   const recipeBlock = getPrimaryRecipeBlock(article);
   const labels = [
     ...extractLabels(recipeBlock?.recipeType),
@@ -478,7 +487,16 @@ const getCategoryLabel = (article: any): string => {
     ...extractLabels(article?.tags),
   ].filter(Boolean);
 
-  const candidate = labels.find((label) => !/^[0-9a-f]{24}$/i.test(label));
+  const resolvedLabels = labels
+    .map((label) => {
+      if (!isRelationshipId(label)) return label;
+      return categoryLookup.get(normalizeTaxonomyLookupKey(label))
+        || tagLookup.get(normalizeTaxonomyLookupKey(label))
+        || '';
+    })
+    .filter(Boolean);
+
+  const candidate = resolvedLabels.find((label) => !isRelationshipId(label));
   return candidate || '';
 };
 
@@ -557,19 +575,70 @@ const getRecipeTimeLabel = (article: any): string => {
   });
 };
 
-const buildRecipeFromArticle = (article: any, index: number) => {
+const getRecipeTagLabelFixed = (categoryLabel: string, filterKeyHint = ''): string => {
+  const filterKey = filterKeyHint || getFilterKey(categoryLabel);
+  if (filterKey === 'sucrees') return 'SUCRE';
+  if (filterKey === 'salees') return 'SALE';
+
+  const fallback = normalizeToken(categoryLabel);
+  if (!fallback) return 'ARTICLE';
+  if (fallback.includes('atelier')) return 'ATELIERS';
+  if (fallback.includes('voyage')) return 'VOYAGES';
+  if (fallback.includes('reportage')) return 'REPORTAGES';
+  if (fallback.includes('selection')) return 'SELECTIONS';
+  if (fallback.includes('video')) return 'VIDEOS';
+
+  return String(categoryLabel).trim().toUpperCase() || 'ARTICLE';
+};
+
+const getRecipeTimeLabelFixed = (article: any): string => {
+  const recipeBlock = getPrimaryRecipeBlock(article);
+  const prepTimeRaw =
+    recipeBlock?.preparationTimeMinutes ??
+    article?.recipe?.prepTime ??
+    article?.prepTime ??
+    article?.preparationTimeMinutes ??
+    article?.preparationTime;
+  const prepTimeFormat = String(article?.recipe?.prepTimeFormat || '').trim();
+  const prepTimeLabel = String(prepTimeRaw ?? '').trim();
+
+  if (prepTimeLabel) {
+    if (/^\d+([.,]\d+)?$/.test(prepTimeLabel)) return `${prepTimeLabel} MIN`;
+    if (prepTimeFormat) return `${prepTimeLabel} ${prepTimeFormat}`.trim().toUpperCase();
+    if (/[0-9].*(min|h)/i.test(prepTimeLabel)) return prepTimeLabel.toUpperCase();
+  }
+
+  const contentText = stripHtml(toText(article?.content) || toText(article?.excerpt) || '');
+  const wordCount = contentText
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean).length;
+
+  if (wordCount > 0) {
+    return `${Math.max(1, Math.round(wordCount / 200))} MIN`;
+  }
+
+  return '--';
+};
+
+const buildRecipeFromArticle = (
+  article: any,
+  index: number,
+  categoryLookup: Map<string, string>,
+  tagLookup: Map<string, string>,
+) => {
   const title = getTitle(article);
   const slug = getSlug(article);
   if (!title || !slug) return null;
 
-  const categoryLabel = getCategoryLabel(article);
+  const categoryLabel = getCategoryLabel(article, categoryLookup, tagLookup);
   const description = getDescription(article);
   const filterKey = getFilterKey([categoryLabel, title, description].join(' '));
   if (filterKey === 'toutes') return null;
   const fallbackImage = processArticleImageUrl(article) || fallbackImages[index % fallbackImages.length];
   const image = buildWpPortraitVariantUrl(fallbackImage) || fallbackImage;
-  const tagLabel = getRecipeTagLabel(categoryLabel, filterKey);
-  const timeLabel = getRecipeTimeLabel(article);
+  const tagLabel = getRecipeTagLabelFixed(categoryLabel, filterKey);
+  const timeLabel = getRecipeTimeLabelFixed(article);
 
   return {
     id: article?._id?.toString?.() || article?.id?.toString?.() || `${index + 1}`,
@@ -607,13 +676,31 @@ let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
 if (!Array.isArray(allArticles) || allArticles.length === 0) {
   allArticles = await getAllArticlesFromMongo();
 }
+const allCategories = await getAllCategoriesFromMongo();
+const allTags = await getAllTagsFromMongo();
+const categoryLookup = new Map(
+  (Array.isArray(allCategories) ? allCategories : [])
+    .map((item: any) => [
+      normalizeTaxonomyLookupKey(item?._id || item?.id || item?.slug),
+      String(item?.title || item?.name || item?.label || '').trim(),
+    ])
+    .filter((entry) => entry[0] && entry[1]),
+);
+const tagLookup = new Map(
+  (Array.isArray(allTags) ? allTags : [])
+    .map((item: any) => [
+      normalizeTaxonomyLookupKey(item?._id || item?.id || item?.slug),
+      String(item?.title || item?.name || item?.label || '').trim(),
+    ])
+    .filter((entry) => entry[0] && entry[1]),
+);
 const frArticles = Array.isArray(allArticles)
   ? allArticles.filter((article: any) => String(article?.lang || 'fr').toLowerCase() === 'fr')
   : [];
 const homepageArticles = frArticles.length > 0 ? frArticles : allArticles;
 const normalizedArticles = Array.isArray(homepageArticles)
   ? homepageArticles
-      .map(buildRecipeFromArticle)
+      .map((article: any, index: number) => buildRecipeFromArticle(article, index, categoryLookup, tagLookup))
       .filter((recipe): recipe is NonNullable<ReturnType<typeof buildRecipeFromArticle>> => Boolean(recipe))
       .sort((a: any, b: any) => {
         const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
