@@ -2,8 +2,6 @@
 import { getAllArticlesFromMongo } from "../lib/mongo.server";
 import { processArticleImageUrl, replaceCdnUrl } from "../utils/cdnUrlReplacer";
 import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
-import fs from "node:fs";
-import path from "node:path";
 
 interface ReportageCard {
   slug: string;
@@ -97,18 +95,6 @@ const isReportageArticle = (article: Record<string, unknown>): boolean => {
 };
 
 const getSourceArticles = async (): Promise<Record<string, unknown>[]> => {
-  if (process.env.USE_LOCAL_JSON === "1") {
-    try {
-      const preparedPath = path.join(process.cwd(), "prepared-articles.json");
-      const raw = fs.readFileSync(preparedPath, "utf8");
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed.filter((item) => !item?._status || item._status === "published");
-      }
-    } catch (error) {
-      console.error("[reportages] Failed to read prepared-articles.json, fallback to Mongo:", error);
-    }
-  }
   const mongoArticles = await getAllArticlesFromMongo();
   return Array.isArray(mongoArticles) ? (mongoArticles as Record<string, unknown>[]) : [];
 };

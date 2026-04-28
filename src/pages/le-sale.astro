@@ -1,29 +1,13 @@
 ---
-import fs from "node:fs";
-import path from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
-import { repairDeepStrings } from "../utils/repairMojibake";
+import { getRecipeFeedBatch } from "../lib/recipeFeed.server";
 
-type RecipeBlock = {
-  preparationTimeMinutes?: number | string;
-  difficulty?: string;
-};
-
-type PreparedArticle = {
-  slug?: string;
-  title?: string;
-  recipeBlocks?: RecipeBlock[];
-  recipe?: {
-    prepTime?: string | number;
-    prepTimeFormat?: string;
-    difficulty?: string;
-  };
-  prep_time?: string | number;
-  prepTime?: string | number;
-  preparationTimeMinutes?: string | number;
-  difficulty?: string;
+const normalizeLanguageCode = (value: unknown): "fr" | "en" | "es" | "pt-br" | "ar" => {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "pt" || raw === "pt_br" || raw === "ptbr" || raw === "pt-pt") return "pt-br";
+  if (raw === "en" || raw === "es" || raw === "pt-br" || raw === "ar") return raw;
+  return "fr";
 };
 
 const navLinks = [
@@ -39,118 +23,16 @@ const navLinks = [
   },
 ];
 
-const sourcePath = path.resolve(process.cwd(), "src", "content", "static-pages", "le-sale.html");
-const preparedPath = path.resolve(process.cwd(), "prepared-articles.json");
-
-const sourceHtml = fs.existsSync(sourcePath) ? fs.readFileSync(sourcePath, "utf8") : "";
-const preparedRaw = fs.existsSync(preparedPath) ? fs.readFileSync(preparedPath, "utf8") : "[]";
-const preparedArticles = repairDeepStrings(JSON.parse(preparedRaw)) as PreparedArticle[];
-
-const normalizeHrefToSlug = (href: string): string => {
-  const clean = String(href || "").trim();
-  if (!clean) return "";
-
-  try {
-    const url = clean.startsWith("http")
-      ? new URL(clean)
-      : new URL(clean, "https://lacuisinedebernard.com");
-    return decodeURIComponent(url.pathname).replace(/^\/+|\/+$/g, "");
-  } catch {
-    return decodeURIComponent(clean).replace(/^\/+|\/+$/g, "");
-  }
-};
-
-const stripTags = (value: string): string =>
-  decodeHtmlEntities(
-    String(value || "")
-      .replace(/<[^>]*>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim(),
-  );
-
-const sourceEntries = Array.from(
-  sourceHtml.matchAll(
-    /<div class="mag-post-box hentry(?: first-post)?">[\s\S]*?<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
-  ),
-).map((match) => ({
-  slug: normalizeHrefToSlug(match[1] || ""),
-  fallbackTitle: stripTags(match[2] || ""),
+const preferredLanguage = normalizeLanguageCode(Astro.cookies.get("lcdb_lang")?.value || "fr");
+const INITIAL_SIZE = 20;
+const initial = await getRecipeFeedBatch("salees", 1, INITIAL_SIZE, preferredLanguage);
+const rows = initial.cards.map((card) => ({
+  href: card.href,
+  title: card.title,
+  preparation: card.prepTime || "—",
+  difficulty: card.difficulty || "—",
 }));
 
-const articleMap = new Map(
-  preparedArticles
-    .filter((article) => typeof article?.slug === "string" && article.slug.trim())
-    .map((article) => [String(article.slug).trim(), article]),
-);
-
-const getPrimaryRecipeBlock = (article: PreparedArticle | undefined): RecipeBlock | null => {
-  if (!article || !Array.isArray(article.recipeBlocks)) return null;
-  return (article.recipeBlocks.find((block) => block && typeof block === "object") as RecipeBlock) || null;
-};
-
-const formatPreparation = (article: PreparedArticle | undefined): string => {
-  if (!article) return "—";
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const raw =
-    recipeBlock?.preparationTimeMinutes ??
-    article.recipe?.prepTime ??
-    article.prep_time ??
-    article.prepTime ??
-    article.preparationTimeMinutes;
-
-  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
-    return `${Math.round(raw)} min`;
-  }
-
-  const value = String(raw ?? "").trim();
-  if (!value) return "—";
-  if (/[0-9].*(min|h)/i.test(value)) return value;
-
-  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
-  if (suffix) return `${value} ${suffix}`.trim();
-  if (/^\d+([.,]\d+)?$/.test(value)) return `${value} min`;
-  return value;
-};
-
-const formatDifficulty = (article: PreparedArticle | undefined): string => {
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const raw = String(
-    recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "",
-  )
-    .trim()
-    .toLowerCase();
-
-  switch (raw) {
-    case "easy":
-    case "facile":
-      return "Facile";
-    case "medium":
-    case "moyen":
-    case "moyenne":
-      return "Moyen";
-    case "hard":
-    case "difficult":
-    case "difficile":
-      return "Difficile";
-    default:
-      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "—";
-  }
-};
-
-const seenSlugs = new Set<string>();
-const rows = sourceEntries
-  .filter((entry) => entry.slug && !seenSlugs.has(entry.slug))
-  .map((entry) => {
-    seenSlugs.add(entry.slug);
-    const article = articleMap.get(entry.slug);
-    return {
-      slug: entry.slug,
-      href: `/${entry.slug}`,
-      title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
-      preparation: formatPreparation(article),
-      difficulty: formatDifficulty(article),
-    };
-  });
 ---
 
 <BaseLayout title="Le salé">
@@ -171,16 +53,92 @@ const rows = sourceEntries
 
       <div class="menu-table-body" role="rowgroup">
         {rows.map((row) => (
-          <a class="menu-table-row menu-table-row--item" role="row" href={row.href}>
+          <a class="menu-table-row menu-table-row--item lcdb-archive-recipe-card" role="row" href={row.href}>
             <span class="menu-table-cell menu-table-cell--recipe" role="cell">{row.title}</span>
             <span class="menu-table-cell menu-table-cell--prep" role="cell">{row.preparation}</span>
             <span class="menu-table-cell menu-table-cell--difficulty" role="cell">{row.difficulty}</span>
           </a>
         ))}
       </div>
+      <div class="infinite-grid-sentinel" id="le-sale-sentinel" aria-hidden="true"></div>
+      <p class="infinite-grid-loading hidden" id="le-sale-loading" aria-live="polite">
+        <span class="infinite-grid-spinner" aria-hidden="true"></span>
+        <span>Chargement des recettes...</span>
+      </p>
     </div>
   </StaticPage>
 </BaseLayout>
+
+<script define:vars={{ nextPage: initial.nextPage, preferredLanguage }}>
+  (() => {
+    const body = document.querySelector('.menu-page--le-sale .menu-table-body');
+    const sentinel = document.getElementById('le-sale-sentinel');
+    const loading = document.getElementById('le-sale-loading');
+    if (!(body instanceof HTMLElement) || !(sentinel instanceof HTMLElement)) return;
+
+    let page = Number(nextPage || 0);
+    let busy = false;
+    let hasMore = Number.isFinite(page) && page > 0;
+    const size = 20;
+    const lang = String(preferredLanguage || 'fr');
+
+    const escapeHtml = (value) =>
+      String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const appendRows = (cards) => {
+      cards.forEach((card) => {
+        const href = escapeHtml(card?.href || '#');
+        const title = escapeHtml(card?.title || 'Recette');
+        const prep = escapeHtml(card?.prepTime || '—');
+        const difficulty = escapeHtml(card?.difficulty || '—');
+        body.insertAdjacentHTML(
+          'beforeend',
+          `<a class="menu-table-row menu-table-row--item lcdb-archive-recipe-card" role="row" href="${href}">
+            <span class="menu-table-cell menu-table-cell--recipe" role="cell">${title}</span>
+            <span class="menu-table-cell menu-table-cell--prep" role="cell">${prep}</span>
+            <span class="menu-table-cell menu-table-cell--difficulty" role="cell">${difficulty}</span>
+          </a>`,
+        );
+      });
+    };
+
+    const loadNext = async () => {
+      if (!hasMore || busy || !page) return;
+      busy = true;
+      loading?.classList.remove('hidden');
+      try {
+        const url = new URL('/api/recipe-feed.json', window.location.origin);
+        url.searchParams.set('type', 'salees');
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('size', String(size));
+        url.searchParams.set('lang', lang);
+        const res = await fetch(url.toString(), { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const cards = Array.isArray(data?.cards) ? data.cards : [];
+        appendRows(cards);
+        page = Number(data?.nextPage || 0);
+        hasMore = Boolean(data?.hasMore) && page > 0;
+      } finally {
+        busy = false;
+        loading?.classList.toggle('hidden', !hasMore);
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) void loadNext();
+      });
+    }, { rootMargin: '0px 0px 320px 0px' });
+
+    observer.observe(sentinel);
+  })();
+</script>
 
 <style is:global>
   .menu-page--recipe-table .static-page-body {

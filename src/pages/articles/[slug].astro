@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { payloadFetch } from '../../lib/payload.client';
-import { getAllArticlesFromMongo, getArticleBySlugFromMongo, shouldUseLocalJson } from '../../lib/mongo.server';
+import { getAllArticlesFromMongo, getArticleBySlugFromMongo } from '../../lib/mongo.server';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 import { renderArticleContent } from '../../utils/renderArticleContent';
 import { sanitizeTrustedHtml } from '../../utils/trustedHtml';
@@ -60,7 +60,8 @@ interface PageTaxonomyItem {
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+  const safeEnvLimit = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 120;
+  return Math.min(safeEnvLimit, 120);
 };
 
 const stripHtml = (value: string) =>
@@ -119,7 +120,7 @@ Astro.response.headers.set(
 );
 
 const slug = normalizeSlug(typeof article?.slug === 'string' ? article.slug : article?.slug?.current);
-if (slug && !processArticleImageUrl(article) && !shouldUseLocalJson()) {
+if (slug && !processArticleImageUrl(article)) {
   
   const hydratedArticle = await getArticleBySlugFromMongo(slug);
   if (hydratedArticle) {
@@ -202,7 +203,7 @@ let relatedArticlesRaw: ArticleEntry[] = await relatedArticlesSource;
 if (!relatedArticlesRaw || relatedArticlesRaw.length === 0) {
   const fallback = await payloadFetch<ArticleEntry>({
     collection: 'articles',
-    query: { depth: 2, limit: getBuildLimit() },
+    query: { depth: 0, limit: getBuildLimit() },
   });
   relatedArticlesRaw = fallback;
 }

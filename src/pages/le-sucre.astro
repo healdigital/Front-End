@@ -1,13 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
-import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
-import { getPreparedArchiveArticles, getStaticArchiveEntries, type PreparedArchiveArticle } from "../lib/staticArchiveData";
+import { getRecipeFeedBatch } from "../lib/recipeFeed.server";
 
-type RecipeBlock = {
-  preparationTimeMinutes?: number | string;
-  cookingTimeMinutes?: number | string;
-  difficulty?: string;
+const normalizeLanguageCode = (value: unknown): "fr" | "en" | "es" | "pt-br" | "ar" => {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "pt" || raw === "pt_br" || raw === "ptbr" || raw === "pt-pt") return "pt-br";
+  if (raw === "en" || raw === "es" || raw === "pt-br" || raw === "ar") return raw;
+  return "fr";
 };
 
 const navLinks = [
@@ -23,80 +23,16 @@ const navLinks = [
   },
 ];
 
-const getPrimaryRecipeBlock = (article: PreparedArchiveArticle | undefined): RecipeBlock | null => {
-  if (!article || !Array.isArray(article.recipeBlocks)) return null;
-  return (article.recipeBlocks.find((block) => block && typeof block === "object") as RecipeBlock) || null;
-};
+const preferredLanguage = normalizeLanguageCode(Astro.cookies.get("lcdb_lang")?.value || "fr");
+const INITIAL_SIZE = 20;
+const initial = await getRecipeFeedBatch("sucrees", 1, INITIAL_SIZE, preferredLanguage);
+const rows = initial.cards.map((card) => ({
+  href: card.href,
+  title: card.title,
+  preparation: card.prepTime || "—",
+  difficulty: card.difficulty || "—",
+}));
 
-const formatDuration = (minutes: number): string => {
-  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
-  const whole = Math.round(minutes);
-  if (whole >= 60) {
-    const hours = Math.floor(whole / 60);
-    const mins = whole % 60;
-    return mins > 0 ? `${hours}h${String(mins).padStart(2, "0")}` : `${hours}h`;
-  }
-  return `${whole} min`;
-};
-
-const formatPreparation = (article: PreparedArchiveArticle | undefined): string => {
-  if (!article) return "—";
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
-  const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
-
-  if (Number.isFinite(prep) && prep > 0) {
-    const total = prep + (Number.isFinite(cook) && cook > 0 ? cook : 0);
-    return formatDuration(total || prep);
-  }
-
-  const raw = String(article.recipe?.prepTime ?? article.prepTime ?? article.prep_time ?? "").trim();
-  if (!raw) return "—";
-  if (/[0-9].*(min|h)/i.test(raw)) return raw.toLowerCase();
-  if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
-  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
-  return suffix ? `${raw} ${suffix}`.trim() : raw;
-};
-
-const formatDifficulty = (article: PreparedArchiveArticle | undefined): string => {
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const raw = String(recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "")
-    .trim()
-    .toLowerCase();
-
-  switch (raw) {
-    case "easy":
-    case "facile":
-      return "Facile";
-    case "medium":
-    case "moyen":
-    case "moyenne":
-      return "Moyen";
-    case "hard":
-    case "difficult":
-    case "difficile":
-      return "Difficile";
-    default:
-      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "—";
-  }
-};
-
-const sourceEntries = getStaticArchiveEntries("le-sucre");
-const articleMap = new Map(
-  getPreparedArchiveArticles()
-    .filter((article) => typeof article?.slug === "string" && article.slug.trim())
-    .map((article) => [String(article.slug).trim(), article]),
-);
-
-const rows = sourceEntries.map((entry) => {
-  const article = articleMap.get(entry.slug);
-  return {
-    href: entry.href,
-    title: decodeHtmlEntities(String(article?.title || entry.fallbackTitle || entry.slug)),
-    preparation: formatPreparation(article),
-    difficulty: formatDifficulty(article),
-  };
-});
 ---
 
 <BaseLayout title="Le sucré">
@@ -117,16 +53,92 @@ const rows = sourceEntries.map((entry) => {
 
       <div class="menu-table-body" role="rowgroup">
         {rows.map((row) => (
-          <a class="menu-table-row menu-table-row--item" role="row" href={row.href}>
+          <a class="menu-table-row menu-table-row--item lcdb-archive-recipe-card" role="row" href={row.href}>
             <span class="menu-table-cell menu-table-cell--recipe" role="cell">{row.title}</span>
             <span class="menu-table-cell menu-table-cell--prep" role="cell">{row.preparation}</span>
             <span class="menu-table-cell menu-table-cell--difficulty" role="cell">{row.difficulty}</span>
           </a>
         ))}
       </div>
+      <div class="infinite-grid-sentinel" id="le-sucre-sentinel" aria-hidden="true"></div>
+      <p class="infinite-grid-loading hidden" id="le-sucre-loading" aria-live="polite">
+        <span class="infinite-grid-spinner" aria-hidden="true"></span>
+        <span>Chargement des recettes...</span>
+      </p>
     </div>
   </StaticPage>
 </BaseLayout>
+
+<script define:vars={{ nextPage: initial.nextPage, preferredLanguage }}>
+  (() => {
+    const body = document.querySelector('.menu-page--le-sucre .menu-table-body');
+    const sentinel = document.getElementById('le-sucre-sentinel');
+    const loading = document.getElementById('le-sucre-loading');
+    if (!(body instanceof HTMLElement) || !(sentinel instanceof HTMLElement)) return;
+
+    let page = Number(nextPage || 0);
+    let busy = false;
+    let hasMore = Number.isFinite(page) && page > 0;
+    const size = 20;
+    const lang = String(preferredLanguage || 'fr');
+
+    const escapeHtml = (value) =>
+      String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const appendRows = (cards) => {
+      cards.forEach((card) => {
+        const href = escapeHtml(card?.href || '#');
+        const title = escapeHtml(card?.title || 'Recette');
+        const prep = escapeHtml(card?.prepTime || '—');
+        const difficulty = escapeHtml(card?.difficulty || '—');
+        body.insertAdjacentHTML(
+          'beforeend',
+          `<a class="menu-table-row menu-table-row--item lcdb-archive-recipe-card" role="row" href="${href}">
+            <span class="menu-table-cell menu-table-cell--recipe" role="cell">${title}</span>
+            <span class="menu-table-cell menu-table-cell--prep" role="cell">${prep}</span>
+            <span class="menu-table-cell menu-table-cell--difficulty" role="cell">${difficulty}</span>
+          </a>`,
+        );
+      });
+    };
+
+    const loadNext = async () => {
+      if (!hasMore || busy || !page) return;
+      busy = true;
+      loading?.classList.remove('hidden');
+      try {
+        const url = new URL('/api/recipe-feed.json', window.location.origin);
+        url.searchParams.set('type', 'sucrees');
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('size', String(size));
+        url.searchParams.set('lang', lang);
+        const res = await fetch(url.toString(), { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const cards = Array.isArray(data?.cards) ? data.cards : [];
+        appendRows(cards);
+        page = Number(data?.nextPage || 0);
+        hasMore = Boolean(data?.hasMore) && page > 0;
+      } finally {
+        busy = false;
+        loading?.classList.toggle('hidden', !hasMore);
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) void loadNext();
+      });
+    }, { rootMargin: '0px 0px 320px 0px' });
+
+    observer.observe(sentinel);
+  })();
+</script>
 
 <style is:global>
   .menu-page--le-sucre .static-page-body {

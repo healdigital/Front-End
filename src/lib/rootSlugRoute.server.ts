@@ -19,7 +19,8 @@ export type RootSlugArticleEntry = ContentRecord & {
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+  const safeEnvLimit = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 120;
+  return Math.min(safeEnvLimit, 120);
 };
 
 export type RootSlugResolvedProps = {
@@ -215,6 +216,18 @@ export async function resolveRootSlugPageProps(rawSlugParam: string): Promise<Ro
   const requested = normalizeSlugLocal(decodeSafeSlug(String(rawSlugParam || '').trim()));
   if (!requested) return null;
 
+  // Fast path first: direct slug lookup avoids expensive full-collection scans.
+  const directFromMongo = await getArticleBySlugFromMongo(requested);
+  if (directFromMongo && typeof directFromMongo === 'object') {
+    const item = directFromMongo as RootSlugArticleEntry;
+    const slugValue = getArticleSlugValue(item);
+    return {
+      article: { ...item, slug: slugValue },
+      languageSlugMap: slugValue ? { [normalizeLanguageCode(item?.lang || item?.language || item?.locale)]: toArticlePath(slugValue) } : {},
+      fallbackRecipeArticle: item,
+    };
+  }
+
   let articles: RootSlugArticleEntry[] = [];
   try {
     articles = await getAllArticlesFromMongo();
@@ -226,7 +239,7 @@ export async function resolveRootSlugPageProps(rawSlugParam: string): Promise<Ro
     try {
       const payloadResponse = await payloadFetch<RootSlugArticleEntry>({
         collection: 'articles',
-        query: { depth: 2, limit: getBuildLimit() },
+        query: { depth: 0, limit: getBuildLimit() },
       });
       articles = payloadResponse;
     } catch (error) {
@@ -295,6 +308,16 @@ export async function resolveRootSlugPageProps(rawSlugParam: string): Promise<Ro
   const direct = articles.find((item) => getArticleSlugValue(item) === requested);
   if (direct) {
     return pickPropsForItem(direct);
+  }
+
+  // Legacy fallback: some records keep language-prefixed recipe slugs.
+  const requestedCore = getCoreSlug(requested);
+  const byCore = articles.find((item) => {
+    const slug = getArticleSlugValue(item);
+    return slug && getCoreSlug(slug) === requestedCore;
+  });
+  if (byCore) {
+    return pickPropsForItem(byCore);
   }
 
   const fromMongo = await getArticleBySlugFromMongo(requested);

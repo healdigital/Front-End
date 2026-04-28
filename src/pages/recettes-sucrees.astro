@@ -3,13 +3,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import StaticPage from "../components/StaticPage.astro";
 import InfiniteGrid from "../components/InfiniteGrid.astro";
 import RecipeCard from "../components/organisms/RecipeCard.astro";
-import { getPreparedArchiveArticles, type PreparedArchiveArticle } from "../lib/staticArchiveData";
-import {
-  buildWordPressImageFallbackCandidates,
-  buildWpSquareVariantUrl,
-  processArticleImageUrl,
-} from "../utils/cdnUrlReplacer";
-import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
+import { getRecipeFeedBatch } from "../lib/recipeFeed.server";
+
+const normalizeLanguageCode = (value: unknown): "fr" | "en" | "es" | "pt-br" | "ar" => {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "pt" || raw === "pt_br" || raw === "ptbr" || raw === "pt-pt") return "pt-br";
+  if (raw === "en" || raw === "es" || raw === "pt-br" || raw === "ar") return raw;
+  return "fr";
+};
 
 const navLinks = [
   {
@@ -24,219 +25,9 @@ const navLinks = [
   },
 ];
 
-const stripHtml = (value: string) =>
-  String(value || "")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const toText = (value: unknown): string => {
-  if (!value) return "";
-  if (typeof value === "string") return decodeHtmlEntities(stripHtml(value));
-  if (Array.isArray(value)) return value.map((item) => toText(item)).filter(Boolean).join(" ");
-  if (typeof value === "object") {
-    const record = value as Record<string, unknown>;
-    const directCandidates = [record.rendered, record.value, record.text, record.title, record.name, record.label];
-    for (const candidate of directCandidates) {
-      const text = toText(candidate);
-      if (text) return text;
-    }
-    if (Array.isArray(record.children)) {
-      return record.children.map((child) => toText(child)).filter(Boolean).join(" ");
-    }
-  }
-  return "";
-};
-
-const getPrimaryRecipeBlock = (article: PreparedArchiveArticle | undefined) =>
-  Array.isArray(article?.recipeBlocks)
-    ? article.recipeBlocks.find((block) => block && typeof block === "object")
-    : null;
-
-const normalizeToken = (value: string): string =>
-  String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-
-const extractLabels = (value: unknown): string[] => {
-  if (!value) return [];
-  if (typeof value === "string") return [value];
-  if (Array.isArray(value)) return value.flatMap((item) => extractLabels(item));
-  if (typeof value === "object") {
-    const record = value as Record<string, unknown>;
-    return [record.name, record.title, record.slug, record.label]
-      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-  }
-  return [];
-};
-
-const getArchiveFilterKey = (article: PreparedArchiveArticle): "salees" | "sucrees" | "toutes" => {
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const recipeBlockRecord = (recipeBlock || {}) as Record<string, unknown>;
-  const articleRecord = article as Record<string, unknown>;
-  const candidateText = [
-    ...extractLabels(recipeBlockRecord.recipeType),
-    ...extractLabels(recipeBlockRecord.dishType),
-    ...extractLabels(article?.categories),
-    ...extractLabels(articleRecord.category),
-    ...extractLabels(articleRecord.tags),
-    toText(article?.title),
-    toText(article?.excerpt),
-  ].join(" ");
-
-  const normalized = normalizeToken(candidateText);
-
-  const sweetKeywords = [
-    "sucre",
-    "dessert",
-    "sweet",
-    "gateau",
-    "cake",
-    "cookie",
-    "brioche",
-    "chocolat",
-    "galette",
-    "tarte",
-    "creme",
-    "entremet",
-    "sable",
-  ];
-  const savoryKeywords = [
-    "sale",
-    "savory",
-    "savour",
-    "omelette",
-    "quiche",
-    "gratin",
-    "soupe",
-    "salade",
-    "foie gras",
-    "poulet",
-    "poisson",
-    "courge",
-    "legume",
-  ];
-
-  const sweetScore = sweetKeywords.reduce(
-    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
-    0,
-  );
-  const savoryScore = savoryKeywords.reduce(
-    (score, keyword) => score + (normalized.includes(keyword) ? 1 : 0),
-    0,
-  );
-
-  if (savoryScore > sweetScore) return "salees";
-  if (sweetScore > savoryScore) return "sucrees";
-  return "toutes";
-};
-
-const formatDuration = (minutes: number): string => {
-  if (!Number.isFinite(minutes) || minutes <= 0) return "--";
-  const whole = Math.round(minutes);
-  if (whole >= 60) {
-    const hours = Math.floor(whole / 60);
-    const mins = whole % 60;
-    return mins > 0 ? `${hours}h${String(mins).padStart(2, "0")}` : `${hours}h`;
-  }
-  return `${whole} min`;
-};
-
-const formatRecipeTime = (article: PreparedArchiveArticle | undefined): string => {
-  if (!article) return "--";
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const prep = Number(recipeBlock?.preparationTimeMinutes ?? article.preparationTimeMinutes ?? article.prepTime ?? article.prep_time);
-  const cook = Number(recipeBlock?.cookingTimeMinutes ?? 0);
-
-  if (Number.isFinite(prep) && prep > 0) {
-    const total = prep + (Number.isFinite(cook) && cook > 0 ? cook : 0);
-    return formatDuration(total || prep);
-  }
-
-  const raw = String(article.recipe?.prepTime ?? article.prepTime ?? article.prep_time ?? "").trim();
-  if (!raw) return "--";
-  if (/[0-9].*(min|h)/i.test(raw)) return raw.toLowerCase();
-  if (/^\d+([.,]\d+)?$/.test(raw)) return `${raw} min`;
-  const suffix = String(article.recipe?.prepTimeFormat || "").trim();
-  return suffix ? `${raw} ${suffix}`.trim() : raw;
-};
-
-const formatDifficulty = (article: PreparedArchiveArticle | undefined): string => {
-  const recipeBlock = getPrimaryRecipeBlock(article);
-  const raw = String(recipeBlock?.difficulty || article?.recipe?.difficulty || article?.difficulty || "")
-    .trim()
-    .toLowerCase();
-
-  switch (raw) {
-    case "easy":
-    case "facile":
-      return "Facile";
-    case "medium":
-    case "moyen":
-    case "moyenne":
-      return "Moyen";
-    case "hard":
-    case "difficult":
-    case "difficile":
-      return "Difficile";
-    default:
-      return raw ? `${raw.charAt(0).toUpperCase()}${raw.slice(1)}` : "Recette";
-  }
-};
-
-const getExcerpt = (article: PreparedArchiveArticle | undefined, fallbackTitle: string): string => {
-  const raw = toText(article?.excerpt) || toText(article?.content) || toText(article?.contentV2);
-  if (!raw) return `Decouvrez ${fallbackTitle.toLowerCase()} sur La Cuisine de Bernard.`;
-  return raw.length > 120 ? `${raw.slice(0, 120).trim()}...` : raw;
-};
-
-const preparedArticles = getPreparedArchiveArticles().filter(
-  (article) =>
-    typeof article?.slug === "string" &&
-    article.slug.trim() &&
-    String((article as Record<string, unknown>)?.lang || "fr").toLowerCase() === "fr",
-);
-
-const uniqueArticlesBySlug = new Map<string, PreparedArchiveArticle>();
-preparedArticles.forEach((article) => {
-  const slug = String(article.slug || "").trim();
-  if (!slug || uniqueArticlesBySlug.has(slug)) return;
-  uniqueArticlesBySlug.set(slug, article);
-});
-
-const cards = Array.from(uniqueArticlesBySlug.values())
-  .filter((article) => getArchiveFilterKey(article) === "sucrees")
-  .sort((a, b) => {
-    const aTime = Date.parse(String((a as Record<string, unknown>)?.publishedAt || ""));
-    const bTime = Date.parse(String((b as Record<string, unknown>)?.publishedAt || ""));
-    if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) return bTime - aTime;
-    return String(a.slug || "").localeCompare(String(b.slug || ""), "fr");
-  })
-  .map((article) => {
-    const slug = String(article.slug || "").trim();
-    const fallbackImage = processArticleImageUrl(article) || "";
-    const resolvedImage = processArticleImageUrl(article) || fallbackImage;
-    const squareImage = resolvedImage ? buildWpSquareVariantUrl(resolvedImage, 585) : "";
-    const imageFallbackCandidates = Array.from(
-      new Set([
-        ...buildWordPressImageFallbackCandidates(resolvedImage),
-        squareImage,
-      ].filter(Boolean)),
-    );
-
-    return {
-      href: `/${slug}`,
-      title: decodeHtmlEntities(String(article?.title || slug)),
-      excerpt: getExcerpt(article, slug),
-      difficulty: formatDifficulty(article),
-      time: formatRecipeTime(article),
-      image: resolvedImage || squareImage,
-      imageFallback: resolvedImage,
-      imageFallbackCandidates,
-    };
-  });
+const preferredLanguage = normalizeLanguageCode(Astro.cookies.get("lcdb_lang")?.value || "fr");
+const initial = await getRecipeFeedBatch("sucrees", 1, 12, preferredLanguage);
+const cards = initial.cards;
 ---
 
 <BaseLayout title="Recettes sucrees">
@@ -246,7 +37,15 @@ const cards = Array.from(uniqueArticlesBySlug.values())
     className="menu-page menu-page--sweet-grid"
     navLinks={navLinks}
   >
-    <InfiniteGrid gridClass="sweet-grid" ariaLabel="Recettes sucrees" totalCount={cards.length}>
+    <InfiniteGrid
+      gridClass="sweet-grid"
+      ariaLabel="Recettes sucrees"
+      totalCount={cards.length}
+      initialCount={12}
+      batchSize={12}
+      endpoint="/api/recipe-feed.json?type=sucrees"
+      nextPage={initial.nextPage}
+    >
       {cards.map((card) => (
         <RecipeCard
           title={card.title}

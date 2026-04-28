@@ -2,18 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediavineSlot from '../../components/MediavineSlot.astro';
 import Pagination from '../../components/organisms/Pagination.astro';
-import { payloadFetch } from '../../lib/payload.client';
-import { getAllArticlesFromMongo } from '../../lib/mongo.server';
+import { getArticlesCount, getArticlesPage } from '../../lib/payload.client';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 
 const lang = 'fr';
 const currentPage = 1;
 const articlesPerPage = 12;
-
-const getBuildLimit = () => {
-  const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
-};
 
 const stripHtml = (value: string) =>
   String(value || '')
@@ -73,15 +67,10 @@ const getCategories = (article: any): string[] => {
     .slice(0, 2);
 };
 
-let allArticles = await getAllArticlesFromMongo();
-
-if (!allArticles || allArticles.length === 0) {
-  const result: any = await payloadFetch({
-    collection: 'articles',
-    query: { depth: 2, limit: getBuildLimit() },
-  });
-  allArticles = result?.docs || result || [];
-}
+const [allArticles, totalArticles] = await Promise.all([
+  getArticlesPage(1, articlesPerPage),
+  getArticlesCount(),
+]);
 
 const normalizedArticles = (Array.isArray(allArticles) ? allArticles : [])
   .map((article: any) => {
@@ -104,8 +93,8 @@ const normalizedArticles = (Array.isArray(allArticles) ? allArticles : [])
     return dateB - dateA;
   });
 
-const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
-const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);
+const totalPages = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
+const paginatedArticles = normalizedArticles;
 ---
 
 <BaseLayout title="Articles" lang={lang} loadAds={true}>
@@ -114,7 +103,7 @@ const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);
       <p class="lcdb-page-eyebrow typ-caption">Archive</p>
       <h1 class="lcdb-page-title typ-h2">Articles</h1>
       <p class="lcdb-page-description typ-body">
-        Découvrez {normalizedArticles.length} articles publiés.
+        Découvrez {totalArticles} articles publiés.
       </p>
     </div>
   </section>

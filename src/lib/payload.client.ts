@@ -48,12 +48,7 @@ export async function payloadFetch<T>({
     let url = `${payloadApiUrl}/${collection}`;
     const params = new URLSearchParams();
 
-    const effectiveQuery: PayloadQuery =
-      collection === 'articles' && query._status === undefined
-        ? { ...query, _status: 'published' }
-        : query;
-
-    for (const [key, value] of Object.entries(effectiveQuery)) {
+    for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null) continue;
       if (key === 'limit' || key === 'page' || key === 'depth') {
         params.append(key, String(value));
@@ -67,7 +62,7 @@ export async function payloadFetch<T>({
 
     const res = await fetch(url, { cache });
     if (!res.ok) {
-      console.warn(`Payload API error: ${res.status} ${res.statusText} - falling back to local mongo proxy`);
+      console.warn(`Payload API error: ${res.status} ${res.statusText} - falling back to secondary API URL`);
 
       try {
         const fallbackUrl = process.env.NODE_ENV === 'development'
@@ -100,7 +95,7 @@ export async function payloadFetch<T>({
 export async function getAllArticles() {
   return payloadFetch({
     collection: 'articles',
-    query: { depth: 2 },
+    query: { depth: 0 },
   });
 }
 
@@ -110,7 +105,7 @@ export async function getAllArticles() {
 export async function getArticleBySlug(slug: string) {
   const articles = await payloadFetch({
     collection: 'articles',
-    query: { slug },
+    query: { slug, depth: 2, limit: 1 },
   });
   return articles[0] || null;
 }
@@ -121,7 +116,7 @@ export async function getArticleBySlug(slug: string) {
 export async function getArticlesByCategory(categoryId: string) {
   return payloadFetch({
     collection: 'articles',
-    query: { categories: categoryId },
+    query: { categories: categoryId, depth: 0 },
   });
 }
 
@@ -131,7 +126,7 @@ export async function getArticlesByCategory(categoryId: string) {
 export async function getArticlesByTag(tagId: string) {
   return payloadFetch({
     collection: 'articles',
-    query: { tags: tagId },
+    query: { tags: tagId, depth: 0 },
   });
 }
 
@@ -152,8 +147,7 @@ export async function getArticlesCount(): Promise<number> {
   try {
     const params = new URLSearchParams({
       limit: '1',
-      depth: '2',
-      'where[_status][equals]': 'published',
+      depth: '0',
     });
     const url = `${payloadApiUrl}/articles?${params.toString()}`;
     const res = await fetch(url);
@@ -177,8 +171,7 @@ export async function getArticlesPage(page = 1, limit = 10) {
     const params = new URLSearchParams({
       limit: String(limit),
       page: String(page),
-      depth: '2',
-      'where[_status][equals]': 'published',
+      depth: '0',
     });
     const url = `${payloadApiUrl}/articles?${params.toString()}`;
     const res = await fetch(url);

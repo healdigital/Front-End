@@ -10,8 +10,8 @@ const siteUrl = isDev
 export default defineConfig({
   site: siteUrl,
 
-  // Adapter enables on-demand routes (`export const prerender = false`) while other pages stay static.
-  output: 'static',
+  // Fully server-rendered output: no mixed static/SSR ambiguity for data routes.
+  output: 'server',
   adapter: node({
     mode: 'standalone',
   }),

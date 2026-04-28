@@ -11,7 +11,7 @@ interface Props {
   /** Destination URL for the recipe details page. */
   slug: string;
   /** Hero image URL or asset reference. */
-  image: string;
+  image?: string;
   /** Optional original image fallback if optimized variant fails. */
   imageFallback?: string;
   /** Short summary rendered in the description area. */
@@ -55,7 +55,8 @@ const safeDescription = String(description || '').trim();
 const truncatedDescription = safeDescription.length > MAX_LENGTH
   ? safeDescription.slice(0, MAX_LENGTH).trim() + '...'
   : safeDescription;
-const imageFallbackCandidates = buildWordPressImageFallbackCandidates(image);
+const imageSrc = String(image || '').trim();
+const imageFallbackCandidates = buildWordPressImageFallbackCandidates(imageSrc);
 const shareUrl = slug;
 ---
 
@@ -66,24 +67,30 @@ const shareUrl = slug;
     imageAspect === 'square' ? 'lcdb-archive-recipe-card__media--square' : 'lcdb-archive-recipe-card__media--portrait',
     imageAspect === 'square' ? 'aspect-square' : 'aspect-[14/18]',
   ]}>
-    <img
-      src={image}
-      alt={title}
-      class:list={[
-        'lcdb-archive-recipe-card__image w-full h-full object-center bg-[#FAF8F2] transition-transform duration-500 group-hover:scale-105',
-        imageAspect === 'square' ? 'lcdb-archive-recipe-card__image--square' : 'lcdb-archive-recipe-card__image--portrait',
-        imageAspect === 'square' ? 'object-cover' : 'object-contain',
-      ]}
-      loading="lazy"
-      fetchpriority="low"
-      decoding="async"
-      width="500"
-      height="643"
-      sizes="(min-width: 1280px) 28vw, (min-width: 1024px) 34vw, (min-width: 768px) 44vw, 92vw"
-      data-fallback-src={imageFallback}
-      data-fallback-candidates={imageFallbackCandidates.join('|')}
-      onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
-    />
+    {imageSrc ? (
+      <img
+        src={imageSrc}
+        alt={title}
+        class:list={[
+          'lcdb-archive-recipe-card__image w-full h-full object-center bg-[#FAF8F2] transition-transform duration-500 group-hover:scale-105',
+          imageAspect === 'square' ? 'lcdb-archive-recipe-card__image--square' : 'lcdb-archive-recipe-card__image--portrait',
+          imageAspect === 'square' ? 'object-cover' : 'object-contain',
+        ]}
+        loading="lazy"
+        fetchpriority="low"
+        decoding="async"
+        width="500"
+        height="643"
+        sizes="(min-width: 1280px) 28vw, (min-width: 1024px) 34vw, (min-width: 768px) 44vw, 92vw"
+        data-fallback-src={imageFallback}
+        data-fallback-candidates={imageFallbackCandidates.join('|')}
+        onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;"
+      />
+    ) : (
+      <div class="lcdb-archive-recipe-card__image w-full h-full bg-[#ece5d8] flex items-center justify-center text-[#7a7569] text-sm">
+        Image indisponible
+      </div>
+    )}
 
     <!-- Bookmark Button -->
     <button

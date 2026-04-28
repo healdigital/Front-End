@@ -17,15 +17,23 @@
       var root = document.documentElement;
       var dataLang = norm(root.getAttribute('data-lang') || root.lang || 'fr');
       var stored = '';
+      var cookieLang = '';
+      function getCookie(name) {
+        var escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var match = document.cookie.match(new RegExp('(?:^|; )' + escaped + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : '';
+      }
       try {
         stored = norm(localStorage.getItem('preferred-language') || '');
       } catch (e) {
         stored = '';
       }
+      cookieLang = norm(getCookie('lcdb_lang'));
       var pending = norm(typeof window !== 'undefined' && window.__lcdbPendingLanguage ? window.__lcdbPendingLanguage : '');
       var preferred = '';
       if (pending && supported[pending]) preferred = pending;
       else if (stored && supported[stored]) preferred = stored;
+      else if (cookieLang && supported[cookieLang]) preferred = cookieLang;
       if (preferred && preferred !== dataLang) {
         root.setAttribute('data-lcdb-translate-loading', '1');
         root.setAttribute('aria-busy', 'true');

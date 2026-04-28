@@ -2,19 +2,13 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import MediavineSlot from '../../../components/MediavineSlot.astro';
 import Pagination from '../../../components/organisms/Pagination.astro';
-import { payloadFetch } from '../../../lib/payload.client';
-import { getAllArticlesFromMongo } from '../../../lib/mongo.server';
+import { getArticlesCount, getArticlesPage } from '../../../lib/payload.client';
 import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
 
 export const prerender = false;
 
 const lang = 'fr';
 const articlesPerPage = 12;
-
-const getBuildLimit = () => {
-  const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
-};
 
 const stripHtml = (value: string) =>
   String(value || '')
@@ -74,23 +68,19 @@ const getCategories = (article: any): string[] => {
     .slice(0, 2);
 };
 
-async function loadAllArticles() {
-  let allArticles = await getAllArticlesFromMongo();
-  if (!allArticles || allArticles.length === 0) {
-    const result: any = await payloadFetch({
-      collection: 'articles',
-      query: { depth: 2, limit: getBuildLimit() },
-    });
-    allArticles = result?.docs || result || [];
-  }
-  return Array.isArray(allArticles) ? allArticles : [];
-}
-
 const rawPage = Number(Astro.params.page);
 const currentPage = Number.isFinite(rawPage) && rawPage > 1 ? rawPage : 2;
 
-const allArticles = await loadAllArticles();
-const normalizedArticles = allArticles
+const totalArticles = await getArticlesCount();
+const totalPages = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
+
+if (currentPage < 2 || currentPage > totalPages) {
+  return new Response(null, { status: 404 });
+}
+
+const safePage = currentPage;
+const pageArticles = await getArticlesPage(safePage, articlesPerPage);
+const normalizedArticles = pageArticles
   .map((article: any) => {
     const slug = articleSlug(article);
     const title = getTitle(article);
@@ -105,16 +95,7 @@ const normalizedArticles = allArticles
     };
   })
   .filter(Boolean);
-
-const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
-
-if (currentPage < 2 || currentPage > Math.max(totalPages, 1)) {
-  return new Response(null, { status: 404 });
-}
-
-const safePage = currentPage;
-const startIdx = (safePage - 1) * articlesPerPage;
-const paginatedArticles = normalizedArticles.slice(startIdx, startIdx + articlesPerPage);
+const paginatedArticles = normalizedArticles;
 
 Astro.response.headers.set(
   'Cache-Control',
@@ -127,7 +108,7 @@ Astro.response.headers.set(
     <div class="lcdb-page-shell lcdb-page-hero-inner">
       <p class="lcdb-page-eyebrow typ-caption">Archive</p>
       <h1 class="lcdb-page-title typ-h2">Articles</h1>
-      <p class="lcdb-page-description typ-body">Page {safePage} sur {Math.max(totalPages, 1)}.</p>
+      <p class="lcdb-page-description typ-body">Page {safePage} sur {totalPages}.</p>
     </div>
   </section>
 
