@@ -1,0 +1,37 @@
+---
+/**
+ * Runs synchronously in <head> before paint so we can avoid flashing the server language
+ * when the user's saved preference requires client-side translation.
+ */
+---
+<script is:inline>
+  (function () {
+    try {
+      var supported = { en: 1, fr: 1, es: 1, 'pt-br': 1, ar: 1 };
+      function norm(s) {
+        if (!s) return '';
+        s = String(s).toLowerCase().trim();
+        if (s === 'pt' || s === 'pt_br' || s === 'ptbr' || s === 'pt-pt') return 'pt-br';
+        return s;
+      }
+      var root = document.documentElement;
+      var dataLang = norm(root.getAttribute('data-lang') || root.lang || 'fr');
+      var stored = '';
+      try {
+        stored = norm(localStorage.getItem('preferred-language') || '');
+      } catch (e) {
+        stored = '';
+      }
+      var pending = norm(typeof window !== 'undefined' && window.__lcdbPendingLanguage ? window.__lcdbPendingLanguage : '');
+      var preferred = '';
+      if (pending && supported[pending]) preferred = pending;
+      else if (stored && supported[stored]) preferred = stored;
+      if (preferred && preferred !== dataLang) {
+        root.setAttribute('data-lcdb-translate-loading', '1');
+        root.setAttribute('aria-busy', 'true');
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  })();
+</script>

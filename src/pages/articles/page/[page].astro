@@ -1,12 +1,12 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import MediavineSlot from '../../components/MediavineSlot.astro';
-import Pagination from '../../components/organisms/Pagination.astro';
-import { payloadFetch } from '../../lib/payload.client';
-import { getAllArticlesFromMongo } from '../../lib/mongo.server';
-import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import MediavineSlot from '../../../components/MediavineSlot.astro';
+import Pagination from '../../../components/organisms/Pagination.astro';
+import { payloadFetch } from '../../../lib/payload.client';
+import { getAllArticlesFromMongo } from '../../../lib/mongo.server';
+import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
 
-export const prerender = true;
+export const prerender = false;
 
 const lang = 'fr';
 const articlesPerPage = 12;
@@ -86,26 +86,6 @@ async function loadAllArticles() {
   return Array.isArray(allArticles) ? allArticles : [];
 }
 
-export async function getStaticPaths() {
-  const pageSize = 12;
-
-  let allArticles = await getAllArticlesFromMongo();
-  if (!allArticles || allArticles.length === 0) {
-    const result: any = await payloadFetch({
-      collection: 'articles',
-      query: { depth: 2, limit: getBuildLimit() },
-    });
-    allArticles = result?.docs || result || [];
-  }
-
-  const safeArticles = Array.isArray(allArticles) ? allArticles : [];
-  const totalPages = Math.ceil(safeArticles.length / pageSize);
-
-  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
-    params: { page: String(index + 2) },
-  }));
-}
-
 const rawPage = Number(Astro.params.page);
 const currentPage = Number.isFinite(rawPage) && rawPage > 1 ? rawPage : 2;
 
@@ -127,9 +107,19 @@ const normalizedArticles = allArticles
   .filter(Boolean);
 
 const totalPages = Math.ceil(normalizedArticles.length / articlesPerPage);
-const safePage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
+
+if (currentPage < 2 || currentPage > Math.max(totalPages, 1)) {
+  return new Response(null, { status: 404 });
+}
+
+const safePage = currentPage;
 const startIdx = (safePage - 1) * articlesPerPage;
 const paginatedArticles = normalizedArticles.slice(startIdx, startIdx + articlesPerPage);
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+);
 ---
 
 <BaseLayout title={`Articles - Page ${safePage}`} lang={lang} loadAds={true}>
@@ -185,7 +175,7 @@ const paginatedArticles = normalizedArticles.slice(startIdx, startIdx + articles
             <MediavineSlot slot="articles-page-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
           </div>
 
-          {totalPages > 1 && <Pagination currentPage={safePage} totalPages={totalPages} baseUrl="/articles" routeStyle="direct" />}
+          {totalPages > 1 && <Pagination currentPage={safePage} totalPages={totalPages} baseUrl="/articles/page" routeStyle="direct" />}
         </>
       ) : (
         <div class="lcdb-empty-state space-y-4">

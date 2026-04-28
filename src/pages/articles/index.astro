@@ -163,7 +163,7 @@ const paginatedArticles = normalizedArticles.slice(0, articlesPerPage);
             <MediavineSlot slot="articles-index-inline" minHeight={280} className="rounded-[10px] bg-primary-white" />
           </div>
 
-          {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl="/articles" routeStyle="direct" />}
+          {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl="/articles/page" routeStyle="direct" />}
         </>
       ) : (
         <div class="lcdb-empty-state space-y-4">

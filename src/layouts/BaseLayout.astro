@@ -5,6 +5,8 @@ import GlobalAbout from "../components/GlobalAbout.astro";
 import GlobalFooter from "../components/GlobalFooter.astro";
 import ClubLoginModal from '../components/ClubLoginModal.astro';
 import AdAnalyticsHead from '../components/AdAnalyticsHead.astro';
+import TranslationLoaderInlineScript from '../components/TranslationLoaderInlineScript.astro';
+import TranslationLoaderOverlay from '../components/TranslationLoaderOverlay.astro';
 import NewsletterModal from "../components/organisms/NewsletterModal.astro";
 import '../styles/global.css';
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -37,6 +39,7 @@ const {
 <!doctype html>
 <html lang={lang} data-lang={lang}>
   <head>
+    <TranslationLoaderInlineScript />
     <script is:inline>
       (function () {
         const { pathname, search, hash } = window.location;
@@ -62,6 +65,7 @@ const {
     ))}
   </head>
   <body>
+    <TranslationLoaderOverlay />
     <Header lang={lang} />
     <div class="lcdb-translation-status" data-translation-status hidden role="status" aria-live="polite" aria-atomic="true">
       <div class="lcdb-translation-status__inner">

@@ -1,10 +1,10 @@
 ---
 import { payloadFetch } from "../../lib/payload.client";
-import { getAllArticlesFromMongo } from "../../lib/mongo.server";
+import { getArticleBySlugFromMongo } from "../../lib/mongo.server";
 import { processArticleImageUrl } from "../../utils/cdnUrlReplacer";
 import { renderArticleContent } from "../../utils/renderArticleContent";
 
-export const prerender = true;
+export const prerender = false;
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
@@ -85,62 +85,40 @@ const formatServingsLabel = (value: any): string => {
 
 const normalizeSlug = (value: any) => String(value || "").replace(/^\/+|\/+$/g, "");
 
-export async function getStaticPaths() {
-  let articles: any[] = [];
-  const normalizeSlugLocal = (value: any) =>
-    String(value || "").replace(/^\/+|\/+$/g, "");
-
-  const decodeSafe = (value: string) => {
-    try {
-      return decodeURIComponent(value);
-    } catch {
-      return value;
-    }
-  };
-
-  try {
-    articles = await getAllArticlesFromMongo();
-  } catch (error) {
-    console.error("print:getAllArticlesFromMongo failed, falling back to Payload:", error);
-  }
-
-  if (!articles || articles.length === 0) {
-    try {
-      const payloadResponse: any = await payloadFetch({
-        collection: "articles",
-        query: { depth: 2, limit: getBuildLimit() },
-      });
-      articles = payloadResponse?.docs || payloadResponse || [];
-    } catch (error) {
-      console.error("print:payloadFetch fallback failed:", error);
-    }
-  }
-
-  if (!Array.isArray(articles)) return [];
-
-  return articles
-    .map((item: any) => {
-      const rawSlug =
-        typeof item?.slug === "string" ? item.slug : item?.slug?.current || "";
-      const slugValue = normalizeSlugLocal(decodeSafe(rawSlug));
-      if (!slugValue || slugValue.includes("/")) return null;
-      return {
-        params: { slug: slugValue },
-        props: { article: { ...item, slug: slugValue } },
-      };
-    })
-    .filter(Boolean);
-}
-
 interface Props {
   article: any;
 }
 
-const { article } = Astro.props as Props;
+let { article } = Astro.props as Props;
 
 if (!article) {
-  throw new Error("Article data missing at build time");
+  const slug =
+    normalizeSlug(typeof Astro.params.slug === "string" ? Astro.params.slug : "");
+  if (!slug || slug.includes("/")) {
+    return new Response(null, { status: 404 });
+  }
+  article = await getArticleBySlugFromMongo(slug);
+  if (!article) {
+    try {
+      const fb: any = await payloadFetch({
+        collection: "articles",
+        query: { slug, depth: 2, limit: 1 },
+      });
+      article = Array.isArray(fb) ? fb[0] : fb?.docs?.[0];
+    } catch {
+      /* 404 below */
+    }
+  }
 }
+
+if (!article) {
+  return new Response(null, { status: 404 });
+}
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300, stale-while-revalidate=86400",
+);
 
 const slug = normalizeSlug(typeof article.slug === "string" ? article.slug : article.slug?.current || "");
 const articleLang = String(article.lang || "fr").toLowerCase();

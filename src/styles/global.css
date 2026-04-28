@@ -1445,3 +1445,58 @@ h3.recipe-redesign__compact-title {
     gap: 32px !important;
 }
 
+/* Full-page translation gate: hide flash of server language while DeepL + i18n apply */
+#lcdb-translation-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  background: rgba(250, 248, 242, 0.97);
+  color: #26231c;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1.5rem;
+  pointer-events: all;
+}
+
+html[data-lcdb-translate-loading='1'] {
+  overflow: hidden;
+}
+
+html[data-lcdb-translate-loading='1'] #lcdb-translation-loader {
+  display: flex;
+}
+
+.lcdb-translation-loader__spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 3px solid rgba(84, 182, 177, 0.2);
+  border-top-color: #54b6b1;
+  animation: lcdb-translate-spin 0.75s linear infinite;
+}
+
+.lcdb-translation-loader__text {
+  max-width: 20rem;
+  line-height: 1.5;
+  color: #655f54;
+}
+
+@keyframes lcdb-translate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lcdb-translation-loader__spinner {
+    animation: none;
+    border-top-color: rgba(84, 182, 177, 0.5);
+  }
+}
+

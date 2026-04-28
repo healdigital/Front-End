@@ -23,9 +23,6 @@ ENV BUILD_ONLY_ARTICLE_PAGES=1
 ENV BUILD_DISABLE_SEARCH=1
 
 # Optional BuildKit secret file (`build_env`) for KEY=value lines (e.g. PREPARED_JSON_URL=...).
-# Example local build:
-# docker build --build-arg PREPARED_JSON_URL=https://.../prepared-articles.json -t lcdb-astro .
-# docker build --secret id=build_env,src=.env.build -t lcdb-astro .
 RUN --mount=type=secret,id=build_env,target=/run/secrets/build_env,required=false \
     set -e; \
     if [ -f /run/secrets/build_env ]; then set -a && . /run/secrets/build_env && set +a; fi; \
@@ -37,14 +34,21 @@ RUN --mount=type=secret,id=build_env,target=/run/secrets/build_env,required=fals
     fi; \
     npm run build
 
-FROM nginx:1.27-alpine AS runtime
-WORKDIR /usr/share/nginx/html
-COPY --from=builder /app/dist ./
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM node:22-bookworm-slim AS runtime
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends wget ca-certificates && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 80
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=4321
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/healthz || exit 1
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 4321
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -q -O - http://127.0.0.1:${PORT:-4321}/healthz | grep -q ok || exit 1
+
+CMD ["node", "./dist/server/entry.mjs"]
