@@ -11,8 +11,9 @@ import RecipeSidebar from '../components/organisms/RecipeSidebar.astro';
 import BooksSection from '../components/organisms/BooksSection.astro';
 import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import GoogleReviews from '../components/organisms/GoogleReviews.astro';
+import Pagination from '../components/organisms/Pagination.astro';
 import MediavineSlot from '../components/MediavineSlot.astro';
-import { getAllArticlesFromMongo, getAllCategoriesFromMongo, getAllTagsFromMongo, getArticlesFromMongo } from '../lib/mongo.server';
+import { getArticlesCount, getArticlesPage } from '../lib/payload.client';
 import { loadFeaturedCourses, loadVideoCourses } from '../lib/videoCourses';
 import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
@@ -654,15 +655,8 @@ const buildRecipeFromArticle = (
   };
 };
 
-const getHomeRecipeLimit = () => {
-  const homeLimit = Number(process.env.HOME_RECIPE_LIMIT);
-  if (Number.isFinite(homeLimit) && homeLimit > 0) return homeLimit;
-
-  const globalLimit = Number(process.env.MAX_SSG_ARTICLES);
-  if (Number.isFinite(globalLimit) && globalLimit > 0) return globalLimit;
-
-  return 6000;
-};
+const HOME_VISIBLE_PAGE_SIZE = 15;
+const HOME_PAGE_FETCH_SIZE = 32;
 
 const payloadAssetOrigin = (() => {
   try {
@@ -672,35 +666,17 @@ const payloadAssetOrigin = (() => {
   }
 })();
 
-let allArticles = await getArticlesFromMongo(1, getHomeRecipeLimit());
-if (!Array.isArray(allArticles) || allArticles.length === 0) {
-  allArticles = await getAllArticlesFromMongo();
-}
-const allCategories = await getAllCategoriesFromMongo();
-const allTags = await getAllTagsFromMongo();
-const categoryLookup = new Map(
-  (Array.isArray(allCategories) ? allCategories : [])
-    .map((item: any) => [
-      normalizeTaxonomyLookupKey(item?._id || item?.id || item?.slug),
-      String(item?.title || item?.name || item?.label || '').trim(),
-    ])
-    .filter((entry) => entry[0] && entry[1]),
-);
-const tagLookup = new Map(
-  (Array.isArray(allTags) ? allTags : [])
-    .map((item: any) => [
-      normalizeTaxonomyLookupKey(item?._id || item?.id || item?.slug),
-      String(item?.title || item?.name || item?.label || '').trim(),
-    ])
-    .filter((entry) => entry[0] && entry[1]),
-);
+const [allArticles, totalArticles] = await Promise.all([
+  getArticlesPage(1, HOME_PAGE_FETCH_SIZE),
+  getArticlesCount(),
+]);
 const frArticles = Array.isArray(allArticles)
   ? allArticles.filter((article: any) => String(article?.lang || 'fr').toLowerCase() === 'fr')
   : [];
 const homepageArticles = frArticles.length > 0 ? frArticles : allArticles;
 const normalizedArticles = Array.isArray(homepageArticles)
   ? homepageArticles
-      .map((article: any, index: number) => buildRecipeFromArticle(article, index, categoryLookup, tagLookup))
+      .map(buildRecipeFromArticle)
       .filter((recipe): recipe is NonNullable<ReturnType<typeof buildRecipeFromArticle>> => Boolean(recipe))
       .sort((a: any, b: any) => {
         const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
@@ -722,13 +698,13 @@ const heroCards = normalizedArticles.length
 
 const recipePool = normalizedArticles.length ? normalizedArticles : fallbackRecipes;
 const featuredRecipe = recipePool[0] || fallbackRecipes[0];
-const HOME_VISIBLE_PAGE_SIZE = 15;
 const getHomeInitialRenderCount = () => {
   const envCount = Number(process.env.HOME_INITIAL_RENDER_COUNT);
-  return Number.isFinite(envCount) && envCount > 0 ? envCount : 48;
+  return Number.isFinite(envCount) && envCount > 0 ? Math.min(envCount, HOME_VISIBLE_PAGE_SIZE) : HOME_VISIBLE_PAGE_SIZE;
 };
 const browseRecipes = recipePool.slice(1, 1 + getHomeInitialRenderCount());
-const totalBrowseRecipeCount = Math.max(recipePool.length - 1, browseRecipes.length);
+const totalBrowseRecipeCount = Math.max(0, totalArticles - 1);
+const totalBrowsePages = Math.max(1, Math.ceil(totalBrowseRecipeCount / HOME_VISIBLE_PAGE_SIZE));
 const SUGGESTED_VISIBLE_PAGE_SIZE = 12;
 const getSuggestedInitialRenderCount = () => {
   const envCount = Number(process.env.SUGGESTED_INITIAL_RENDER_COUNT);
@@ -830,21 +806,10 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
 
             <div
               class="recipe-grid-home grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10"
-              data-recipe-grid
-              data-recipes-source="/home-recipes-index.json"
-              data-recipes-total-count={totalBrowseRecipeCount}
-              aria-busy="false"
               >
-                {browseRecipes.map((recipe, index) => (
+                {browseRecipes.map((recipe) => (
                   <div
-                    class:list={['home-recipe-card-shell', index >= HOME_VISIBLE_PAGE_SIZE && 'hidden']}
-                    data-recipe-card
-                    data-recipe-index={index}
-                    data-category={recipe.filterKey}
-                    data-title={recipe.title.toLocaleLowerCase('fr')}
-                    data-description={recipe.description.toLocaleLowerCase('fr')}
-                    data-slug={recipe.slug}
-                    aria-hidden={index >= HOME_VISIBLE_PAGE_SIZE ? 'true' : 'false'}
+                    class="home-recipe-card-shell"
                   >
                   <RecipeCard
                     title={recipe.title}
@@ -860,17 +825,11 @@ const suggestedRecipes = suggestedRecipesPool.slice(0, getSuggestedInitialRender
                 </div>
               ))}
             </div>
-            <div class="flex items-center justify-between gap-6 flex-wrap text-[13px] text-text-secondary uppercase tracking-wider typ-meta" data-home-pagination>
-              <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-prev>
-                Pr&eacute;c&eacute;dent
-              </button>
-              <div class="flex items-center gap-4" data-pagination-pages>
-                <span class="text-text-primary">1</span>
+            {totalBrowsePages > 1 && (
+              <div class="mt-6">
+                <Pagination currentPage={1} totalPages={totalBrowsePages} baseUrl="/page" routeStyle="direct" />
               </div>
-              <button type="button" class="hover:text-text-primary transition-colors disabled:opacity-40" data-pagination-next>
-                Suivant
-              </button>
-            </div>
+            )}
 
           </div>
 

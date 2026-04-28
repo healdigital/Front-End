@@ -3,10 +3,12 @@ import {
   getCurrentLanguage,
   initializeTranslations,
   setupLanguageSwitcher,
+  watchDynamicContentTranslations,
   watchLanguageChanges,
 } from '../utils/dynamicTranslate';
 
 const LANGUAGE_STORAGE_KEY = 'preferred-language';
+const TRANSLATION_LOADER_MAX_BLOCK_MS = 4500;
 
 declare global {
   interface Window {
@@ -53,11 +55,30 @@ const clearTranslationLoader = (): void => {
   root.removeAttribute('aria-busy');
 };
 
+const withTranslationLoaderTimeout = async <T>(task: Promise<T>): Promise<T> => {
+  let timeoutId: number | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      clearTranslationLoader();
+      reject(new Error('Translation init timed out'));
+    }, TRANSLATION_LOADER_MAX_BLOCK_MS);
+  });
+
+  try {
+    return await Promise.race([task, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+};
+
 async function initTranslations(): Promise<void> {
   try {
     await initializeTranslations();
     setupLanguageSwitcher();
     watchLanguageChanges();
+    watchDynamicContentTranslations();
 
     const currentLang = String(getCurrentLanguage() || '').toLowerCase();
     const htmlLang = getHtmlLanguage();
@@ -76,8 +97,9 @@ const translationStatusTextEl = translationStatusEl?.querySelector<HTMLElement>(
 const translationStatusTimeout = { current: null as number | null };
 
 const startTranslationInit = (): void => {
-  initTranslations().catch((error) => {
+  withTranslationLoaderTimeout(initTranslations()).catch((error) => {
     console.error('Failed to initialize translations:', error);
+    clearTranslationLoader();
   });
 };
 

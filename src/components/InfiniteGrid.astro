@@ -5,6 +5,8 @@ interface Props {
   gridClass?: string;
   ariaLabel: string;
   totalCount?: number;
+  endpoint?: string;
+  nextPage?: number | null;
 }
 
 const {
@@ -13,6 +15,8 @@ const {
   gridClass = '',
   ariaLabel,
   totalCount = 0,
+  endpoint = '',
+  nextPage = null,
 } = Astro.props;
 ---
 
@@ -22,6 +26,8 @@ const {
   data-initial-count={initialCount}
   data-batch-size={batchSize}
   data-total-count={totalCount}
+  data-endpoint={endpoint}
+  data-next-page={nextPage ?? ''}
 >
   <p class="infinite-grid-counter" data-infinite-grid-counter aria-live="polite">
     {Math.min(initialCount, totalCount)} / {totalCount} recettes affichées
@@ -72,8 +78,98 @@ const {
       const initialCount = Number(root.dataset.initialCount || '30');
       const batchSize = Number(root.dataset.batchSize || '24');
       const totalCount = Number(root.dataset.totalCount || String(cards.length)) || cards.length;
+      const endpoint = String(root.dataset.endpoint || '').trim();
+      const hasRemoteSource = endpoint.length > 0;
+      let nextPage = Number(root.dataset.nextPage || '');
+      if (!Number.isFinite(nextPage) || nextPage <= 0) nextPage = null;
+      let remoteHasMore = hasRemoteSource && nextPage !== null;
       let visibleCount = Math.min(initialCount, cards.length);
       let observer = null;
+      let remoteLoading = false;
+      const normalizeLanguageCode = (value) => {
+        const raw = String(value || '').trim().toLowerCase();
+        if (raw === 'pt' || raw === 'pt_br' || raw === 'ptbr' || raw === 'pt-pt') return 'pt-br';
+        return ['fr', 'en', 'es', 'pt-br', 'ar'].includes(raw) ? raw : 'fr';
+      };
+      const getPreferredLanguage = () => {
+        let stored = '';
+        try {
+          stored = String(localStorage.getItem('preferred-language') || '');
+        } catch {
+          stored = '';
+        }
+        const rootLang = document.documentElement.getAttribute('data-lang') || document.documentElement.lang || '';
+        return normalizeLanguageCode(stored || rootLang || 'fr');
+      };
+
+      const escapeHtml = (value) =>
+        String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      const buildCardHtml = (card) => {
+        const href = escapeHtml(card?.href || '#');
+        const title = escapeHtml(card?.title || 'Recette');
+        const image = String(card?.image || '').trim();
+        const imageFallback = escapeHtml(card?.imageFallback || image);
+        const candidates = Array.isArray(card?.imageFallbackCandidates)
+          ? card.imageFallbackCandidates.map((item) => String(item || '').trim()).filter(Boolean)
+          : [];
+        const candidateAttr = escapeHtml(candidates.join('|'));
+        const prepTime = escapeHtml(card?.prepTime || '--');
+        const excerpt = escapeHtml(card?.excerpt || '');
+
+        const media = image
+          ? `<img src="${escapeHtml(image)}" alt="${title}" class="lcdb-archive-recipe-card__image lcdb-archive-recipe-card__image--square w-full h-full object-center bg-[#FAF8F2] transition-transform duration-500 group-hover:scale-105 object-cover" loading="lazy" fetchpriority="low" decoding="async" width="500" height="643" data-fallback-src="${imageFallback}" data-fallback-candidates="${candidateAttr}" onerror="const current=this.currentSrc||this.src; const list=(this.dataset.fallbackCandidates||'').split('|').map((item)=>item.trim()).filter((item)=>item && item!==current); const next=list.shift() || this.dataset.fallbackSrc; this.dataset.fallbackCandidates=list.join('|'); if (next && next!==current) this.src=next;">`
+          : `<div class="lcdb-archive-recipe-card__image lcdb-archive-recipe-card__image--square w-full h-full bg-[#ece5d8] flex items-center justify-center text-[#7a7569] text-sm">Image indisponible</div>`;
+
+        return `<article class="group lcdb-archive-recipe-card flex h-full w-full flex-col rounded-[10px] bg-[#FAF8F2] overflow-hidden border border-[#D8D2C2] transition-all duration-300 hover:shadow-lg infinite-grid-card--revealed"><div class="lcdb-archive-recipe-card__media lcdb-archive-recipe-card__media--square relative w-full overflow-hidden aspect-square">${media}</div><div class="flex flex-1 flex-col gap-3 px-5 pb-5 pt-4 archive-card-content"><h3 class="font-heading text-[22px] leading-[1.08] text-[#111111] line-clamp-3"><a href="${href}" class="no-underline hover:text-primary-turquoise transition-colors">${title}</a></h3><div class="flex items-center justify-between text-[13px] text-text-secondary uppercase tracking-[0.14em] typ-meta border-t border-[#D8D2C2] border-b-0 pt-3 pb-0 mb-0"><div class="flex items-center gap-2"><span data-recipe-meta-time>${prepTime}</span></div></div>${excerpt ? `<p class="flex-1 text-text-secondary font-body text-[16px] leading-[1.7] typ-body line-clamp-4">${excerpt}</p>` : ''}</div></article>`;
+      };
+
+      const fetchRemoteBatch = async () => {
+        if (!hasRemoteSource || !remoteHasMore || remoteLoading || !nextPage) return false;
+        remoteLoading = true;
+        if (loading instanceof HTMLElement) loading.classList.remove('hidden');
+        let appendedNodes = [];
+        try {
+          const url = new URL(endpoint, window.location.origin);
+          url.searchParams.set('page', String(nextPage));
+          url.searchParams.set('size', String(batchSize));
+          url.searchParams.set('lang', getPreferredLanguage());
+          const response = await fetch(url.toString(), { method: 'GET', credentials: 'same-origin' });
+          if (!response.ok) return false;
+          const payload = await response.json();
+          const incoming = Array.isArray(payload?.cards) ? payload.cards : [];
+          incoming.forEach((card) => {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = buildCardHtml(card);
+            const node = wrapper.firstElementChild;
+            if (node instanceof HTMLElement) {
+              grid.appendChild(node);
+              cards.push(node);
+              appendedNodes.push(node);
+            }
+          });
+          if (appendedNodes.length) {
+            window.dispatchEvent(
+              new CustomEvent('lcdb:content-added', {
+                detail: { roots: appendedNodes },
+              }),
+            );
+          }
+          nextPage = Number(payload?.nextPage || '');
+          if (!Number.isFinite(nextPage) || nextPage <= 0) nextPage = null;
+          remoteHasMore = Boolean(payload?.hasMore) && nextPage !== null;
+          return incoming.length > 0;
+        } catch {
+          return false;
+        } finally {
+          remoteLoading = false;
+        }
+      };
 
       const updateCounter = () => {
         if (!(counter instanceof HTMLElement)) return;
@@ -95,10 +191,15 @@ const {
         topButton.classList.toggle('hidden', !shouldShow);
       };
 
-      const revealNextBatch = () => {
+      const revealNextBatch = async () => {
+        if (visibleCount >= cards.length && remoteHasMore) {
+          const added = await fetchRemoteBatch();
+          if (added) positionSentinel();
+        }
+
         if (visibleCount >= cards.length) {
-          if (observer) observer.disconnect();
-          if (loading instanceof HTMLElement) loading.classList.add('hidden');
+          if (!remoteHasMore && observer) observer.disconnect();
+          if (loading instanceof HTMLElement && !remoteHasMore) loading.classList.add('hidden');
           updateCounter();
           return;
         }
@@ -122,7 +223,7 @@ const {
           loading.classList.toggle('hidden', visibleCount >= cards.length);
         }
 
-        if (visibleCount >= cards.length && observer) {
+        if (visibleCount >= cards.length && !remoteHasMore && observer) {
           observer.disconnect();
         }
       };
@@ -142,7 +243,7 @@ const {
       observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) revealNextBatch();
+            if (entry.isIntersecting) void revealNextBatch();
           });
         },
         {
@@ -160,7 +261,7 @@ const {
 
       const onWindowScroll = () => {
         updateTopButton();
-        if (shouldRevealFromViewport()) revealNextBatch();
+        if (shouldRevealFromViewport()) void revealNextBatch();
       };
 
       topButton?.addEventListener('click', () => {
@@ -197,19 +298,27 @@ const {
   }
 
   .infinite-grid-loading {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
-    margin-top: 1.1rem;
-    color: #787161;
-    font-size: 0.82rem;
+    width: 100%;
+    margin: 1.25rem 0 0;
+    padding: 0.95rem 1.1rem;
+    border: 1px solid rgba(84, 182, 177, 0.25);
+    border-radius: 12px;
+    background: #f7f5ef;
+    color: #4f4a40;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
   .infinite-grid-spinner {
-    width: 16px;
-    height: 16px;
+    width: 22px;
+    height: 22px;
     border-radius: 999px;
-    border: 2px solid rgba(84, 182, 177, 0.25);
+    border: 3px solid rgba(84, 182, 177, 0.25);
     border-top-color: #54b6b1;
     animation: lcdb-spin 0.8s linear infinite;
   }

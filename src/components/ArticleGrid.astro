@@ -13,7 +13,7 @@ let articles = [];
 try {
   const response = await payloadFetch({
     collection: 'articles',
-    endpoint: `/collections/articles?limit=${limit}&depth=2`,
+    query: { limit, depth: 0 },
   });
 
   articles = response?.docs || [];

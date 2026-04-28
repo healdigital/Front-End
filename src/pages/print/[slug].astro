@@ -8,7 +8,8 @@ export const prerender = false;
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+  const safeEnvLimit = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 120;
+  return Math.min(safeEnvLimit, 120);
 };
 
 const stripHtml = (value: string) =>

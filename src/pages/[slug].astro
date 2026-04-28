@@ -14,7 +14,6 @@ import {
   getArticleBySlugFromMongo,
   getCommentsByArticleIdFromMongo,
   getRelatedArticlesFromMongo,
-  shouldUseLocalJson,
 } from "../lib/mongo.server";
 import { resolveRootSlugPageProps } from "../lib/rootSlugRoute.server";
 import {
@@ -142,7 +141,8 @@ interface RelatedArticleCard {
 
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
-  return Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 6000;
+  const safeEnvLimit = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 120;
+  return Math.min(safeEnvLimit, 120);
 };
 
 const stripHtml = (value: string) =>
@@ -421,7 +421,7 @@ const slug = normalizeSlug(
   typeof article.slug === "string" ? article.slug : article.slug?.current || "",
 );
 
-if (slug && !processArticleImageUrl(article) && !shouldUseLocalJson()) {
+if (slug && !processArticleImageUrl(article)) {
   const hydratedArticle = await getArticleBySlugFromMongo(slug);
   if (hydratedArticle) {
     article = {

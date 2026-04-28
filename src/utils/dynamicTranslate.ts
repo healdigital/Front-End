@@ -25,6 +25,7 @@ let languageChangeQueue: Promise<void> = Promise.resolve();
 let languageSwitcherBound = false;
 let storageWatcherBound = false;
 let languageCustomEventBound = false;
+let contentAddedEventBound = false;
 let hasTranslatedContent = false;
 let deeplFailureCount = 0;
 const loadedTranslationLangs = new Set<string>();
@@ -168,6 +169,15 @@ const deeplLanguageMap: Record<string, string> = {
 const supportedLanguages = ['en', 'fr', 'es', 'pt-br', 'ar'];
 const supportedLanguageSet = new Set(supportedLanguages);
 const LANGUAGE_STORAGE_KEY = 'preferred-language';
+const LANGUAGE_COOKIE_KEY = 'lcdb_lang';
+
+const persistLanguageCookie = (lang: string): void => {
+  if (typeof document === 'undefined') return;
+  const normalized = normalizeLanguageCode(lang);
+  if (!normalized || !isSupportedLanguage(normalized)) return;
+  const maxAgeSeconds = 60 * 60 * 24 * 365;
+  document.cookie = `${LANGUAGE_COOKIE_KEY}=${encodeURIComponent(normalized)}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
+};
 
 type TranslationStatusState = 'loading' | 'success' | 'warning' | 'error';
 
@@ -332,6 +342,7 @@ export async function initializeTranslations(): Promise<void> {
       if (!storedLang || !isSupportedLanguage(storedLang)) {
         localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
       }
+      persistLanguageCookie(currentLanguage);
     } catch {
       // Ignore storage write failures (private mode / blocked storage).
     }
@@ -693,14 +704,14 @@ export function getTranslation(key: string, lang?: string): string {
 
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
-      current = current[part];
+      current = (current as Record<string, unknown>)[part];
     } else {
       // Fallback to English
       if (targetLang !== 'en' && translationsData['en']) {
         current = translationsData['en'];
         for (const p of parts) {
           if (current && typeof current === 'object' && p in current) {
-            current = current[p];
+            current = (current as Record<string, unknown>)[p];
           } else {
             return key;
           }
@@ -776,6 +787,7 @@ export async function changeLanguage(newLang: string): Promise<void> {
 
       currentLanguage = normalizedLang;
       localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizedLang);
+      persistLanguageCookie(normalizedLang);
 
       // Update HTML lang attribute
       document.documentElement.lang = normalizedLang;
@@ -938,6 +950,23 @@ export function watchLanguageChanges(): void {
       changeLanguage(nextLang);
     }
   });
+}
+
+export function watchDynamicContentTranslations(): void {
+  if (contentAddedEventBound) return;
+  contentAddedEventBound = true;
+
+  window.addEventListener('lcdb:content-added', ((event: Event) => {
+    const customEvent = event as CustomEvent<{ roots?: unknown[] }>;
+    const roots = (Array.isArray(customEvent?.detail?.roots) ? customEvent.detail.roots : [])
+      .filter((root): root is HTMLElement => root instanceof HTMLElement && root.isConnected);
+
+    if (!roots.length) return;
+    if (currentLanguage === sourceLanguage) return;
+    if (!ENABLE_RUNTIME_AUTO_TRANSLATION || !hasDeeplEndpoint() || deeplUnavailable) return;
+
+    void translateTextNodes(currentLanguage, roots);
+  }) as EventListener);
 }
 
 
