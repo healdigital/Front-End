@@ -13,7 +13,7 @@ import SuggestedRecipes from '../components/organisms/SuggestedRecipes.astro';
 import GoogleReviews from '../components/organisms/GoogleReviews.astro';
 import Pagination from '../components/organisms/Pagination.astro';
 import MediavineSlot from '../components/MediavineSlot.astro';
-import { getArticlesCount, getArticlesPage } from '../lib/payload.client';
+import { getArticlesPageWithMeta } from '../lib/payload.client';
 import { loadFeaturedCourses, loadVideoCourses } from '../lib/videoCourses';
 import { buildWpPortraitVariantUrl, processArticleImageUrl, replaceCdnUrl } from '../utils/cdnUrlReplacer';
 import { stripHtml } from '../utils/stripHtml.js';
@@ -666,10 +666,7 @@ const payloadAssetOrigin = (() => {
   }
 })();
 
-const [allArticles, totalArticles] = await Promise.all([
-  getArticlesPage(1, HOME_PAGE_FETCH_SIZE),
-  getArticlesCount(),
-]);
+const { docs: allArticles, totalDocs: totalArticles } = await getArticlesPageWithMeta(1, HOME_PAGE_FETCH_SIZE);
 const frArticles = Array.isArray(allArticles)
   ? allArticles.filter((article: any) => String(article?.lang || 'fr').toLowerCase() === 'fr')
   : [];

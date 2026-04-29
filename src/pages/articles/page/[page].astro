@@ -2,7 +2,7 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import MediavineSlot from '../../../components/MediavineSlot.astro';
 import Pagination from '../../../components/organisms/Pagination.astro';
-import { getArticlesCount, getArticlesPage } from '../../../lib/payload.client';
+import { getArticlesPageWithMeta } from '../../../lib/payload.client';
 import { processArticleImageUrl } from '../../../utils/cdnUrlReplacer';
 
 export const prerender = false;
@@ -71,15 +71,12 @@ const getCategories = (article: any): string[] => {
 const rawPage = Number(Astro.params.page);
 const currentPage = Number.isFinite(rawPage) && rawPage > 1 ? rawPage : 2;
 
-const totalArticles = await getArticlesCount();
-const totalPages = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
+const safePage = currentPage;
+const { docs: pageArticles, totalPages } = await getArticlesPageWithMeta(safePage, articlesPerPage);
 
 if (currentPage < 2 || currentPage > totalPages) {
   return new Response(null, { status: 404 });
 }
-
-const safePage = currentPage;
-const pageArticles = await getArticlesPage(safePage, articlesPerPage);
 const normalizedArticles = pageArticles
   .map((article: any) => {
     const slug = articleSlug(article);

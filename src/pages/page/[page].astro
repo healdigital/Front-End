@@ -6,20 +6,23 @@ import RecipesSections from "../../components/RecipesSections.astro";
 import VideoSection from "../../components/VideoSection.astro";
 import AboutSection from "../../components/AboutSection.astro";
 import MediavineSlot from "../../components/MediavineSlot.astro";
-import { getArticlesCount, getArticlesPage } from "../../lib/payload.client";
+import { getArticlesPageWithMeta } from "../../lib/payload.client";
 
 export const prerender = false;
 
 const { page } = Astro.params;
-const currentPage = parseInt(page as string);
+const currentPage = parseInt(String(page || ''), 10);
 const articlesPerPage = 10;
-const totalArticles = await getArticlesCount();
-const totalPages = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
 
-if (!Number.isFinite(currentPage) || currentPage < 2 || currentPage > totalPages) {
+if (!Number.isFinite(currentPage)) {
   return new Response(null, { status: 404 });
 }
-const articles = await getArticlesPage(currentPage, articlesPerPage);
+
+const { docs: articles, totalPages } = await getArticlesPageWithMeta(currentPage, articlesPerPage);
+
+if (currentPage < 2 || currentPage > totalPages) {
+  return new Response(null, { status: 404 });
+}
 
 Astro.response.headers.set(
   'Cache-Control',

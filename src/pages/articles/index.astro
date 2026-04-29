@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediavineSlot from '../../components/MediavineSlot.astro';
 import Pagination from '../../components/organisms/Pagination.astro';
-import { getArticlesCount, getArticlesPage } from '../../lib/payload.client';
+import { getArticlesPageWithMeta } from '../../lib/payload.client';
 import { processArticleImageUrl } from '../../utils/cdnUrlReplacer';
 
 const lang = 'fr';
@@ -67,10 +67,7 @@ const getCategories = (article: any): string[] => {
     .slice(0, 2);
 };
 
-const [allArticles, totalArticles] = await Promise.all([
-  getArticlesPage(1, articlesPerPage),
-  getArticlesCount(),
-]);
+const { docs: allArticles, totalDocs: totalArticles } = await getArticlesPageWithMeta(1, articlesPerPage);
 
 const normalizedArticles = (Array.isArray(allArticles) ? allArticles : [])
   .map((article: any) => {

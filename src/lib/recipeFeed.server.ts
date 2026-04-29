@@ -179,7 +179,6 @@ async function fetchArticlesPage(
   url.searchParams.set('page', String(page));
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('where[lang][equals]', language);
-  url.searchParams.set('where[_status][equals]', 'published');
   const res = await fetch(url.toString());
   if (!res.ok) return { docs: [], hasMore: false };
   const data = await res.json();

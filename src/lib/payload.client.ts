@@ -132,6 +132,60 @@ export async function payloadFetch<T>({
   }
 }
 
+const extractCollectionTotal = (data: unknown, docsLength: number): number => {
+  if (!isRecord(data)) return docsLength;
+  const t = (data as Record<string, unknown>).totalDocs;
+  if (typeof t === 'number' && Number.isFinite(t)) return t;
+  const total = (data as Record<string, unknown>).total;
+  if (typeof total === 'number' && Number.isFinite(total)) return total;
+  const meta = (data as Record<string, unknown>).meta;
+  if (isRecord(meta)) {
+    const m = (meta as Record<string, unknown>).total;
+    if (typeof m === 'number' && Number.isFinite(m)) return m;
+  }
+  return docsLength;
+};
+
+export type ArticlesPageResult<T = unknown> = {
+  docs: T[];
+  totalDocs: number;
+  totalPages: number;
+};
+
+/**
+ * Single request for a page of articles plus collection totals (avoids a second /articles?limit=1 call).
+ */
+export async function getArticlesPageWithMeta<T = unknown>(
+  page = 1,
+  limit = 10,
+  init?: RequestInit,
+): Promise<ArticlesPageResult<T>> {
+  try {
+    const params = new URLSearchParams({
+      limit: String(limit),
+      page: String(page),
+      depth: '0',
+    });
+    const url = `${payloadApiUrl}/articles?${params.toString()}`;
+    const res = await fetch(url, { ...init, cache: init?.cache ?? 'force-cache' });
+    if (!res.ok) {
+      return { docs: [], totalDocs: 0, totalPages: 1 };
+    }
+    const data: unknown = await res.json();
+    const docs = normalizePayloadList<T>(data);
+    const totalDocs = extractCollectionTotal(data, docs.length);
+    const rawTotalPages = isRecord(data) ? (data as Record<string, unknown>).totalPages : undefined;
+    const totalPages =
+      typeof rawTotalPages === 'number' && rawTotalPages >= 1
+        ? Math.floor(rawTotalPages)
+        : Math.max(1, Math.ceil(totalDocs / Math.max(1, limit)));
+    return { docs, totalDocs, totalPages };
+  } catch (error) {
+    console.error('Error fetching articles page with meta:', error);
+    return { docs: [], totalDocs: 0, totalPages: 1 };
+  }
+}
+
 /**
  * Get all articles
  */
@@ -187,43 +241,14 @@ export async function getCommentsByArticle(articleId: string) {
  * Get total count of articles from Payload (uses collection meta returned by API)
  */
 export async function getArticlesCount(): Promise<number> {
-  try {
-    const params = new URLSearchParams({
-      limit: '1',
-      depth: '0',
-    });
-    const url = `${payloadApiUrl}/articles?${params.toString()}`;
-    const res = await fetch(url);
-    if (!res.ok) return 0;
-
-    const data: unknown = await res.json();
-    if (Array.isArray(data)) return data.length;
-    if (!isPayloadCollectionResponse<unknown>(data)) return 0;
-    return data.totalDocs ?? data.total ?? data.meta?.total ?? 0;
-  } catch (error) {
-    console.error('Error fetching articles count:', error);
-    return 0;
-  }
+  const { totalDocs } = await getArticlesPageWithMeta(1, 1);
+  return totalDocs;
 }
 
 /**
  * Fetch a single page of articles from Payload (server-side pagination)
  */
 export async function getArticlesPage(page = 1, limit = 10) {
-  try {
-    const params = new URLSearchParams({
-      limit: String(limit),
-      page: String(page),
-      depth: '0',
-    });
-    const url = `${payloadApiUrl}/articles?${params.toString()}`;
-    const res = await fetch(url);
-    if (!res.ok) return [];
-
-    const data: unknown = await res.json();
-    return normalizePayloadList(data);
-  } catch (error) {
-    console.error('Error fetching articles page:', error);
-    return [];
-  }
+  const { docs } = await getArticlesPageWithMeta(page, limit);
+  return docs;
 }
