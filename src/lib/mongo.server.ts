@@ -11,6 +11,7 @@ const debugLog = (...args: unknown[]) => {
 };
 
 const CACHE_TTL_MS = Number(process.env.FRONTEND_DATA_CACHE_MS) || 60_000;
+const TAXONOMY_CACHE_TTL_MS = Number(process.env.FRONTEND_TAXONOMY_CACHE_MS) || CACHE_TTL_MS;
 
 const normalizeComparableText = (value: string): string =>
   String(value || '')
@@ -47,6 +48,11 @@ const toArticleArray = (items: any[]): ArticleRecord[] =>
 
 let cachedAllArticles: ArticleRecord[] | null = null;
 let cachedAllArticlesAt = 0;
+
+let cachedAllCategories: CategoryLike[] | null = null;
+let cachedAllCategoriesAt = 0;
+let cachedAllTags: GenericDoc[] | null = null;
+let cachedAllTagsAt = 0;
 const FRONTEND_ARTICLE_DEBUG = process.env.FRONTEND_ARTICLE_DEBUG === '1';
 
 const logArticleSnapshot = (source: string, items: ArticleRecord[], phase: 'cache' | 'fetch') => {
@@ -263,13 +269,21 @@ export async function searchArticlesFromMongo(query: string, limit = 50): Promis
 }
 
 export async function getAllCategoriesFromMongo(): Promise<CategoryLike[]> {
+  const now = Date.now();
+  if (cachedAllCategories && now - cachedAllCategoriesAt < TAXONOMY_CACHE_TTL_MS) {
+    return cachedAllCategories;
+  }
+
   try {
     const categories = await fetchCollection<CategoryLike>('categories', { limit: 1000 });
-    return (Array.isArray(categories) ? categories : []).map((item) => ({
+    const normalized = (Array.isArray(categories) ? categories : []).map((item) => ({
       ...item,
       _id: getId(item) || undefined,
       id: getId(item) || undefined,
     }));
+    cachedAllCategories = normalized;
+    cachedAllCategoriesAt = Date.now();
+    return normalized;
   } catch (error) {
     console.error('[data] Failed loading categories from backend API:', error);
     const all = await getAllArticlesFromMongo('getAllCategoriesFromMongo');
@@ -288,18 +302,29 @@ export async function getAllCategoriesFromMongo(): Promise<CategoryLike[]> {
         });
       });
     });
-    return Array.from(byKey.values());
+    const fallback = Array.from(byKey.values());
+    cachedAllCategories = fallback;
+    cachedAllCategoriesAt = Date.now();
+    return fallback;
   }
 }
 
 export async function getAllTagsFromMongo() {
+  const now = Date.now();
+  if (cachedAllTags && now - cachedAllTagsAt < TAXONOMY_CACHE_TTL_MS) {
+    return cachedAllTags;
+  }
+
   try {
     const tags = await fetchCollection('tags', { limit: 2000 });
-    return (Array.isArray(tags) ? tags : []).map((item: any) => ({
+    const normalized = (Array.isArray(tags) ? tags : []).map((item: any) => ({
       ...item,
       _id: getId(item) || undefined,
       id: getId(item) || undefined,
     }));
+    cachedAllTags = normalized;
+    cachedAllTagsAt = Date.now();
+    return normalized;
   } catch (error) {
     console.error('[data] Failed loading tags from backend API:', error);
     const all = await getAllArticlesFromMongo('getAllTagsFromMongo');
@@ -318,7 +343,10 @@ export async function getAllTagsFromMongo() {
         });
       });
     });
-    return Array.from(byKey.values());
+    const fallback = Array.from(byKey.values());
+    cachedAllTags = fallback;
+    cachedAllTagsAt = Date.now();
+    return fallback;
   }
 }
 

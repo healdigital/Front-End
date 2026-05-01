@@ -102,44 +102,83 @@ const toPositiveInt = (value: unknown): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
 
+let popularPageViewsCache: { rows: GaPageViewRow[]; at: number; limit: number } | null = null;
+let popularPageViewsInflight: Promise<GaPageViewRow[]> | null = null;
+
+const popularCacheTtlMs = (): number => {
+  const raw = Number(process.env.GA4_POPULAR_CACHE_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : 900_000;
+};
+
 export async function getPopularPageViews(limit = 50): Promise<GaPageViewRow[]> {
   const config = getGaConfig();
   if (!config) return [];
 
-  const accessToken = await fetchAccessToken(config.clientEmail, config.privateKey);
-  if (!accessToken) return [];
-
-  try {
-    const response = await fetch(`${GA_DATA_API_BASE}/properties/${config.propertyId}:runReport`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        dateRanges: [{ startDate: `${config.lookbackDays}daysAgo`, endDate: 'today' }],
-        dimensions: [{ name: 'pagePath' }],
-        metrics: [{ name: 'screenPageViews' }],
-        orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
-        limit,
-      }),
-    });
-
-    if (!response.ok) return [];
-
-    const payload = await response.json();
-    const rows = Array.isArray(payload?.rows) ? payload.rows : [];
-
-    return rows
-      .map((row: any) => {
-        const pagePath = String(row?.dimensionValues?.[0]?.value || '').trim();
-        const screenPageViews = toPositiveInt(row?.metricValues?.[0]?.value);
-        return pagePath && screenPageViews > 0 ? { pagePath, screenPageViews } : null;
-      })
-      .filter(Boolean);
-  } catch {
-    return [];
+  const ttl = popularCacheTtlMs();
+  const now = Date.now();
+  if (
+    popularPageViewsCache &&
+    popularPageViewsCache.limit === limit &&
+    now - popularPageViewsCache.at < ttl
+  ) {
+    return popularPageViewsCache.rows;
   }
+
+  if (popularPageViewsInflight) {
+    return popularPageViewsInflight;
+  }
+
+  popularPageViewsInflight = (async (): Promise<GaPageViewRow[]> => {
+    try {
+      const accessToken = await fetchAccessToken(config.clientEmail, config.privateKey);
+      if (!accessToken) {
+        popularPageViewsCache = { rows: [], at: Date.now(), limit };
+        return [];
+      }
+
+      const response = await fetch(`${GA_DATA_API_BASE}/properties/${config.propertyId}:runReport`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dateRanges: [{ startDate: `${config.lookbackDays}daysAgo`, endDate: 'today' }],
+          dimensions: [{ name: 'pagePath' }],
+          metrics: [{ name: 'screenPageViews' }],
+          orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+          limit,
+        }),
+      });
+
+      if (!response.ok) {
+        popularPageViewsCache = { rows: [], at: Date.now(), limit };
+        return [];
+      }
+
+      const payload = await response.json();
+      const rows = Array.isArray(payload?.rows) ? payload.rows : [];
+
+      const normalized = rows
+        .map((row: any) => {
+          const pagePath = String(row?.dimensionValues?.[0]?.value || '').trim();
+          const screenPageViews = toPositiveInt(row?.metricValues?.[0]?.value);
+          return pagePath && screenPageViews > 0 ? { pagePath, screenPageViews } : null;
+        })
+        .filter(Boolean) as GaPageViewRow[];
+
+      popularPageViewsCache = { rows: normalized, at: Date.now(), limit };
+
+      return normalized;
+    } catch {
+      popularPageViewsCache = { rows: [], at: Date.now(), limit };
+      return [];
+    } finally {
+      popularPageViewsInflight = null;
+    }
+  })();
+
+  return popularPageViewsInflight;
 }
 
 export async function getPopularSlugViewMap(limit = 250): Promise<Map<string, number>> {

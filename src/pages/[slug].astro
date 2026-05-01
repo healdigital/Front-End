@@ -561,8 +561,14 @@ const excerptText = toText(article?.excerpt);
 const displayAuthorName = "Bernard Laurance";
 const isRelationshipId = (value: string): boolean =>
   /^[0-9a-f]{24}$/i.test(String(value).trim()) || /^\d+$/.test(String(value).trim());
-const allCategories = await getAllCategoriesFromMongo();
-const allTags = await getAllTagsFromMongo();
+const currentArticleId = extractId(article?.id || article?._id);
+const [articleComments, allCategories, allTags] = await Promise.all([
+  currentArticleId
+    ? getCommentsByArticleIdFromMongo(currentArticleId)
+    : Promise.resolve([] as CommentEntry[]),
+  getAllCategoriesFromMongo(),
+  getAllTagsFromMongo(),
+]);
 const categoryLookup = new Map(
   (Array.isArray(allCategories) ? allCategories : [])
     .map((item: any) => [String(item?._id || item?.id || item?.slug || '').trim(), toText(item?.title || item?.name || item?.label)])
@@ -640,10 +646,6 @@ const categoryIds = (
   .map((item: TaxonomyItem) => extractId(item))
   .filter(Boolean);
 
-const currentArticleId = extractId(article?.id || article?._id);
-const articleComments = currentArticleId
-  ? await getCommentsByArticleIdFromMongo(currentArticleId)
-  : [];
 const validRatings = articleComments
   .map((comment: CommentEntry) => Number(comment?.rating))
   .filter((rating: number) => Number.isFinite(rating) && rating > 0);
@@ -1009,11 +1011,12 @@ const firstContentParagraphHasImage = /<(?:img|picture|figure)\b/i.test(
 const pinterestLink = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(articleUrl)}&media=${encodeURIComponent(image || articleUrl)}&description=${encodeURIComponent(title)}`;
 const collectionHref = "/favoris";
 
-const relatedArticlesRaw =
+const [relatedArticlesRaw, relatedArticleViewMap] = await Promise.all([
   categoryIds.length > 0 && currentArticleId
-    ? await getRelatedArticlesFromMongo(categoryIds, currentArticleId, 6)
-    : [];
-const relatedArticleViewMap = await getPopularSlugViewMap(250);
+    ? getRelatedArticlesFromMongo(categoryIds, currentArticleId, 6)
+    : Promise.resolve([] as ArticleEntry[]),
+  getPopularSlugViewMap(250),
+]);
 
 const relatedArticles = (
   Array.isArray(relatedArticlesRaw) ? relatedArticlesRaw : []

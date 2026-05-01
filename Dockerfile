@@ -30,7 +30,7 @@ RUN --mount=type=secret,id=build_env,target=/run/secrets/build_env,required=fals
 
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends wget ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends wget curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
