@@ -234,7 +234,7 @@ export async function resolveRootSlugPageProps(rawSlugParam: string): Promise<Ro
       try {
         const siblings = await payloadFetch<RootSlugArticleEntry>({
           collection: 'articles',
-          query: { featured_img_url: itemImg, depth: 0, limit: 10 },
+          query: { 'featuredImage.url': itemImg, depth: 0, limit: 10 },
         });
         for (const sib of siblings || []) {
           const sLang = normalizeLanguageCode(sib?.lang || sib?.language || sib?.locale);
