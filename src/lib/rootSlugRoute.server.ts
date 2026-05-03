@@ -20,7 +20,7 @@ export type RootSlugArticleEntry = ContentRecord & {
 const getBuildLimit = () => {
   const envLimit = Number(process.env.MAX_SSG_ARTICLES);
   const safeEnvLimit = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 120;
-  return Math.min(safeEnvLimit, 120);
+  return Math.min(safeEnvLimit, 10000);
 };
 
 export type RootSlugResolvedProps = {
