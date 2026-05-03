@@ -2,9 +2,12 @@
 /**
  * `/<lang>/` (en, es, pt-br, ar, zh-hans) — language-prefixed homepage.
  * Sets the `lcdb_lang` cookie so downstream components render content in the
- * target language, then defers to the regular FR home via Astro.rewrite.
+ * target language, then 302-redirects to the FR home (the home is prerendered,
+ * so we cannot use Astro.rewrite to keep the URL).
  *
- * Note: kept SSR (no prerender) so the rewrite happens at request time.
+ * Trade-off: visiting `/en/` ends up at `/` with EN content, which is OK for
+ * staging. To preserve the URL prefix permanently we'd need to convert the
+ * homepage to SSR — leaving that for a follow-up.
  */
 const SUPPORTED_LANGS = new Set(['en', 'es', 'pt-br', 'ar', 'zh-hans']);
 const lang = String(Astro.params.lang || '').toLowerCase();
@@ -17,5 +20,5 @@ Astro.cookies.set('lcdb_lang', lang, {
   maxAge: 60 * 60 * 24 * 365,
   sameSite: 'lax',
 });
-return Astro.rewrite('/');
+return Astro.redirect('/', 302);
 ---
