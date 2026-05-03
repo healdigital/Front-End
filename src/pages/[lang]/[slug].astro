@@ -1,0 +1,64 @@
+---
+import SlugPage from "../[slug].astro";
+import { resolveLangRecipePageProps } from "../../lib/rootSlugRoute.server";
+
+export const prerender = false;
+
+type ContentValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Record<string, unknown>
+  | ContentValue[];
+
+type ArticleEntry = Record<string, unknown> & {
+  slug?: string | { current?: string };
+  lang?: string;
+  language?: string;
+  locale?: string;
+  featured_img_url?: string;
+  featuredImage?: { url?: string };
+  featuredMedia?: { url?: string };
+  featured_image?: { url?: string };
+};
+
+interface Props {
+  article: ArticleEntry;
+  languageSlugMap: Record<string, string>;
+  fallbackRecipeArticle?: ArticleEntry | null;
+}
+
+const SUPPORTED_LANGS = new Set(["en", "es", "pt-br", "ar", "zh-hans"]);
+const langParam = String(Astro.params.lang || "").toLowerCase();
+if (!SUPPORTED_LANGS.has(langParam)) {
+  return new Response(null, { status: 404 });
+}
+
+let { article, languageSlugMap, fallbackRecipeArticle = null } = Astro.props as Props;
+
+if (!article) {
+  const resolved = await resolveLangRecipePageProps(
+    langParam,
+    String(Astro.params.slug || ""),
+  );
+  if (!resolved) {
+    return new Response(null, { status: 404 });
+  }
+  article = resolved.article as ArticleEntry;
+  languageSlugMap = resolved.languageSlugMap;
+  fallbackRecipeArticle = (resolved.fallbackRecipeArticle ?? null) as ArticleEntry | null;
+}
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300, stale-while-revalidate=86400",
+);
+---
+
+<SlugPage
+  article={article}
+  languageSlugMap={languageSlugMap}
+  fallbackRecipeArticle={fallbackRecipeArticle}
+/>

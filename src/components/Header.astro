@@ -880,12 +880,13 @@ const accountItems = [
     if (!isArticlePage) return null;
 
     // Fallback: derive WordPress-style language route from current article slug.
-    const recipePathMatch = currentPath.match(
-      /^\/(en|es|ar|pt-br|pt|zh-hans)\/recipe\/([^/]+)\/?$/i,
+    // Match both new pattern /<lang>/<slug>/ and legacy /<lang>/recipe/<slug>/.
+    const langArticlePathMatch = currentPath.match(
+      /^\/(en|es|ar|pt-br|pt|zh-hans)\/(?:recipe\/)?([^/]+)\/?$/i,
     );
     const articlePathMatch = currentPath.match(/^\/(?:articles\/)?([^/]+)\/?$/i);
     const currentArticleSlug =
-      (recipePathMatch && recipePathMatch[2]) ||
+      (langArticlePathMatch && langArticlePathMatch[2]) ||
       (articlePathMatch && articlePathMatch[1]) ||
       '';
 
@@ -894,7 +895,7 @@ const accountItems = [
     const targetPath =
       normalizedLang === 'fr'
         ? `/${currentArticleSlug}/`
-        : `/${normalizedLang}/recipe/${currentArticleSlug}/`;
+        : `/${normalizedLang}/${currentArticleSlug}/`;
 
     if (normalizePath(targetPath) === normalizePath(currentPath)) return null;
     return targetPath;

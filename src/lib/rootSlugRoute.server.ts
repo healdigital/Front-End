@@ -350,13 +350,71 @@ export async function resolveRootSlugPageProps(rawSlugParam: string): Promise<Ro
   return null;
 }
 
-/** `/[lang]/recipe/[slug]` — builds `lang/recipe/slug` for the same resolution as flat `[slug].astro`. */
+/**
+ * `/[lang]/[slug]` and `/[lang]/recipe/[slug]` — resolves to a single article in
+ * the target language. Prefers a direct (lang, slug) Payload lookup so articles
+ * outside the first 120 in the cached list still match.
+ */
 export async function resolveLangRecipePageProps(
   langRaw: string,
   slugRaw: string,
 ): Promise<RootSlugResolvedProps | null> {
   const lang = String(langRaw || '').trim().toLowerCase();
-  const slug = String(slugRaw || '').trim();
-  if (!lang || !slug || slug.includes('/')) return null;
+  const slug = String(slugRaw || '').trim().replace(/^\/+|\/+$/g, '');
+  if (!lang || !slug) return null;
+
+  const decoded = (() => {
+    try { return decodeURIComponent(slug); } catch { return slug; }
+  })();
+
+  for (const candidate of new Set([slug, decoded])) {
+    try {
+      const hits = await payloadFetch<RootSlugArticleEntry>({
+        collection: 'articles',
+        query: { lang, slug: candidate, depth: 2, limit: 1 },
+      });
+      const item = hits[0];
+      if (!item) continue;
+      const rawSlugValue = typeof item?.slug === 'string'
+        ? item.slug
+        : (item?.slug as { current?: string } | undefined)?.current;
+      const slugValue = String(rawSlugValue || '').replace(/^\/+|\/+$/g, '');
+      const languageSlugMap: Record<string, string> = {};
+      if (slugValue) {
+        languageSlugMap[lang] = lang === 'fr' ? `/${slugValue}/` : `/${lang}/${slugValue}/`;
+      }
+      const itemImg =
+        (typeof (item as { featured_img_url?: string }).featured_img_url === 'string' &&
+          (item as { featured_img_url?: string }).featured_img_url) ||
+        (typeof (item?.featuredImage as { url?: string } | undefined)?.url === 'string'
+          ? (item.featuredImage as { url: string }).url
+          : '') ||
+        '';
+      if (itemImg) {
+        try {
+          const siblings = await payloadFetch<RootSlugArticleEntry>({
+            collection: 'articles',
+            query: { 'featuredImage.url': itemImg, depth: 0, limit: 10 },
+          });
+          for (const sib of siblings || []) {
+            const sLang = String(sib?.lang || '').toLowerCase();
+            const sRaw = typeof sib?.slug === 'string'
+              ? sib.slug
+              : (sib?.slug as { current?: string } | undefined)?.current;
+            const sSlug = String(sRaw || '').replace(/^\/+|\/+$/g, '');
+            if (sLang && sSlug) {
+              languageSlugMap[sLang] = sLang === 'fr' ? `/${sSlug}/` : `/${sLang}/${sSlug}/`;
+            }
+          }
+        } catch {}
+      }
+      return {
+        article: { ...item, slug: slugValue },
+        languageSlugMap,
+        fallbackRecipeArticle: item,
+      };
+    } catch {}
+  }
+
   return resolveRootSlugPageProps(`${lang}/recipe/${slug}`);
 }
