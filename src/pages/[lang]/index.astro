@@ -1,0 +1,21 @@
+---
+/**
+ * `/<lang>/` (en, es, pt-br, ar, zh-hans) — language-prefixed homepage.
+ * Sets the `lcdb_lang` cookie so downstream components render content in the
+ * target language, then defers to the regular FR home via Astro.rewrite.
+ *
+ * Note: kept SSR (no prerender) so the rewrite happens at request time.
+ */
+const SUPPORTED_LANGS = new Set(['en', 'es', 'pt-br', 'ar', 'zh-hans']);
+const lang = String(Astro.params.lang || '').toLowerCase();
+if (!SUPPORTED_LANGS.has(lang)) {
+  return new Response(null, { status: 404 });
+}
+
+Astro.cookies.set('lcdb_lang', lang, {
+  path: '/',
+  maxAge: 60 * 60 * 24 * 365,
+  sameSite: 'lax',
+});
+return Astro.rewrite('/');
+---

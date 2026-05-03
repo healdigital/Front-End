@@ -112,9 +112,9 @@ function resolveLangPrefix(pathname: string): { lang: string; targetPathname: st
 
   const lang = first;
   const restSegments = segments.slice(1);
-  // Bare /<lang>/ → render the FR home in target language.
+  // Bare /<lang>/ — the [lang]/index.astro route handles this.
   if (restSegments.length === 0) {
-    return { lang, targetPathname: '/' };
+    return { lang, targetPathname: null };
   }
 
   // /<lang>/<head>/<tail…> — translate head if it matches a known
