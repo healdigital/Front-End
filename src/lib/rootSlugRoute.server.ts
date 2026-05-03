@@ -221,9 +221,31 @@ export async function resolveRootSlugPageProps(rawSlugParam: string): Promise<Ro
   if (directFromMongo && typeof directFromMongo === 'object') {
     const item = directFromMongo as RootSlugArticleEntry;
     const slugValue = getArticleSlugValue(item);
+    // Build languageSlugMap from translation_group_id siblings if available.
+    const languageSlugMap: Record<string, string> = {};
+    const itemLang = normalizeLanguageCode(item?.lang || item?.language || item?.locale);
+    if (slugValue && itemLang) languageSlugMap[itemLang] = toArticlePath(slugValue);
+    const itemImg =
+      (typeof (item as { featured_img_url?: string }).featured_img_url === 'string' &&
+        (item as { featured_img_url?: string }).featured_img_url) ||
+      (typeof item?.featuredImage?.url === 'string' && item.featuredImage.url) ||
+      '';
+    if (itemImg) {
+      try {
+        const siblings = await payloadFetch<RootSlugArticleEntry>({
+          collection: 'articles',
+          query: { featured_img_url: itemImg, depth: 0, limit: 10 },
+        });
+        for (const sib of siblings || []) {
+          const sLang = normalizeLanguageCode(sib?.lang || sib?.language || sib?.locale);
+          const sSlug = getArticleSlugValue(sib);
+          if (sLang && sSlug) languageSlugMap[sLang] = toArticlePath(sSlug);
+        }
+      } catch {}
+    }
     return {
       article: { ...item, slug: slugValue },
-      languageSlugMap: slugValue ? { [normalizeLanguageCode(item?.lang || item?.language || item?.locale)]: toArticlePath(slugValue) } : {},
+      languageSlugMap,
       fallbackRecipeArticle: item,
     };
   }
